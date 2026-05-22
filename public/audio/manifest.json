@@ -1282,5 +1282,129 @@
   "kubernetes-pr/verdict-4": {
     "file": "audio/kubernetes-pr/verdict-4.mp3",
     "seconds": 18.125
+  },
+  "kubernetes-scheduler/title-1": {
+    "file": "audio/kubernetes-scheduler/title-1.mp3",
+    "seconds": 8.9
+  },
+  "kubernetes-scheduler/title-2": {
+    "file": "audio/kubernetes-scheduler/title-2.mp3",
+    "seconds": 9.125
+  },
+  "kubernetes-scheduler/title-3": {
+    "file": "audio/kubernetes-scheduler/title-3.mp3",
+    "seconds": 10.1
+  },
+  "kubernetes-scheduler/anat-1": {
+    "file": "audio/kubernetes-scheduler/anat-1.mp3",
+    "seconds": 13.15
+  },
+  "kubernetes-scheduler/anat-2": {
+    "file": "audio/kubernetes-scheduler/anat-2.mp3",
+    "seconds": 7.25
+  },
+  "kubernetes-scheduler/anat-3": {
+    "file": "audio/kubernetes-scheduler/anat-3.mp3",
+    "seconds": 12.675
+  },
+  "kubernetes-scheduler/anat-4": {
+    "file": "audio/kubernetes-scheduler/anat-4.mp3",
+    "seconds": 12.575
+  },
+  "kubernetes-scheduler/fw-1": {
+    "file": "audio/kubernetes-scheduler/fw-1.mp3",
+    "seconds": 13.1
+  },
+  "kubernetes-scheduler/fw-2": {
+    "file": "audio/kubernetes-scheduler/fw-2.mp3",
+    "seconds": 14.325
+  },
+  "kubernetes-scheduler/fw-3": {
+    "file": "audio/kubernetes-scheduler/fw-3.mp3",
+    "seconds": 10.575
+  },
+  "kubernetes-scheduler/fw-4": {
+    "file": "audio/kubernetes-scheduler/fw-4.mp3",
+    "seconds": 18.65
+  },
+  "kubernetes-scheduler/seq-1": {
+    "file": "audio/kubernetes-scheduler/seq-1.mp3",
+    "seconds": 5.5
+  },
+  "kubernetes-scheduler/seq-2": {
+    "file": "audio/kubernetes-scheduler/seq-2.mp3",
+    "seconds": 5.5
+  },
+  "kubernetes-scheduler/seq-3": {
+    "file": "audio/kubernetes-scheduler/seq-3.mp3",
+    "seconds": 3.675
+  },
+  "kubernetes-scheduler/seq-4": {
+    "file": "audio/kubernetes-scheduler/seq-4.mp3",
+    "seconds": 9.1
+  },
+  "kubernetes-scheduler/seq-5": {
+    "file": "audio/kubernetes-scheduler/seq-5.mp3",
+    "seconds": 9.15
+  },
+  "kubernetes-scheduler/seq-6": {
+    "file": "audio/kubernetes-scheduler/seq-6.mp3",
+    "seconds": 7.1
+  },
+  "kubernetes-scheduler/seq-7": {
+    "file": "audio/kubernetes-scheduler/seq-7.mp3",
+    "seconds": 10.075
+  },
+  "kubernetes-scheduler/code-1": {
+    "file": "audio/kubernetes-scheduler/code-1.mp3",
+    "seconds": 9.8
+  },
+  "kubernetes-scheduler/code-2": {
+    "file": "audio/kubernetes-scheduler/code-2.mp3",
+    "seconds": 11.525
+  },
+  "kubernetes-scheduler/code-3": {
+    "file": "audio/kubernetes-scheduler/code-3.mp3",
+    "seconds": 13.0
+  },
+  "kubernetes-scheduler/code-4": {
+    "file": "audio/kubernetes-scheduler/code-4.mp3",
+    "seconds": 13.3
+  },
+  "kubernetes-scheduler/sk-1": {
+    "file": "audio/kubernetes-scheduler/sk-1.mp3",
+    "seconds": 17.525
+  },
+  "kubernetes-scheduler/sk-2": {
+    "file": "audio/kubernetes-scheduler/sk-2.mp3",
+    "seconds": 14.4
+  },
+  "kubernetes-scheduler/sk-3": {
+    "file": "audio/kubernetes-scheduler/sk-3.mp3",
+    "seconds": 15.375
+  },
+  "kubernetes-scheduler/sk-4": {
+    "file": "audio/kubernetes-scheduler/sk-4.mp3",
+    "seconds": 21.025
+  },
+  "kubernetes-scheduler/recap-1": {
+    "file": "audio/kubernetes-scheduler/recap-1.mp3",
+    "seconds": 14.125
+  },
+  "kubernetes-scheduler/recap-2": {
+    "file": "audio/kubernetes-scheduler/recap-2.mp3",
+    "seconds": 10.575
+  },
+  "kubernetes-scheduler/recap-3": {
+    "file": "audio/kubernetes-scheduler/recap-3.mp3",
+    "seconds": 12.425
+  },
+  "kubernetes-scheduler/recap-4": {
+    "file": "audio/kubernetes-scheduler/recap-4.mp3",
+    "seconds": 10.15
+  },
+  "kubernetes-scheduler/recap-5": {
+    "file": "audio/kubernetes-scheduler/recap-5.mp3",
+    "seconds": 17.275
   }
 }

@@ -22,9 +22,13 @@ on it first, and logs three things —
 | date | invocation | tier | wall | result | notes |
 |------|------------|------|------|--------|-------|
 | 2026-05-22 | `docent score kubernetes/kubernetes 139003` | FULL | <1s | matrix only | 674 logic lines → full |
-| 2026-05-22 | `docent hermetic kubernetes-pr --scale 0.5` | — | 56s | ✓ 7/7 | engine cascade, end-to-end |
-| 2026-05-22 | `docent hermetic kubernetes --scale 0.5` | — | 81s | ✓ 7/7 | engine cascade, end-to-end |
-| 2026-05-22 | `docent hermetic kubernetes-scheduler --scale 0.5` | — | _(see hermetic/report.json)_ | — | new subsystem film |
+| 2026-05-22 | `docent hermetic` — kubernetes-pr | — | 52s | ✓ 7/7 | PR review, end-to-end |
+| 2026-05-22 | `docent hermetic` — kubernetes | — | 76s | ✓ 7/7 | architecture review, end-to-end |
+| 2026-05-22 | `docent hermetic` — kubernetes-scheduler | — | 120s | ✓ 7/7 | subsystem review, end-to-end |
+
+**Full run: 3/3 fixtures validated end-to-end** at scale 0.5 — every check
+green (spec valid, depth contract met, cascade renders, valid h264 video of
+the expected shape and duration).
 
 ## Notes
 
