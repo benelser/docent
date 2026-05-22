@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remotion';
 import {TransitionSeries, linearTiming} from '@remotion/transitions';
 import {fade} from '@remotion/transitions/fade';
-import {FILMS, buildTimeline, TRANSITION} from './engine/spec';
+import {FILMS, buildTimeline, cutFrames} from './engine/spec';
 import {FrameScene} from './scenes/FrameScene';
 import {StructureScene} from './scenes/StructureScene';
 import {ProgressionScene} from './scenes/ProgressionScene';
@@ -74,10 +74,14 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
             </TransitionSeries.Sequence>
           );
           if (i === 0) return [seq];
+          // `cut` (a scene knob), read off the previous scene, sets how this
+          // boundary feels: `hold` a longer settle, `continue` a quick fade.
           return [
             <TransitionSeries.Transition
               key={`x-${ts.scene.id}`}
-              timing={linearTiming({durationInFrames: TRANSITION})}
+              timing={linearTiming({
+                durationInFrames: cutFrames(timeline.scenes[i - 1].scene.cut),
+              })}
               presentation={fade()}
             />,
             seq,

@@ -35,10 +35,16 @@ const worldBox = (boxes: Box[]): Rect => {
 const clamp = (v: number, a: number, b: number) =>
   Math.min(Math.max(v, Math.min(a, b)), Math.max(a, b));
 
+// The author's camera verb for a beat.
+export type Shot = 'wide' | 'follow' | 'push' | 'hold';
+
 // A shot that leans toward `focus`, then is clamped so the whole world stays
-// inside SAFE — never under the heading, never off-screen.
-const composeShot = (world: Rect, focus: Box[]): CameraState => {
-  if (focus.length === 0) return {scale: 1, tx: 0, ty: 0}; // the resting wide shot
+// inside SAFE — never under the heading, never off-screen. `shot` is the
+// author's verb: `wide` rests on the whole diagram, `push` zooms in harder,
+// `follow` leans at the standard distance.
+const composeShot = (world: Rect, focus: Box[], shot: Shot): CameraState => {
+  if (shot === 'wide' || focus.length === 0)
+    return {scale: 1, tx: 0, ty: 0}; // the resting wide shot
 
   const worldW = world.x1 - world.x0;
   const worldH = world.y1 - world.y0;
@@ -47,8 +53,8 @@ const composeShot = (world: Rect, focus: Box[]): CameraState => {
 
   // Never zoom past the point where the whole world still fits the safe band —
   // this is what makes off-screen / under-heading structurally impossible.
-  const sMax = Math.min(safeW / worldW, safeH / worldH, 1.3);
-  const scale = clamp(1.18, 1.0, sMax);
+  const sMax = Math.min(safeW / worldW, safeH / worldH, shot === 'push' ? 1.5 : 1.3);
+  const scale = clamp(shot === 'push' ? 1.34 : 1.18, 1.0, sMax);
 
   const fx = focus.reduce((a, b) => a + b.cx, 0) / focus.length;
   const fy = focus.reduce((a, b) => a + b.cy, 0) / focus.length;
@@ -69,25 +75,30 @@ const drift = (frame: number, fps: number, amt = 4): {x: number; y: number} => {
 // The resolved camera for the current frame: ease from the previous beat's
 // shot to the active one, plus the drift.
 export const resolveCamera = (
-  beats: {from: number; focus?: string[]}[],
+  beats: {from: number; focus?: string[]; shot?: Shot}[],
   active: number,
   boxesById: Record<string, Box>,
   frame: number,
   fps: number,
 ): CameraState => {
   const world = worldBox(Object.values(boxesById));
+  // The raw shot a beat composes; `hold` reuses follow geometry, and is then
+  // turned into "do not move" below.
   const shotFor = (i: number): CameraState => {
+    const shot = beats[i]?.shot ?? 'follow';
     const f = (beats[i]?.focus ?? [])
       .map((id) => boxesById[id])
       .filter((b): b is Box => Boolean(b));
-    return composeShot(world, f);
+    return composeShot(world, f, shot === 'hold' ? 'follow' : shot);
   };
-  const cur = shotFor(active);
   const prev = shotFor(Math.max(0, active - 1));
+  // `hold` freezes the camera on the previous beat's shot — no move at all.
+  const held = beats[active]?.shot === 'hold';
+  const cur = held ? prev : shotFor(active);
   const local = frame - (beats[active]?.from ?? 0);
   const p =
     local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass: 1.1}});
-  const d = drift(frame, fps);
+  const d = drift(frame, fps, held ? 0 : 4);
   return {
     scale: interpolate(p, [0, 1], [prev.scale, cur.scale]),
     tx: interpolate(p, [0, 1], [prev.tx, cur.tx]) + d.x,

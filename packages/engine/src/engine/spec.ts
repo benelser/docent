@@ -176,6 +176,11 @@ const PACE: Record<NonNullable<Beat['pace']>, number> = {
   brisk: 0.35,
 };
 
+// `cut` (a scene knob) sets how a scene boundary feels — the transition into
+// the next scene. `hold` is a longer settle, `continue` a quick fade.
+export const cutFrames = (cut?: Scene['cut']): number =>
+  cut === 'hold' ? 28 : cut === 'continue' ? 8 : TRANSITION;
+
 // Words-per-second fallback so the film has sane timing before TTS has run
 // (keeps `remotion studio` usable on a fresh checkout).
 const estimateSeconds = (text: string): number =>
@@ -229,9 +234,13 @@ export const buildTimeline = (film: FilmSpec): Timeline => {
     return {scene, index, beats, durationInFrames: cursor};
   });
 
+  // Each scene's `cut` sets the transition into the next; subtract each real
+  // transition's overlap (not a flat TRANSITION) so the film length is exact.
+  const transitionTotal = scenes
+    .slice(0, -1)
+    .reduce((a, s) => a + cutFrames(s.scene.cut), 0);
   const total =
-    scenes.reduce((a, s) => a + s.durationInFrames, 0) -
-    TRANSITION * Math.max(0, scenes.length - 1);
+    scenes.reduce((a, s) => a + s.durationInFrames, 0) - transitionTotal;
 
   return {film, scenes, total, fps, width: film.meta.width, height: film.meta.height};
 };
