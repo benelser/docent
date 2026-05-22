@@ -9,9 +9,11 @@ import type {FilmSpec} from './spec';
 import grammarCheck from '../../../../films/grammar-check.json';
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
 import linearAlgebra from '../../../../films/linear-algebra.json';
+import wwiCauses from '../../../../films/wwi-causes.json';
 
 export const FILMS: Record<string, FilmSpec> = {
   'grammar-check': grammarCheck as FilmSpec,
   'kubernetes-pr': kubernetesPr as FilmSpec,
   'linear-algebra': linearAlgebra as FilmSpec,
+  'wwi-causes': wwiCauses as FilmSpec,
 };
