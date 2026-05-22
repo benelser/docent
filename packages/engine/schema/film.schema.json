@@ -34,7 +34,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["title", "diagram", "sequence", "code", "diff", "sketch", "recap"]},
+        "type": {"enum": ["frame", "structure", "walkthrough", "closeup", "tension", "recap", "diff"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},

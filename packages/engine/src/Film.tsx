@@ -3,12 +3,12 @@ import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remoti
 import {TransitionSeries, linearTiming} from '@remotion/transitions';
 import {fade} from '@remotion/transitions/fade';
 import {FILMS, buildTimeline, TRANSITION} from './engine/spec';
-import {TitleScene} from './scenes/TitleScene';
-import {DiagramScene} from './scenes/DiagramScene';
-import {SequenceScene} from './scenes/SequenceScene';
-import {CodeScene} from './scenes/CodeScene';
+import {FrameScene} from './scenes/FrameScene';
+import {StructureScene} from './scenes/StructureScene';
+import {WalkthroughScene} from './scenes/WalkthroughScene';
+import {CloseupScene} from './scenes/CloseupScene';
 import {DiffScene} from './scenes/DiffScene';
-import {SketchScene} from './scenes/SketchScene';
+import {TensionScene} from './scenes/TensionScene';
 import {RecapScene} from './scenes/RecapScene';
 
 // Assembles a film spec into a single composition: every scene rendered by the
@@ -35,20 +35,20 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
         {timeline.scenes.flatMap((ts, i) => {
           const common = {ts, sceneIndex: i, sceneCount: count, meta: film.meta};
           const node =
-            ts.scene.type === 'title' ? (
-              <TitleScene {...common} />
-            ) : ts.scene.type === 'sequence' ? (
-              <SequenceScene {...common} />
-            ) : ts.scene.type === 'code' ? (
-              <CodeScene {...common} />
+            ts.scene.type === 'frame' ? (
+              <FrameScene {...common} />
+            ) : ts.scene.type === 'walkthrough' ? (
+              <WalkthroughScene {...common} />
+            ) : ts.scene.type === 'closeup' ? (
+              <CloseupScene {...common} />
             ) : ts.scene.type === 'diff' ? (
               <DiffScene {...common} />
-            ) : ts.scene.type === 'sketch' ? (
-              <SketchScene {...common} />
+            ) : ts.scene.type === 'tension' ? (
+              <TensionScene {...common} />
             ) : ts.scene.type === 'recap' ? (
               <RecapScene {...common} />
             ) : (
-              <DiagramScene {...common} />
+              <StructureScene {...common} />
             );
           const seq = (
             <TransitionSeries.Sequence

@@ -3,40 +3,29 @@
 // as one of these JSON files under films/. The engine renders it; it knows
 // nothing about Codex (or any particular codebase) specifically.
 
-import codex from '../../../../films/codex.json';
-import rig from '../../../../films/rig.json';
-import nono from '../../../../films/nono.json';
-import vector from '../../../../films/vector.json';
-import bun from '../../../../films/bun.json';
-import kubernetes from '../../../../films/kubernetes.json';
-import rigPr from '../../../../films/rig-pr.json';
-import nonoPr from '../../../../films/nono-pr.json';
-import vectorPr from '../../../../films/vector-pr.json';
-import bunPr from '../../../../films/bun-pr.json';
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
-import kubernetesScheduler from '../../../../films/kubernetes-scheduler.json';
 import manifestJson from '../../../../public/audio/manifest.json';
 
 export type Message = {
   from: string;
   to: string;
   label: string;
-  kind?: 'call' | 'return' | 'async' | 'error';
+  kind?: 'forward' | 'reply' | 'aside';
 };
 
 export type Beat = {
   id: string;
   narration: string;
-  // diagram directives
+  // structure directives
   reveal?: string[] | number;
   focus?: string[];
   pulse?: [string, string][];
-  // title directive
+  // frame directive
   show?: string;
-  // code directive — [firstLine, lastLine], 1-indexed
+  // closeup directive — [firstLine, lastLine], 1-indexed
   highlight?: [number, number];
   note?: string;
-  // sequence directive
+  // walkthrough directive
   message?: Message;
 };
 
@@ -52,7 +41,7 @@ export type Node = {
   accent?: string;
   emphasis?: boolean;
   wide?: boolean;
-  // sketch scenes: a node can be a flagged risk or a rejected alternative
+  // tension scenes: a node can be a flagged risk or a rejected alternative
   kind?: 'risk' | 'rejected';
 };
 
@@ -60,27 +49,27 @@ export type Edge = {
   id: string;
   from: string;
   to: string;
-  kind?: 'flow' | 'escalate';
+  kind?: 'relation' | 'feedback';
   label?: string;
 };
 
 export type Scene = {
   id: string;
-  type: 'title' | 'diagram' | 'sequence' | 'code' | 'diff' | 'sketch' | 'recap';
+  type: 'frame' | 'structure' | 'walkthrough' | 'closeup' | 'tension' | 'recap' | 'diff';
   accent: string;
   kicker: string;
   heading?: string;
-  // title
+  // frame
   title?: string;
   tagline?: string;
   footnote?: string;
-  // diagram
+  // structure
   grid?: {cols: number; rows: number};
   nodes?: Node[];
   edges?: Edge[];
-  // sequence
+  // walkthrough
   actors?: Actor[];
-  // code
+  // closeup
   file?: string;
   lang?: string;
   code?: string;
@@ -106,17 +95,6 @@ export type FilmSpec = {
 
 // Film registry. A new film is one JSON file plus one line here.
 export const FILMS: Record<string, FilmSpec> = {
-  codex: codex as FilmSpec,
-  rig: rig as FilmSpec,
-  nono: nono as FilmSpec,
-  vector: vector as FilmSpec,
-  bun: bun as FilmSpec,
-  kubernetes: kubernetes as FilmSpec,
-  'kubernetes-scheduler': kubernetesScheduler as FilmSpec,
-  'rig-pr': rigPr as FilmSpec,
-  'nono-pr': nonoPr as FilmSpec,
-  'vector-pr': vectorPr as FilmSpec,
-  'bun-pr': bunPr as FilmSpec,
   'kubernetes-pr': kubernetesPr as FilmSpec,
 };
 

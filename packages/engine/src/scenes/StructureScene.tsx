@@ -12,7 +12,7 @@ import {activeBeatIndex, type SceneProps} from '../engine/spec';
 
 // Renders a node-and-edge diagram, revealed and focused beat by beat, with
 // optional flow pulses. This one template carries most architecture films.
-export const DiagramScene: React.FC<SceneProps> = ({
+export const StructureScene: React.FC<SceneProps> = ({
   ts,
   sceneIndex,
   sceneCount,
@@ -85,7 +85,7 @@ export const DiagramScene: React.FC<SceneProps> = ({
           key={e.id}
           from={boxes[e.from]}
           to={boxes[e.to]}
-          accentHex={e.kind === 'escalate' ? accentHex : '#8c98ad'}
+          accentHex={e.kind === 'feedback' ? accentHex : '#8c98ad'}
           state={edgeState(e.id)}
           enterFrame={revealOf(e.id)}
           kind={e.kind}

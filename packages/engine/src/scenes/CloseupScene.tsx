@@ -10,7 +10,7 @@ import {activeBeatIndex, type SceneProps} from '../engine/spec';
 
 // A deep-dive on real source: a code window whose lines reveal, then highlight
 // range by range as the narration walks through them.
-export const CodeScene: React.FC<SceneProps> = ({
+export const CloseupScene: React.FC<SceneProps> = ({
   ts,
   sceneIndex,
   sceneCount,

@@ -15,7 +15,7 @@ export const Connector: React.FC<{
   accentHex: string;
   state: EdgeState;
   enterFrame: number;
-  kind?: 'flow' | 'escalate';
+  kind?: 'relation' | 'feedback';
   label?: string;
 }> = ({from, to, accentHex, state, enterFrame, kind, label}) => {
   const frame = useCurrentFrame();
@@ -26,8 +26,8 @@ export const Connector: React.FC<{
 
   if (state === 'hidden') return null;
 
-  const escalate = kind === 'escalate';
-  const path = escalate ? curvedPath(from, to) : connectorPath(from, to);
+  const feedback = kind === 'feedback';
+  const path = feedback ? curvedPath(from, to) : connectorPath(from, to);
   const evolve = evolvePath(draw, path.d);
   const dim = state === 'dim';
   const focus = state === 'focus';
@@ -43,7 +43,7 @@ export const Connector: React.FC<{
   const flowOpacity = flowIn * opacity * (focus ? 1 : dim ? 0.4 : 0.7);
 
   // arrowhead direction
-  const ref = escalate
+  const ref = feedback
     ? path.mid
     : (path as ReturnType<typeof connectorPath>).start;
   const end = path.end;
@@ -60,14 +60,14 @@ export const Connector: React.FC<{
         d={path.d}
         fill="none"
         stroke={accentHex}
-        strokeWidth={escalate ? 2.2 : 2.4}
+        strokeWidth={feedback ? 2.2 : 2.4}
         strokeLinecap="round"
-        strokeDasharray={escalate ? '9 9' : evolve.strokeDasharray}
-        strokeDashoffset={escalate ? 0 : evolve.strokeDashoffset}
-        opacity={escalate ? draw * 0.85 * opacity : 0.3 * opacity}
+        strokeDasharray={feedback ? '9 9' : evolve.strokeDasharray}
+        strokeDashoffset={feedback ? 0 : evolve.strokeDashoffset}
+        opacity={feedback ? draw * 0.85 * opacity : 0.3 * opacity}
       />
       {/* flowing data */}
-      {escalate ? null : (
+      {feedback ? null : (
         <path
           d={path.d}
           fill="none"

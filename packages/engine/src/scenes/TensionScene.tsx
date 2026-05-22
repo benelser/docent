@@ -162,7 +162,7 @@ const SketchEdge: React.FC<{
   );
 };
 
-export const SketchScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) => {
+export const TensionScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;

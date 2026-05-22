@@ -10,7 +10,7 @@ import {activeBeatIndex, type SceneProps} from '../engine/spec';
 // A sequence diagram: actors with lifelines, and messages that arrive one beat
 // at a time — the way to show a request, or a unit of data, moving through a
 // system over time.
-export const SequenceScene: React.FC<SceneProps> = ({
+export const WalkthroughScene: React.FC<SceneProps> = ({
   ts,
   sceneIndex,
   sceneCount,
@@ -88,7 +88,7 @@ export const SequenceScene: React.FC<SceneProps> = ({
           const op = (isCurrent ? 1 : 0.42) * intro;
           const x1 = actorX[m.from];
           const x2 = actorX[m.to];
-          const ret = m.kind === 'return';
+          const ret = m.kind === 'reply';
           const self = m.from === m.to;
 
           if (self) {
@@ -231,8 +231,8 @@ export const SequenceScene: React.FC<SceneProps> = ({
               borderRadius: 6,
             }}
           >
-            <span style={{color: m.kind === 'return' ? theme.ink.low : accentHex}}>
-              {m.kind === 'return' ? '◁ ' : '▶ '}
+            <span style={{color: m.kind === 'reply' ? theme.ink.low : accentHex}}>
+              {m.kind === 'reply' ? '◁ ' : '▶ '}
             </span>
             {m.label}
           </div>

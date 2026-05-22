@@ -51,7 +51,7 @@ const narrationOf = (scenes: Spec['scenes']): string =>
 export const runDepthCheck = (spec: Spec): DepthFinding[] => {
   const findings: DepthFinding[] = [];
   const narration = narrationOf(spec.scenes);
-  const sketches = spec.scenes.filter((sc) => sc.type === 'sketch');
+  const tensions = spec.scenes.filter((sc) => sc.type === 'tension');
   const riskNodes = spec.scenes
     .flatMap((sc) => sc.nodes ?? [])
     .filter((n) => n.kind === 'risk');
@@ -71,12 +71,12 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
   });
 
   findings.push({
-    id: 'sketch-scene',
-    label: isPr(spec) ? 'A sketch verdict scene' : 'A sketch failure-modes / trade-offs scene',
-    status: sketches.length > 0 ? 'ok' : 'fail',
-    detail: sketches.length > 0
-      ? `${sketches.length} sketch scene(s) — the reasoning layer`
-      : 'no sketch scene — the reasoning layer is missing',
+    id: 'tension-scene',
+    label: isPr(spec) ? 'A tension verdict scene' : 'A tension failure-modes / trade-offs scene',
+    status: tensions.length > 0 ? 'ok' : 'fail',
+    detail: tensions.length > 0
+      ? `${tensions.length} tension scene(s) — the reasoning layer`
+      : 'no tension scene — the reasoning layer is missing',
   });
 
   if (isPr(spec)) {
@@ -88,7 +88,7 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
         ? `${riskNodes.length} risk node(s)`
         : 'no node flags a risk the PR did not resolve',
     });
-    const verdictText = narrationOf(sketches);
+    const verdictText = narrationOf(tensions);
     findings.push({
       id: 'adjudication',
       label: 'A verdict that adjudicates — a disposition and a residual risk',
@@ -107,7 +107,7 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
         : 'no trade-off or rejected alternative is named — the line between a tour and a review',
     });
     const closing = spec.scenes
-      .filter((sc) => sc.type === 'recap' || sc.type === 'sketch')
+      .filter((sc) => sc.type === 'recap' || sc.type === 'tension')
       .slice(-1);
     findings.push({
       id: 'scorecard',

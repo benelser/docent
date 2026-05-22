@@ -6,7 +6,7 @@ import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import type {SceneProps} from '../engine/spec';
 
-export const TitleScene: React.FC<SceneProps> = ({
+export const FrameScene: React.FC<SceneProps> = ({
   ts,
   sceneIndex,
   sceneCount,

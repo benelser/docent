@@ -13,7 +13,7 @@
   "scenes": [
     {
       "id": "title",
-      "type": "title",
+      "type": "frame",
       "accent": "blue",
       "kicker": "DOCENT // PR REVIEW",
       "title": "The scheduler heap",
@@ -27,7 +27,7 @@
     },
     {
       "id": "context",
-      "type": "diagram",
+      "type": "structure",
       "accent": "cyan",
       "kicker": "01 // WHERE IT LIVES",
       "heading": "A heap on the critical path",
@@ -86,7 +86,7 @@
     },
     {
       "id": "proof",
-      "type": "diagram",
+      "type": "structure",
       "accent": "violet",
       "kicker": "04 // THE EVIDENCE",
       "heading": "Faster is proven. Correct is the question.",
@@ -115,7 +115,7 @@
     },
     {
       "id": "verdict",
-      "type": "sketch",
+      "type": "tension",
       "accent": "amber",
       "kicker": "THE VERDICT",
       "heading": "The ruling",
