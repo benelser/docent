@@ -5,6 +5,7 @@
 
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
 import grammarCheck from '../../../../films/grammar-check.json';
+import linearAlgebra from '../../../../films/linear-algebra.json';
 import manifestJson from '../../../../public/audio/manifest.json';
 
 export type Message = {
@@ -151,6 +152,7 @@ export type FilmSpec = {
 export const FILMS: Record<string, FilmSpec> = {
   'kubernetes-pr': kubernetesPr as FilmSpec,
   'grammar-check': grammarCheck as FilmSpec,
+  'linear-algebra': linearAlgebra as FilmSpec,
 };
 
 const manifest = manifestJson as Record<string, {file: string; seconds: number}>;
