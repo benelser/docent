@@ -50,7 +50,7 @@ subject; it renders a closed grammar of explanation.
 
 ## The scene grammar
 
-The spec is a closed grammar of **explanation moves**, not of software — 13
+The spec is a closed grammar of **explanation moves**, not of software — 15
 scene types, defined in `schema/film.schema.json`:
 
 `frame` (set up the subject) · `structure` (how the parts relate) ·
@@ -58,9 +58,19 @@ scene types, defined in `schema/film.schema.json`:
 step) · `compare` (options side by side) · `quantities` (the numbers) ·
 `chart` (plot data on real axes — a curve, bars that grow, a point on a
 curve) · `probe` (vary one input, follow the consequence) · `tension` (the
-trade-off, where it breaks) · `closeup` (annotate one artifact) ·
-`demonstrate` (play the phenomenon itself) · `recap` (the takeaway) · `diff`
-(what changed — PR films only).
+trade-off, where it breaks) · `closeup` (annotate one code artifact) ·
+`passage` (annotate a plain text — a poem, prose, a primary source — by
+phrase) · `figure` (annotate a still image — a painting, a map, a photograph
+— by region) · `demonstrate` (play the phenomenon itself) · `recap` (the
+takeaway) · `diff` (what changed — PR films only).
+
+Pick the type whose *native shape* is the subject's move — never force-fit. A
+quoted text belongs in `passage`, not `closeup`; an image in `figure`. In a
+`structure` scene an edge has a `kind`: `entails` draws a logical "therefore"
+(a proof or derivation step), `causes` a causal claim with `necessary` or
+`contributing` `strength` — so an argument reads as *necessity*, not mere
+sequence. `progression.flow` can be `linear`, `cycle`, `braided` (two parallel
+tracks — non-linear narrative) or `iterate` (a cycle converging).
 
 ## Intent knobs — how a film should *feel*
 
@@ -105,9 +115,10 @@ up to its target rather than cutting to it. Reach for it when the film *earns*
 a number on screen — a measured result arriving, not merely appearing.
 
 A `structure` node can also *transform*: give it an `as` representation
-(`box` · `matrix` · `vector` · `grid` · `code`), and a later beat's `transform`
-directive re-binds it — the engine morphs the old into the new. Use it when
-one thing genuinely *becomes* another.
+(`box` · `matrix` · `vector` · `grid` · `code` · `equation`), and a later
+beat's `transform` directive re-binds it — the engine morphs the old into the
+new. Use it when one thing genuinely *becomes* another — a vector becoming a
+matrix, or one `equation` rewriting into the next (a derivation step).
 
 ## The depth bar — a film *interrogates*, it does not admire
 
