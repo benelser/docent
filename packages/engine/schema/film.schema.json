@@ -47,6 +47,11 @@
           "description": "quantities scenes — figure cards whose number is a tweened value that counts up across beats",
           "items": {"$ref": "#/$defs/metric"}
         },
+        "nodes": {
+          "type": "array",
+          "description": "structure scenes — the component boxes of the diagram",
+          "items": {"$ref": "#/$defs/node"}
+        },
         "xAxis": {"$ref": "#/$defs/axis", "description": "chart scenes — the horizontal axis domain"},
         "yAxis": {"$ref": "#/$defs/axis", "description": "chart scenes — the vertical axis domain"},
         "series": {
@@ -78,6 +83,77 @@
               {"type": "number"},
               {"$ref": "#/$defs/tween"}
             ]
+          }
+        },
+        "transform": {
+          "type": "array",
+          "description": "morph directive — re-binds named nodes to new definitions; the engine eases old→new across this beat (cross-beat object identity)",
+          "items": {"$ref": "#/$defs/transform"}
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "description": "a component box in a structure diagram. `as` is its representation (default `box`, the labelled Card); a `transform` can morph one node into another representation.",
+      "required": ["id", "label", "col", "row"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "label": {"type": "string"},
+        "sub": {"type": "string"},
+        "tag": {"type": "string"},
+        "col": {"type": "number"},
+        "row": {"type": "number"},
+        "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
+        "emphasis": {"type": "boolean", "description": "legacy — superseded by weight: hero"},
+        "weight": {"enum": ["hero", "primary", "normal", "recede"]},
+        "wide": {"type": "boolean"},
+        "kind": {"enum": ["risk", "rejected"]},
+        "as": {
+          "enum": ["box", "matrix", "vector", "grid", "code"],
+          "description": "the node's representation — `box` is the Card; matrix/vector/grid draw `cells`; `code` a code window"
+        },
+        "cells": {
+          "type": "array",
+          "description": "matrix/vector/grid contents, row-major",
+          "items": {
+            "type": "array",
+            "items": {"type": ["string", "number"]}
+          }
+        }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "description": "one morph — re-binds a node to a new definition. `node` names an existing node id in the scene; `into` is a partial Node whose fields override the node's prior definition.",
+      "required": ["node", "into"],
+      "additionalProperties": false,
+      "properties": {
+        "node": {"type": "string", "description": "the id of an existing node in this scene"},
+        "into": {"$ref": "#/$defs/node-partial", "description": "a partial Node — only the fields it names change"}
+      }
+    },
+    "node-partial": {
+      "type": "object",
+      "description": "a partial Node — every field optional; merged onto the node's prior definition",
+      "additionalProperties": false,
+      "properties": {
+        "label": {"type": "string"},
+        "sub": {"type": "string"},
+        "tag": {"type": "string"},
+        "col": {"type": "number"},
+        "row": {"type": "number"},
+        "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
+        "emphasis": {"type": "boolean"},
+        "weight": {"enum": ["hero", "primary", "normal", "recede"]},
+        "wide": {"type": "boolean"},
+        "kind": {"enum": ["risk", "rejected"]},
+        "as": {"enum": ["box", "matrix", "vector", "grid", "code"]},
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {"type": ["string", "number"]}
           }
         }
       }

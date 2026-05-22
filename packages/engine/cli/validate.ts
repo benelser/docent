@@ -31,6 +31,9 @@ const KNOBS: Record<string, string[]> = {
   // tween directive — a metric's number formatter and a tween's easing curve.
   format: ['int', 'float1', 'percent'],
   ease: ['linear', 'spring', 'accelerate', 'settle'],
+  // morph directive — a node's representation. `box` is the default Card; the
+  // rest are the forms a node can morph into.
+  as: ['box', 'matrix', 'vector', 'grid', 'code'],
 };
 
 // An issue is an error by default. A `warning` is advisory — it flags a spec
@@ -108,9 +111,46 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
     checkKnob(sc, 'cut', at, issues);
     checkKnob(sc, 'palette', at, issues);
     checkKnob(sc, 'treatment', at, issues);
+    // node ids in this scene — the morph `transform` directive must name one.
+    const nodeIds = new Set<string>();
     if (Array.isArray(sc.nodes)) {
       sc.nodes.forEach((n: Record<string, any>, k: number) => {
-        if (n && typeof n === 'object') checkKnob(n, 'weight', `${at}.nodes[${k}]`, issues);
+        if (!n || typeof n !== 'object') return;
+        const nAt = `${at}.nodes[${k}]`;
+        checkKnob(n, 'weight', nAt, issues);
+        // morph — a node's representation (`as`) and its `cells`. `as` is a
+        // closed enum; `cells` must be a row-major array of arrays. The
+        // grid/matrix/vector forms need `cells`; `code`/`box` must not carry it.
+        checkKnob(n, 'as', nAt, issues);
+        if (typeof n.id === 'string') nodeIds.add(n.id);
+        const repr = n.as ?? 'box';
+        if (n.cells !== undefined) {
+          if (
+            !Array.isArray(n.cells) ||
+            !n.cells.every(
+              (row: any) =>
+                Array.isArray(row) &&
+                row.every(
+                  (c: any) => typeof c === 'string' || typeof c === 'number',
+                ),
+            )
+          ) {
+            issues.push({
+              path: `${nAt}.cells`,
+              message: 'cells must be a row-major array of (string | number) arrays',
+            });
+          } else if (repr === 'box' || repr === 'code') {
+            issues.push({
+              path: `${nAt}.cells`,
+              message: `cells has no meaning for as: "${repr}" — only matrix/vector/grid`,
+            });
+          }
+        } else if (repr === 'matrix' || repr === 'vector' || repr === 'grid') {
+          issues.push({
+            path: `${nAt}.cells`,
+            message: `as: "${repr}" needs a cells array`,
+          });
+        }
       });
     }
 
@@ -313,6 +353,37 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
             }
             checkKnob(v, 'ease', sAt, issues);
           }
+        }
+      }
+
+      // transform — the morph directive. Each entry re-binds a node to a new
+      // definition; its `node` must reference a real node id in this scene,
+      // and `into` is a partial Node (the `as` knob, if present, is checked).
+      if (b.transform !== undefined) {
+        if (!Array.isArray(b.transform)) {
+          issues.push({path: `${bAt}.transform`, message: 'transform must be an array'});
+        } else {
+          b.transform.forEach((t: Record<string, any>, k: number) => {
+            const tAt = `${bAt}.transform[${k}]`;
+            if (!t || typeof t !== 'object') {
+              issues.push({path: tAt, message: 'transform entry must be an object {node, into}'});
+              return;
+            }
+            if (typeof t.node !== 'string' || !t.node.trim()) {
+              issues.push({path: `${tAt}.node`, message: 'missing node id to transform'});
+            } else if (!nodeIds.has(t.node)) {
+              issues.push({
+                path: `${tAt}.node`,
+                message: `node "${t.node}" is not a node in this scene`,
+              });
+            }
+            if (!t.into || typeof t.into !== 'object' || Array.isArray(t.into)) {
+              issues.push({path: `${tAt}.into`, message: 'into must be a partial Node object'});
+            } else {
+              checkKnob(t.into, 'as', `${tAt}.into`, issues);
+              checkKnob(t.into, 'weight', `${tAt}.into`, issues);
+            }
+          });
         }
       }
     });

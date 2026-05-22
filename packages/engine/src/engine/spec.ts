@@ -460,6 +460,79 @@ export const tweenValue = (
   return interpolate(p, [0, 1], [start, tw.to]);
 };
 
+// ----- morph — cross-beat object identity -------------------------------
+// A node's definition can be *redefined* by a later beat's `transform`. This
+// resolves, at a given frame, which definition a node is in and how far it
+// has eased between the bracketing pair — the morph analogue of `tweenValue`.
+// It is a pure read over TimedBeat[]: deterministic, no state.
+
+// One state on a node's definition timeline — the (frame, definition) pair
+// the node holds from `fromFrame` until the next state begins.
+export type MorphState = {fromFrame: number; node: Node};
+
+// The ordered definition timeline for one node: its base definition (from
+// frame 0), then each `transform.into` merged onto the prior definition, in
+// timeline order. A node with no transform has a single-state timeline.
+export const morphTimeline = (
+  base: Node,
+  beats: TimedBeat[],
+): MorphState[] => {
+  const states: MorphState[] = [{fromFrame: 0, node: base}];
+  for (const b of beats) {
+    const t = b.transform?.find((tr) => tr.node === base.id);
+    if (!t) continue;
+    const prev = states[states.length - 1].node;
+    // `into` is a partial Node — only named fields change; the id is fixed.
+    states.push({fromFrame: b.from, node: {...prev, ...t.into, id: base.id}});
+  }
+  return states;
+};
+
+// At `frame`, the bracketing (from, to) definitions and the eased progress
+// `p` between them. Before/at the last transition's start `p` climbs 0→1
+// across that transition beat's own duration, then rests. A node with a
+// single-state timeline is always {from: base, to: base, p: 1} — no morph.
+export const resolveMorph = (
+  states: MorphState[],
+  beats: TimedBeat[],
+  frame: number,
+  fps: number,
+): {from: Node; to: Node; p: number} => {
+  if (states.length === 1) {
+    return {from: states[0].node, to: states[0].node, p: 1};
+  }
+  // The most recent state at or before `frame`.
+  let active = 0;
+  for (let i = states.length - 1; i >= 0; i--) {
+    if (frame >= states[i].fromFrame) {
+      active = i;
+      break;
+    }
+  }
+  if (active === 0) {
+    return {from: states[0].node, to: states[0].node, p: 1};
+  }
+  const fromDef = states[active - 1].node;
+  const toDef = states[active].node;
+  // The transition beat owns the morph — `p` eases across its duration, then
+  // rests at 1 (the same ease-across-beat shape as `resolveCamera`).
+  const tBeat = beats.find((b) => b.from === states[active].fromFrame);
+  const dur = tBeat?.durationInFrames ?? 1;
+  const local = frame - states[active].fromFrame;
+  const p =
+    local <= 0
+      ? 0
+      : local >= dur
+        ? 1
+        : spring({frame: local, fps, config: {damping: 200, mass: 1.1}});
+  return {from: fromDef, to: toDef, p};
+};
+
+// Whether any beat in this scene transforms any node — the fast-path guard.
+// When false, StructureScene takes the existing unchanged code path.
+export const hasTransform = (beats: TimedBeat[]): boolean =>
+  beats.some((b) => Array.isArray(b.transform) && b.transform.length > 0);
+
 export type FilmMeta = FilmSpec['meta'];
 
 // Every scene template receives exactly this — including the film's meta, so a

@@ -6,12 +6,26 @@ import {Card, type CardState} from '../components/Card';
 import {Connector, type EdgeState} from '../components/Connector';
 import {Pulse} from '../components/Pulse';
 import {Narration} from '../components/Narration';
+import {NodeRepresentation} from '../components/NodeRepr';
 import {nodeBox, type Box} from '../engine/layout';
 import {resolveCamera} from '../engine/camera';
-import {activeBeatIndex, type SceneProps} from '../engine/spec';
+import {
+  activeBeatIndex,
+  hasTransform,
+  morphTimeline,
+  resolveMorph,
+  type Node,
+  type SceneProps,
+} from '../engine/spec';
 
 // Renders a node-and-edge diagram, revealed and focused beat by beat, with
 // optional flow pulses. This one template carries most architecture films.
+//
+// Morph — a `transform` directive re-binds a node to a new definition; the
+// engine eases old→new across that beat (the bounding box tweens, the
+// representations cross-fade). Nodes that are *not* transform targets stay on
+// the existing, unchanged code path, so every transform-free film renders
+// byte-identically.
 export const StructureScene: React.FC<SceneProps> = ({
   ts,
   sceneIndex,
@@ -65,6 +79,99 @@ export const StructureScene: React.FC<SceneProps> = ({
   // The camera leans toward focus — clamped so the diagram never leaves frame.
   const cam = resolveCamera(ts.beats, active, boxes, frame, fps);
 
+  // ----- morph — the set of node ids any beat transforms ------------------
+  // When empty, every node below takes the existing unchanged <Card> path.
+  const morphsHere = hasTransform(ts.beats);
+  const morphTargets = new Set<string>();
+  if (morphsHere) {
+    ts.beats.forEach((b) =>
+      b.transform?.forEach((t) => morphTargets.add(t.node)),
+    );
+  }
+
+  // Render one node — either as the existing Card, or, for a morph target,
+  // as a container-tweened box with the old→new representations cross-faded.
+  const renderNode = (n: Node): React.ReactNode => {
+    // Fast path — a non-transformed node is exactly the original <Card>.
+    if (!morphTargets.has(n.id)) {
+      return (
+        <Card
+          key={n.id}
+          box={boxes[n.id]}
+          label={n.label}
+          sub={n.sub}
+          tag={n.tag}
+          accentHex={accent(n.accent ?? scene.accent)}
+          emphasis={n.emphasis}
+          weight={n.weight}
+          state={nodeState(n.id)}
+          enterFrame={revealOf(n.id)}
+        />
+      );
+    }
+
+    // Morph path — resolve the bracketing (from, to) definitions and the
+    // eased progress p between them at this frame.
+    const states = morphTimeline(n, ts.beats);
+    const {from: fromDef, to: toDef, p} = resolveMorph(
+      states,
+      ts.beats,
+      frame,
+      fps,
+    );
+    const state = nodeState(n.id);
+    if (state === 'hidden') return null;
+
+    // The container box tweens continuously between the two definitions'
+    // geometry — the bounding box interpolates, so the morph reads as one
+    // object changing rather than two objects swapping.
+    const fromBox = nodeBox(fromDef, cols, rows);
+    const toBox = nodeBox(toDef, cols, rows);
+    const box: Box = {
+      cx: fromBox.cx + (toBox.cx - fromBox.cx) * p,
+      cy: fromBox.cy + (toBox.cy - fromBox.cy) * p,
+      w: fromBox.w + (toBox.w - fromBox.w) * p,
+      h: fromBox.h + (toBox.h - fromBox.h) * p,
+    };
+
+    // One representation, drawn into the tweened container at a given
+    // opacity. `box` stays the existing <Card>; others use NodeRepresentation.
+    const repr = (def: Node, opacity: number): React.ReactNode => {
+      if (opacity <= 0) return null;
+      const as = def.as ?? 'box';
+      const inner =
+        as === 'box' ? (
+          <Card
+            box={box}
+            label={def.label}
+            sub={def.sub}
+            tag={def.tag}
+            accentHex={accent(def.accent ?? scene.accent)}
+            emphasis={def.emphasis}
+            weight={def.weight}
+            state={state}
+            enterFrame={revealOf(n.id)}
+          />
+        ) : (
+          <NodeRepresentation
+            box={box}
+            node={def}
+            accentHex={accent(def.accent ?? scene.accent)}
+          />
+        );
+      return <div style={{opacity}}>{inner}</div>;
+    };
+
+    // The cross-fade — old representation at 1−p, new at p. When p is 0 or 1
+    // exactly one representation is drawn, so a resting node is crisp.
+    return (
+      <React.Fragment key={n.id}>
+        {repr(fromDef, 1 - p)}
+        {repr(toDef, p)}
+      </React.Fragment>
+    );
+  };
+
   return (
     <SceneFrame
       accentHex={accentHex}
@@ -93,20 +200,7 @@ export const StructureScene: React.FC<SceneProps> = ({
         />
       ))}
 
-      {nodes.map((n) => (
-        <Card
-          key={n.id}
-          box={boxes[n.id]}
-          label={n.label}
-          sub={n.sub}
-          tag={n.tag}
-          accentHex={accent(n.accent ?? scene.accent)}
-          emphasis={n.emphasis}
-          weight={n.weight}
-          state={nodeState(n.id)}
-          enterFrame={revealOf(n.id)}
-        />
-      ))}
+      {nodes.map((n) => renderNode(n))}
 
       {pulses.map(([f, t], i) => {
         if (!boxes[f] || !boxes[t]) return null;

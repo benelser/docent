@@ -1722,5 +1722,17 @@
   "grammar-check/chart-2": {
     "file": "audio/grammar-check/chart-2.mp3",
     "seconds": 6.1
+  },
+  "morph-scratch/morph-1": {
+    "file": "audio/morph-scratch/morph-1.mp3",
+    "seconds": 4.7
+  },
+  "morph-scratch/morph-2": {
+    "file": "audio/morph-scratch/morph-2.mp3",
+    "seconds": 4.025
+  },
+  "morph-scratch/morph-3": {
+    "file": "audio/morph-scratch/morph-3.mp3",
+    "seconds": 4.625
   }
 }
