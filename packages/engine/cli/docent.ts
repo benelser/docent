@@ -19,6 +19,7 @@ import {scorePr} from './score';
 import {hermetic} from './hermetic';
 import {depthcheck} from './depthcheck';
 import {survey} from './survey';
+import {authorTreatment, treatmentToSpec} from './treatment';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -28,7 +29,7 @@ const opt = (n: string): string | undefined => {
   return i >= 0 ? argv[i + 1] : undefined;
 };
 // positionals — args that are neither a --flag nor a value consumed by one.
-const VALUE_FLAGS = new Set(['scale', 'still', 'mode', 'subsystem', 'pr', 'agent', 'id']);
+const VALUE_FLAGS = new Set(['scale', 'still', 'mode', 'subsystem', 'pr', 'agent', 'id', 'feedback', 'subject']);
 const positionals: string[] = [];
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
@@ -135,16 +136,34 @@ const main = async (): Promise<number> => {
     }
 
     case 'survey': {
-      const repo = positionals[0] ?? die('usage: docent survey <repo> [--mode pr|ar] [--subsystem X] [--pr N] [--agent claude]');
-      const mode = (opt('mode') as 'pr' | 'ar') ?? 'ar';
+      const subject =
+        positionals[0] ??
+        die('usage: docent survey <subject> [--mode pr|ar|ex] [--subsystem X] [--pr N] [--agent claude] [--id X]');
+      const mode = (opt('mode') as 'pr' | 'ar' | 'ex') ?? 'ar';
       const agent = (opt('agent') as 'claude' | 'codex') ?? 'claude';
       const subsystem = opt('subsystem');
       const pr = opt('pr');
-      const key = basename(repo).replace(/\.git$/, '').toLowerCase();
+      // A film id slugged from the subject — works for a repo path, a wiki
+      // directory, a single file, or a URL.
+      const key = basename(subject)
+        .replace(/\.(git|html?|md|json|txt)$/i, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
       const id =
         opt('id') ??
         (mode === 'pr' ? `${key}-pr` : subsystem ? `${key}-${subsystem.toLowerCase()}` : key);
-      return survey({repo, mode, subsystem, pr, agent, id});
+      return survey({repo: subject, mode, subsystem, pr, agent, id});
+    }
+
+    case 'treatment': {
+      const id =
+        positionals[0] ??
+        die('usage: docent treatment <id> [--feedback "..."] [--to-spec] [--agent claude]');
+      const agent = (opt('agent') as 'claude' | 'codex') ?? 'claude';
+      return flag('to-spec')
+        ? treatmentToSpec({id, agent})
+        : authorTreatment({id, agent, subject: opt('subject'), feedback: opt('feedback')});
     }
 
     case 'hermetic': {
@@ -159,7 +178,8 @@ const main = async (): Promise<number> => {
       console.log('  docent pr     <repo> <pr#>        PR-review film');
       console.log('  docent ar     <repo> [subsystem]  architecture-review film');
       console.log('  docent score  <owner/repo> <pr#>  the triggering matrix — no render');
-      console.log('  docent survey <repo> [--mode]     headless agent survey → a film spec');
+      console.log('  docent survey <subject> [--mode]  headless survey → a spec (pr/ar/ex)');
+      console.log('  docent treatment <id> [--to-spec] scope a film — human in the loop');
       console.log('  docent depthcheck <film>          the depth contract over a spec');
       console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
       console.log('  docent env                        resolved paths and versions');

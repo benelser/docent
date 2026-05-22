@@ -1,43 +1,65 @@
 # docent — the review method
 
-You turn what can be learned about a **codebase** or a **pull request** into a
-narrated, animated explainer — a short film that *shows* and *explains*
-software the way a museum docent walks a visitor through an exhibit.
+You turn what can be learned about a subject — a **codebase**, a **pull
+request**, or any **idea worth explaining** — into a narrated, animated
+explainer: a short film that *shows* and *explains*, the way a museum docent
+walks a visitor through an exhibit.
 
-docent works in two modes:
+docent works in three modes:
 
-- **PR review** (`docent pr <repo> <pr#>`) — a pull request reviewed the way a
-  principled engineer would: why the change exists, whether the design is
-  sound, the core before → after, what ripples, what could break, a verdict.
-  The killer case is the sprawling AI-agent PR no human can review as a wall
-  of text: your job is **triage** — find the load-bearing 5%, review *that*
-  with depth, and say what you deprioritized and why.
-- **Architecture review** (`docent ar <repo> [subsystem]`) — the whole system,
-  or one subsystem: the components, how control and data flow, the idioms, and
-  — at depth — the failure modes, the limits, and the trade-offs. When a
-  subsystem is named, resolve it to a concrete code boundary first — section 0
-  of the survey template, language-aware.
+- **PR review** (`--mode pr`) — a pull request reviewed the way a principled
+  engineer would: why the change exists, whether the design is sound, the core
+  before → after, what ripples, what could break, a verdict. The killer case
+  is the sprawling AI-agent PR no human can review as a wall of text: your job
+  is **triage** — find the load-bearing 5%, review *that* with depth, and say
+  what you deprioritized and why.
+- **Architecture review** (`--mode ar [--subsystem X]`) — the whole system, or
+  one subsystem: the components, how control and data flow, the idioms, and —
+  at depth — the failure modes, the limits, the trade-offs. When a subsystem
+  is named, resolve it to a concrete code boundary first — section 0 of the
+  survey template, language-aware.
+- **Explainer** (`--mode ex`) — a *non-code* subject: a book chapter, an essay,
+  a blog post, a wiki. The subject is content to be explained, not code to
+  trace. Survey it with `prompts/survey-explainer.md`; interrogate the *idea* —
+  where it is counterintuitive, the misconception it must kill, where it
+  breaks — never merely relay it.
 
 ## The core principle
 
 **Content is data; presentation is the engine.** You never write animation
 code. You survey the subject and author one declarative JSON file — a *film
 spec* — and the engine renders it. The engine knows nothing about any specific
-repository.
+subject; it renders a closed grammar of explanation.
 
 ## The workflow
 
-1. **Survey.** Read the real code, the real diff, the real history — never
-   guess. Fill in `prompts/survey-template.md`; its mandatory sections force
-   the depth (triage, hard parts, the alternative not taken, whether the tests
-   prove the claim, the blast radius, the verdict inputs). Write findings to
-   `analysis/<id>.md`.
-2. **Author the spec.** Write `films/<id>.json`. It must validate against
-   `schema/film.schema.json` and clear `docent depthcheck` — a risk node, a
-   quantified claim, a failure-modes scene, and a verdict that *adjudicates*.
-3. **Self-review.** Run the depth-review sub-agent (`agents/depth-review.md`)
-   on the draft spec; revise until it passes.
-4. **Build.** `docent build <id>` runs the cascade and renders the film.
+1. **Survey.** Read the real source — code, diff, history, or text — never
+   guess. Fill in the survey template for the mode: `prompts/survey-template.md`
+   for code (pr/ar), `prompts/survey-explainer.md` for an explainer (ex). Its
+   mandatory sections force the depth. Write findings to `analysis/<id>.md`.
+2. **Treatment** *(optional, human-in-the-loop)*. `docent treatment <id>` turns
+   the survey notes into a plain-language outline — `treatments/<id>.md` — that
+   the human reviews and steers (scope, emphasis, framing) without ever seeing
+   the spec. `docent treatment <id> --to-spec` then compiles the approved
+   treatment to the spec.
+3. **Author the spec.** Write `films/<id>.json`. It must validate against
+   `schema/film.schema.json` and clear `docent depthcheck`.
+4. **Self-review.** Run the depth-review sub-agent (`agents/depth-review.md`)
+   on the draft; revise until it passes.
+5. **Build.** `docent build <id>` runs the cascade and renders the film.
+
+## The scene grammar
+
+The spec is a closed grammar of **explanation moves**, not of software — 12
+scene types, defined in `schema/film.schema.json`:
+
+`frame` (set up the subject) · `structure` (how the parts relate) ·
+`progression` (stages along a path) · `walkthrough` (one instance, step by
+step) · `compare` (options side by side) · `quantities` (the numbers) ·
+`probe` (vary one input, follow the consequence) · `tension` (the trade-off,
+where it breaks) · `closeup` (annotate one artifact) · `demonstrate` (play the
+phenomenon itself) · `recap` (the takeaway) · `diff` (what changed — PR films
+only).
 
 ## The depth bar — a film *interrogates*, it does not admire
 
@@ -45,10 +67,8 @@ The line between a tour and a review: a tour explains the happy path; a review
 goes to the edges. Every film must visibly *reason* — including reaching
 conclusions uncomfortable for the subject. A verdict is not a compliment: it
 states a disposition, names the single biggest residual risk, and says what
-you would watch in production. Allow a non-clean verdict.
+you would watch. Allow a non-clean verdict.
 
-The spec format (scene types, beats, directives) is the JSON Schema at
-`@docent/engine/schema/film.schema.json`. Keep each scene legible: 5–9 nodes,
-one idea per scene; a film is typically 6–8 scenes and earns its keep with a
-`sequence` scene (flow over time), a `code` deep-dive, and a `sketch` scene
-(the reasoning layer — trade-offs, failure modes, the verdict).
+Keep each scene legible — one idea per scene; a film is typically 6–8 scenes,
+and earns its keep with a `tension` scene (the reasoning layer — trade-offs,
+failure modes, the verdict) and at least one quantified claim.
