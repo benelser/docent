@@ -1,0 +1,26 @@
+# docent-agent — the docent agent layer, distributed via APM.
+#
+# docent is, at its core, a method for a coding agent to author a film spec;
+# the engine (@docent/engine) renders it. This package IS that method — the
+# review instructions, the structured survey prompt, and the depth-review
+# sub-agent — packaged so it installs into any APM-supported coding agent
+# (Claude Code, Codex, Cursor, ...) via `apm install` + `apm compile`.
+#
+# The decoupling boundary is the film spec JSON Schema
+# (../engine/schema/film.schema.json). The agent's only job is to produce a
+# spec that satisfies that contract and clears `docent depthcheck`. Any agent
+# that does so works — docent is not bound to Claude.
+name: docent-agent
+version: 2.0.0
+description: >-
+  docent review skills, the structured survey prompt, and the depth-review
+  sub-agent — so docent rides inside any coding agent and authors film specs
+  the docent engine renders.
+author: benelser
+license: MIT
+dependencies:
+  apm: []
+  mcp: []
+devDependencies:
+  apm: []
+scripts: {}

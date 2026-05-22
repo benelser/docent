@@ -1,0 +1,9 @@
+{
+  "name": "docent-agent",
+  "version": "2.0.0",
+  "description": "The docent agent layer — review skills, the structured survey prompt, and the depth-review sub-agent.",
+  "author": {
+    "name": "benelser"
+  },
+  "license": "MIT"
+}
