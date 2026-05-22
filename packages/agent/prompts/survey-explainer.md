@@ -83,6 +83,12 @@ worth nothing. Distinguish:
 Treat a confident, unsupported central claim as a yellow flag, and say so in
 the verdict.
 
+**Anchor each claim.** For every claim the film will make, name the specific
+source-anchor — a page, paragraph, section, or short quoted phrase that
+locates it in the source. The survey records the anchor, and the spec must
+carry it through into the narration. A claim with no named anchor is treated
+as unearned.
+
 ## 5. The scope of the claim — where the idea does not apply
 
 Every real idea has a boundary. Name at least one place the idea **does not

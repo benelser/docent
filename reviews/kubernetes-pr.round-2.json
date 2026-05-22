@@ -1,0 +1,53 @@
+{
+  "pass": false,
+  "scores": [
+    {
+      "dimension": "triage",
+      "score": 4,
+      "note": "The film stays focused on the load-bearing heap redesign and hot-path payoff instead of flattening the PR into a file-by-file tour."
+    },
+    {
+      "dimension": "where-wrong",
+      "score": 2,
+      "note": "It names weird-input and at-scale risks, but both are carried by speculative future-caller and keyIndex-drift stories the survey notes do not actually establish."
+    },
+    {
+      "dimension": "tests-prove-it",
+      "score": 3,
+      "note": "It now ties named tests to specific behaviors, but then overreaches by claiming a missing invariant proof that the notes never identify as absent."
+    },
+    {
+      "dimension": "the-numbers",
+      "score": 5,
+      "note": "The film uses real quantities from the notes—O(log n), 100/1000/5000-pod benchmarks, 24-46% wins, and roughly halved allocations—to reason about why this change matters."
+    },
+    {
+      "dimension": "the-trade-off",
+      "score": 4,
+      "note": "The old queue-of-keys design versus the new pointer-slice plus keyIndex invariant is a real trade from the notes, and the cost is stated clearly."
+    },
+    {
+      "dimension": "verdict-adjudicates",
+      "score": 3,
+      "note": "The closing scene does rule, name a residual risk, and say what to watch, but its core caution is built on unsupported evidence rather than the survey's actual ground truth."
+    }
+  ],
+  "critiques": [
+    {
+      "target": "hotpath-4",
+      "problem": "\"If a future direct caller -- or a version-skewed path outside container-slash-heap -- ever invokes those methods with an invalid index\" manufactures the weird-input case. The notes only establish that `container/heap` is the caller today and that the public `Heap[T]` API and scheduler-queue callers were unchanged.",
+      "fix": "Keep the failure analysis at the supported boundary: say the removed guards are dead code on the real `container/heap` path, and if you want to note a cost, frame it as reduced defense-in-depth against internal misuse rather than inventing a version-skew caller the notes never name."
+    },
+    {
+      "target": "proof-4 / verdict-3",
+      "problem": "\"None of those named tests is described as asserting after every mutation that keyIndex still matches the queue entries\" and the follow-on request for a new invariant assertion turn an unsupported gap into the film's main residual risk. The notes say the tests were substantially rewritten, updated to the new internals (`queue[0].key`, `keyIndex[\"baz\"]`), and summarize them as locking in heap invariants.",
+      "fix": "Use the evidence the notes actually give: `TestHeapPopOrder` pins ordering, `TestHeapDeleteMiddle` and `TestHeapUpdatePriority` cover mutation paths, `TestHeapLargeScale` broadens churn, and the updated assertions show the new fields are being checked. If you still want skepticism, anchor it in a real note-backed limit instead of a missing invariant proof the notes do not claim is absent."
+    },
+    {
+      "target": "verdict-4",
+      "problem": "\"If keyIndex ever drifts from queue, the scheduler can return the wrong pod or panic\" and \"if scheduler p99 on the G C E one-hundred performance job does not move\" ask the verdict to adjudicate on failure and observability stories the survey notes never establish. The notes only say the refactor was validated against the `kubernetes-e2e-gce-100-performance` job.",
+      "fix": "Make the ruling rest on supported facts: approve the internal hot-path refactor because the API surface stayed unchanged, the microbenchmarks show 24-46% wins with fewer allocations, and it cleared the cited performance job. If you want a caution, tie it to the explicit defense-in-depth removal in `Less`/`Swap`, not a speculative keyIndex drift or p99 watchpoint."
+    }
+  ],
+  "summary": "This draft is no longer an undifferentiated tour of the diff: it finds the real redesign, names the hot-path payoff, and uses concrete numbers. But its sharpest review beats are manufactured rather than evidenced by the survey notes, especially around the supposed missing invariant proof and the version-skew or p99 failure stories. Because the film's interrogation is not fully faithful to its own ground truth, it should be revised."
+}

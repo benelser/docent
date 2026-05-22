@@ -72,6 +72,12 @@ Point at the *specific* behavior the change claims and ask: is there a test
 that would fail if it regressed? Naming that tests exist is worth nothing.
 Treat "tests rewritten alongside the change they protect" as a yellow flag.
 
+**Cite by name.** For each test claim the film will make, name the specific
+test by `path::function` (e.g. `pkg/scheduler/internal_test.go::TestPopOrder`).
+"The tests verify it" is rejected — the survey records the named test, and the
+spec must carry it through into the narration. A claim with no named
+test-anchor is treated as unproven.
+
 ## 6. Blast radius
 
 Wire formats, cache versions, ABIs, schemas, public API: does it round-trip

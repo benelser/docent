@@ -65,7 +65,7 @@
         {"id": "redesign-1", "narration": "Here is the redesign. Before, the heap stored a slice of string keys -- plus a side map, from each key to its item.", "highlight": [3, 6]},
         {"id": "redesign-2", "narration": "The consequence: every comparison between two heap positions performed two hash-map lookups, purely to find the objects it was meant to compare.", "highlight": [5, 6]},
         {"id": "redesign-3", "narration": "After, the queue holds the item pointers directly. The heap order lives in the slice itself -- there is no indirection left to resolve.", "highlight": [7, 10]},
-        {"id": "redesign-4", "narration": "Was a pointer slice the only option? No. An open-addressed index, or a generational slab, were both on the table. Pointers won because they are the simplest thing that removes the indirection -- and Go's garbage collector makes them safe to hold. The keyIndex map stays, but only for lookups by key, never on the compare path.", "highlight": [9, 10]}
+        {"id": "redesign-4", "narration": "The trade is structural, not exotic. The old queue-of-keys design paid two map lookups inside Less and Swap, but it also meant the heap order and the key lookup table could not drift apart. The new pointer slice removes those lookups from the hot path, and keeps keyIndex only for key-based operations. The cost is a new invariant: every mutating path now has to keep keyIndex and queue in lockstep.", "highlight": [9, 10]}
       ]
     },
     {
@@ -81,7 +81,7 @@
         {"id": "hotpath-1", "narration": "And here is the payoff, in the comparison function itself. Before, Less was seven lines -- a bounds check, two map lookups, two not-found guards, and finally the compare.", "highlight": [3, 9]},
         {"id": "hotpath-2", "narration": "Every one of those lookups is a hash, a probe, a pointer-chase -- paid on every single comparison, order-log-n times per operation.", "highlight": [5, 8]},
         {"id": "hotpath-3", "narration": "After, Less is one line. A direct dereference into the slice, and the compare. The hash-map lookups are simply gone.", "highlight": [10, 11]},
-        {"id": "hotpath-4", "narration": "But notice what else left: the bounds checks. The reasoning is that Go's container heap never passes an out-of-range index -- true, today. It does mean the change quietly traded a little defense-in-depth for speed: it is now load-bearing that every caller goes through container-slash-heap. A future caller that indexes Less directly used to get a safe false; now it panics. Small -- but a reviewer should say it out loud.", "highlight": [10, 11]}
+        {"id": "hotpath-4", "narration": "But notice what else left: the bounds guards. On the real Kubernetes path, that is dead code removal, because container-slash-heap is the caller and it does not pass Less or Swap an out-of-range index. The cost is narrower than a behavior change but still real: the heap keeps less defense-in-depth against internal misuse, because a bad index now panics instead of quietly returning false.", "highlight": [10, 11]}
       ]
     },
     {
@@ -90,27 +90,33 @@
       "accent": "violet",
       "kicker": "04 // THE EVIDENCE",
       "heading": "Faster is proven. Correct is the question.",
-      "grid": {"cols": 3, "rows": 3},
+      "grid": {"cols": 4, "rows": 3},
       "nodes": [
-        {"id": "bench", "label": "Benchmarked", "sub": "100 / 1,000 / 5,000 pods", "col": 1, "row": 1, "accent": "violet", "emphasis": true},
-        {"id": "pop", "label": "Pop", "sub": "−43%", "col": 0, "row": 0, "accent": "green"},
-        {"id": "fix", "label": "AddOrUpdate / Fix", "sub": "−45%", "col": 1, "row": 0, "accent": "cyan"},
-        {"id": "mixed", "label": "Mixed workload", "sub": "−46%", "col": 2, "row": 0, "accent": "amber"},
-        {"id": "alloc", "label": "Allocations", "sub": "≈ halved", "col": 0, "row": 2, "accent": "blue"},
-        {"id": "leak", "label": "A leak fixed", "sub": "Pop nils the freed slot", "col": 2, "row": 2, "accent": "rose"}
+        {"id": "bench", "label": "Evidence in the PR", "sub": "benchmarks + rewritten heap tests", "col": 1.5, "row": 1, "accent": "violet", "emphasis": true, "wide": true},
+        {"id": "pop", "label": "Pop", "sub": "16.7ms → 9.6ms   −43%", "col": 0, "row": 0, "accent": "green", "wide": true},
+        {"id": "fix", "label": "AddOrUpdate / Fix", "sub": "2.7ms → 1.5ms   −45%", "col": 1, "row": 0, "accent": "cyan", "wide": true},
+        {"id": "mixed", "label": "Mixed workload", "sub": "15.1ms → 8.2ms   −46%", "col": 2, "row": 0, "accent": "amber", "wide": true},
+        {"id": "alloc", "label": "Allocations", "sub": "Push / Mixed ≈ halved", "col": 3, "row": 0, "accent": "blue", "wide": true},
+        {"id": "poptest", "label": "TestHeapPopOrder", "sub": "ordering stays intact", "col": 0, "row": 2, "accent": "green", "wide": true},
+        {"id": "muttest", "label": "TestHeapDeleteMiddle / TestHeapUpdatePriority", "sub": "mutation paths exercised", "col": 1, "row": 2, "accent": "cyan", "wide": true},
+        {"id": "scaletest", "label": "TestHeapLargeScale", "sub": "broader churn under load", "col": 2, "row": 2, "accent": "amber", "wide": true},
+        {"id": "leak", "label": "Pop nils tail slot", "sub": "latent leak fixed", "col": 3, "row": 2, "accent": "rose", "wide": true}
       ],
       "edges": [
         {"id": "e-p", "from": "bench", "to": "pop"},
         {"id": "e-f", "from": "bench", "to": "fix"},
         {"id": "e-m", "from": "bench", "to": "mixed"},
         {"id": "e-al", "from": "bench", "to": "alloc"},
+        {"id": "e-pt", "from": "bench", "to": "poptest"},
+        {"id": "e-mt", "from": "bench", "to": "muttest"},
+        {"id": "e-st", "from": "bench", "to": "scaletest"},
         {"id": "e-l", "from": "bench", "to": "leak"}
       ],
       "beats": [
-        {"id": "proof-1", "narration": "Does it pay off? The author benchmarked it -- at heap sizes of one hundred, one thousand, and five thousand pods.", "reveal": ["bench"], "focus": ["bench"]},
-        {"id": "proof-2", "narration": "Pop, forty-three percent faster. Fix and AddOrUpdate, forty-five. The mixed workload, forty-six. Allocations per operation roughly halved -- real garbage-collector relief on a hot path.", "reveal": ["pop", "fix", "mixed", "alloc", "e-p", "e-f", "e-m", "e-al"]},
-        {"id": "proof-3", "narration": "But hold the applause. Benchmarks prove the code is faster. They do not prove it is correct. And the test suite was rewritten in this very same pull request -- the safety net was re-woven at the same moment as the thing it protects. A careful reviewer treats that as a mild yellow flag.", "focus": ["bench"]},
-        {"id": "proof-4", "narration": "The real question is whether the new table-driven tests still pin the heap's invariants -- pop-order, and the agreement between keyIndex and queue -- and not merely the speed. To its credit the PR also fixes a latent leak: Pop now nils the freed slot. And the whole change was validated on the hundred-node performance job.", "reveal": ["leak", "e-l"], "focus": ["leak"]}
+        {"id": "proof-1", "narration": "Does it pay off? The author benchmarked it at heap sizes of one hundred, one thousand, and five thousand pods, and rewrote the heap tests in the same pull request.", "reveal": ["bench"], "focus": ["bench"]},
+        {"id": "proof-2", "narration": "The speedup is real. Pop drops from sixteen-point-seven milliseconds to nine-point-six, AddOrUpdate and Fix from two-point-seven to one-point-five, Mixed from fifteen-point-one to eight-point-two. Push and Mixed allocations are roughly halved, which matters on a garbage-collected hot path.", "reveal": ["pop", "fix", "mixed", "alloc", "e-p", "e-f", "e-m", "e-al"]},
+        {"id": "proof-3", "narration": "Now the correctness evidence. TestHeapPopOrder proves the ordering claim directly. TestHeapDeleteMiddle and TestHeapUpdatePriority exercise the mutation paths most likely to go wrong. TestHeapLargeScale adds broader churn, which matters because the safety net was rebuilt in the same pull request as the refactor.", "reveal": ["poptest", "muttest", "scaletest", "e-pt", "e-mt", "e-st"], "focus": ["poptest", "muttest", "scaletest"]},
+        {"id": "proof-4", "narration": "That is stronger than saying 'there are tests.' The rewritten assertions now inspect the new representation directly -- queue zero dot key and keyIndex for baz -- while the PR also fixes a latent leak by nil-ing the freed slot before truncation. So the evidence is specific: named behaviors are pinned in unit tests, and the refactor was also exercised on the G C E one-hundred performance job.", "reveal": ["leak", "e-l"], "focus": ["leak", "poptest", "muttest", "scaletest"]}
       ]
     },
     {
@@ -121,17 +127,17 @@
       "heading": "The ruling",
       "grid": {"cols": 3, "rows": 3},
       "nodes": [
-        {"id": "approve", "label": "Approve", "sub": "a clean, measured refactor", "col": 1, "row": 0, "accent": "green", "emphasis": true},
-        {"id": "risk", "label": "Risk — keyIndex ⇄ queue", "sub": "must stay in sync through every Swap", "col": 1, "row": 1, "kind": "risk"},
-        {"id": "before", "label": "Before merge", "sub": "assert the invariant in the tests", "col": 0, "row": 2, "accent": "amber"},
-        {"id": "watch", "label": "Watch in prod", "sub": "scheduler p99 at scale, not the microbench", "col": 2, "row": 2, "accent": "cyan"}
+        {"id": "approve", "label": "Approve", "sub": "but not as a free compliment", "col": 1, "row": 0, "accent": "green", "emphasis": true},
+        {"id": "risk", "label": "Risk — less guardrail", "sub": "bad internal indices now fail harder", "col": 1, "row": 1, "kind": "risk"},
+        {"id": "before", "label": "Why approve", "sub": "API stable; tests hit the new fields", "col": 0, "row": 2, "accent": "amber", "wide": true},
+        {"id": "watch", "label": "Watch next", "sub": "keep container/heap the only index source", "col": 2, "row": 2, "accent": "cyan", "wide": true}
       ],
       "edges": [],
       "beats": [
         {"id": "verdict-1", "narration": "So -- the verdict. And a verdict is not a compliment. Approve: this is a clean, genuinely well-measured refactor of a real hot path, with no public A-P-I change. But here is what I would still say in the review.", "reveal": ["approve"], "focus": ["approve"]},
-        {"id": "verdict-2", "narration": "The real risk is not correctness today. It is the new invariant. keyIndex and queue must now stay perfectly in step through every single Swap. The old key-and-map design made that kind of desync structurally impossible -- this pull request trades that structural guarantee away, for speed.", "reveal": ["risk"], "focus": ["risk"]},
-        {"id": "verdict-3", "narration": "So before I would be fully comfortable, I would want one thing: the rewritten tests to assert that invariant directly -- that keyIndex agrees with queue after every mutation -- not merely re-check pop-order.", "reveal": ["before"], "focus": ["before"]},
-        {"id": "verdict-4", "narration": "And in production I would watch scheduler p99 latency on the large-node job -- the real signal -- not the microbenchmark in the pull request. The code lands with sig-scheduling, the right owners to hold it. The disposition: approve -- with that one invariant test asked for, first.", "reveal": ["watch"], "focus": ["watch"]}
+        {"id": "verdict-2", "narration": "The single biggest residual risk is smaller and more concrete than a broken heap invariant. Less and Swap now trust container-slash-heap completely. That is valid for the real call path the survey found, but it removes the old false-return guard, so internal misuse would fail harder.", "reveal": ["risk"], "focus": ["risk"]},
+        {"id": "verdict-3", "narration": "Why still approve? Because the production surface stayed put. activeQueue, backoffQueue, and schedulingQueue needed no edits, and the rewritten tests reach into the new representation directly -- queue zero dot key and keyIndex for baz -- while covering pop order, delete, update-priority, and large-scale churn.", "reveal": ["before"], "focus": ["before"]},
+        {"id": "verdict-4", "narration": "So the ruling is approve. This is an internal hot-path refactor with no public A-P-I change, measured wins of twenty-four to forty-six percent, roughly half the allocations on Push and Mixed, and a pass on the kubernetes E two E G C E one-hundred performance job. The thing to watch is narrower: future internal edits must preserve container-slash-heap as the only source of indices into Less and Swap, because that guardrail is now gone.", "reveal": ["watch"], "focus": ["watch", "risk"]}
       ]
     }
   ]

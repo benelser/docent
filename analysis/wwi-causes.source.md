@@ -1,5 +1,5 @@
 <!-- docent explainer source -->
-<!-- fetched: 2026-05-22T21:07:55.535Z -->
+<!-- fetched: 2026-05-22T21:54:14.019Z -->
 <!-- url: https://en.wikipedia.org/wiki/Causes_of_World_War_I -->
 # Causes of World War I - Wikipedia
 
