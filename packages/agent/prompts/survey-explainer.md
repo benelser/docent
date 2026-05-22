@@ -110,14 +110,21 @@ there is no competing view, the idea was never tested. ("This account beats X
 because Z; it costs W.") A film that presents one idea as the only idea is a
 brochure.
 
-## 7. Verdict inputs — a takeaway that adjudicates
+## 7. Verdict inputs — the recap must *rule*, not restate
 
-A non-code film still ends on a stated position, never "this is interesting."
+A non-code film still ends on a stated position, never "this is interesting"
+and never a restatement of its own claims. **Approving labels — "sound",
+"earned", "grounded" — are rejected**: they read like a verdict but make no
+ruling. State the verdict by saying three concrete things:
 
 - **Disposition** — is the idea, as presented, *sound* / *sound with caveats* /
   *overstated*? Take a position and justify it.
 - **The single biggest weak point** — even for a strong idea: the assumption
-  most likely to be wrong, the unearned step, the over-generalization.
-- **What you would tell the viewer to carry away** — the one durable sentence,
-  and the one thing to stay skeptical of. The takeaway adjudicates the idea; it
-  does not admire it.
+  most likely to be wrong, the unearned step, the over-generalization, the
+  specific hardest-edge objection the source does not answer.
+- **The precise skepticism to carry forward** — one durable sentence the
+  viewer takes away, plus the one specific thing they should actively doubt
+  about the idea from here on.
+
+A recap that summarizes instead of adjudicating is rejected — the film is
+touring itself, not reviewing the idea.

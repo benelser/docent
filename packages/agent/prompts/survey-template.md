@@ -90,8 +90,19 @@ old and new — including a *forward* version-skew read? How would the on-call
 engineer know it misbehaved (a metric, a log, nothing)? Rollback cost. Who
 owns this at 3am.
 
-## 7. Verdict inputs
+## 7. Verdict inputs — the recap must *rule*, not restate
 
-- **Disposition** — approve / approve-with-caveats / needs-work, and why.
-- **The single biggest residual risk** — even on a clean change.
-- **What you would watch** post-merge, or what you would want changed first.
+The film's last scene adjudicates; it never summarizes. The judge rejects a
+recap whose lines are approving labels ("sound", "earned", "grounded") or a
+restatement of the film's own claims. State the verdict by saying three
+concrete things:
+
+- **Disposition** — approve / approve-with-caveats / needs-work, and *why*.
+- **The single biggest residual risk** — even on a clean change. Name the
+  specific failure mode you would not be surprised to see in production.
+- **The precise skepticism the viewer should carry** — what to actively doubt
+  about this change, and the concrete thing they would watch post-merge to
+  know whether the doubt is warranted.
+
+A recap that does not produce all three is rejected — it is touring its own
+film, not reviewing the change.
