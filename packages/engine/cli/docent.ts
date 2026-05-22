@@ -20,6 +20,7 @@ import {hermetic} from './hermetic';
 import {depthcheck} from './depthcheck';
 import {survey} from './survey';
 import {authorTreatment, treatmentToSpec} from './treatment';
+import {judge, reviseLoop} from './judge';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -29,7 +30,7 @@ const opt = (n: string): string | undefined => {
   return i >= 0 ? argv[i + 1] : undefined;
 };
 // positionals — args that are neither a --flag nor a value consumed by one.
-const VALUE_FLAGS = new Set(['scale', 'still', 'mode', 'subsystem', 'pr', 'agent', 'id', 'feedback', 'subject']);
+const VALUE_FLAGS = new Set(['scale', 'still', 'mode', 'subsystem', 'pr', 'agent', 'id', 'feedback', 'subject', 'max-rounds']);
 const positionals: string[] = [];
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
@@ -166,6 +167,24 @@ const main = async (): Promise<number> => {
         : authorTreatment({id, agent, subject: opt('subject'), feedback: opt('feedback')});
     }
 
+    case 'judge': {
+      const id = positionals[0] ?? die('usage: docent judge <id> [--agent claude]');
+      const agent = (opt('agent') as 'claude' | 'codex') ?? 'claude';
+      // A single graded verdict — the depth-review sub-agent, finally invoked.
+      const verdict = await judge({id, agent});
+      return verdict.pass ? 0 : 1;
+    }
+
+    case 'review': {
+      const id =
+        positionals[0] ??
+        die('usage: docent review <id> [--max-rounds N] [--agent claude]');
+      const agent = (opt('agent') as 'claude' | 'codex') ?? 'claude';
+      const maxRounds = num(opt('max-rounds'));
+      // The inner loop — judge → revise → re-judge, bounded.
+      return reviseLoop({id, agent, maxRounds});
+    }
+
     case 'hermetic': {
       const scale = num(opt('scale')) ?? (flag('full') ? 1 : 0.5);
       return hermetic({fixtureId: positionals[0], scale, json: flag('json')});
@@ -180,6 +199,8 @@ const main = async (): Promise<number> => {
       console.log('  docent score  <owner/repo> <pr#>  the triggering matrix — no render');
       console.log('  docent survey <subject> [--mode]  headless survey → a spec (pr/ar/ex)');
       console.log('  docent treatment <id> [--to-spec] scope a film — human in the loop');
+      console.log('  docent judge <id> [--agent]       grade a spec — the depth-review judge');
+      console.log('  docent review <id> [--max-rounds] the inner loop: judge → revise → repeat');
       console.log('  docent depthcheck <film>          the depth contract over a spec');
       console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
       console.log('  docent env                        resolved paths and versions');
