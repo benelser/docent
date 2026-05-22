@@ -7,6 +7,7 @@ import {existsSync, mkdirSync} from 'node:fs';
 import {join} from 'node:path';
 import {REPO_ROOT, paths} from './paths';
 import {validateSpec} from './validate';
+import {runDepthCheck, depthSummary} from './depthcheck';
 
 const cascadeEnv = {...process.env, DOCENT_ROOT: REPO_ROOT};
 
@@ -49,6 +50,15 @@ export const runCascade = async (opts: CascadeOpts): Promise<CascadeResult> => {
         issues.map((i) => `  ✗ ${i.path || '(root)'}: ${i.message}`).join('\n'),
     );
   }
+
+  // Layer 2 of depth enforcement — a visible, non-blocking depth report on
+  // every build. `docent depthcheck <film>` gives the full breakdown.
+  const ds = depthSummary(runDepthCheck(spec));
+  process.stdout.write(
+    ds.fail > 0
+      ? `\x1b[33m⚠ depth: ${ds.fail} fail · ${ds.warn} warn — run: docent depthcheck ${film}\x1b[0m\n`
+      : `\x1b[32m✓ depth: contract met\x1b[0m  ${ds.ok}/${ds.total}${ds.warn ? ` · ${ds.warn} warn` : ''}\n`,
+  );
 
   const stages: {name: string; seconds: number}[] = [];
 

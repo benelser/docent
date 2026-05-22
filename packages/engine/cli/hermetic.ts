@@ -17,6 +17,7 @@ import {REPO_ROOT, paths} from './paths';
 import {runChecks} from './doctor';
 import {validateSpec} from './validate';
 import {runCascade} from './cascade';
+import {runDepthCheck, depthSummary} from './depthcheck';
 
 type Fixture = {
   id: string;
@@ -105,6 +106,15 @@ export const hermetic = async (opts: {
         name: 'scene count',
         pass: spec!.scenes.length >= fx.expect.minScenes,
         detail: `${spec!.scenes.length} scenes (≥ ${fx.expect.minScenes})`,
+      });
+      const ds = depthSummary(runDepthCheck(spec as Parameters<typeof runDepthCheck>[0]));
+      checks.push({
+        name: 'depth contract',
+        pass: ds.fail === 0,
+        detail:
+          ds.fail === 0
+            ? `${ds.ok}/${ds.total} met${ds.warn ? `, ${ds.warn} warn` : ''}`
+            : `${ds.fail} depth failure(s)`,
       });
     }
 
