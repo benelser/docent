@@ -21,6 +21,7 @@ import {depthcheck} from './depthcheck';
 import {survey} from './survey';
 import {authorTreatment, treatmentToSpec} from './treatment';
 import {judge, reviseLoop} from './judge';
+import {flywheel} from './flywheel';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -185,6 +186,10 @@ const main = async (): Promise<number> => {
       return reviseLoop({id, agent, maxRounds});
     }
 
+    case 'flywheel':
+      // The outer-loop dashboard — what is *consistently* falling short.
+      return flywheel();
+
     case 'hermetic': {
       const scale = num(opt('scale')) ?? (flag('full') ? 1 : 0.5);
       return hermetic({fixtureId: positionals[0], scale, json: flag('json')});
@@ -201,6 +206,7 @@ const main = async (): Promise<number> => {
       console.log('  docent treatment <id> [--to-spec] scope a film — human in the loop');
       console.log('  docent judge <id> [--agent]       grade a spec — the depth-review judge');
       console.log('  docent review <id> [--max-rounds] the inner loop: judge → revise → repeat');
+      console.log('  docent flywheel                   the outer loop — recurring failures');
       console.log('  docent depthcheck <film>          the depth contract over a spec');
       console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
       console.log('  docent env                        resolved paths and versions');
