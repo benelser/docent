@@ -227,10 +227,18 @@ export const StructureScene: React.FC<SceneProps> = ({
           key={e.id}
           from={boxes[e.from]}
           to={boxes[e.to]}
-          accentHex={e.kind === 'feedback' ? accentHex : '#8c98ad'}
+          // An entailment / causal claim takes the scene accent — the line is
+          // the argument, so it carries the scene's voice. A plain `relation`
+          // stays the neutral wire grey, byte-identical to before.
+          accentHex={
+            e.kind === 'feedback' || e.kind === 'entails' || e.kind === 'causes'
+              ? accentHex
+              : '#8c98ad'
+          }
           state={edgeState(e.id)}
           enterFrame={revealOf(e.id)}
           kind={e.kind}
+          strength={e.strength}
           label={e.label}
           cadence={cadenceOf(e.id)}
         />

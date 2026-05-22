@@ -32,8 +32,16 @@ const KNOBS: Record<string, string[]> = {
   format: ['int', 'float1', 'percent'],
   ease: ['linear', 'spring', 'accelerate', 'settle'],
   // morph directive — a node's representation. `box` is the default Card; the
-  // rest are the forms a node can morph into.
-  as: ['box', 'matrix', 'vector', 'grid', 'code'],
+  // rest are the forms a node can morph into. `equation` typesets `expr`.
+  as: ['box', 'matrix', 'vector', 'grid', 'code', 'equation'],
+  // progression — the track topology. `linear`/`cycle` are the originals;
+  // `braided` runs two parallel lanes, `iterate` is a converging cycle.
+  flow: ['linear', 'cycle', 'braided', 'iterate'],
+  // structure edges — the relationship a line asserts. `relation`/`feedback`
+  // are the originals; `entails` is a logical "therefore", `causes` a causal
+  // claim. `edgeStrength` qualifies a `causes` edge's weight.
+  edgeKind: ['relation', 'feedback', 'entails', 'causes'],
+  edgeStrength: ['necessary', 'contributing'],
 };
 
 // An issue is an error by default. A `warning` is advisory — it flags a spec
@@ -111,6 +119,9 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
     checkKnob(sc, 'cut', at, issues);
     checkKnob(sc, 'palette', at, issues);
     checkKnob(sc, 'treatment', at, issues);
+    // progression — the track topology. Closed enum; an unknown value is a
+    // free-form layout sneaking in, exactly what an intent knob forbids.
+    checkKnob(sc, 'flow', at, issues);
     // node ids in this scene — the morph `transform` directive must name one.
     const nodeIds = new Set<string>();
     if (Array.isArray(sc.nodes)) {
@@ -118,9 +129,11 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         if (!n || typeof n !== 'object') return;
         const nAt = `${at}.nodes[${k}]`;
         checkKnob(n, 'weight', nAt, issues);
-        // morph — a node's representation (`as`) and its `cells`. `as` is a
-        // closed enum; `cells` must be a row-major array of arrays. The
-        // grid/matrix/vector forms need `cells`; `code`/`box` must not carry it.
+        // morph — a node's representation (`as`), its `cells`, and its
+        // `expr`. `as` is a closed enum. `cells` must be a row-major array of
+        // arrays: the grid/matrix/vector forms need it; box/code/equation must
+        // not carry it. `equation` needs `expr` — the math markup the engine
+        // typesets; any other representation must not carry `expr`.
         checkKnob(n, 'as', nAt, issues);
         if (typeof n.id === 'string') nodeIds.add(n.id);
         const repr = n.as ?? 'box';
@@ -139,7 +152,7 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
               path: `${nAt}.cells`,
               message: 'cells must be a row-major array of (string | number) arrays',
             });
-          } else if (repr === 'box' || repr === 'code') {
+          } else if (repr !== 'matrix' && repr !== 'vector' && repr !== 'grid') {
             issues.push({
               path: `${nAt}.cells`,
               message: `cells has no meaning for as: "${repr}" — only matrix/vector/grid`,
@@ -149,6 +162,89 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
           issues.push({
             path: `${nAt}.cells`,
             message: `as: "${repr}" needs a cells array`,
+          });
+        }
+        if (n.expr !== undefined) {
+          if (typeof n.expr !== 'string' || !n.expr.trim()) {
+            issues.push({
+              path: `${nAt}.expr`,
+              message: 'expr must be a non-empty string of math markup',
+            });
+          } else if (repr !== 'equation') {
+            issues.push({
+              path: `${nAt}.expr`,
+              message: `expr has no meaning for as: "${repr}" — only equation`,
+            });
+          }
+        } else if (repr === 'equation') {
+          issues.push({
+            path: `${nAt}.expr`,
+            message: 'as: "equation" needs an expr string',
+          });
+        }
+      });
+    }
+
+    // edges — the lines of a structure diagram. `kind` types what the line
+    // asserts (`relation`/`feedback`/`entails`/`causes`); `strength` qualifies
+    // a causal claim's weight. Both are closed enums. `strength` only has
+    // meaning on a `causes` edge — declaring it elsewhere is a force-fit.
+    if (sc.edges !== undefined && !Array.isArray(sc.edges)) {
+      issues.push({path: `${at}.edges`, message: 'edges must be an array'});
+    } else if (Array.isArray(sc.edges)) {
+      const edgeIds = new Set<string>();
+      sc.edges.forEach((e: Record<string, any>, k: number) => {
+        const eAt = `${at}.edges[${k}]`;
+        if (!e || typeof e !== 'object') {
+          issues.push({path: eAt, message: 'edge must be an object {id, from, to}'});
+          return;
+        }
+        if (typeof e.id !== 'string' || !e.id.trim()) {
+          issues.push({path: `${eAt}.id`, message: 'missing or empty string'});
+        } else if (edgeIds.has(e.id)) {
+          issues.push({path: `${eAt}.id`, message: `duplicate edge id "${e.id}"`});
+        } else {
+          edgeIds.add(e.id);
+        }
+        for (const f of ['from', 'to']) {
+          if (typeof e[f] !== 'string' || !e[f].trim()) {
+            issues.push({path: `${eAt}.${f}`, message: 'missing node id'});
+          }
+        }
+        if (e.kind !== undefined && !KNOBS.edgeKind.includes(e.kind)) {
+          issues.push({
+            path: `${eAt}.kind`,
+            message: `not a valid kind — one of: ${KNOBS.edgeKind.join(', ')}`,
+          });
+        }
+        if (e.strength !== undefined) {
+          if (!KNOBS.edgeStrength.includes(e.strength)) {
+            issues.push({
+              path: `${eAt}.strength`,
+              message: `not a valid strength — one of: ${KNOBS.edgeStrength.join(', ')}`,
+            });
+          } else if (e.kind !== 'causes') {
+            issues.push({
+              path: `${eAt}.strength`,
+              message: 'strength has meaning only on a `causes` edge',
+            });
+          }
+        }
+      });
+    }
+
+    // stages — progression markers. `track` (0 or 1) picks a braided lane;
+    // it is the only closed value on a stage, and only meaningful when the
+    // scene's `flow` is `braided`.
+    if (sc.stages !== undefined && !Array.isArray(sc.stages)) {
+      issues.push({path: `${at}.stages`, message: 'stages must be an array'});
+    } else if (Array.isArray(sc.stages)) {
+      sc.stages.forEach((st: Record<string, any>, k: number) => {
+        if (!st || typeof st !== 'object') return;
+        if (st.track !== undefined && st.track !== 0 && st.track !== 1) {
+          issues.push({
+            path: `${at}.stages[${k}].track`,
+            message: 'track must be 0 or 1 (a braided lane)',
           });
         }
       });

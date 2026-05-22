@@ -52,6 +52,20 @@
           "description": "structure scenes — the component boxes of the diagram",
           "items": {"$ref": "#/$defs/node"}
         },
+        "edges": {
+          "type": "array",
+          "description": "structure scenes — the lines between nodes. `kind` types what the line asserts (relation/feedback/entails/causes)",
+          "items": {"$ref": "#/$defs/edge"}
+        },
+        "stages": {
+          "type": "array",
+          "description": "progression scenes — the ordered timeline markers",
+          "items": {"$ref": "#/$defs/stage"}
+        },
+        "flow": {
+          "enum": ["linear", "cycle", "braided", "iterate"],
+          "description": "progression scenes — the track topology: a single path (linear), a loop (cycle), two parallel lanes (braided), or a converging loop (iterate)"
+        },
         "xAxis": {"$ref": "#/$defs/axis", "description": "chart scenes — the horizontal axis domain"},
         "yAxis": {"$ref": "#/$defs/axis", "description": "chart scenes — the vertical axis domain"},
         "series": {
@@ -128,8 +142,8 @@
         "wide": {"type": "boolean"},
         "kind": {"enum": ["risk", "rejected"]},
         "as": {
-          "enum": ["box", "matrix", "vector", "grid", "code"],
-          "description": "the node's representation — `box` is the Card; matrix/vector/grid draw `cells`; `code` a code window"
+          "enum": ["box", "matrix", "vector", "grid", "code", "equation"],
+          "description": "the node's representation — `box` is the Card; matrix/vector/grid draw `cells`; `code` a code window; `equation` typesets `expr`"
         },
         "cells": {
           "type": "array",
@@ -138,6 +152,10 @@
             "type": "array",
             "items": {"type": ["string", "number"]}
           }
+        },
+        "expr": {
+          "type": "string",
+          "description": "as: equation — the mathematical markup the engine typesets. Intent-level and never evaluated; morphing one equation node into another is a derivation step"
         }
       }
     },
@@ -166,14 +184,49 @@
         "weight": {"enum": ["hero", "primary", "normal", "recede"]},
         "wide": {"type": "boolean"},
         "kind": {"enum": ["risk", "rejected"]},
-        "as": {"enum": ["box", "matrix", "vector", "grid", "code"]},
+        "as": {"enum": ["box", "matrix", "vector", "grid", "code", "equation"]},
         "cells": {
           "type": "array",
           "items": {
             "type": "array",
             "items": {"type": ["string", "number"]}
           }
-        }
+        },
+        "expr": {"type": "string"}
+      }
+    },
+    "edge": {
+      "type": "object",
+      "description": "a line between two nodes in a structure diagram. `kind` types what the line asserts; `strength` qualifies a causal claim's weight.",
+      "required": ["id", "from", "to"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "from": {"type": "string", "description": "the id of the source node"},
+        "to": {"type": "string", "description": "the id of the target node"},
+        "kind": {
+          "enum": ["relation", "feedback", "entails", "causes"],
+          "description": "what the line asserts — a plain association (relation), a returning loop (feedback), a logical 'therefore' (entails), or a causal claim (causes)"
+        },
+        "strength": {
+          "enum": ["necessary", "contributing"],
+          "description": "qualifies a `causes` edge — a necessary cause is drawn visibly heavier than a contributing one"
+        },
+        "label": {"type": "string"}
+      }
+    },
+    "stage": {
+      "type": "object",
+      "description": "a progression timeline marker. `track` places the stage on one of two braided lanes.",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "label": {"type": "string"},
+        "sub": {"type": "string"},
+        "duration": {"type": "string", "description": "shown on the stage's segment, e.g. '4 years'"},
+        "gate": {"type": "boolean", "description": "a milestone diamond sitting before this stage"},
+        "track": {"enum": [0, 1], "description": "braided flow — which of the two parallel lanes (0 or 1)"}
       }
     },
     "tween": {

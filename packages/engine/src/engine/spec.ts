@@ -67,9 +67,12 @@ export type Actor = {id: string; label: string; sub?: string};
 // A node's *representation* — how its content is drawn inside its box. The
 // default, `box`, is today's Card (a labelled component card). `matrix` /
 // `vector` / `grid` draw `cells` as a grid of mono cells; `code` draws a
-// small code window. A node keeps the same `id` and box geometry across
-// representations — a morph swaps the representation, not the identity.
-export type NodeRepr = 'box' | 'matrix' | 'vector' | 'grid' | 'code';
+// small code window; `equation` typesets a mathematical expression. A node
+// keeps the same `id` and box geometry across representations — a morph swaps
+// the representation, not the identity. Because morph eases one definition
+// into the next, an `equation` node morphing to another *is* a derivation
+// step: the algebra rewrites itself on screen.
+export type NodeRepr = 'box' | 'matrix' | 'vector' | 'grid' | 'code' | 'equation';
 
 export type Node = {
   id: string;
@@ -85,26 +88,46 @@ export type Node = {
   // tension scenes: a node can be a flagged risk or a rejected alternative
   kind?: 'risk' | 'rejected';
   // morph — the node's representation. `box` (default) is the Card; the
-  // others draw `code` / `cells` instead. A `transform` beat can swap this.
+  // others draw `code` / `cells` / `expr` instead. A `transform` beat can
+  // swap this.
   as?: NodeRepr;
   cells?: (string | number)[][]; // matrix/vector/grid contents, row-major
+  // `as: 'equation'` content — the mathematical markup the engine typesets.
+  // Intent-level and closed: the author writes the expression, the engine
+  // owns the layout. This is NOT an expression evaluator — `expr` is never
+  // computed, only set. Morphing one equation node into another (different
+  // `expr`) yields a derivation step: the algebra rewrites on screen.
+  expr?: string;
 };
 
+// An edge between two nodes. `kind` types the *relationship the line asserts*:
+//  - `relation` (default) — a plain association: A is connected to B.
+//  - `feedback` — a returning loop: B's output flows back to A.
+//  - `entails`  — a logical step: A *therefore* B. A proof / derivation edge.
+//  - `causes`   — a causal claim: A *brought about* B. With `strength`, the
+//                 engine draws the *weight* of the cause, not just succession.
+// `strength` qualifies a `causes` edge: a `necessary` cause is drawn visibly
+// heavier than a `contributing` one — necessity reads off the line itself.
 export type Edge = {
   id: string;
   from: string;
   to: string;
-  kind?: 'relation' | 'feedback';
+  kind?: 'relation' | 'feedback' | 'entails' | 'causes';
+  strength?: 'necessary' | 'contributing';
   label?: string;
 };
 
 // progression scenes — an ordered track of stages along a path or over time.
+// In a `braided` flow a stage's `track` (0 or 1) picks which of the two
+// parallel lanes it sits on — e.g. lane 0 = plot-order, lane 1 = story-order.
+// `track` is ignored by `linear`/`cycle`/`iterate`, so it is purely additive.
 export type Stage = {
   id: string;
   label: string;
   sub?: string;
   duration?: string; // e.g. "4 years" — shown on the stage's segment
   gate?: boolean; // a milestone / exam sitting between this stage and the next
+  track?: 0 | 1; // braided flow — which of the two parallel lanes
 };
 
 // compare scenes — options (columns) judged against criteria (rows).
@@ -238,9 +261,15 @@ export type Scene = {
   grid?: {cols: number; rows: number};
   nodes?: Node[];
   edges?: Edge[];
-  // progression
+  // progression — `flow` picks the track topology:
+  //  - `linear`  (default) — stages laid left-to-right along one path.
+  //  - `cycle`   — the track curves back to its start; a loop.
+  //  - `braided` — two parallel tracks running together (e.g. story-order
+  //                vs plot-order, for non-linear narrative).
+  //  - `iterate` — a cycle drawn so it visibly *repeats and converges*: a
+  //                feedback process settling toward equilibrium.
   stages?: Stage[];
-  flow?: 'linear' | 'cycle';
+  flow?: 'linear' | 'cycle' | 'braided' | 'iterate';
   // walkthrough
   actors?: Actor[];
   // compare

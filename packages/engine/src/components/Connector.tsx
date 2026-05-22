@@ -11,6 +11,12 @@ export type EdgeState = 'hidden' | 'normal' | 'dim' | 'focus';
 // An edge between two cards. It is not a static line: once drawn, it carries a
 // continuous stream of flowing dashes — the wire shows data moving through it.
 //
+// `kind` types what the edge *asserts*. `relation` (default) and `feedback`
+// are unchanged. `entails` reads as a logical "therefore" — a doubled wire
+// with a ∴ glyph at its midpoint, drawing necessity rather than mere flow.
+// `causes` is a causal claim; its `strength` sets the line's heft — a
+// `necessary` cause is visibly heavier than a `contributing` one.
+//
 // `cadence` (a beat knob) shapes the draw-on: `snap` lowers the spring mass
 // for a sharper sweep; every other cadence keeps the original
 // {damping: 200, mass: 0.5} — so a knob-free edge is unchanged. The cascade
@@ -21,10 +27,11 @@ export const Connector: React.FC<{
   accentHex: string;
   state: EdgeState;
   enterFrame: number;
-  kind?: 'relation' | 'feedback';
+  kind?: 'relation' | 'feedback' | 'entails' | 'causes';
+  strength?: 'necessary' | 'contributing';
   label?: string;
   cadence?: Beat['cadence'];
-}> = ({from, to, accentHex, state, enterFrame, kind, label, cadence}) => {
+}> = ({from, to, accentHex, state, enterFrame, kind, strength, label, cadence}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const local = frame - enterFrame;
@@ -35,6 +42,12 @@ export const Connector: React.FC<{
   if (state === 'hidden') return null;
 
   const feedback = kind === 'feedback';
+  const entails = kind === 'entails';
+  const causes = kind === 'causes';
+  // A `necessary` cause is drawn heavy; a `contributing` one stays at the
+  // default weight. An `entails` edge always reads at the heavier weight —
+  // logical necessity is not a hedge.
+  const heavy = entails || (causes && strength === 'necessary');
   // Two path shapes: a straight connector has `.start`, a curved feedback edge
   // has `.mid`. Branch on `feedback` so each side keeps its concrete type
   // (rather than a union where neither member is statically known).
@@ -66,6 +79,25 @@ export const Connector: React.FC<{
   const angle = (Math.atan2(end.y - ref.y, end.x - ref.x) * 180) / Math.PI;
   const headOpacity = Math.max(0, (draw - 0.6) / 0.4) * opacity;
 
+  // ----- entailment / causation rendering --------------------------------
+  // An `entails` or `causes` edge is a logical/causal claim, not a data wire:
+  // it carries no flowing dashes. Instead the line itself reads its meaning.
+  // `entails` is a doubled wire (the rail of a "therefore"); a `necessary`
+  // claim is heavy, a `contributing` one light. The unit perpendicular to
+  // the straight chord offsets the second rail.
+  const logical = entails || causes;
+  const railOffset = (() => {
+    if (!entails || feedback) return {x: 0, y: 0};
+    const s = straight!.start;
+    const dx = end.x - s.x;
+    const dy = end.y - s.y;
+    const len = Math.hypot(dx, dy) || 1;
+    return {x: (-dy / len) * 3.2, y: (dx / len) * 3.2};
+  })();
+  // The base wire weight: a heavy claim (entails, or a necessary cause) is
+  // visibly thicker; a contributing cause stays near the default.
+  const wireWidth = heavy ? 4.6 : causes ? 3.0 : 2.4;
+
   return (
     <svg
       style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
@@ -76,14 +108,33 @@ export const Connector: React.FC<{
         d={path.d}
         fill="none"
         stroke={accentHex}
-        strokeWidth={feedback ? 2.2 : 2.4}
+        strokeWidth={feedback ? 2.2 : logical ? wireWidth : 2.4}
         strokeLinecap="round"
         strokeDasharray={feedback ? '9 9' : evolve.strokeDasharray}
         strokeDashoffset={feedback ? 0 : evolve.strokeDashoffset}
-        opacity={feedback ? draw * 0.85 * opacity : 0.3 * opacity}
+        opacity={
+          feedback
+            ? draw * 0.85 * opacity
+            : logical
+              ? draw * (heavy ? 0.92 : 0.6) * opacity
+              : 0.3 * opacity
+        }
       />
-      {/* flowing data */}
-      {feedback ? null : (
+      {/* entails — the second rail of the "therefore", offset perpendicular */}
+      {entails ? (
+        <path
+          d={`M ${straight!.start.x + railOffset.x} ${straight!.start.y + railOffset.y} L ${end.x + railOffset.x} ${end.y + railOffset.y}`}
+          fill="none"
+          stroke={accentHex}
+          strokeWidth={wireWidth}
+          strokeLinecap="round"
+          strokeDasharray={evolve.strokeDasharray}
+          strokeDashoffset={evolve.strokeDashoffset}
+          opacity={draw * 0.92 * opacity}
+        />
+      ) : null}
+      {/* flowing data — only data wires flow; a logical/causal claim does not */}
+      {feedback || logical ? null : (
         <path
           d={path.d}
           fill="none"
@@ -96,14 +147,30 @@ export const Connector: React.FC<{
           style={{filter: `drop-shadow(0 0 5px ${glow(accentHex, 0.6)})`}}
         />
       )}
-      {/* arrowhead */}
+      {/* arrowhead — heavier for an entailment / necessary cause */}
       <g transform={`translate(${end.x} ${end.y}) rotate(${angle})`} opacity={headOpacity}>
         <path
-          d="M 3 0 L -16 -8 L -16 8 Z"
+          d={heavy ? 'M 5 0 L -22 -11 L -22 11 Z' : 'M 3 0 L -16 -8 L -16 8 Z'}
           fill={accentHex}
           style={{filter: `drop-shadow(0 0 5px ${glow(accentHex, 0.65)})`}}
         />
       </g>
+      {/* entails — the ∴ "therefore" glyph pinned at the chord midpoint */}
+      {entails ? (
+        <text
+          x={mid.x}
+          y={mid.y - 14}
+          textAnchor="middle"
+          fontFamily={monoFamily}
+          fontSize={30}
+          fontWeight={700}
+          fill={accentHex}
+          opacity={draw}
+          style={{filter: `drop-shadow(0 0 6px ${glow(accentHex, 0.6)})`}}
+        >
+          ∴
+        </text>
+      ) : null}
       {label ? (
         <text
           x={mid.x - 18}

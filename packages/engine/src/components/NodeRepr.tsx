@@ -13,7 +13,8 @@ import type {Node, NodeRepr as Repr} from '../engine/spec';
 //
 // `box` is unchanged — it stays the existing <Card>. These are the new
 // representations a node can morph *into*: a grid of mono cells
-// (`matrix`/`vector`/`grid`) or a small code window (`code`).
+// (`matrix`/`vector`/`grid`), a small code window (`code`), or a typeset
+// mathematical expression (`equation`).
 
 // A grid of mono cells — the matrix/vector/grid representation. Lifted from
 // QuantitiesScene's matrix cell styling, sized to fit the node's box.
@@ -175,6 +176,79 @@ const CodeWindow: React.FC<{
   );
 };
 
+// A typeset mathematical expression — the `equation` representation. The
+// author supplies the markup in `node.expr`; the engine typesets it (serif,
+// math-italic, centred) and owns the layout. This is intent-level and closed:
+// `expr` is NEVER evaluated — there is no expression evaluator. Because morph
+// cross-fades one definition into the next, an `equation` node morphing to
+// another (a different `expr`) reads as a *derivation step*: the algebra
+// rewrites itself on screen, one equation becoming the next.
+const mathFamily = 'Latin Modern Math, STIX Two Math, Cambria Math, Georgia, serif';
+
+const EquationPane: React.FC<{
+  box: Box;
+  node: Node;
+  accentHex: string;
+}> = ({box, node, accentHex}) => {
+  const expr = (node.expr ?? node.label ?? '').trim();
+  // The expression fills the box; the font size eases down for longer markup
+  // so a derivation step never overruns its container.
+  const fontSize = Math.max(
+    20,
+    Math.min(54, box.h * 0.42, (box.w - 36) / Math.max(1, expr.length * 0.42)),
+  );
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: box.cx - box.w / 2,
+        top: box.cy - box.h / 2,
+        width: box.w,
+        height: box.h,
+        borderRadius: 14,
+        background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
+        border: `1.5px solid ${theme.bg.line}`,
+        boxShadow: `0 18px 44px -24px #000000cc, 0 0 0 1px ${glow(accentHex, 0.12)}`,
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        padding: '14px 18px',
+      }}
+    >
+      {node.tag ? (
+        <div
+          style={{
+            fontFamily: monoFamily,
+            fontSize: 12,
+            letterSpacing: 1,
+            color: accentHex,
+          }}
+        >
+          {node.tag}
+        </div>
+      ) : null}
+      <div
+        style={{
+          fontFamily: mathFamily,
+          fontStyle: 'italic',
+          fontSize,
+          fontWeight: 500,
+          lineHeight: 1.15,
+          color: theme.ink.hi,
+          textAlign: 'center',
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+        {expr}
+      </div>
+    </div>
+  );
+};
+
 // The dispatch: render a node's content for a non-`box` representation. The
 // `box` representation is NOT handled here — the caller keeps using <Card>.
 export const NodeRepresentation: React.FC<{
@@ -184,6 +258,7 @@ export const NodeRepresentation: React.FC<{
 }> = ({box, node, accentHex}) => {
   const as: Repr = node.as ?? 'box';
   if (as === 'code') return <CodeWindow box={box} node={node} accentHex={accentHex} />;
+  if (as === 'equation') return <EquationPane box={box} node={node} accentHex={accentHex} />;
   if (as === 'matrix' || as === 'vector' || as === 'grid') {
     return <CellGrid box={box} cells={node.cells ?? []} accentHex={accentHex} />;
   }
