@@ -4,6 +4,7 @@
 // nothing about Codex (or any particular codebase) specifically.
 
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
+import grammarCheck from '../../../../films/grammar-check.json';
 import manifestJson from '../../../../public/audio/manifest.json';
 
 export type Message = {
@@ -53,9 +54,48 @@ export type Edge = {
   label?: string;
 };
 
+// progression scenes — an ordered track of stages along a path or over time.
+export type Stage = {
+  id: string;
+  label: string;
+  sub?: string;
+  duration?: string; // e.g. "4 years" — shown on the stage's segment
+  gate?: boolean; // a milestone / exam sitting between this stage and the next
+};
+
+// compare scenes — options (columns) judged against criteria (rows).
+export type CompareColumn = {id: string; label: string; sub?: string};
+export type CompareCell = {text: string; verdict?: 'win' | 'lose' | 'neutral'};
+export type CompareRow = {id: string; label: string; cells: CompareCell[]};
+
+// quantities scenes — magnitudes as figures, or a worked numeric grid.
+export type Figure = {id: string; label: string; value: string; unit?: string; note?: string};
+export type Matrix = {rowLabels: string[]; colLabels: string[]; cells: string[][]};
+
+// probe scenes — vary one input from a baseline, follow the consequence.
+export type Variation = {
+  id: string;
+  label: string;
+  change: string; // the input that is perturbed
+  outcome: string; // the resulting outcome
+  flips?: boolean; // whether the outcome flipped from the baseline
+};
+
 export type Scene = {
   id: string;
-  type: 'frame' | 'structure' | 'walkthrough' | 'closeup' | 'tension' | 'recap' | 'diff';
+  type:
+    | 'frame'
+    | 'structure'
+    | 'progression'
+    | 'walkthrough'
+    | 'compare'
+    | 'quantities'
+    | 'probe'
+    | 'tension'
+    | 'closeup'
+    | 'demonstrate'
+    | 'recap'
+    | 'diff';
   accent: string;
   kicker: string;
   heading?: string;
@@ -67,12 +107,26 @@ export type Scene = {
   grid?: {cols: number; rows: number};
   nodes?: Node[];
   edges?: Edge[];
+  // progression
+  stages?: Stage[];
+  flow?: 'linear' | 'cycle';
   // walkthrough
   actors?: Actor[];
+  // compare
+  columns?: CompareColumn[];
+  rows?: CompareRow[];
+  // quantities
+  figures?: Figure[];
+  matrix?: Matrix;
+  // probe
+  baseline?: {label: string; outcome: string};
+  variations?: Variation[];
   // closeup
   file?: string;
   lang?: string;
   code?: string;
+  // demonstrate
+  clip?: string;
   // recap
   points?: string[];
   beats: Beat[];
@@ -96,6 +150,7 @@ export type FilmSpec = {
 // Film registry. A new film is one JSON file plus one line here.
 export const FILMS: Record<string, FilmSpec> = {
   'kubernetes-pr': kubernetesPr as FilmSpec,
+  'grammar-check': grammarCheck as FilmSpec,
 };
 
 const manifest = manifestJson as Record<string, {file: string; seconds: number}>;

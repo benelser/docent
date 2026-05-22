@@ -1,0 +1,210 @@
+{
+  "meta": {
+    "id": "grammar-check",
+    "title": "The docent scene grammar",
+    "subject": "docent — the cognitive moves of an explanation",
+    "repo": "docent",
+    "prompt": "architecture review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "s-frame",
+      "type": "frame",
+      "accent": "blue",
+      "kicker": "GRAMMAR // 01",
+      "title": "The scene grammar",
+      "tagline": "Eleven ways to explain anything",
+      "footnote": "a fixture that exercises every scene type end to end",
+      "beats": [
+        {"id": "frame-1", "narration": "Every docent film is built from one closed grammar of explanation.", "show": "title"},
+        {"id": "frame-2", "narration": "This fixture walks all of the scene types, one at a time.", "show": "tagline"}
+      ]
+    },
+    {
+      "id": "s-structure",
+      "type": "structure",
+      "accent": "cyan",
+      "kicker": "GRAMMAR // 02",
+      "heading": "structure — how the parts relate",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {"id": "ag", "label": "Agent", "sub": "authors the spec", "col": 0, "row": 0, "accent": "blue"},
+        {"id": "en", "label": "Engine", "sub": "renders it", "col": 2, "row": 0, "accent": "green"},
+        {"id": "fi", "label": "Film", "sub": "the artifact", "col": 1, "row": 1, "accent": "amber"}
+      ],
+      "edges": [
+        {"id": "e-ae", "from": "ag", "to": "en"},
+        {"id": "e-ef", "from": "en", "to": "fi"}
+      ],
+      "beats": [
+        {"id": "structure-1", "narration": "A structure scene shows how the parts relate — nodes and edges.", "reveal": ["ag", "en", "e-ae"]},
+        {"id": "structure-2", "narration": "The agent authors a spec; the engine renders the film.", "reveal": ["fi", "e-ef"], "focus": ["fi"]}
+      ]
+    },
+    {
+      "id": "s-progression",
+      "type": "progression",
+      "accent": "violet",
+      "kicker": "GRAMMAR // 03",
+      "heading": "progression — stages along a path",
+      "flow": "linear",
+      "stages": [
+        {"id": "p1", "label": "Survey", "sub": "read the subject"},
+        {"id": "p2", "label": "Treatment", "sub": "the human steers scope", "gate": true},
+        {"id": "p3", "label": "Spec", "sub": "author the film"},
+        {"id": "p4", "label": "Render", "sub": "the artifact"}
+      ],
+      "beats": [
+        {"id": "progression-1", "narration": "A progression scene shows ordered stages along a path.", "reveal": 2},
+        {"id": "progression-2", "narration": "docent's own cascade: survey, treatment, spec, render.", "reveal": 4}
+      ]
+    },
+    {
+      "id": "s-walkthrough",
+      "type": "walkthrough",
+      "accent": "green",
+      "kicker": "GRAMMAR // 04",
+      "heading": "walkthrough — one instance, step by step",
+      "actors": [
+        {"id": "u", "label": "Developer", "sub": "the user"},
+        {"id": "dc", "label": "docent", "sub": "the CLI"},
+        {"id": "sv", "label": "Agent", "sub": "the survey"}
+      ],
+      "beats": [
+        {"id": "walkthrough-1", "narration": "A walkthrough traces one concrete instance over time.", "message": {"from": "u", "to": "dc", "label": "docent ar <repo>", "kind": "forward"}},
+        {"id": "walkthrough-2", "narration": "docent dispatches the agent to survey the subject.", "message": {"from": "dc", "to": "sv", "label": "survey", "kind": "forward"}},
+        {"id": "walkthrough-3", "narration": "The agent returns a finished film spec.", "message": {"from": "sv", "to": "dc", "label": "films/id.json", "kind": "reply"}}
+      ]
+    },
+    {
+      "id": "s-compare",
+      "type": "compare",
+      "accent": "amber",
+      "kicker": "GRAMMAR // 05",
+      "heading": "compare — options side by side",
+      "columns": [
+        {"id": "md", "label": "Markdown"},
+        {"id": "do", "label": "docent"}
+      ],
+      "rows": [
+        {"id": "r1", "label": "Motion", "cells": [{"text": "static"}, {"text": "animated", "verdict": "win"}]},
+        {"id": "r2", "label": "Narration", "cells": [{"text": "none"}, {"text": "timed to voice", "verdict": "win"}]},
+        {"id": "r3", "label": "Edit by hand", "cells": [{"text": "easy", "verdict": "win"}, {"text": "via the treatment"}]}
+      ],
+      "beats": [
+        {"id": "compare-1", "narration": "A compare scene judges options against shared criteria.", "reveal": 1},
+        {"id": "compare-2", "narration": "Each row a criterion; the winning cell is marked.", "reveal": 3}
+      ]
+    },
+    {
+      "id": "s-quantities",
+      "type": "quantities",
+      "accent": "cyan",
+      "kicker": "GRAMMAR // 06",
+      "heading": "quantities — the numbers",
+      "figures": [
+        {"id": "q1", "label": "Scene types", "value": "11", "note": "the closed grammar"},
+        {"id": "q2", "label": "Held-out subjects tested", "value": "12", "note": "the break-it battery"},
+        {"id": "q3", "label": "Engine packages", "value": "2", "unit": "@docent"}
+      ],
+      "beats": [
+        {"id": "quantities-1", "narration": "A quantities scene puts the magnitudes on screen — here, 11 scene types proven against 12 test subjects.", "reveal": 2},
+        {"id": "quantities-2", "narration": "Figures, a worked grid, or a payoff matrix.", "reveal": 3}
+      ]
+    },
+    {
+      "id": "s-probe",
+      "type": "probe",
+      "accent": "rose",
+      "kicker": "GRAMMAR // 07",
+      "heading": "probe — vary one input",
+      "baseline": {"label": "Derive a grammar from four technical subjects", "outcome": "a 10-type grammar"},
+      "variations": [
+        {"id": "v1", "label": "Add a philosophical argument", "change": "the trolley problem", "outcome": "needs a probe type", "flips": true},
+        {"id": "v2", "label": "Add a craft", "change": "a sourdough recipe", "outcome": "needs a demonstrate type", "flips": true},
+        {"id": "v3", "label": "Add a software subsystem", "change": "the scheduler", "outcome": "fits cleanly", "flips": false}
+      ],
+      "beats": [
+        {"id": "probe-1", "narration": "A probe scene changes one input and follows the consequence.", "reveal": 1},
+        {"id": "probe-2", "narration": "Some variations flip the outcome; some hold.", "reveal": 3}
+      ]
+    },
+    {
+      "id": "s-tension",
+      "type": "tension",
+      "accent": "amber",
+      "kicker": "GRAMMAR // 08",
+      "heading": "tension — the trade-off",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {"id": "closed", "label": "A closed grammar", "sub": "consistent and coherent", "col": 0, "row": 0, "accent": "green"},
+        {"id": "open", "label": "An open grammar", "sub": "infinitely expressive", "col": 2, "row": 0, "kind": "rejected"},
+        {"id": "gap", "label": "A missed move", "sub": "a subject the grammar cannot fit", "col": 1, "row": 1, "kind": "risk"}
+      ],
+      "edges": [],
+      "beats": [
+        {"id": "tension-1", "narration": "A tension scene surfaces the trade-off. docent chose a closed grammar over an open one — for consistency, at the cost of raw expressiveness.", "reveal": ["closed", "open"]},
+        {"id": "tension-2", "narration": "The residual risk: a subject whose move the grammar lacks. The strain signal is how we would know.", "reveal": ["gap"], "focus": ["gap"]}
+      ]
+    },
+    {
+      "id": "s-closeup",
+      "type": "closeup",
+      "accent": "blue",
+      "kicker": "GRAMMAR // 09",
+      "heading": "closeup — annotate one artifact",
+      "file": "packages/engine/src/engine/spec.ts",
+      "lang": "typescript",
+      "code": "export type Scene = {\n  id: string;\n  type:\n    | 'frame' | 'structure' | 'progression'\n    | 'walkthrough' | 'compare' | 'quantities'\n    | 'probe' | 'tension' | 'closeup'\n    | 'demonstrate' | 'recap' | 'diff';\n  beats: Beat[];\n};",
+      "beats": [
+        {"id": "closeup-1", "narration": "A closeup scene examines one real artifact, line by line.", "highlight": [1, 2]},
+        {"id": "closeup-2", "narration": "Here, the scene-type union itself — the closed grammar.", "highlight": [3, 9]}
+      ]
+    },
+    {
+      "id": "s-demonstrate",
+      "type": "demonstrate",
+      "accent": "violet",
+      "kicker": "GRAMMAR // 10",
+      "heading": "demonstrate — show the phenomenon",
+      "beats": [
+        {"id": "demonstrate-1", "narration": "A demonstrate scene plays the phenomenon itself — the thing in motion, not a diagram about it. With no clip attached, it falls back to this panel."}
+      ]
+    },
+    {
+      "id": "s-recap",
+      "type": "recap",
+      "accent": "green",
+      "kicker": "GRAMMAR // 11",
+      "heading": "recap — the takeaway",
+      "points": [
+        "Eleven cognitive moves — a closed grammar of explanation.",
+        "Closed for consistency; general enough for any subject.",
+        "diff is a twelfth — a PR-mode dialect, not a core move.",
+        "The agent picks the moves; the engine typesets them."
+      ],
+      "beats": [
+        {"id": "recap-1", "narration": "A recap scene synthesizes the takeaway as a short list.", "reveal": 2},
+        {"id": "recap-2", "narration": "A closed grammar — general enough for anything.", "reveal": 4}
+      ]
+    },
+    {
+      "id": "s-diff",
+      "type": "diff",
+      "accent": "rose",
+      "kicker": "GRAMMAR // 12",
+      "heading": "diff — what changed (a PR dialect)",
+      "file": "packages/engine/src/engine/spec.ts",
+      "lang": "typescript",
+      "code": " export type Scene = {\n   id: string;\n-  type: 'title' | 'diagram' | 'sequence';\n+  type: 'frame' | 'structure' | 'progression';\n   beats: Beat[];\n };",
+      "beats": [
+        {"id": "diff-1", "narration": "A diff scene shows a change — before and after.", "highlight": [3, 4]},
+        {"id": "diff-2", "narration": "It is kept only for pull-request films — a software dialect.", "highlight": [3, 4]}
+      ]
+    }
+  ]
+}

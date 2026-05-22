@@ -1518,5 +1518,101 @@
   "nono/recap-5": {
     "file": "audio/nono/recap-5.mp3",
     "seconds": 23.375
+  },
+  "grammar-check/frame-1": {
+    "file": "audio/grammar-check/frame-1.mp3",
+    "seconds": 4.45
+  },
+  "grammar-check/frame-2": {
+    "file": "audio/grammar-check/frame-2.mp3",
+    "seconds": 3.7
+  },
+  "grammar-check/structure-1": {
+    "file": "audio/grammar-check/structure-1.mp3",
+    "seconds": 4.25
+  },
+  "grammar-check/structure-2": {
+    "file": "audio/grammar-check/structure-2.mp3",
+    "seconds": 3.875
+  },
+  "grammar-check/progression-1": {
+    "file": "audio/grammar-check/progression-1.mp3",
+    "seconds": 3.85
+  },
+  "grammar-check/progression-2": {
+    "file": "audio/grammar-check/progression-2.mp3",
+    "seconds": 4.2
+  },
+  "grammar-check/walkthrough-1": {
+    "file": "audio/grammar-check/walkthrough-1.mp3",
+    "seconds": 3.55
+  },
+  "grammar-check/walkthrough-2": {
+    "file": "audio/grammar-check/walkthrough-2.mp3",
+    "seconds": 3.6
+  },
+  "grammar-check/walkthrough-3": {
+    "file": "audio/grammar-check/walkthrough-3.mp3",
+    "seconds": 2.875
+  },
+  "grammar-check/compare-1": {
+    "file": "audio/grammar-check/compare-1.mp3",
+    "seconds": 3.925
+  },
+  "grammar-check/compare-2": {
+    "file": "audio/grammar-check/compare-2.mp3",
+    "seconds": 3.35
+  },
+  "grammar-check/quantities-1": {
+    "file": "audio/grammar-check/quantities-1.mp3",
+    "seconds": 7.2
+  },
+  "grammar-check/quantities-2": {
+    "file": "audio/grammar-check/quantities-2.mp3",
+    "seconds": 3.375
+  },
+  "grammar-check/probe-1": {
+    "file": "audio/grammar-check/probe-1.mp3",
+    "seconds": 4.1
+  },
+  "grammar-check/probe-2": {
+    "file": "audio/grammar-check/probe-2.mp3",
+    "seconds": 3.325
+  },
+  "grammar-check/tension-1": {
+    "file": "audio/grammar-check/tension-1.mp3",
+    "seconds": 9.95
+  },
+  "grammar-check/tension-2": {
+    "file": "audio/grammar-check/tension-2.mp3",
+    "seconds": 6.425
+  },
+  "grammar-check/closeup-1": {
+    "file": "audio/grammar-check/closeup-1.mp3",
+    "seconds": 4.375
+  },
+  "grammar-check/closeup-2": {
+    "file": "audio/grammar-check/closeup-2.mp3",
+    "seconds": 3.675
+  },
+  "grammar-check/demonstrate-1": {
+    "file": "audio/grammar-check/demonstrate-1.mp3",
+    "seconds": 9.35
+  },
+  "grammar-check/recap-1": {
+    "file": "audio/grammar-check/recap-1.mp3",
+    "seconds": 4.1
+  },
+  "grammar-check/recap-2": {
+    "file": "audio/grammar-check/recap-2.mp3",
+    "seconds": 3.15
+  },
+  "grammar-check/diff-1": {
+    "file": "audio/grammar-check/diff-1.mp3",
+    "seconds": 3.2
+  },
+  "grammar-check/diff-2": {
+    "file": "audio/grammar-check/diff-2.mp3",
+    "seconds": 4.175
   }
 }

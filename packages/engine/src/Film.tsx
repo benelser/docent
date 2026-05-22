@@ -5,8 +5,13 @@ import {fade} from '@remotion/transitions/fade';
 import {FILMS, buildTimeline, TRANSITION} from './engine/spec';
 import {FrameScene} from './scenes/FrameScene';
 import {StructureScene} from './scenes/StructureScene';
+import {ProgressionScene} from './scenes/ProgressionScene';
 import {WalkthroughScene} from './scenes/WalkthroughScene';
+import {CompareScene} from './scenes/CompareScene';
+import {QuantitiesScene} from './scenes/QuantitiesScene';
+import {ProbeScene} from './scenes/ProbeScene';
 import {CloseupScene} from './scenes/CloseupScene';
+import {DemonstrateScene} from './scenes/DemonstrateScene';
 import {DiffScene} from './scenes/DiffScene';
 import {TensionScene} from './scenes/TensionScene';
 import {RecapScene} from './scenes/RecapScene';
@@ -37,10 +42,20 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
           const node =
             ts.scene.type === 'frame' ? (
               <FrameScene {...common} />
+            ) : ts.scene.type === 'progression' ? (
+              <ProgressionScene {...common} />
             ) : ts.scene.type === 'walkthrough' ? (
               <WalkthroughScene {...common} />
+            ) : ts.scene.type === 'compare' ? (
+              <CompareScene {...common} />
+            ) : ts.scene.type === 'quantities' ? (
+              <QuantitiesScene {...common} />
+            ) : ts.scene.type === 'probe' ? (
+              <ProbeScene {...common} />
             ) : ts.scene.type === 'closeup' ? (
               <CloseupScene {...common} />
+            ) : ts.scene.type === 'demonstrate' ? (
+              <DemonstrateScene {...common} />
             ) : ts.scene.type === 'diff' ? (
               <DiffScene {...common} />
             ) : ts.scene.type === 'tension' ? (

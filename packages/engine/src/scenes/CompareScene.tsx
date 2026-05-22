@@ -1,0 +1,209 @@
+import React from 'react';
+import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
+import {accent, theme, glow} from '../theme';
+import {interFamily, monoFamily} from '../fonts';
+import {SceneFrame} from '../components/SceneFrame';
+import {Narration} from '../components/Narration';
+import {activeBeatIndex, type SceneProps} from '../engine/spec';
+
+// A judgement table: options across the top (columns), criteria down the left
+// gutter (rows), cells in the grid. A `win` cell is accent-tinted, a `lose`
+// cell is dimmed. Rows reveal top-to-bottom, one beat at a time.
+export const CompareScene: React.FC<SceneProps> = ({
+  ts,
+  sceneIndex,
+  sceneCount,
+}) => {
+  const frame = useCurrentFrame();
+  const {fps} = useVideoConfig();
+  const scene = ts.scene;
+  const accentHex = accent(scene.accent);
+  const columns = scene.columns ?? [];
+  const rows = scene.rows ?? [];
+
+  // The reveal frame for row i is the `from` of the first beat whose numeric
+  // `reveal` reaches i + 1.
+  const revealFrameFor = (i: number): number => {
+    const b = ts.beats.find(
+      (bt) => typeof bt.reveal === 'number' && bt.reveal >= i + 1,
+    );
+    return b ? b.from : 0;
+  };
+
+  const active = activeBeatIndex(ts.beats, frame);
+  const focusIds = new Set(ts.beats[active]?.focus ?? []);
+  const hasFocus = focusIds.size > 0;
+
+  // Table geometry — a left gutter for criteria, even column widths.
+  const tableW = 1500;
+  const tableX = (1920 - tableW) / 2;
+  const gutterW = 380;
+  const colW = (tableW - gutterW) / Math.max(1, columns.length);
+  const headerH = 96;
+  const rowH = Math.min(118, 620 / Math.max(1, rows.length));
+  const tableY = 322;
+
+  const intro = spring({frame, fps, config: {damping: 200}});
+
+  return (
+    <SceneFrame
+      accentHex={accentHex}
+      kicker={scene.kicker}
+      heading={scene.heading}
+      sceneIndex={sceneIndex}
+      sceneCount={sceneCount}
+    >
+      <AbsoluteFill>
+        {/* column headers */}
+        {columns.map((c, ci) => (
+          <div
+            key={c.id}
+            style={{
+              position: 'absolute',
+              left: tableX + gutterW + ci * colW + 8,
+              top: tableY,
+              width: colW - 16,
+              height: headerH,
+              opacity: intro,
+              borderRadius: 12,
+              background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
+              border: `1.5px solid ${theme.bg.line}`,
+              borderBottom: `2.5px solid ${accentHex}`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: interFamily,
+                fontSize: 24,
+                fontWeight: 600,
+                color: theme.ink.hi,
+                letterSpacing: -0.2,
+              }}
+            >
+              {c.label}
+            </div>
+            {c.sub ? (
+              <div style={{fontFamily: monoFamily, fontSize: 14, color: theme.ink.low}}>
+                {c.sub}
+              </div>
+            ) : null}
+          </div>
+        ))}
+
+        {/* rows */}
+        {rows.map((r, ri) => {
+          const local = frame - revealFrameFor(ri);
+          const a =
+            local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+          if (a <= 0) return null;
+          const focused = focusIds.has(r.id);
+          const dim = hasFocus && !focused;
+          const rowOpacity = a * (dim ? 0.36 : 1);
+          const y = tableY + headerH + 14 + ri * rowH;
+
+          return (
+            <div
+              key={r.id}
+              style={{
+                position: 'absolute',
+                left: tableX,
+                top: y,
+                width: tableW,
+                height: rowH - 12,
+                opacity: rowOpacity,
+                transform: `translateX(${interpolate(a, [0, 1], [-22, 0])}px)`,
+                display: 'flex',
+              }}
+            >
+              {/* criterion — left gutter */}
+              <div
+                style={{
+                  width: gutterW,
+                  display: 'flex',
+                  alignItems: 'center',
+                  paddingRight: 22,
+                  fontFamily: interFamily,
+                  fontSize: 21,
+                  fontWeight: 500,
+                  color: focused ? theme.ink.hi : theme.ink.mid,
+                  letterSpacing: -0.2,
+                }}
+              >
+                <div
+                  style={{
+                    width: 4,
+                    height: 28,
+                    borderRadius: 2,
+                    marginRight: 16,
+                    background: focused ? accentHex : theme.bg.lineHi,
+                  }}
+                />
+                {r.label}
+              </div>
+
+              {/* cells */}
+              {columns.map((c, ci) => {
+                const cell = r.cells[ci];
+                const verdict = cell?.verdict;
+                const win = verdict === 'win';
+                const lose = verdict === 'lose';
+                return (
+                  <div
+                    key={c.id}
+                    style={{
+                      width: colW,
+                      padding: '0 8px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: '100%',
+                        borderRadius: 11,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        padding: '0 18px',
+                        background: win
+                          ? `linear-gradient(158deg, ${glow(accentHex, 0.16)}, ${glow(accentHex, 0.06)})`
+                          : theme.bg.panel,
+                        border: `1.5px solid ${win ? accentHex : theme.bg.line}`,
+                        boxShadow: win
+                          ? `0 0 22px -8px ${glow(accentHex, 0.6)}`
+                          : 'none',
+                        opacity: lose ? 0.5 : 1,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: interFamily,
+                          fontSize: 19,
+                          fontWeight: win ? 600 : 500,
+                          color: win
+                            ? accentHex
+                            : lose
+                              ? theme.ink.low
+                              : theme.ink.mid,
+                        }}
+                      >
+                        {win ? '✓ ' : null}
+                        {cell?.text ?? '—'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </AbsoluteFill>
+
+      <Narration beats={ts.beats} />
+    </SceneFrame>
+  );
+};
