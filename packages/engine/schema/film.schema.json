@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "demonstrate", "recap", "diff"]},
+        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "demonstrate", "recap", "diff", "chart"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -46,6 +46,13 @@
           "type": "array",
           "description": "quantities scenes — figure cards whose number is a tweened value that counts up across beats",
           "items": {"$ref": "#/$defs/metric"}
+        },
+        "xAxis": {"$ref": "#/$defs/axis", "description": "chart scenes — the horizontal axis domain"},
+        "yAxis": {"$ref": "#/$defs/axis", "description": "chart scenes — the vertical axis domain"},
+        "series": {
+          "type": "array",
+          "description": "chart scenes — the plotted series (line / bars / point)",
+          "items": {"$ref": "#/$defs/series"}
         },
         "beats": {
           "type": "array",
@@ -100,6 +107,60 @@
         "format": {"enum": ["int", "float1", "percent"]},
         "unit": {"type": "string"},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]}
+      }
+    },
+    "axis": {
+      "type": "object",
+      "description": "a chart axis — a labelled domain the engine maps onto STAGE pixels",
+      "required": ["label", "min", "max"],
+      "additionalProperties": false,
+      "properties": {
+        "label": {"type": "string"},
+        "min": {"type": "number"},
+        "max": {"type": "number", "description": "must be greater than min"},
+        "ticks": {"type": "integer", "minimum": 2, "maximum": 10, "description": "tick marks along the axis; capped at 10 for legibility"}
+      }
+    },
+    "series": {
+      "type": "object",
+      "description": "a plotted chart series. `kind` picks the geometry; a `line` names a `fn` from the closed allowlist or gives explicit `points`, `bars` carries `data`, `point` is a marker bound to a curve.",
+      "required": ["id", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "kind": {"enum": ["line", "bars", "point"]},
+        "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
+        "fn": {
+          "enum": ["linear", "x^2", "sqrt", "sin", "exp", "log", "reciprocal"],
+          "description": "line series — a named function from the closed allowlist; never an arbitrary expression"
+        },
+        "points": {
+          "type": "array",
+          "description": "line series — an explicit polyline, an alternative to `fn`",
+          "minItems": 2,
+          "items": {
+            "type": "array",
+            "items": {"type": "number"},
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "data": {
+          "type": "array",
+          "description": "bars series — one datum per bar; capped at 8 for legibility",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["label", "value"],
+            "additionalProperties": false,
+            "properties": {
+              "label": {"type": "string"},
+              "value": {"type": "number"}
+            }
+          }
+        },
+        "bind": {"type": "string", "description": "point series — a `set` key giving the marker's x"},
+        "along": {"type": "string", "description": "point series — the line series id whose curve gives the marker's y"}
       }
     }
   }

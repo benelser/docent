@@ -113,6 +113,48 @@ export type Variation = {
   flips?: boolean; // whether the outcome flipped from the baseline
 };
 
+// chart scenes — a plotted coordinate graph. An axis is a labelled domain:
+// the engine maps [min, max] onto STAGE pixels (the analogue of `cellCenter`).
+export type Axis = {
+  label: string;
+  min: number;
+  max: number;
+  ticks?: number; // how many tick marks to draw along the axis
+};
+
+// The closed allowlist of named functions a `line` series may plot. This is
+// intent-level, not an expression evaluator: an author names a shape, the
+// engine owns the math. Anything outside this list is rejected by validate.ts.
+export type ChartFn =
+  | 'linear'
+  | 'x^2'
+  | 'sqrt'
+  | 'sin'
+  | 'exp'
+  | 'log'
+  | 'reciprocal';
+
+// One plotted series on a chart. `kind` picks the geometry:
+//  - `line`  — a curve, either a named `fn` from the allowlist or explicit
+//              `points`; drawn on with evolvePath across its reveal beat.
+//  - `bars`  — a bar per datum; each bar's height is a tweened value that
+//              grows 0 → datum on the bar's reveal beat.
+//  - `point` — a marker that rides a curve: its x is a `set` key named by
+//              `bind`, its y is read off the series named by `along`.
+export type Series = {
+  id: string;
+  kind: 'line' | 'bars' | 'point';
+  accent?: string;
+  // line
+  fn?: ChartFn;
+  points?: [number, number][];
+  // bars
+  data?: {label: string; value: number}[];
+  // point
+  bind?: string; // a `set` key giving the marker's x
+  along?: string; // the line series id whose curve gives the marker's y
+};
+
 export type Scene = {
   id: string;
   type:
@@ -127,7 +169,8 @@ export type Scene = {
     | 'closeup'
     | 'demonstrate'
     | 'recap'
-    | 'diff';
+    | 'diff'
+    | 'chart';
   accent: string;
   kicker: string;
   heading?: string;
@@ -158,6 +201,10 @@ export type Scene = {
   // probe
   baseline?: {label: string; outcome: string};
   variations?: Variation[];
+  // chart
+  xAxis?: Axis;
+  yAxis?: Axis;
+  series?: Series[];
   // closeup
   file?: string;
   lang?: string;

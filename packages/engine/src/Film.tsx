@@ -15,6 +15,7 @@ import {DemonstrateScene} from './scenes/DemonstrateScene';
 import {DiffScene} from './scenes/DiffScene';
 import {TensionScene} from './scenes/TensionScene';
 import {RecapScene} from './scenes/RecapScene';
+import {ChartScene} from './scenes/ChartScene';
 
 // Assembles a film spec into a single composition: every scene rendered by the
 // template for its type, cross-faded together.
@@ -63,6 +64,8 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
               <TensionScene {...common} />
             ) : ts.scene.type === 'recap' ? (
               <RecapScene {...common} />
+            ) : ts.scene.type === 'chart' ? (
+              <ChartScene {...common} />
             ) : (
               <StructureScene {...common} />
             );

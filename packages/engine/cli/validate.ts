@@ -3,8 +3,17 @@
 // is a focused check of the shape the engine actually depends on.
 // schema/film.schema.json is the documented contract this mirrors.
 
-const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'demonstrate', 'recap', 'diff'];
+const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'demonstrate', 'recap', 'diff', 'chart'];
 const ACCENTS = ['blue', 'cyan', 'green', 'amber', 'rose', 'violet'];
+
+// chart scenes — the closed allowlist of named functions a `line` series may
+// plot, and the closed set of series kinds. Like the intent knobs above, a
+// value outside these enums is rejected: the `fn` allowlist is the contract
+// that keeps charts declarative — never an arbitrary expression.
+const CHART_FNS = ['linear', 'x^2', 'sqrt', 'sin', 'exp', 'log', 'reciprocal'];
+const SERIES_KINDS = ['line', 'bars', 'point'];
+const MAX_BARS = 8;
+const MAX_TICKS = 10;
 
 // Intent knobs — semantic dials the author may set; the engine interprets
 // them. Each is a closed enum, and that is the point: a value outside the
@@ -24,7 +33,14 @@ const KNOBS: Record<string, string[]> = {
   ease: ['linear', 'spring', 'accelerate', 'settle'],
 };
 
-export type ValidationIssue = {path: string; message: string};
+// An issue is an error by default. A `warning` is advisory — it flags a spec
+// that renders but past a recommended bound (e.g. too many bars to read
+// cleanly). Consumers may choose to treat warnings as non-fatal.
+export type ValidationIssue = {
+  path: string;
+  message: string;
+  severity?: 'error' | 'warning';
+};
 
 // Flag a knob whose value is outside its closed enum.
 const checkKnob = (
@@ -122,6 +138,136 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         checkKnob(m, 'format', mAt, issues);
         if (m.accent !== undefined && !ACCENTS.includes(m.accent)) {
           issues.push({path: `${mAt}.accent`, message: `unknown accent "${m.accent}"`});
+        }
+      });
+    }
+
+    // chart — a plotted coordinate graph. Axes are labelled domains; series
+    // are line / bars / point. The `fn` allowlist and series `kind` are closed
+    // enums (the chart analogue of the intent knobs); density is capped, and a
+    // spec past the cap earns an advisory warning rather than a hard error.
+    const checkAxis = (axis: any, axisAt: string): void => {
+      if (axis === undefined) return;
+      if (!axis || typeof axis !== 'object') {
+        issues.push({path: axisAt, message: 'axis must be an object {label, min, max, ticks?}'});
+        return;
+      }
+      if (typeof axis.label !== 'string' || !axis.label.trim()) {
+        issues.push({path: `${axisAt}.label`, message: 'missing or empty string'});
+      }
+      for (const f of ['min', 'max']) {
+        if (typeof axis[f] !== 'number' || !Number.isFinite(axis[f])) {
+          issues.push({path: `${axisAt}.${f}`, message: 'must be a finite number'});
+        }
+      }
+      if (
+        typeof axis.min === 'number' &&
+        typeof axis.max === 'number' &&
+        axis.min >= axis.max
+      ) {
+        issues.push({path: `${axisAt}.max`, message: 'max must be greater than min'});
+      }
+      if (axis.ticks !== undefined) {
+        if (typeof axis.ticks !== 'number' || !Number.isInteger(axis.ticks) || axis.ticks < 2) {
+          issues.push({path: `${axisAt}.ticks`, message: 'ticks must be an integer ≥ 2'});
+        } else if (axis.ticks > MAX_TICKS) {
+          issues.push({
+            path: `${axisAt}.ticks`,
+            severity: 'warning',
+            message: `${axis.ticks} ticks is dense — ${MAX_TICKS} or fewer reads cleanly`,
+          });
+        }
+      }
+    };
+    checkAxis(sc.xAxis, `${at}.xAxis`);
+    checkAxis(sc.yAxis, `${at}.yAxis`);
+
+    if (sc.series !== undefined && !Array.isArray(sc.series)) {
+      issues.push({path: `${at}.series`, message: 'series must be an array'});
+    } else if (Array.isArray(sc.series)) {
+      const seriesIds = new Set<string>();
+      sc.series.forEach((se: Record<string, any>, k: number) => {
+        const seAt = `${at}.series[${k}]`;
+        if (!se || typeof se !== 'object') {
+          issues.push({path: seAt, message: 'series must be an object'});
+          return;
+        }
+        if (typeof se.id !== 'string' || !se.id.trim()) {
+          issues.push({path: `${seAt}.id`, message: 'missing or empty string'});
+        } else if (seriesIds.has(se.id)) {
+          issues.push({path: `${seAt}.id`, message: `duplicate series id "${se.id}"`});
+        } else {
+          seriesIds.add(se.id);
+        }
+        if (!SERIES_KINDS.includes(se.kind)) {
+          issues.push({
+            path: `${seAt}.kind`,
+            message: `not a valid kind — one of: ${SERIES_KINDS.join(', ')}`,
+          });
+        }
+        if (se.accent !== undefined && !ACCENTS.includes(se.accent)) {
+          issues.push({path: `${seAt}.accent`, message: `unknown accent "${se.accent}"`});
+        }
+        if (se.kind === 'line') {
+          const hasFn = se.fn !== undefined;
+          const hasPoints = se.points !== undefined;
+          if (!hasFn && !hasPoints) {
+            issues.push({path: seAt, message: 'a line series needs either `fn` or `points`'});
+          }
+          if (hasFn && !CHART_FNS.includes(se.fn)) {
+            issues.push({
+              path: `${seAt}.fn`,
+              message: `not an allowed fn — one of: ${CHART_FNS.join(', ')}`,
+            });
+          }
+          if (hasPoints) {
+            if (!Array.isArray(se.points) || se.points.length < 2) {
+              issues.push({path: `${seAt}.points`, message: 'points must be an array of ≥ 2 [x, y] pairs'});
+            } else {
+              se.points.forEach((p: any, pi: number) => {
+                if (
+                  !Array.isArray(p) ||
+                  p.length !== 2 ||
+                  typeof p[0] !== 'number' ||
+                  typeof p[1] !== 'number'
+                ) {
+                  issues.push({path: `${seAt}.points[${pi}]`, message: 'must be a [number, number] pair'});
+                }
+              });
+            }
+          }
+        } else if (se.kind === 'bars') {
+          if (!Array.isArray(se.data) || se.data.length === 0) {
+            issues.push({path: `${seAt}.data`, message: 'a bars series needs a non-empty `data` array'});
+          } else {
+            if (se.data.length > MAX_BARS) {
+              issues.push({
+                path: `${seAt}.data`,
+                severity: 'warning',
+                message: `${se.data.length} bars is dense — ${MAX_BARS} or fewer reads cleanly`,
+              });
+            }
+            se.data.forEach((d: any, di: number) => {
+              const dAt = `${seAt}.data[${di}]`;
+              if (!d || typeof d !== 'object') {
+                issues.push({path: dAt, message: 'datum must be an object {label, value}'});
+                return;
+              }
+              if (typeof d.label !== 'string' || !d.label.trim()) {
+                issues.push({path: `${dAt}.label`, message: 'missing or empty string'});
+              }
+              if (typeof d.value !== 'number' || !Number.isFinite(d.value)) {
+                issues.push({path: `${dAt}.value`, message: 'must be a finite number'});
+              }
+            });
+          }
+        } else if (se.kind === 'point') {
+          if (se.bind !== undefined && (typeof se.bind !== 'string' || !se.bind.trim())) {
+            issues.push({path: `${seAt}.bind`, message: 'bind must be a non-empty string naming a `set` key'});
+          }
+          if (se.along !== undefined && (typeof se.along !== 'string' || !se.along.trim())) {
+            issues.push({path: `${seAt}.along`, message: 'along must be a non-empty string naming a line series id'});
+          }
         }
       });
     }

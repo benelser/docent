@@ -34,7 +34,7 @@
       "nodes": [
         {"id": "ag", "label": "Agent", "sub": "authors the spec", "col": 0, "row": 0, "accent": "blue"},
         {"id": "en", "label": "Engine", "sub": "renders it", "col": 2, "row": 0, "accent": "green"},
-        {"id": "fi", "label": "Film", "sub": "the artifact", "col": 1, "row": 1, "accent": "amber"}
+        {"id": "fi", "label": "Film", "sub": "the artifact", "col": 1, "row": 1, "accent": "amber", "weight": "hero"}
       ],
       "edges": [
         {"id": "e-ae", "from": "ag", "to": "en"},
@@ -42,7 +42,7 @@
       ],
       "beats": [
         {"id": "structure-1", "narration": "A structure scene shows how the parts relate — nodes and edges.", "reveal": ["ag", "en", "e-ae"]},
-        {"id": "structure-2", "narration": "The agent authors a spec; the engine renders the film.", "reveal": ["fi", "e-ef"], "focus": ["fi"]}
+        {"id": "structure-2", "narration": "The agent authors a spec; the engine renders the film.", "reveal": ["fi", "e-ef"], "focus": ["fi"], "shot": "push"}
       ]
     },
     {
@@ -106,14 +106,14 @@
       "accent": "cyan",
       "kicker": "GRAMMAR // 06",
       "heading": "quantities — the numbers",
-      "figures": [
-        {"id": "q1", "label": "Scene types", "value": "11", "note": "the closed grammar"},
-        {"id": "q2", "label": "Held-out subjects tested", "value": "12", "note": "the break-it battery"},
-        {"id": "q3", "label": "Engine packages", "value": "2", "unit": "@docent"}
+      "metrics": [
+        {"id": "q1", "label": "Scene types", "col": 0, "row": 0, "bind": "types", "format": "int"},
+        {"id": "q2", "label": "Held-out subjects tested", "col": 1, "row": 0, "bind": "subjects", "format": "int"},
+        {"id": "q3", "label": "Engine packages", "col": 2, "row": 0, "bind": "packages", "format": "int", "unit": "@docent"}
       ],
       "beats": [
-        {"id": "quantities-1", "narration": "A quantities scene puts the magnitudes on screen — here, 11 scene types proven against 12 test subjects.", "reveal": 2},
-        {"id": "quantities-2", "narration": "Figures, a worked grid, or a payoff matrix.", "reveal": 3}
+        {"id": "quantities-1", "narration": "A quantities scene puts the magnitudes on screen — here, 11 scene types proven against 12 test subjects.", "set": {"types": {"to": 11}, "subjects": {"to": 12}}, "pace": "settle"},
+        {"id": "quantities-2", "narration": "Figures, a worked grid, or a payoff matrix.", "set": {"packages": {"to": 2}}}
       ]
     },
     {
@@ -139,6 +139,7 @@
       "accent": "amber",
       "kicker": "GRAMMAR // 08",
       "heading": "tension — the trade-off",
+      "cut": "hold",
       "grid": {"cols": 3, "rows": 2},
       "nodes": [
         {"id": "closed", "label": "A closed grammar", "sub": "consistent and coherent", "col": 0, "row": 0, "accent": "green"},
@@ -148,7 +149,7 @@
       "edges": [],
       "beats": [
         {"id": "tension-1", "narration": "A tension scene surfaces the trade-off. docent chose a closed grammar over an open one — for consistency, at the cost of raw expressiveness.", "reveal": ["closed", "open"]},
-        {"id": "tension-2", "narration": "The residual risk: a subject whose move the grammar lacks. The strain signal is how we would know.", "reveal": ["gap"], "focus": ["gap"]}
+        {"id": "tension-2", "narration": "The residual risk: a subject whose move the grammar lacks. The strain signal is how we would know.", "reveal": ["gap"], "focus": ["gap"], "pace": "hold", "shot": "push"}
       ]
     },
     {
@@ -189,7 +190,7 @@
       ],
       "beats": [
         {"id": "recap-1", "narration": "A recap scene synthesizes the takeaway as a short list.", "reveal": 2},
-        {"id": "recap-2", "narration": "A closed grammar — general enough for anything.", "reveal": 4}
+        {"id": "recap-2", "narration": "A closed grammar — general enough for anything.", "reveal": 4, "pace": "hold"}
       ]
     },
     {
@@ -204,6 +205,27 @@
       "beats": [
         {"id": "diff-1", "narration": "A diff scene shows a change — before and after.", "highlight": [3, 4]},
         {"id": "diff-2", "narration": "It is kept only for pull-request films — a software dialect.", "highlight": [3, 4]}
+      ]
+    },
+    {
+      "id": "s-chart",
+      "type": "chart",
+      "accent": "cyan",
+      "kicker": "GRAMMAR // 13",
+      "heading": "chart — plot the data",
+      "xAxis": {"label": "scene type", "min": 0, "max": 4},
+      "yAxis": {"label": "beats", "min": 0, "max": 3},
+      "series": [
+        {"id": "bars", "kind": "bars", "accent": "cyan", "data": [
+          {"label": "frame", "value": 2},
+          {"label": "structure", "value": 2},
+          {"label": "compare", "value": 2},
+          {"label": "recap", "value": 2}
+        ]}
+      ],
+      "beats": [
+        {"id": "chart-1", "narration": "A chart scene plots data on real axes — bars that grow to their value.", "reveal": ["bars"]},
+        {"id": "chart-2", "narration": "The move docent could not make until now: not a diagram about data, but the data itself.", "reveal": ["bars"], "pace": "hold"}
       ]
     }
   ]

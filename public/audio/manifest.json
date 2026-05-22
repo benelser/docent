@@ -1714,5 +1714,13 @@
   "linear-algebra/lr-5": {
     "file": "audio/linear-algebra/lr-5.mp3",
     "seconds": 18.55
+  },
+  "grammar-check/chart-1": {
+    "file": "audio/grammar-check/chart-1.mp3",
+    "seconds": 4.975
+  },
+  "grammar-check/chart-2": {
+    "file": "audio/grammar-check/chart-2.mp3",
+    "seconds": 6.1
   }
 }
