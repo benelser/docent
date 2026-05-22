@@ -7,6 +7,31 @@ answer — silent omission is not.
 
 ---
 
+## 0. Subsystem boundary  *(architecture mode — when a subsystem is named)*
+
+`docent ar <repo> <subsystem>` passes a free-text subsystem name. Resolve it to
+a concrete code boundary *before* surveying — that boundary is the film's scope.
+
+- **Resolve the name to code, language-aware.** A subsystem maps to a unit the
+  project already has. Use the repo's own build manifest to find the real
+  units, never invent one:
+  - *Go* — a package under `pkg/` or `internal/` (`scheduler` → `pkg/scheduler`)
+  - *Rust* — a crate in the workspace (`Cargo.toml` members), or a module
+  - *Python* — a package directory (an `__init__.py` tree)
+  - *JS/TS* — a workspace package, or a top-level directory under `src/`
+  - *a monorepo* — a top-level component directory
+- **If the name is ambiguous**, list the candidate boundaries you found, pick
+  the dominant one, and say why.
+- **State the boundary explicitly**: the directory or package, the entry points
+  into it, its public surface (what the rest of the system calls), and what is
+  deliberately out of scope. Every node in the film falls inside that boundary
+  or is a named neighbour at its edge.
+- A subsystem film is still a full architecture review with a tighter frame.
+  The depth bar does not relax: failure modes, a real number, a trade-off, an
+  honest scorecard — all scoped to the subsystem.
+
+---
+
 ## 1. Triage  *(PR mode — the most important section)*
 
 Rank the diff. What is **load-bearing** (the consequential logic) versus

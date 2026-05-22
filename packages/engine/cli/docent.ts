@@ -18,6 +18,7 @@ import {runCascade} from './cascade';
 import {scorePr} from './score';
 import {hermetic} from './hermetic';
 import {depthcheck} from './depthcheck';
+import {survey} from './survey';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -27,7 +28,7 @@ const opt = (n: string): string | undefined => {
   return i >= 0 ? argv[i + 1] : undefined;
 };
 // positionals — args that are neither a --flag nor a value consumed by one.
-const VALUE_FLAGS = new Set(['scale', 'still']);
+const VALUE_FLAGS = new Set(['scale', 'still', 'mode', 'subsystem', 'pr', 'agent', 'id']);
 const positionals: string[] = [];
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
@@ -133,6 +134,19 @@ const main = async (): Promise<number> => {
       return depthcheck(id, flag('json'));
     }
 
+    case 'survey': {
+      const repo = positionals[0] ?? die('usage: docent survey <repo> [--mode pr|ar] [--subsystem X] [--pr N] [--agent claude]');
+      const mode = (opt('mode') as 'pr' | 'ar') ?? 'ar';
+      const agent = (opt('agent') as 'claude' | 'codex') ?? 'claude';
+      const subsystem = opt('subsystem');
+      const pr = opt('pr');
+      const key = basename(repo).replace(/\.git$/, '').toLowerCase();
+      const id =
+        opt('id') ??
+        (mode === 'pr' ? `${key}-pr` : subsystem ? `${key}-${subsystem.toLowerCase()}` : key);
+      return survey({repo, mode, subsystem, pr, agent, id});
+    }
+
     case 'hermetic': {
       const scale = num(opt('scale')) ?? (flag('full') ? 1 : 0.5);
       return hermetic({fixtureId: positionals[0], scale, json: flag('json')});
@@ -145,6 +159,7 @@ const main = async (): Promise<number> => {
       console.log('  docent pr     <repo> <pr#>        PR-review film');
       console.log('  docent ar     <repo> [subsystem]  architecture-review film');
       console.log('  docent score  <owner/repo> <pr#>  the triggering matrix — no render');
+      console.log('  docent survey <repo> [--mode]     headless agent survey → a film spec');
       console.log('  docent depthcheck <film>          the depth contract over a spec');
       console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
       console.log('  docent env                        resolved paths and versions');

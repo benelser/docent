@@ -14,7 +14,9 @@ docent works in two modes:
   with depth, and say what you deprioritized and why.
 - **Architecture review** (`docent ar <repo> [subsystem]`) — the whole system,
   or one subsystem: the components, how control and data flow, the idioms, and
-  — at depth — the failure modes, the limits, and the trade-offs.
+  — at depth — the failure modes, the limits, and the trade-offs. When a
+  subsystem is named, resolve it to a concrete code boundary first — section 0
+  of the survey template, language-aware.
 
 ## The core principle
 

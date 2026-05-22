@@ -186,14 +186,41 @@ const CHECKS: Check[] = [
     stage: 'survey',
     required: true,
     run: async () => {
-      const found = ['claude', 'codex'].filter((a) => Bun.which(a));
-      return found.length
-        ? {status: 'ok', detail: `${found.join(', ')} — docent rides inside the agent`}
-        : {
-            status: 'fail',
-            detail: 'no coding agent (claude / codex) on PATH',
-            remediation: 'install Claude Code or Codex',
-          };
+      // Probe that each agent actually *runs* — being on PATH is not enough
+      // (a broken install can leave a wrapper that fails to spawn its binary).
+      const report: string[] = [];
+      let anyWorks = false;
+      for (const a of ['claude', 'codex']) {
+        if (!Bun.which(a)) continue;
+        const r = await probe(a, ['--version'], 8000);
+        if (r && r.code === 0) {
+          report.push(`${a} ✓`);
+          anyWorks = true;
+        } else {
+          report.push(`${a} on PATH but not runnable`);
+        }
+      }
+      if (report.length === 0) {
+        return {
+          status: 'fail',
+          detail: 'no coding agent (claude / codex) on PATH',
+          remediation: 'install Claude Code or Codex',
+        };
+      }
+      if (!anyWorks) {
+        return {
+          status: 'fail',
+          detail: report.join('; '),
+          remediation: 'repair the agent install — the binary fails to spawn',
+        };
+      }
+      return {
+        status: report.some((r) => r.includes('not runnable')) ? 'warn' : 'ok',
+        detail: report.join('; '),
+        remediation: report.some((r) => r.includes('not runnable'))
+          ? 'one agent is broken — survey can still run on the working one'
+          : undefined,
+      };
     },
   },
   binCheck({
