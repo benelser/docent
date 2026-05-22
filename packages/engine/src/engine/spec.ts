@@ -181,6 +181,25 @@ const PACE: Record<NonNullable<Beat['pace']>, number> = {
 export const cutFrames = (cut?: Scene['cut']): number =>
   cut === 'hold' ? 28 : cut === 'continue' ? 8 : TRANSITION;
 
+// `register` (a film knob) sets the overall mood — and with it the *default*
+// pace and cut. Any per-beat or per-scene knob still overrides these.
+type RegisterDefaults = {pace: NonNullable<Beat['pace']>; cut: NonNullable<Scene['cut']>};
+export const registerDefaults = (
+  register?: FilmSpec['meta']['register'],
+): RegisterDefaults => {
+  switch (register) {
+    case 'grave':
+    case 'calm':
+      return {pace: 'settle', cut: 'hold'};
+    case 'urgent':
+      return {pace: 'brisk', cut: 'continue'};
+    case 'playful':
+      return {pace: 'normal', cut: 'continue'};
+    default:
+      return {pace: 'normal', cut: 'dissolve'};
+  }
+};
+
 // Words-per-second fallback so the film has sane timing before TTS has run
 // (keeps `remotion studio` usable on a fresh checkout).
 const estimateSeconds = (text: string): number =>
@@ -213,13 +232,14 @@ export type Timeline = {
 export const buildTimeline = (film: FilmSpec): Timeline => {
   const fps = film.meta.fps;
   const lead = Math.round(LEAD * fps);
+  const reg = registerDefaults(film.meta.register);
 
   const scenes: TimedScene[] = film.scenes.map((scene, index) => {
     let cursor = lead;
     const beats: TimedBeat[] = scene.beats.map((b, i) => {
       const m = manifest[`${film.meta.id}/${b.id}`];
       const seconds = m ? m.seconds : estimateSeconds(b.narration);
-      const durationInFrames = Math.round((seconds + TAIL * PACE[b.pace ?? 'normal']) * fps);
+      const durationInFrames = Math.round((seconds + TAIL * PACE[b.pace ?? reg.pace]) * fps);
       const tb: TimedBeat = {
         ...b,
         index: i,
@@ -238,7 +258,7 @@ export const buildTimeline = (film: FilmSpec): Timeline => {
   // transition's overlap (not a flat TRANSITION) so the film length is exact.
   const transitionTotal = scenes
     .slice(0, -1)
-    .reduce((a, s) => a + cutFrames(s.scene.cut), 0);
+    .reduce((a, s) => a + cutFrames(s.scene.cut ?? reg.cut), 0);
   const total =
     scenes.reduce((a, s) => a + s.durationInFrames, 0) - transitionTotal;
 

@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remotion';
 import {TransitionSeries, linearTiming} from '@remotion/transitions';
 import {fade} from '@remotion/transitions/fade';
-import {FILMS, buildTimeline, cutFrames} from './engine/spec';
+import {FILMS, buildTimeline, cutFrames, registerDefaults} from './engine/spec';
 import {FrameScene} from './scenes/FrameScene';
 import {StructureScene} from './scenes/StructureScene';
 import {ProgressionScene} from './scenes/ProgressionScene';
@@ -22,6 +22,7 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
   const film = FILMS[filmId];
   const timeline = buildTimeline(film);
   const count = timeline.scenes.length;
+  const reg = registerDefaults(film.meta.register);
   const frame = useCurrentFrame();
   const {durationInFrames} = useVideoConfig();
 
@@ -80,7 +81,7 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
             <TransitionSeries.Transition
               key={`x-${ts.scene.id}`}
               timing={linearTiming({
-                durationInFrames: cutFrames(timeline.scenes[i - 1].scene.cut),
+                durationInFrames: cutFrames(timeline.scenes[i - 1].scene.cut ?? reg.cut),
               })}
               presentation={fade()}
             />,
