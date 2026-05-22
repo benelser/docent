@@ -1614,5 +1614,105 @@
   "grammar-check/diff-2": {
     "file": "audio/grammar-check/diff-2.mp3",
     "seconds": 4.175
+  },
+  "linear-algebra/lf-1": {
+    "file": "audio/linear-algebra/lf-1.mp3",
+    "seconds": 9.175
+  },
+  "linear-algebra/lf-2": {
+    "file": "audio/linear-algebra/lf-2.mp3",
+    "seconds": 13.4
+  },
+  "linear-algebra/lf-3": {
+    "file": "audio/linear-algebra/lf-3.mp3",
+    "seconds": 11.075
+  },
+  "linear-algebra/lp-1": {
+    "file": "audio/linear-algebra/lp-1.mp3",
+    "seconds": 11.975
+  },
+  "linear-algebra/lp-2": {
+    "file": "audio/linear-algebra/lp-2.mp3",
+    "seconds": 9.65
+  },
+  "linear-algebra/lp-3": {
+    "file": "audio/linear-algebra/lp-3.mp3",
+    "seconds": 6.1
+  },
+  "linear-algebra/lp-4": {
+    "file": "audio/linear-algebra/lp-4.mp3",
+    "seconds": 14.6
+  },
+  "linear-algebra/lq-1": {
+    "file": "audio/linear-algebra/lq-1.mp3",
+    "seconds": 9.475
+  },
+  "linear-algebra/lq-2": {
+    "file": "audio/linear-algebra/lq-2.mp3",
+    "seconds": 3.325
+  },
+  "linear-algebra/lq-3": {
+    "file": "audio/linear-algebra/lq-3.mp3",
+    "seconds": 7.9
+  },
+  "linear-algebra/lq-4": {
+    "file": "audio/linear-algebra/lq-4.mp3",
+    "seconds": 16.425
+  },
+  "linear-algebra/ls-1": {
+    "file": "audio/linear-algebra/ls-1.mp3",
+    "seconds": 14.975
+  },
+  "linear-algebra/ls-2": {
+    "file": "audio/linear-algebra/ls-2.mp3",
+    "seconds": 15.625
+  },
+  "linear-algebra/ls-3": {
+    "file": "audio/linear-algebra/ls-3.mp3",
+    "seconds": 18.825
+  },
+  "linear-algebra/lpr-1": {
+    "file": "audio/linear-algebra/lpr-1.mp3",
+    "seconds": 22.825
+  },
+  "linear-algebra/lpr-2": {
+    "file": "audio/linear-algebra/lpr-2.mp3",
+    "seconds": 14.575
+  },
+  "linear-algebra/lpr-3": {
+    "file": "audio/linear-algebra/lpr-3.mp3",
+    "seconds": 20.0
+  },
+  "linear-algebra/lt-1": {
+    "file": "audio/linear-algebra/lt-1.mp3",
+    "seconds": 16.775
+  },
+  "linear-algebra/lt-2": {
+    "file": "audio/linear-algebra/lt-2.mp3",
+    "seconds": 25.45
+  },
+  "linear-algebra/lt-3": {
+    "file": "audio/linear-algebra/lt-3.mp3",
+    "seconds": 21.025
+  },
+  "linear-algebra/lr-1": {
+    "file": "audio/linear-algebra/lr-1.mp3",
+    "seconds": 13.775
+  },
+  "linear-algebra/lr-2": {
+    "file": "audio/linear-algebra/lr-2.mp3",
+    "seconds": 10.725
+  },
+  "linear-algebra/lr-3": {
+    "file": "audio/linear-algebra/lr-3.mp3",
+    "seconds": 12.925
+  },
+  "linear-algebra/lr-4": {
+    "file": "audio/linear-algebra/lr-4.mp3",
+    "seconds": 15.95
+  },
+  "linear-algebra/lr-5": {
+    "file": "audio/linear-algebra/lr-5.mp3",
+    "seconds": 18.55
   }
 }
