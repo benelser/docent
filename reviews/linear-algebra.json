@@ -1,0 +1,37 @@
+{
+  "pass": true,
+  "scores": [
+    {
+      "dimension": "triage",
+      "score": 5,
+      "note": "It isolates the load-bearing thesis, the dot product as keystone, instead of touring all ten concept pages with equal weight."
+    },
+    {
+      "dimension": "where-wrong",
+      "score": 4,
+      "note": "The film walks both the scale case of ten linear layers collapsing and the boundary case that inverse/backward reasoning breaks the slogan."
+    },
+    {
+      "dimension": "tests-prove-it",
+      "score": 4,
+      "note": "Its evidence is concrete worked mechanism rather than empty assertion, though the proof beats rely on reenactment more than explicit page-level citation."
+    },
+    {
+      "dimension": "the-numbers",
+      "score": 4,
+      "note": "Real quantities do reasoning work here: the [2,3]·[4,5]=23 example, the ten-layer collapse, and the D2 versus D3 gap all support claims rather than decorate them."
+    },
+    {
+      "dimension": "the-trade-off",
+      "score": 5,
+      "note": "It names the rejected geometry-first alternative and costs the chosen mechanic-first path with a specific debt: the dot product's meaning remains an I-O-U."
+    },
+    {
+      "dimension": "verdict-adjudicates",
+      "score": 4,
+      "note": "The closing scene rules clearly, names the biggest residual risk, and tells the viewer what skepticism to carry forward instead of ending in praise."
+    }
+  ],
+  "critiques": [],
+  "summary": "This film interrogates its subject rather than touring it. It finds the wiki's real thesis, pressures that thesis where linear stacking collapses or stops applying, and charges the pedagogy for deferring the geometric meaning of its keystone operation. The lightest dimension is evidence, where the narration could be more explicit about which source pages prove each claim, but the film still clears the bar as a genuine review."
+}
