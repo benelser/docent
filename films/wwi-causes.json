@@ -302,44 +302,43 @@
       "type": "quantities",
       "accent": "amber",
       "kicker": "03 // THE SCALE",
-      "heading": "The usable number is how fast July closes",
+      "heading": "The usable counts are structural, not calendar math",
       "metrics": [
         {
-          "id": "m-gap1",
-          "label": "Sarajevo to ultimatum",
+          "id": "m-models",
+          "label": "Bad models the page rejects",
           "col": 0,
           "row": 0,
-          "bind": "gap1",
+          "bind": "models",
           "format": "int",
-          "unit": "days",
+          "unit": "models",
           "accent": "blue"
         },
         {
-          "id": "m-gap2",
-          "label": "Ultimatum to general mobilization",
+          "id": "m-layers",
+          "label": "Causal layers in the argument",
           "col": 1,
           "row": 0,
-          "bind": "gap2",
+          "bind": "layers",
           "format": "int",
-          "unit": "days",
+          "unit": "layers",
           "accent": "cyan"
-        },
-        {
-          "id": "m-gap3",
-          "label": "Mobilization to British entry",
-          "col": 2,
-          "row": 0,
-          "bind": "gap3",
-          "format": "int",
-          "unit": "days",
-          "accent": "amber"
         },
         {
           "id": "m-fronts",
           "label": "Fronts German planning assumes",
+          "col": 2,
+          "row": 0,
+          "bind": "fronts",
+          "format": "int",
+          "accent": "amber"
+        },
+        {
+          "id": "m-causes",
+          "label": "Causes the thesis says can suffice",
           "col": 1,
           "row": 1,
-          "bind": "fronts",
+          "bind": "causes",
           "format": "int",
           "accent": "rose"
         }
@@ -347,37 +346,37 @@
       "beats": [
         {
           "id": "wwi-scale-1",
-          "narration": "The quantity the notes actually let us reason with is time. There are twenty-five days from Sarajevo on 28 June to Vienna's ultimatum on 23 July.",
+          "narration": "The usable numbers in the notes are structural, not calendar arithmetic. Start with two bad models the page has to kill: one bullet as the whole cause, and alliances as automatic dominoes.",
           "set": {
-            "gap1": {
-              "to": 25
+            "models": {
+              "to": 2
             }
           }
         },
         {
           "id": "wwi-scale-2",
-          "narration": "After the ultimatum the slack collapses. It is seven days from 23 July to Russia's general mobilization on 30 July.",
+          "narration": "Then two causal layers. The notes split long-term structural tension from short-term July decisions, which is why Sarajevo matters as a trigger without pretending it explains the whole war by itself.",
           "set": {
-            "gap2": {
-              "to": 7
+            "layers": {
+              "to": 2
             }
           }
         },
         {
           "id": "wwi-scale-3",
-          "narration": "Then only five more days pass before Britain enters on 4 August. At that speed, mobilization timetables stop being background color and start eating diplomatic options.",
+          "narration": "A third two is operational. German planning assumes a two-front war against France and Russia, so once Russia moves, speed in the west stops being background militarism and becomes direct pressure inside the crisis.",
           "set": {
-            "gap3": {
-              "to": 5
+            "fronts": {
+              "to": 2
             }
           },
           "pace": "settle"
         },
         {
           "id": "wwi-scale-4",
-          "narration": "German planning adds the last count that matters here: two fronts. That does not make widening automatic, but it explains why delay now looks dangerous and speed looks rational inside the crisis.",
+          "narration": "And the page's own thesis lands on the tightest count of all: one or two causes could have launched the war. That is why overdetermination is earned for escalation. It says the crisis had more than one sufficient wire, not that the deeper catalog has been cleanly ranked.",
           "set": {
-            "fronts": {
+            "causes": {
               "to": 2
             }
           },
@@ -412,14 +411,14 @@
       "beats": [
         {
           "id": "wwi-text-1",
-          "narration": "Here is the source's ruling on method, but it has to be earned. The notes say it earns this anti-single-cause stance most clearly in the July chain: Vienna treats Sarajevo as a casus belli, Berlin gives the blank cheque, Russia hardens from partial to general mobilization, and German planning assumes a two-front war.",
+          "narration": "Here is the source's ruling on method, but it has to be earned. The notes earn it in a specific July chain: Vienna treats Sarajevo as a casus belli, Berlin gives the blank cheque, France reaffirms Russia, Russia's partial mobilization collapses into general mobilization, and German planning assumes a two-front war.",
           "reveal": [
             "mk-single"
           ]
         },
         {
           "id": "wwi-text-2",
-          "narration": "That is what makes the phrase multiple causes persuasive here. The blank cheque, Russian mobilization, and the westward war plan create more than one live route from a local crisis to continental widening.",
+          "narration": "That is what makes the phrase multiple causes persuasive here. This chain shows more than one sufficient wire inside late July, so overdetermination is earned as an escalation account. What it does not do is settle the deeper ranking question about which long-run cause mattered most.",
           "reveal": [
             "mk-multiple"
           ],
@@ -526,7 +525,7 @@
         },
         {
           "id": "wwi-july-6",
-          "narration": "At that point German planning assumes a two-front war and races west through Belgium before Russia fully ripens. France is already tied to Russia, and Britain is now judging a continental war through Belgian neutrality and its wider alignments. The local crisis did not vanish. It propagated.",
+          "narration": "By then France has already reaffirmed Russia, so German planners now see the two-front war they feared as live, not hypothetical. Their answer is a rapid western attack before Russia fully ripens. The local crisis did not vanish. It propagated through prior commitments and war plans.",
           "message": {
             "from": "berlin",
             "to": "europe",
@@ -536,11 +535,11 @@
         },
         {
           "id": "wwi-july-7",
-          "narration": "Here is the hard objection. The Triple Entente was not an automatic mutual-defense treaty, and Britain still retained policy freedom. The page is thinner on London's choice than on Vienna, Berlin, and St. Petersburg, but its answer is still that by the time Britain is choosing, the blank cheque has stiffened Vienna, Russia is in general mobilization, and German two-front planning is already moving west.",
+          "narration": "Here is the hard boundary. The Triple Entente was not an automatic mutual-defense alliance, and Britain still retained policy freedom in 1914. So the article breaks if you read alignment as compulsion. It still holds on the narrower claim the notes support: alignments explain pressure and shrinking options, not an automatic British march to war.",
           "message": {
             "from": "europe",
             "to": "europe",
-            "label": "freedom survives, but the window shrinks",
+            "label": "pressure holds; compulsion does not",
             "kind": "aside"
           }
         },
@@ -664,7 +663,7 @@
       "heading": "Causes of World War I — an honest verdict",
       "points": [
         "Disposition — persuasive on the late-July widening from Balkan crisis to European war.",
-        "Strongest proof — blank cheque, mobilization chain, and two-front planning.",
+        "Strongest proof — casus belli, blank cheque, France-Russia reaffirmation, mobilization chain, and two-front planning.",
         "Weakest proof — deep causes are cataloged more than decisively ranked; some nearby claims carry citation-needed flags.",
         "Residual risk — overdetermination can wash agency into atmosphere.",
         "Watch this caveat — the page stays honest only if Germany's larger share of responsibility remains in view."
@@ -677,7 +676,7 @@
         },
         {
           "id": "wwi-recap-2",
-          "narration": "Its strongest evidence is specific: Vienna treats Sarajevo as a casus belli, Berlin issues the blank cheque, Russian mobilization broadens, and German two-front planning turns speed into pressure.",
+          "narration": "Its strongest evidence is specific: Vienna treats Sarajevo as a casus belli, Berlin issues the blank cheque, France reaffirms Russia, Russian mobilization broadens, and German two-front planning turns speed into pressure.",
           "reveal": 2
         },
         {
