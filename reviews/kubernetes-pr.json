@@ -1,48 +1,37 @@
 {
-  "pass": false,
+  "pass": true,
   "scores": [
     {
       "dimension": "triage",
       "score": 5,
-      "note": "The film stays trained on the load-bearing redesign in `heap.go` and its hot-path payoff instead of flattening the PR into a file-by-file tour."
+      "note": "It finds the load-bearing change—the heap representation rewrite and its Less/Swap hot-path payoff—instead of touring both files evenly."
     },
     {
       "dimension": "where-wrong",
-      "score": 2,
-      "note": "It walks one weird-input caution about bad indices, but never walks an at-scale failure mode for the new `queue` plus `keyIndex` invariant or says whether the PR handles that churn."
+      "score": 4,
+      "note": "It walks both a weird-input case (bad indices after guard removal) and an at-scale failure mode (queue/keyIndex desync under churn), and says how each would fail."
     },
     {
       "dimension": "tests-prove-it",
       "score": 4,
-      "note": "The film names concrete tests and ties them to specific claims like pop order, mutation paths, and larger-scale churn rather than merely saying tests exist."
+      "note": "It ties ordering, delete/update behavior, and churn claims to named tests and explicitly separates what the tests pin from what remains caller-contract reasoning."
     },
     {
       "dimension": "the-numbers",
       "score": 5,
-      "note": "It uses real quantities from the notes—O(log n), 100/1000/5000-pod benchmarks, 24-46% speedups, and roughly halved allocations—to reason about why this refactor matters."
+      "note": "It uses real quantities—O(log n), 100/1000/5000-item benchmarks, 24-46% speedups, and roughly halved allocations—to justify the review's ruling."
     },
     {
       "dimension": "the-trade-off",
       "score": 3,
-      "note": "The old queue-of-keys shape versus the new pointer-slice plus `keyIndex` invariant is a real trade, but the film overstates what the old design guaranteed instead of costing that alternative precisely."
+      "note": "It does name X over Y and cost the bookkeeping burden, but the rejected alternative is mostly the status quo rather than a richer competing design."
     },
     {
       "dimension": "verdict-adjudicates",
-      "score": 4,
-      "note": "The closing scene does rule, names a concrete residual risk, and says what to watch, though it inherits the film's missing scale-side interrogation."
+      "score": 5,
+      "note": "The close actually rules, names stale queue/keyIndex synchronization as the biggest residual risk, and says what future reviewers should watch."
     }
   ],
-  "critiques": [
-    {
-      "target": "ctx-4 / verdict-2",
-      "problem": "\"In a large cluster with thousands of pending pods, the cost of those two tiny functions multiplies across thousands of operations every second\" sets up scale, but the film's only explicit risk is \"internal misuse would fail harder.\" That is a weird-input caution, not an at-scale failure walk.",
-      "fix": "Interrogate the scale-sensitive consequence of the new shape: if repeated `AddOrUpdate`/`Delete` churn ever lets `queue` and `keyIndex` diverge, key-based operations or heap maintenance break. Then use the note-backed evidence—`TestHeapDeleteMiddle`, `TestHeapUpdatePriority`, `TestHeapLargeScale`, and the GCE 100 performance job—to say whether the PR appears to handle that risk at the scales exercised."
-    },
-    {
-      "target": "redesign-4",
-      "problem": "\"The old queue-of-keys design paid two map lookups inside Less and Swap, but it also meant the heap order and the key lookup table could not drift apart\" goes past the survey notes. The notes support that the old shape avoided a separate `keyIndex` synchronization burden; they do not support the stronger claim that drift was impossible.",
-      "fix": "Cost the actual alternative visible in the notes: keep `queue []string` plus `items map` and keep paying two lookups in `Less` and `Swap`, or move to `queue []*heapItem[T]` plus `keyIndex` and accept the new lockstep invariant. Do not claim the old design guaranteed away drift."
-    }
-  ],
-  "summary": "This draft clearly finds the load-bearing redesign, uses real benchmark numbers, and ties named tests to named behaviors; it is no longer an undifferentiated tour of the diff. But it still misses the depth bar because the only concrete failure analysis is a bad-index misuse case, while the scale-sensitive consequence of the new `queue` plus `keyIndex` invariant is never walked. The trade-off beat also overclaims what the old design guaranteed, so the film should be revised."
+  "critiques": [],
+  "summary": "Pass. This draft interrogates the PR instead of touring it: it isolates the heap rewrite, reasons through how it can fail, and ties approval to named tests plus measured benchmark gains. The thinnest dimension is the trade-off scene, which leans on 'keep the old shape' as the rejected alternative, but the film still clears the bar because the verdict adjudicates a concrete residual risk and watch item."
 }

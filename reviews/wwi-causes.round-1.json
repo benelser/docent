@@ -1,0 +1,63 @@
+{
+  "pass": false,
+  "scores": [
+    {
+      "dimension": "triage",
+      "score": 4,
+      "note": "Centers the article's load-bearing splice between long-term pressure and late-July decisions instead of touring every subsection evenly."
+    },
+    {
+      "dimension": "where-wrong",
+      "score": 2,
+      "note": "Names caveats, but never walks one weird counter-case and one scale failure through to a hold/degrade/break judgment."
+    },
+    {
+      "dimension": "tests-prove-it",
+      "score": 2,
+      "note": "Quotes the article's thesis, but does not separate the July mechanism the notes say is earned from the broader structural catalog the notes call weakly ranked."
+    },
+    {
+      "dimension": "the-numbers",
+      "score": 2,
+      "note": "The reserve and tonnage figures are not grounded in the survey notes and are used mostly as atmosphere rather than to reason about a concrete constraint."
+    },
+    {
+      "dimension": "the-trade-off",
+      "score": 4,
+      "note": "It names the systemic-account versus single-culprit alternative and states the real cost: overdetermination can wash out agency."
+    },
+    {
+      "dimension": "verdict-adjudicates",
+      "score": 3,
+      "note": "The close reaches a disposition and residual risk, but it still reads more like a polished recap than a hard ruling on where the article is strongest and weakest."
+    }
+  ],
+  "critiques": [
+    {
+      "target": "claim / wwi-claim-1",
+      "problem": "\"It says a short-term crisis entered a system already full of rival alignments, military preparation, and imperial fear.\" This flattens strong and weak evidence into one equally earned bundle, even though the notes say the July mechanism is demonstrated and the broader structural catalog is only plausible or weakly ranked.",
+      "fix": "Split the scene's confidence levels: show late-July escalation as the source's strongest-earned mechanism, and label imperial rivalry and atmosphere claims as background pressure the page names but does not decisively rank."
+    },
+    {
+      "target": "text / wwi-text-1 to wwi-text-3",
+      "problem": "\"Here is the source's own ruling on method\" and \"multiple live causes\" quote the conclusion, but they do not test whether the article has earned that conclusion with specific evidence.",
+      "fix": "Interrogate the thesis against the notes' evidence hierarchy: pair the overdetermination quote with the blank-cheque and mobilization chain that earns it, then state that some long-run sections are weaker and even carry citation-needed flags."
+    },
+    {
+      "target": "scale / wwi-scale-1 to wwi-scale-4",
+      "problem": "\"By 1897 Germany had 3.4 million reserves...\" and the rest of the metric scene introduce concrete figures that the survey notes never surfaced, and the scene uses them mostly to signal bigness.",
+      "fix": "Either add those figures to the survey notes and tie them to a sharper causal inference, or replace the scene with a quantity the notes actually use to reason about escalation, such as the compressed July dates or the rail-mobilization speed that shrinks diplomatic slack."
+    },
+    {
+      "target": "july / wwi-july-7",
+      "problem": "\"They do make late July a situation that breaks faster than diplomacy can repair it.\" The film asserts the failure mode, but it never walks the hard counter-case from the notes: if the Triple Entente was not an automatic alliance and Britain retained freedom, why did choice not stop the widening?",
+      "fix": "Add a beat that takes the non-automatic-alliance objection seriously and answers it: show whether the argument still holds because the blank cheque plus Russian mobilization plus German two-front planning overwhelm that freedom, or admit that this is where the page is thinner."
+    },
+    {
+      "target": "recap / wwi-recap-1 to wwi-recap-5",
+      "problem": "\"Sound,\" \"Earned,\" and \"Grounded\" are scorecard labels, not an adjudication. The scene restates the thesis more than it rules on the article's biggest weakness.",
+      "fix": "Rewrite the verdict as a judgment with a sharper disposition: strongest on explaining late-July escalation, weakest on ranking deep causes, residual risk that overdetermination turns into blame-washing, and the Germany-responsibility caveat as the thing to watch."
+    }
+  ],
+  "summary": "This draft has a real spine and a genuine trade-off scene, but it still behaves more like a confident guided tour of the article's thesis than an adversarial review of what the article can actually prove. It needs revision because the film does not visibly test the argument at its weak points, and its quantitative scene is not grounded in the survey notes that are supposed to be the film's source of truth."
+}
