@@ -19,7 +19,8 @@
         "fps": {"type": "number", "exclusiveMinimum": 0},
         "width": {"type": "number", "exclusiveMinimum": 0},
         "height": {"type": "number", "exclusiveMinimum": 0},
-        "voice": {"type": "string"}
+        "voice": {"type": "string"},
+        "register": {"enum": ["grave", "neutral", "calm", "urgent", "playful"]}
       }
     },
     "scenes": {
@@ -38,6 +39,9 @@
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
+        "cut": {"enum": ["dissolve", "hold", "continue"]},
+        "palette": {"enum": ["cool", "warm", "signal", "mono"]},
+        "treatment": {"enum": ["crisp", "sketch"]},
         "beats": {
           "type": "array",
           "minItems": 1,
@@ -50,7 +54,10 @@
       "required": ["id", "narration"],
       "properties": {
         "id": {"type": "string", "description": "unique across the whole film — the TTS cache keys on it"},
-        "narration": {"type": "string", "minLength": 1}
+        "narration": {"type": "string", "minLength": 1},
+        "pace": {"enum": ["hold", "settle", "normal", "brisk"]},
+        "cadence": {"enum": ["cascade", "together", "snap"]},
+        "shot": {"enum": ["wide", "follow", "push", "hold"]}
       }
     }
   }

@@ -102,6 +102,7 @@ export const StructureScene: React.FC<SceneProps> = ({
           tag={n.tag}
           accentHex={accent(n.accent ?? scene.accent)}
           emphasis={n.emphasis}
+          weight={n.weight}
           state={nodeState(n.id)}
           enterFrame={revealOf(n.id)}
         />

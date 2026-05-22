@@ -6,7 +6,38 @@
 const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'demonstrate', 'recap', 'diff'];
 const ACCENTS = ['blue', 'cyan', 'green', 'amber', 'rose', 'violet'];
 
+// Intent knobs — semantic dials the author may set; the engine interprets
+// them. Each is a closed enum, and that is the point: a value outside the
+// enum would be a free-form (pixel) value sneaking in — exactly what these
+// checks forbid. An intent knob cannot degrade into a raw value.
+const KNOBS: Record<string, string[]> = {
+  register: ['grave', 'neutral', 'calm', 'urgent', 'playful'],
+  cut: ['dissolve', 'hold', 'continue'],
+  palette: ['cool', 'warm', 'signal', 'mono'],
+  treatment: ['crisp', 'sketch'],
+  pace: ['hold', 'settle', 'normal', 'brisk'],
+  cadence: ['cascade', 'together', 'snap'],
+  shot: ['wide', 'follow', 'push', 'hold'],
+  weight: ['hero', 'primary', 'normal', 'recede'],
+};
+
 export type ValidationIssue = {path: string; message: string};
+
+// Flag a knob whose value is outside its closed enum.
+const checkKnob = (
+  obj: Record<string, any>,
+  key: keyof typeof KNOBS,
+  path: string,
+  issues: ValidationIssue[],
+): void => {
+  const v = obj[key];
+  if (v !== undefined && !KNOBS[key].includes(v)) {
+    issues.push({
+      path: `${path}.${key}`,
+      message: `not a valid ${key} — one of: ${KNOBS[key].join(', ')}`,
+    });
+  }
+};
 
 export const validateSpec = (spec: unknown): ValidationIssue[] => {
   const issues: ValidationIssue[] = [];
@@ -29,6 +60,7 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         issues.push({path: `meta.${k}`, message: 'missing or non-positive number'});
       }
     }
+    checkKnob(s.meta, 'register', 'meta', issues);
   }
 
   // scenes
@@ -54,6 +86,15 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
     if (sc.accent && !ACCENTS.includes(sc.accent)) {
       issues.push({path: `${at}.accent`, message: `unknown accent "${sc.accent}"`});
     }
+    checkKnob(sc, 'cut', at, issues);
+    checkKnob(sc, 'palette', at, issues);
+    checkKnob(sc, 'treatment', at, issues);
+    if (Array.isArray(sc.nodes)) {
+      sc.nodes.forEach((n: Record<string, any>, k: number) => {
+        if (n && typeof n === 'object') checkKnob(n, 'weight', `${at}.nodes[${k}]`, issues);
+      });
+    }
+
     if (!Array.isArray(sc.beats) || sc.beats.length === 0) {
       issues.push({path: `${at}.beats`, message: 'missing or empty beats array'});
       return;
@@ -70,6 +111,9 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       if (typeof b.narration !== 'string' || !b.narration.trim()) {
         issues.push({path: `${bAt}.narration`, message: 'missing narration text'});
       }
+      checkKnob(b, 'pace', bAt, issues);
+      checkKnob(b, 'cadence', bAt, issues);
+      checkKnob(b, 'shot', bAt, issues);
     });
   });
 

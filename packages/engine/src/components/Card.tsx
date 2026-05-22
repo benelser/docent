@@ -5,6 +5,9 @@ import {interFamily, monoFamily} from '../fonts';
 import type {Box} from '../engine/layout';
 
 export type CardState = 'hidden' | 'normal' | 'focus' | 'dim';
+// `weight` — the node's authorial emphasis, a 4-step gradient. `hero` is the
+// point of the scene; `recede` is background context. Supersedes `emphasis`.
+export type CardWeight = 'hero' | 'primary' | 'normal' | 'recede';
 
 // A labelled component box — a module, service, file, or actor. Carries an
 // optional corner `tag` (a kind marker, e.g. `trait`, `×27`).
@@ -14,10 +17,11 @@ export const Card: React.FC<{
   sub?: string;
   tag?: string;
   accentHex: string;
-  emphasis?: boolean;
+  emphasis?: boolean; // legacy — superseded by `weight`
+  weight?: CardWeight;
   state: CardState;
   enterFrame: number;
-}> = ({box, label, sub, tag, accentHex, emphasis, state, enterFrame}) => {
+}> = ({box, label, sub, tag, accentHex, emphasis, weight, state, enterFrame}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const local = frame - enterFrame;
@@ -26,9 +30,15 @@ export const Card: React.FC<{
 
   if (state === 'hidden') return null;
 
+  // `weight` sets the resting treatment; `state` is the per-beat focus and
+  // overrides it. `hero` reads as the active-focus look at rest; `primary`
+  // takes the accent border without the breathing glow; `recede` sits quiet.
+  const w: CardWeight = weight ?? (emphasis ? 'hero' : 'normal');
   const dim = state === 'dim';
-  const focus = state === 'focus' || Boolean(emphasis);
-  const opacity = appear * (dim ? 0.32 : 1);
+  const focus = state === 'focus' || w === 'hero';
+  const glowing = focus || w === 'primary';
+  const baseOpacity = dim ? 0.32 : w === 'recede' ? 0.56 : 1;
+  const opacity = appear * baseOpacity;
   const scale = interpolate(appear, [0, 1], [0.9, 1]);
   const breathe = focus ? 0.5 + 0.5 * Math.sin((frame / fps) * 3.2) : 0;
 
@@ -39,7 +49,7 @@ export const Card: React.FC<{
     const est = text.length * base * 0.6; // conservative per-char advance
     return est <= innerW ? base : Math.max(13, innerW / (text.length * 0.6));
   };
-  const labelSize = fitFont(label, emphasis ? 30 : 27);
+  const labelSize = fitFont(label, w === 'hero' ? 30 : 27);
   const subSize = sub ? fitFont(sub, 15.5) : 15.5;
 
   return (
@@ -56,7 +66,7 @@ export const Card: React.FC<{
         background: focus
           ? `radial-gradient(120% 140% at 0% 0%, ${glow(accentHex, 0.14)} 0%, ${theme.bg.panelHi} 42%, ${theme.bg.panel} 100%)`
           : `linear-gradient(158deg, ${theme.bg.panelHi} 0%, ${theme.bg.panel} 100%)`,
-        border: `1.5px solid ${focus ? accentHex : theme.bg.line}`,
+        border: `1.5px solid ${glowing ? accentHex : theme.bg.line}`,
         boxShadow: focus
           ? `0 0 0 1px ${glow(accentHex, 0.35)}, 0 24px 60px -22px ${glow(
               accentHex,
@@ -88,6 +98,7 @@ export const Card: React.FC<{
       >
         <div
           style={{
+            fontFamily: interFamily,
             fontSize: labelSize,
             fontWeight: 600,
             color: theme.ink.hi,

@@ -26,6 +26,10 @@ export type Beat = {
   note?: string;
   // walkthrough directive
   message?: Message;
+  // intent knobs — how the beat should feel; the engine interprets these.
+  pace?: 'hold' | 'settle' | 'normal' | 'brisk'; // breath held after the narration
+  cadence?: 'cascade' | 'together' | 'snap'; // rhythm of revealed items entering
+  shot?: 'wide' | 'follow' | 'push' | 'hold'; // the camera verb for this beat
 };
 
 export type Actor = {id: string; label: string; sub?: string};
@@ -38,7 +42,8 @@ export type Node = {
   col: number;
   row: number;
   accent?: string;
-  emphasis?: boolean;
+  emphasis?: boolean; // legacy — superseded by `weight: 'hero'`
+  weight?: 'hero' | 'primary' | 'normal' | 'recede'; // the emphasis gradient
   wide?: boolean;
   // tension scenes: a node can be a flagged risk or a rejected alternative
   kind?: 'risk' | 'rejected';
@@ -97,6 +102,10 @@ export type Scene = {
   accent: string;
   kicker: string;
   heading?: string;
+  // intent knobs — scene-level; the engine interprets these.
+  cut?: 'dissolve' | 'hold' | 'continue'; // transition feeling into the next scene
+  palette?: 'cool' | 'warm' | 'signal' | 'mono'; // accent family / mood
+  treatment?: 'crisp' | 'sketch'; // visual skin, decoupled from scene type
   // frame
   title?: string;
   tagline?: string;
@@ -141,6 +150,7 @@ export type FilmSpec = {
     width: number;
     height: number;
     voice: string;
+    register?: 'grave' | 'neutral' | 'calm' | 'urgent' | 'playful'; // film mood
   };
   scenes: Scene[];
 };
@@ -155,6 +165,16 @@ const manifest = manifestJson as Record<string, {file: string; seconds: number}>
 export const LEAD = 0.15; // seconds of quiet before a scene's first beat
 export const TAIL = 0.55; // seconds of breath after each beat
 export const TRANSITION = 16; // frames of cross-fade between scenes
+
+// `pace` (a beat intent knob) scales the breath held after the narration —
+// `hold` lets a verdict land, `brisk` rushes an enumeration. The default,
+// `normal`, reproduces the original fixed TAIL exactly.
+const PACE: Record<NonNullable<Beat['pace']>, number> = {
+  hold: 3,
+  settle: 1.8,
+  normal: 1,
+  brisk: 0.35,
+};
 
 // Words-per-second fallback so the film has sane timing before TTS has run
 // (keeps `remotion studio` usable on a fresh checkout).
@@ -194,7 +214,7 @@ export const buildTimeline = (film: FilmSpec): Timeline => {
     const beats: TimedBeat[] = scene.beats.map((b, i) => {
       const m = manifest[`${film.meta.id}/${b.id}`];
       const seconds = m ? m.seconds : estimateSeconds(b.narration);
-      const durationInFrames = Math.round((seconds + TAIL) * fps);
+      const durationInFrames = Math.round((seconds + TAIL * PACE[b.pace ?? 'normal']) * fps);
       const tb: TimedBeat = {
         ...b,
         index: i,
