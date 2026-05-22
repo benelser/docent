@@ -9,16 +9,13 @@
   },
   "scripts": {
     "docent": "bun cli/docent.ts",
-    "studio": "remotion studio src/index.ts",
-    "player:dev": "bun player/dev.ts",
-    "player:build": "bun player/build.ts"
+    "studio": "remotion studio src/index.ts"
   },
   "license": "MIT",
   "dependencies": {
     "@remotion/cli": "^4.0.464",
     "@remotion/google-fonts": "^4.0.464",
     "@remotion/paths": "^4.0.464",
-    "@remotion/player": "^4.0.464",
     "@remotion/shapes": "^4.0.464",
     "@remotion/transitions": "^4.0.464",
     "prism-react-renderer": "^2.4.1",

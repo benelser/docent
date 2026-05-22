@@ -171,19 +171,6 @@ const main = async (): Promise<number> => {
       return hermetic({fixtureId: positionals[0], scale, json: flag('json')});
     }
 
-    case 'player': {
-      const id = positionals[0] ?? die('usage: docent player <film>');
-      // Build the interactive @remotion/player bundle — a shareable web
-      // explainer alongside the mp4.
-      const proc = Bun.spawn(['bun', join(ENGINE_ROOT, 'player', 'build.ts'), id], {
-        cwd: REPO_ROOT,
-        stdout: 'inherit',
-        stderr: 'inherit',
-        env: process.env,
-      });
-      return proc.exited;
-    }
-
     default:
       console.log('docent — narrated, animated explainers for code\n');
       console.log('  docent doctor [--json]            validate the environment');
@@ -195,7 +182,6 @@ const main = async (): Promise<number> => {
       console.log('  docent treatment <id> [--to-spec] scope a film — human in the loop');
       console.log('  docent depthcheck <film>          the depth contract over a spec');
       console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
-      console.log('  docent player <film>              build the interactive web player');
       console.log('  docent env                        resolved paths and versions');
       return cmd ? 1 : 0;
   }
