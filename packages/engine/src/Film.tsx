@@ -17,6 +17,24 @@ import {TensionScene} from './scenes/TensionScene';
 import {RecapScene} from './scenes/RecapScene';
 import {ChartScene} from './scenes/ChartScene';
 
+// `treatment` (a scene knob) — the visual *skin*, decoupled from scene type.
+// Today the hand-drawn chalkboard skin is welded to the `tension` type and the
+// crisp dark-console skin to every other type. `treatment` breaks that weld:
+// it names the skin a scene draws with, independent of what the scene *is*.
+//
+// The implicit default reproduces today exactly — `tension` defaults to
+// `sketch`, every other type to `crisp` — so a film that sets no `treatment`
+// renders byte-identically. An explicit `treatment` overrides:
+//   structure + treatment:'sketch' → the chalkboard renderer
+//   tension   + treatment:'crisp'  → the crisp node-diagram renderer
+//
+// The skin swap is honest only for the node-diagram family (structure ⇄
+// tension): both consume the same `nodes`/`edges`/`grid` spec. See the report
+// for the feature deltas a full version would need to close.
+type Treatment = 'crisp' | 'sketch';
+const treatmentOf = (scene: {type: string; treatment?: Treatment}): Treatment =>
+  scene.treatment ?? (scene.type === 'tension' ? 'sketch' : 'crisp');
+
 // Assembles a film spec into a single composition: every scene rendered by the
 // template for its type, cross-faded together.
 export const Film: React.FC<{filmId: string}> = ({filmId}) => {
@@ -41,31 +59,42 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
       <TransitionSeries>
         {timeline.scenes.flatMap((ts, i) => {
           const common = {ts, sceneIndex: i, sceneCount: count, meta: film.meta};
+          const t = ts.scene.type;
+          // The node-diagram family — `structure` and `tension` share the
+          // same `nodes`/`edges`/`grid` spec, so their *skin* is swappable:
+          // the renderer is chosen by `treatment`, not by `type`. Every other
+          // type keeps a type→renderer mapping (it has only the crisp skin).
           const node =
-            ts.scene.type === 'frame' ? (
+            t === 'frame' ? (
               <FrameScene {...common} />
-            ) : ts.scene.type === 'progression' ? (
+            ) : t === 'progression' ? (
               <ProgressionScene {...common} />
-            ) : ts.scene.type === 'walkthrough' ? (
+            ) : t === 'walkthrough' ? (
               <WalkthroughScene {...common} />
-            ) : ts.scene.type === 'compare' ? (
+            ) : t === 'compare' ? (
               <CompareScene {...common} />
-            ) : ts.scene.type === 'quantities' ? (
+            ) : t === 'quantities' ? (
               <QuantitiesScene {...common} />
-            ) : ts.scene.type === 'probe' ? (
+            ) : t === 'probe' ? (
               <ProbeScene {...common} />
-            ) : ts.scene.type === 'closeup' ? (
+            ) : t === 'closeup' ? (
               <CloseupScene {...common} />
-            ) : ts.scene.type === 'demonstrate' ? (
+            ) : t === 'demonstrate' ? (
               <DemonstrateScene {...common} />
-            ) : ts.scene.type === 'diff' ? (
+            ) : t === 'diff' ? (
               <DiffScene {...common} />
-            ) : ts.scene.type === 'tension' ? (
-              <TensionScene {...common} />
-            ) : ts.scene.type === 'recap' ? (
+            ) : t === 'recap' ? (
               <RecapScene {...common} />
-            ) : ts.scene.type === 'chart' ? (
+            ) : t === 'chart' ? (
               <ChartScene {...common} />
+            ) : t === 'tension' || t === 'structure' ? (
+              // Skin chosen by `treatment`: sketch → chalkboard, crisp →
+              // console. Default keeps tension=sketch / structure=crisp.
+              treatmentOf(ts.scene) === 'sketch' ? (
+                <TensionScene {...common} />
+              ) : (
+                <StructureScene {...common} />
+              )
             ) : (
               <StructureScene {...common} />
             );

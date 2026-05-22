@@ -5,6 +5,13 @@ import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
+import {
+  cadenceOffset,
+  cadenceSpringConfig,
+  numericRevealMap,
+  paletteGlowScale,
+  paletteSceneHex,
+} from '../engine/knobs';
 
 // An ordered timeline track: stages laid left-to-right along a path, each a
 // marker with a label, sub, and the duration of its segment. A `gate` stage is
@@ -18,17 +25,24 @@ export const ProgressionScene: React.FC<SceneProps> = ({
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  // `palette` (a scene knob) re-selects the chrome accent over its family;
+  // without a palette this is exactly `accent(scene.accent)`.
+  const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const stages = scene.stages ?? [];
   const cycle = scene.flow === 'cycle';
 
-  // The reveal frame for stage i is the `from` of the first beat whose numeric
-  // `reveal` reaches i + 1.
-  const revealFrameFor = (i: number): number => {
-    const b = ts.beats.find(
-      (bt) => typeof bt.reveal === 'number' && bt.reveal >= i + 1,
-    );
-    return b ? b.from : 0;
+  // `cadence` (a beat knob) shapes how the set of stages a beat reveals
+  // enters. The numeric-reveal map gives, per stage index, the revealing
+  // beat's frame, its cadence, and the stage's order within that beat's
+  // batch. A knob-free scene yields `from` == the original `revealFrameFor`.
+  const reveals = numericRevealMap(ts.beats, stages.length);
+  // The base reveal frame (no cadence stagger) — used by the track-grow,
+  // which advances toward the latest stage rather than per-item.
+  const revealFrameFor = (i: number): number => reveals[i]?.from ?? 0;
+  // The cadence-staggered entrance frame for stage i's marker/card.
+  const stageEnterFor = (i: number): number => {
+    const r = reveals[i];
+    return r ? r.from + cadenceOffset(r.cadence, r.order) : 0;
   };
 
   const active = activeBeatIndex(ts.beats, frame);
@@ -68,6 +82,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
+      glowScale={paletteGlowScale(scene.palette)}
     >
       <AbsoluteFill>
         <svg
@@ -111,9 +126,11 @@ export const ProgressionScene: React.FC<SceneProps> = ({
         </svg>
 
         {stages.map((s, i) => {
-          const local = frame - revealFrameFor(i);
+          const local = frame - stageEnterFor(i);
           const a =
-            local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+            local <= 0
+              ? 0
+              : spring({frame: local, fps, config: cadenceSpringConfig(reveals[i]?.cadence)});
           if (a <= 0) return null;
           const x = stageX(i);
           const focused = focusIds.has(s.id);

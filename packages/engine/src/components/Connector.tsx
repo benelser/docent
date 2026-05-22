@@ -3,12 +3,18 @@ import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {evolvePath} from '@remotion/paths';
 import {glow} from '../theme';
 import {monoFamily} from '../fonts';
+import type {Beat} from '../engine/spec';
 import {connectorPath, curvedPath, type Box} from '../engine/layout';
 
 export type EdgeState = 'hidden' | 'normal' | 'dim' | 'focus';
 
 // An edge between two cards. It is not a static line: once drawn, it carries a
 // continuous stream of flowing dashes — the wire shows data moving through it.
+//
+// `cadence` (a beat knob) shapes the draw-on: `snap` lowers the spring mass
+// for a sharper sweep; every other cadence keeps the original
+// {damping: 200, mass: 0.5} — so a knob-free edge is unchanged. The cascade
+// *stagger* is applied by the caller via `enterFrame`.
 export const Connector: React.FC<{
   from: Box;
   to: Box;
@@ -17,12 +23,14 @@ export const Connector: React.FC<{
   enterFrame: number;
   kind?: 'relation' | 'feedback';
   label?: string;
-}> = ({from, to, accentHex, state, enterFrame, kind, label}) => {
+  cadence?: Beat['cadence'];
+}> = ({from, to, accentHex, state, enterFrame, kind, label, cadence}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const local = frame - enterFrame;
+  const drawMass = cadence === 'snap' ? 0.32 : 0.5;
   const draw =
-    local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass: 0.5}});
+    local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass: drawMass}});
 
   if (state === 'hidden') return null;
 

@@ -6,6 +6,15 @@ import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {BoundValue} from '../components/BoundValue';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
+import {
+  cadenceOffset,
+  cadenceSpringConfig,
+  numericRevealMap,
+  paletteAccentKey,
+  paletteGlowScale,
+  paletteSceneHex,
+  type RevealEntry,
+} from '../engine/knobs';
 
 // Magnitudes. A grid of big-number figure cards (a large mono value, unit, a
 // small label above, a note below), a worked numeric matrix (row and column
@@ -19,27 +28,29 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  // `palette` (a scene knob) re-selects the chrome accent over its family;
+  // without a palette this is exactly `accent(scene.accent)`.
+  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  const glowScale = paletteGlowScale(scene.palette);
   const figures = scene.figures ?? [];
   const matrix = scene.matrix;
   const metrics = scene.metrics ?? [];
-
-  // The reveal frame for item i — the `from` of the first beat whose numeric
-  // `reveal` reaches i + 1.
-  const revealFrameFor = (i: number): number => {
-    const b = ts.beats.find(
-      (bt) => typeof bt.reveal === 'number' && bt.reveal >= i + 1,
-    );
-    return b ? b.from : 0;
-  };
 
   const active = activeBeatIndex(ts.beats, frame);
   const focusIds = new Set(ts.beats[active]?.focus ?? []);
   const hasFocus = focusIds.size > 0;
 
-  const appearOf = (i: number): number => {
-    const local = frame - revealFrameFor(i);
-    return local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+  // `cadence` (a beat knob) shapes how the set of items a beat reveals
+  // enters. `appearWith` eases one item's entrance given its RevealEntry —
+  // a knob-free entry resolves to the original
+  //   spring({frame: frame - revealFrameFor(i), config: {damping:200, mass:0.7}})
+  // so a film that sets no cadence renders byte-identically.
+  const appearWith = (r: RevealEntry | undefined): number => {
+    const from = r ? r.from + cadenceOffset(r.cadence, r.order) : 0;
+    const local = frame - from;
+    return local <= 0
+      ? 0
+      : spring({frame: local, fps, config: cadenceSpringConfig(r?.cadence)});
   };
 
   // ----- metrics: figure cards whose number is a tweened, counting value -----
@@ -53,11 +64,25 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
     const cardH = 268;
     const gap = 34;
 
-    // The reveal frame for a metric — the `from` of the first beat whose `set`
-    // first drives the metric's bound value.
-    const metricRevealFor = (bind: string): number => {
+    // The reveal of a metric — the first beat whose `set` drives its bound
+    // value. `cadence` (a beat knob) staggers metrics first-set by the *same*
+    // beat: order is the metric's position among that beat's batch, in
+    // declared metric order. A knob-free metric resolves to the original
+    // `{from: <first set beat>, cadence: undefined, order: 0}`.
+    const metricRevealOf = (mIndex: number): RevealEntry => {
+      const bind = metrics[mIndex].bind;
       const b = ts.beats.find((bt) => bt.set && bind in bt.set);
-      return b ? b.from : 0;
+      if (!b) return {from: 0, cadence: undefined, order: 0};
+      // The metric's order within this beat's batch: how many earlier metrics
+      // are also first-set by this same beat.
+      let order = 0;
+      for (let j = 0; j < mIndex; j++) {
+        const earlier = ts.beats.find(
+          (bt) => bt.set && metrics[j].bind in bt.set,
+        );
+        if (earlier === b) order++;
+      }
+      return {from: b.from, cadence: b.cadence, order};
     };
 
     return (
@@ -67,6 +92,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
         heading={scene.heading}
         sceneIndex={sceneIndex}
         sceneCount={sceneCount}
+        glowScale={glowScale}
       >
         <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
           <div
@@ -78,19 +104,20 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
               marginTop: 40,
             }}
           >
-            {metrics.map((m) => {
-              const local = frame - metricRevealFor(m.bind);
-              const a =
-                local <= 0
-                  ? 0
-                  : spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+            {metrics.map((m, mi) => {
+              const a = appearWith(metricRevealOf(mi));
               if (a <= 0) return null;
               const focused = focusIds.has(m.id);
               const dim = hasFocus && !focused;
               const opacity = a * (dim ? 0.34 : 1);
               const cardScale = interpolate(a, [0, 1], [0.88, 1]);
               const breathe = focused ? 0.5 + 0.5 * Math.sin((frame / fps) * 3.2) : 0;
-              const mAccent = m.accent ? accent(m.accent) : accentHex;
+              // `palette` re-selects an unset metric accent over the family,
+              // spread across metrics by index. Identity when no palette:
+              // the metric's own accent, else the scene's.
+              const mAccent = accent(
+                paletteAccentKey(scene.palette, scene.accent, m.accent, mi),
+              );
 
               return (
                 <div
@@ -174,6 +201,8 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
     const cardW = 392;
     const cardH = 268;
     const gap = 34;
+    // `cadence` shapes how the figures a beat reveals enter.
+    const figureReveals = numericRevealMap(ts.beats, figures.length);
 
     return (
       <SceneFrame
@@ -182,6 +211,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
         heading={scene.heading}
         sceneIndex={sceneIndex}
         sceneCount={sceneCount}
+        glowScale={glowScale}
       >
         <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
           <div
@@ -195,7 +225,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
             }}
           >
             {figures.map((f, i) => {
-              const a = appearOf(i);
+              const a = appearWith(figureReveals[i]);
               if (a <= 0) return null;
               const focused = focusIds.has(f.id);
               const dim = hasFocus && !focused;
@@ -301,8 +331,13 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
   const gridY = 332;
   const intro = spring({frame, fps, config: {damping: 200}});
 
-  // Cells reveal in row-major order.
+  // Cells reveal in row-major order. `cadence` shapes how the cells a beat
+  // reveals enter — the numeric-reveal map is built over the cell count.
   const cellIndex = (ri: number, ci: number): number => ri * Math.max(1, colLabels.length) + ci;
+  const cellReveals = numericRevealMap(
+    ts.beats,
+    rowLabels.length * Math.max(1, colLabels.length),
+  );
 
   return (
     <SceneFrame
@@ -311,6 +346,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
+      glowScale={glowScale}
     >
       <AbsoluteFill>
         {/* column labels */}
@@ -367,7 +403,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
             {/* cells */}
             {colLabels.map((_cl, ci) => {
               const idx = cellIndex(ri, ci);
-              const a = appearOf(idx);
+              const a = appearWith(cellReveals[idx]);
               if (a <= 0) return null;
               const id = `${ri}-${ci}`;
               const focused = focusIds.has(id) || focusIds.has(rowLabels[ri]);

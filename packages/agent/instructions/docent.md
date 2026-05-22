@@ -86,6 +86,13 @@ to turn a default film into an authored one.
 - **`cut`** (scene) — the transition into the next scene: `dissolve` ·
   `hold` (a section break) · `continue` (momentum into a closely-linked
   scene).
+- **`cadence`** (beat) — the rhythm revealed items enter with: `together`
+  (all at once) · `cascade` (staggered, in declared order) · `snap` (sharp
+  and fast).
+- **`palette`** (scene) — accent as *meaning*: `cool` (calm, explanatory) ·
+  `warm` (consequential) · `signal` (a warning) · `mono` (a quiet baseline).
+- **`treatment`** (scene) — the visual skin: `crisp` (the console look) ·
+  `sketch` (the hand-drawn chalkboard).
 
 Use them sparingly and with intent — a film where every beat is `hold` has no
 rhythm.
@@ -96,6 +103,11 @@ A `quantities` scene can carry `metrics` — figure cards whose number is
 *tweened*. A beat's `set` directive drives the value, and the engine counts it
 up to its target rather than cutting to it. Reach for it when the film *earns*
 a number on screen — a measured result arriving, not merely appearing.
+
+A `structure` node can also *transform*: give it an `as` representation
+(`box` · `matrix` · `vector` · `grid` · `code`), and a later beat's `transform`
+directive re-binds it — the engine morphs the old into the new. Use it when
+one thing genuinely *becomes* another.
 
 ## The depth bar — a film *interrogates*, it does not admire
 

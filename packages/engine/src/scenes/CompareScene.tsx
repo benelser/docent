@@ -5,6 +5,13 @@ import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
+import {
+  cadenceOffset,
+  cadenceSpringConfig,
+  numericRevealMap,
+  paletteGlowScale,
+  paletteSceneHex,
+} from '../engine/knobs';
 
 // A judgement table: options across the top (columns), criteria down the left
 // gutter (rows), cells in the grid. A `win` cell is accent-tinted, a `lose`
@@ -17,17 +24,19 @@ export const CompareScene: React.FC<SceneProps> = ({
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  // `palette` (a scene knob) re-selects the chrome accent over its family;
+  // without a palette this is exactly `accent(scene.accent)`.
+  const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const columns = scene.columns ?? [];
   const rows = scene.rows ?? [];
 
-  // The reveal frame for row i is the `from` of the first beat whose numeric
-  // `reveal` reaches i + 1.
-  const revealFrameFor = (i: number): number => {
-    const b = ts.beats.find(
-      (bt) => typeof bt.reveal === 'number' && bt.reveal >= i + 1,
-    );
-    return b ? b.from : 0;
+  // `cadence` (a beat knob) shapes how the rows a beat reveals enter — the
+  // numeric-reveal map gives each row's revealing-beat frame, cadence, and
+  // order within that beat's batch. A knob-free scene is byte-identical.
+  const reveals = numericRevealMap(ts.beats, rows.length);
+  const rowEnterFor = (i: number): number => {
+    const r = reveals[i];
+    return r ? r.from + cadenceOffset(r.cadence, r.order) : 0;
   };
 
   const active = activeBeatIndex(ts.beats, frame);
@@ -52,6 +61,7 @@ export const CompareScene: React.FC<SceneProps> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
+      glowScale={paletteGlowScale(scene.palette)}
     >
       <AbsoluteFill>
         {/* column headers */}
@@ -97,9 +107,11 @@ export const CompareScene: React.FC<SceneProps> = ({
 
         {/* rows */}
         {rows.map((r, ri) => {
-          const local = frame - revealFrameFor(ri);
+          const local = frame - rowEnterFor(ri);
           const a =
-            local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+            local <= 0
+              ? 0
+              : spring({frame: local, fps, config: cadenceSpringConfig(reveals[ri]?.cadence)});
           if (a <= 0) return null;
           const focused = focusIds.has(r.id);
           const dim = hasFocus && !focused;

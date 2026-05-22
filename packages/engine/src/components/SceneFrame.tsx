@@ -40,6 +40,10 @@ const par = (cam: CameraState | undefined, depth: number): string => {
 
 // The shell every scene sits in: a deep, living, parallaxed space — and the
 // kicker, heading, and progress as a fixed UI overlay above it.
+//
+// `glowScale` (set by the `palette` knob) scales the volumetric accent light:
+// `mono` flattens it toward zero, `signal` lifts it. It defaults to 1, the
+// identity — so a scene with no palette renders byte-identically.
 export const SceneFrame: React.FC<{
   accentHex: string;
   kicker: string;
@@ -47,8 +51,9 @@ export const SceneFrame: React.FC<{
   sceneIndex: number;
   sceneCount: number;
   cam?: CameraState;
+  glowScale?: number;
   children?: React.ReactNode;
-}> = ({accentHex, kicker, heading, sceneIndex, sceneCount, cam, children}) => {
+}> = ({accentHex, kicker, heading, sceneIndex, sceneCount, cam, glowScale = 1, children}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const intro = interpolate(frame, [0, 18], [0, 1], {
@@ -89,7 +94,7 @@ export const SceneFrame: React.FC<{
         }}
       />
 
-      {/* accent light — volumetric glow */}
+      {/* accent light — volumetric glow, scaled by the palette's glowScale */}
       <div
         style={{
           position: 'absolute',
@@ -98,7 +103,7 @@ export const SceneFrame: React.FC<{
           right: -460,
           top: -640,
           transform: par(cam, 0.16),
-          background: `radial-gradient(circle, ${glow(accentHex, 0.22)} 0%, transparent 60%)`,
+          background: `radial-gradient(circle, ${glow(accentHex, 0.22 * glowScale)} 0%, transparent 60%)`,
         }}
       />
       <div
@@ -109,7 +114,7 @@ export const SceneFrame: React.FC<{
           left: -440,
           bottom: -580,
           transform: par(cam, 0.16),
-          background: `radial-gradient(circle, ${glow(accentHex, 0.1)} 0%, transparent 64%)`,
+          background: `radial-gradient(circle, ${glow(accentHex, 0.1 * glowScale)} 0%, transparent 64%)`,
         }}
       />
 

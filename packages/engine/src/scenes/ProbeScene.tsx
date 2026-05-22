@@ -5,6 +5,13 @@ import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
+import {
+  cadenceOffset,
+  cadenceSpringConfig,
+  numericRevealMap,
+  paletteGlowScale,
+  paletteSceneHex,
+} from '../engine/knobs';
 
 // A sensitivity probe: a baseline (its label → its outcome) pinned at the top,
 // then a row per variation — the perturbed input, an arrow, the resulting
@@ -18,17 +25,19 @@ export const ProbeScene: React.FC<SceneProps> = ({
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  // `palette` (a scene knob) re-selects the chrome accent over its family;
+  // without a palette this is exactly `accent(scene.accent)`.
+  const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const baseline = scene.baseline;
   const variations = scene.variations ?? [];
 
-  // The reveal frame for variation i — the `from` of the first beat whose
-  // numeric `reveal` reaches i + 1.
-  const revealFrameFor = (i: number): number => {
-    const b = ts.beats.find(
-      (bt) => typeof bt.reveal === 'number' && bt.reveal >= i + 1,
-    );
-    return b ? b.from : 0;
+  // `cadence` (a beat knob) shapes how the variations a beat reveals enter —
+  // the numeric-reveal map gives each variation's revealing-beat frame,
+  // cadence, and batch order. A knob-free scene is byte-identical.
+  const reveals = numericRevealMap(ts.beats, variations.length);
+  const variationEnterFor = (i: number): number => {
+    const r = reveals[i];
+    return r ? r.from + cadenceOffset(r.cadence, r.order) : 0;
   };
 
   const active = activeBeatIndex(ts.beats, frame);
@@ -92,6 +101,7 @@ export const ProbeScene: React.FC<SceneProps> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
+      glowScale={paletteGlowScale(scene.palette)}
     >
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
         <div style={{width: rowW, display: 'flex', flexDirection: 'column', gap: 18}}>
@@ -133,9 +143,11 @@ export const ProbeScene: React.FC<SceneProps> = ({
 
           {/* the perturbations */}
           {variations.map((v, i) => {
-            const local = frame - revealFrameFor(i);
+            const local = frame - variationEnterFor(i);
             const a =
-              local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+              local <= 0
+                ? 0
+                : spring({frame: local, fps, config: cadenceSpringConfig(reveals[i]?.cadence)});
             if (a <= 0) return null;
             const focused = focusIds.has(v.id);
             const dim = hasFocus && !focused;

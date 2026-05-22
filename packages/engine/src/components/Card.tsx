@@ -2,6 +2,8 @@ import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
+import {cadenceSpringConfig} from '../engine/knobs';
+import type {Beat} from '../engine/spec';
 import type {Box} from '../engine/layout';
 
 export type CardState = 'hidden' | 'normal' | 'focus' | 'dim';
@@ -11,6 +13,11 @@ export type CardWeight = 'hero' | 'primary' | 'normal' | 'recede';
 
 // A labelled component box — a module, service, file, or actor. Carries an
 // optional corner `tag` (a kind marker, e.g. `trait`, `×27`).
+//
+// `cadence` (a beat knob) shapes the card's entrance: `snap` is a sharper,
+// lower-mass spring; `cascade`/`together`/undefined keep the original
+// {damping: 200, mass: 0.7} spring — so a card with no cadence is unchanged.
+// The cascade *stagger* is applied by the caller via `enterFrame`.
 export const Card: React.FC<{
   box: Box;
   label: string;
@@ -21,12 +28,13 @@ export const Card: React.FC<{
   weight?: CardWeight;
   state: CardState;
   enterFrame: number;
-}> = ({box, label, sub, tag, accentHex, emphasis, weight, state, enterFrame}) => {
+  cadence?: Beat['cadence'];
+}> = ({box, label, sub, tag, accentHex, emphasis, weight, state, enterFrame, cadence}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const local = frame - enterFrame;
   const appear =
-    local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+    local <= 0 ? 0 : spring({frame: local, fps, config: cadenceSpringConfig(cadence)});
 
   if (state === 'hidden') return null;
 
