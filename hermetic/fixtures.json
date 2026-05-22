@@ -12,6 +12,12 @@
       "mode": "ar",
       "subject": "Kubernetes — declarative container orchestration",
       "expect": {"minScenes": 6, "minSeconds": 180}
+    },
+    {
+      "id": "kubernetes-scheduler",
+      "mode": "ar-subsystem",
+      "subject": "Kubernetes — the scheduler subsystem (pkg/scheduler)",
+      "expect": {"minScenes": 6, "minSeconds": 150}
     }
   ]
 }

@@ -1,0 +1,175 @@
+{
+  "meta": {
+    "id": "kubernetes-scheduler",
+    "title": "The Kubernetes Scheduler",
+    "subject": "Kubernetes — the scheduler subsystem (pkg/scheduler)",
+    "repo": "~/ventures/arch-repos/kubernetes",
+    "prompt": "architecture review — subsystem",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "title",
+      "accent": "blue",
+      "kicker": "DOCENT // ARCHITECTURE — SUBSYSTEM",
+      "title": "The scheduler",
+      "tagline": "Kubernetes — how a pending pod finds a node",
+      "footnote": "pkg/scheduler   ·   a subsystem review — the cycle, the framework, the trade it makes to go fast",
+      "beats": [
+        {"id": "title-1", "narration": "The Kubernetes control plane has a scheduler. Its entire job fits in one sentence: take a pod that has no node, and find it one.", "show": "title"},
+        {"id": "title-2", "narration": "It is a subsystem you can read on its own -- one package, p-k-g slash scheduler. A pending pod goes in; a node assignment comes out.", "show": "tagline"},
+        {"id": "title-3", "narration": "This is a subsystem review -- not a tour of the happy path. The two cycles, the plugin framework, and the trade the scheduler makes to schedule a cluster quickly.", "show": "footnote"}
+      ]
+    },
+    {
+      "id": "anatomy",
+      "type": "diagram",
+      "accent": "cyan",
+      "kicker": "01 // ANATOMY",
+      "heading": "Five pieces, one pending pod",
+      "grid": {"cols": 4, "rows": 3},
+      "nodes": [
+        {"id": "queue", "label": "SchedulingQueue", "sub": "activeQ · backoffQ · unschedulable", "col": 0, "row": 1, "accent": "blue"},
+        {"id": "next", "label": "NextPod", "sub": "blocks until a pod is ready", "col": 1, "row": 1, "accent": "cyan"},
+        {"id": "scycle", "label": "Scheduling cycle", "sub": "pick a node — synchronous", "col": 2, "row": 1, "accent": "green", "emphasis": true},
+        {"id": "bcycle", "label": "Binding cycle", "sub": "commit it — asynchronous", "col": 3, "row": 1, "accent": "amber"},
+        {"id": "framework", "label": "The framework", "sub": "plugins make the real decisions", "col": 1.5, "row": 0, "accent": "violet", "wide": true},
+        {"id": "cache", "label": "Scheduler cache", "sub": "the scheduler's own node snapshot", "col": 2.5, "row": 2, "accent": "rose"}
+      ],
+      "edges": [
+        {"id": "e-qn", "from": "queue", "to": "next"},
+        {"id": "e-ns", "from": "next", "to": "scycle"},
+        {"id": "e-sb", "from": "scycle", "to": "bcycle"},
+        {"id": "e-fs", "from": "framework", "to": "scycle"},
+        {"id": "e-fb", "from": "framework", "to": "bcycle"},
+        {"id": "e-cs", "from": "cache", "to": "scycle"}
+      ],
+      "beats": [
+        {"id": "anat-1", "narration": "Pending pods wait in the SchedulingQueue. It is really three queues -- an active queue of pods ready to try, a backoff queue for pods that just failed, and a holding area for pods already found unschedulable.", "reveal": ["queue"], "focus": ["queue"]},
+        {"id": "anat-2", "narration": "NextPod blocks until the active queue has something. That is the heartbeat -- one pod handed forward, then the next.", "reveal": ["next", "e-qn"], "focus": ["next"]},
+        {"id": "anat-3", "narration": "Every pod runs two cycles. The scheduling cycle picks a node. The binding cycle commits that choice. Hold onto the fact that they are drawn as two separate boxes -- the whole design turns on it.", "reveal": ["scycle", "bcycle", "e-ns", "e-sb"], "focus": ["scycle", "bcycle"]},
+        {"id": "anat-4", "narration": "Two things feed the cycles. The framework -- the plugins that actually decide. And the cache -- the scheduler's own snapshot of every node, so it never has to ask the API server mid-decision.", "reveal": ["framework", "cache", "e-fs", "e-fb", "e-cs"], "focus": ["framework", "cache"]}
+      ]
+    },
+    {
+      "id": "framework",
+      "type": "diagram",
+      "accent": "violet",
+      "kicker": "02 // THE FRAMEWORK",
+      "heading": "Scheduling is a pipeline of plugins",
+      "grid": {"cols": 4, "rows": 2},
+      "nodes": [
+        {"id": "prefilter", "label": "PreFilter", "sub": "compute once, up front", "col": 0, "row": 0, "accent": "cyan"},
+        {"id": "filter", "label": "Filter", "sub": "can this pod run here?", "col": 1, "row": 0, "accent": "green", "emphasis": true},
+        {"id": "postfilter", "label": "PostFilter", "sub": "no node fits → preempt", "col": 2, "row": 0, "accent": "rose"},
+        {"id": "score", "label": "Score", "sub": "rank the feasible nodes", "col": 3, "row": 0, "accent": "amber", "emphasis": true},
+        {"id": "reserve", "label": "Reserve", "sub": "claim the node", "col": 0.5, "row": 1, "accent": "blue"},
+        {"id": "permit", "label": "Permit", "sub": "wait, or allow", "col": 1.5, "row": 1, "accent": "violet"},
+        {"id": "bind", "label": "Bind", "sub": "write the assignment", "col": 2.5, "row": 1, "accent": "cyan"}
+      ],
+      "edges": [
+        {"id": "f-1", "from": "prefilter", "to": "filter"},
+        {"id": "f-2", "from": "filter", "to": "postfilter"},
+        {"id": "f-3", "from": "filter", "to": "score"},
+        {"id": "f-4", "from": "score", "to": "reserve"},
+        {"id": "f-5", "from": "reserve", "to": "permit"},
+        {"id": "f-6", "from": "permit", "to": "bind"}
+      ],
+      "beats": [
+        {"id": "fw-1", "narration": "The scheduler does not hard-code its algorithm. It runs a pipeline of extension points, and plugins register at each one. First, Filter -- it asks, for every node in the cluster, can this pod run here at all.", "reveal": ["prefilter", "filter", "f-1"], "focus": ["filter"]},
+        {"id": "fw-2", "narration": "If Filter rejects every single node, PostFilter runs. PostFilter is where preemption lives -- the scheduler considers evicting lower-priority pods to make room. A failure path, promoted to a first-class stage.", "reveal": ["postfilter", "f-2"], "focus": ["postfilter"]},
+        {"id": "fw-3", "narration": "If nodes survive Filter, Score ranks them. Every Score plugin returns a number from zero to one hundred for each node; the scheduler sums them and picks the winner.", "reveal": ["score", "f-3"], "focus": ["score"]},
+        {"id": "fw-4", "narration": "Then Reserve, Permit, Bind -- claim the node, optionally wait, write the result. Every stage you have seen is a plugin interface. That is the central choice: the scheduler is a framework, not an algorithm -- and the bill for that flexibility is a deep call stack on the hottest path in the cluster.", "reveal": ["reserve", "permit", "bind", "f-4", "f-5", "f-6"], "focus": ["reserve", "permit", "bind"]}
+      ]
+    },
+    {
+      "id": "flow",
+      "type": "sequence",
+      "accent": "green",
+      "kicker": "03 // ONE POD, SCHEDULED",
+      "heading": "A pod through the two cycles",
+      "actors": [
+        {"id": "queue", "label": "SchedulingQueue", "sub": "pending pods"},
+        {"id": "sched", "label": "Scheduler", "sub": "ScheduleOne"},
+        {"id": "fwk", "label": "Framework", "sub": "the plugins"},
+        {"id": "cache", "label": "Cache", "sub": "node snapshot"},
+        {"id": "api", "label": "API server", "sub": "the source of truth"}
+      ],
+      "beats": [
+        {"id": "seq-1", "narration": "The cycle begins. NextPod hands the scheduler a pod whose node name is empty.", "message": {"from": "queue", "to": "sched", "label": "NextPod() — a pod with no node", "kind": "call"}},
+        {"id": "seq-2", "narration": "The scheduler runs the framework against its cached node snapshot -- Filter, then Score.", "message": {"from": "sched", "to": "fwk", "label": "Filter + Score", "kind": "call"}},
+        {"id": "seq-3", "narration": "The framework returns one node -- the suggested host.", "message": {"from": "fwk", "to": "sched", "label": "SuggestedHost", "kind": "return"}},
+        {"id": "seq-4", "narration": "Now the critical move. The scheduler does not call the API server. It writes the pod onto that node in its own cache -- it assumes the bind.", "message": {"from": "sched", "to": "cache", "label": "AssumePod — optimistic", "kind": "call"}},
+        {"id": "seq-5", "narration": "And with the pod assumed, the scheduling cycle is done. Binding is launched in a goroutine -- the scheduler is already free to pull the next pod.", "message": {"from": "sched", "to": "sched", "label": "go runBindingCycle()", "kind": "call"}},
+        {"id": "seq-6", "narration": "Only now, off the critical path, does the binding cycle call the API server to make the assignment real.", "message": {"from": "sched", "to": "api", "label": "Bind", "kind": "call"}},
+        {"id": "seq-7", "narration": "The API server records it; the assume is now true rather than a guess. If that bind had failed, the assumed pod would have to be torn back out of the cache.", "message": {"from": "api", "to": "cache", "label": "bound — assume confirmed", "kind": "return"}}
+      ]
+    },
+    {
+      "id": "code",
+      "type": "code",
+      "accent": "amber",
+      "kicker": "04 // THE SPLIT",
+      "heading": "Schedule serially, bind concurrently",
+      "file": "pkg/scheduler/schedule_one.go",
+      "lang": "go",
+      "code": "func (sched *Scheduler) ScheduleOne(ctx context.Context) {\n    // The scheduling cycle: synchronous, one pod, start to finish.\n    scheduleResult, assumedPodInfo, status := sched.schedulingCycle(\n        schedulingCycleCtx, state, fwk, podInfo, start, podsToActivate)\n    if !status.IsSuccess() {\n        // A failed cycle does not crash — it re-queues the pod.\n        sched.FailureHandler(schedulingCycleCtx, fwk, assumedPodInfo, status, ...)\n        return\n    }\n\n    // bind the pod to its host asynchronously\n    // (we can do this b/c of the assumption step above).\n    go sched.runBindingCycle(ctx, state, fwk, scheduleResult, assumedPodInfo, ...)\n}",
+      "beats": [
+        {"id": "code-1", "narration": "Here is the whole shape of it, in ScheduleOne. The scheduling cycle is one synchronous call -- one pod, picked start to finish, before another can begin.", "highlight": [2, 4]},
+        {"id": "code-2", "narration": "If the cycle fails -- no node fits, a plugin errors -- the scheduler does not fall over. The failure handler re-queues the pod, onto the backoff queue, to be tried again later.", "highlight": [5, 9]},
+        {"id": "code-3", "narration": "And the payoff is one keyword: go. The binding cycle runs in a goroutine. The moment it is launched, ScheduleOne returns and the next pod's cycle starts -- binding and scheduling now overlap.", "highlight": [11, 13]},
+        {"id": "code-4", "narration": "Read the comment on line twelve. We can do this because of the assumption step above. That parenthetical is load-bearing -- it is the entire reason the goroutine is safe. The next scene is about what it costs.", "highlight": [11, 12], "note": "the comment is the invariant"}
+      ]
+    },
+    {
+      "id": "tradeoffs",
+      "type": "sketch",
+      "accent": "amber",
+      "kicker": "05 // FAILURE MODES & TRADE-OFFS",
+      "heading": "What it trades for speed",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "serial", "label": "Scheduling — serial", "sub": "one pod at a time", "col": 0, "row": 0, "accent": "green"},
+        {"id": "async", "label": "Binding — a goroutine", "sub": "never blocks the next pod", "col": 2, "row": 0, "accent": "cyan"},
+        {"id": "assume", "label": "Optimistic assume", "sub": "the cache says bound first", "col": 1, "row": 1, "accent": "amber", "emphasis": true},
+        {"id": "risk", "label": "The cache is a guess", "sub": "right only if rollback fires", "col": 1, "row": 2, "kind": "risk"}
+      ],
+      "edges": [
+        {"id": "t-1", "from": "serial", "to": "assume"},
+        {"id": "t-2", "from": "assume", "to": "async"},
+        {"id": "t-3", "from": "assume", "to": "risk"}
+      ],
+      "beats": [
+        {"id": "sk-1", "narration": "Start with the constraint. The scheduling cycle is single-threaded -- one pod fully placed before the next begins. That is deliberate: it means a pod always sees a consistent node snapshot. But it also means this one thread is the cluster's scheduling throughput ceiling.", "reveal": ["serial"], "focus": ["serial"]},
+        {"id": "sk-2", "narration": "So the slow part -- the API call to bind -- was pushed off the cycle into a goroutine. The scheduler chose overlapping throughput over a simpler, fully synchronous model. Binding a pod no longer makes the next pod wait.", "reveal": ["async", "assume", "t-1", "t-2"], "focus": ["async"]},
+        {"id": "sk-3", "narration": "But a goroutine cannot bind a pod the next cycle has not accounted for. So the scheduler assumes -- it writes the pod onto the node in its own cache immediately, before the API server has agreed. For a window of time, the cache is ahead of the truth.", "reveal": ["risk", "t-3"], "focus": ["assume", "risk"]},
+        {"id": "sk-4", "narration": "And that is the real risk. A guess can be wrong. If the bind fails, the scheduler must roll the assume back -- release the resources at once -- or the cache leaks a pod that was never placed, and every later decision is made against a node that looks fuller than it is. Correctness here does not rest on the assume. It rests on the rollback.", "reveal": [], "focus": ["risk"]}
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "blue",
+      "kicker": "THE SCORECARD",
+      "heading": "The scheduler, scored",
+      "points": [
+        "One job, done as a pipeline — Filter, Score, Bind are plugin extension points, not a fixed algorithm.",
+        "Speed is a trade — schedule serially, bind in a goroutine, assume the bind succeeds.",
+        "The cost — the scheduling cycle is single-threaded; that one thread is the cluster's scheduling throughput limit.",
+        "The assumed-pod cache is correct only because a failed bind rolls it back — a guess with a safety net.",
+        "Past ~5,000 nodes — reach for scheduler profiles or sharding before the one cycle saturates."
+      ],
+      "beats": [
+        {"id": "recap-1", "narration": "So -- the scorecard. What the scheduler gets right: it turned a hard problem into a pipeline. Filter, Score, Bind are extension points, not a fixed algorithm -- you can change scheduling behavior without forking the scheduler.", "reveal": 1},
+        {"id": "recap-2", "narration": "How it goes fast: a deliberate trade. Schedule pods one at a time, but bind them in the background, and assume each bind will succeed so the next pod need not wait.", "reveal": 2},
+        {"id": "recap-3", "narration": "And the cost of that trade, said plainly: the scheduling cycle runs one pod at a time. That single thread is the entire cluster's scheduling throughput limit -- no amount of hardware widens it.", "reveal": 3},
+        {"id": "recap-4", "narration": "The fragile seam: the assumed-pod cache is only correct because a failed bind rolls it back. The optimism is safe, but only as far as that rollback is.", "reveal": 4},
+        {"id": "recap-5", "narration": "And so, when not to lean on it unchanged: past roughly 5,000 nodes, or under a flood of pods, the one cycle saturates. That is the point to reach for separate scheduler profiles, or to shard scheduling across more than one scheduler -- before the ceiling is the outage.", "reveal": 5}
+      ]
+    }
+  ]
+}

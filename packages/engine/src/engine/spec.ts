@@ -14,6 +14,7 @@ import nonoPr from '../../../../films/nono-pr.json';
 import vectorPr from '../../../../films/vector-pr.json';
 import bunPr from '../../../../films/bun-pr.json';
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
+import kubernetesScheduler from '../../../../films/kubernetes-scheduler.json';
 import manifestJson from '../../../../public/audio/manifest.json';
 
 export type Message = {
@@ -111,6 +112,7 @@ export const FILMS: Record<string, FilmSpec> = {
   vector: vector as FilmSpec,
   bun: bun as FilmSpec,
   kubernetes: kubernetes as FilmSpec,
+  'kubernetes-scheduler': kubernetesScheduler as FilmSpec,
   'rig-pr': rigPr as FilmSpec,
   'nono-pr': nonoPr as FilmSpec,
   'vector-pr': vectorPr as FilmSpec,
