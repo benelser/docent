@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+.venv/
+
+# build artifacts
+out/
+public/audio/*
+!public/audio/manifest.json
+public/clips/
+.remotion/
+.manim-cache/
+
+# python
+__pycache__/
+*.pyc
+
+# misc
+.DS_Store
+archive/v1/media/

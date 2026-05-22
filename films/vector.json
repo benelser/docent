@@ -1,0 +1,566 @@
+{
+  "meta": {
+    "id": "vector",
+    "title": "Vector",
+    "subject": "Vector — a high-performance observability data pipeline",
+    "repo": "~/ventures/arch-repos/vector",
+    "prompt": "architecture review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "title",
+      "accent": "green",
+      "kicker": "DOCENT // ARCHITECTURE REVIEW",
+      "title": "Vector",
+      "tagline": "A high-performance observability data pipeline",
+      "footnote": "Rust  ·  agent & aggregator  ·  maintained by Datadog",
+      "beats": [
+        {
+          "id": "title-1",
+          "narration": "This is Vector -- a high-performance observability data pipeline.",
+          "show": "title"
+        },
+        {
+          "id": "title-2",
+          "narration": "It collects, transforms, and routes all of your logs, metrics, and traces -- from anywhere, to anywhere. Built in Rust, with reliability as its very first design goal.",
+          "show": "tagline"
+        },
+        {
+          "id": "title-3",
+          "narration": "It is maintained by Datadog's open-source team. We traced it through vector-core and the topology runtime.",
+          "show": "footnote"
+        }
+      ]
+    },
+    {
+      "id": "pipeline",
+      "type": "diagram",
+      "accent": "blue",
+      "kicker": "01 // THE SHAPE OF IT",
+      "heading": "One pipeline, three component kinds",
+      "grid": {
+        "cols": 3,
+        "rows": 2
+      },
+      "nodes": [
+        {
+          "id": "sources",
+          "label": "Sources",
+          "sub": "46 — where data enters",
+          "col": 0,
+          "row": 0,
+          "accent": "cyan",
+          "tag": "×46"
+        },
+        {
+          "id": "transforms",
+          "label": "Transforms",
+          "sub": "18 — reshape & route",
+          "col": 1,
+          "row": 0,
+          "accent": "amber",
+          "tag": "×18"
+        },
+        {
+          "id": "sinks",
+          "label": "Sinks",
+          "sub": "55 — where data exits",
+          "col": 2,
+          "row": 0,
+          "accent": "rose",
+          "tag": "×55"
+        },
+        {
+          "id": "event",
+          "label": "Event",
+          "sub": "the one type that flows between them",
+          "col": 1,
+          "row": 1,
+          "accent": "violet",
+          "emphasis": true,
+          "wide": true
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-st",
+          "from": "sources",
+          "to": "transforms"
+        },
+        {
+          "id": "e-ts",
+          "from": "transforms",
+          "to": "sinks"
+        }
+      ],
+      "beats": [
+        {
+          "id": "pipeline-1",
+          "narration": "Vector has exactly one shape: a pipeline. Data flows left to right, through three kinds of component.",
+          "reveal": [
+            "sources",
+            "transforms",
+            "sinks"
+          ]
+        },
+        {
+          "id": "pipeline-2",
+          "narration": "Sources, where data enters -- forty-six of them: files, sockets, Kafka, cloud APIs, the Kubernetes log stream.",
+          "reveal": [
+            "sources"
+          ],
+          "focus": [
+            "sources"
+          ]
+        },
+        {
+          "id": "pipeline-3",
+          "narration": "Transforms, in the middle -- eighteen of them -- which filter, aggregate, reshape, and route.",
+          "reveal": [
+            "transforms",
+            "e-st"
+          ],
+          "focus": [
+            "transforms"
+          ]
+        },
+        {
+          "id": "pipeline-4",
+          "narration": "And sinks, where data leaves -- fifty-five destinations, from Elasticsearch to S-3 to any observability vendor you like.",
+          "reveal": [
+            "sinks",
+            "e-ts"
+          ],
+          "focus": [
+            "sinks"
+          ]
+        },
+        {
+          "id": "pipeline-5",
+          "narration": "Between every stage flows one thing: an Event. Sources emit Events, transforms rewrite Events, sinks consume them -- one type, end to end.",
+          "reveal": [
+            "event"
+          ],
+          "pulse": [
+            [
+              "sources",
+              "transforms"
+            ],
+            [
+              "transforms",
+              "sinks"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "event",
+      "type": "diagram",
+      "accent": "violet",
+      "kicker": "02 // THE DATA MODEL",
+      "heading": "Three data shapes, one type",
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "logs",
+          "label": "Log events",
+          "sub": "structured records",
+          "col": 0,
+          "row": 0,
+          "accent": "cyan"
+        },
+        {
+          "id": "metrics",
+          "label": "Metrics",
+          "sub": "counters · gauges · histograms",
+          "col": 1,
+          "row": 0,
+          "accent": "amber"
+        },
+        {
+          "id": "traces",
+          "label": "Trace events",
+          "sub": "spans",
+          "col": 2,
+          "row": 0,
+          "accent": "rose"
+        },
+        {
+          "id": "event",
+          "label": "Event",
+          "sub": "one enum, defined in vector-core",
+          "col": 1,
+          "row": 1,
+          "accent": "violet",
+          "emphasis": true,
+          "tag": "enum"
+        },
+        {
+          "id": "components",
+          "label": "Every source, transform, sink",
+          "sub": "all speak Event",
+          "col": 1,
+          "row": 2,
+          "accent": "green",
+          "wide": true
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-l",
+          "from": "logs",
+          "to": "event"
+        },
+        {
+          "id": "e-m",
+          "from": "metrics",
+          "to": "event"
+        },
+        {
+          "id": "e-t",
+          "from": "traces",
+          "to": "event"
+        },
+        {
+          "id": "e-c",
+          "from": "event",
+          "to": "components"
+        }
+      ],
+      "beats": [
+        {
+          "id": "event-1",
+          "narration": "Observability data comes in three classic shapes -- logs, metrics, and traces. Most tools keep them in three separate pipelines.",
+          "reveal": [
+            "logs",
+            "metrics",
+            "traces"
+          ]
+        },
+        {
+          "id": "event-2",
+          "narration": "Vector does not. It folds all three into a single type -- the Event -- defined once, in the vector-core crate.",
+          "reveal": [
+            "event",
+            "e-l",
+            "e-m",
+            "e-t"
+          ],
+          "focus": [
+            "event"
+          ]
+        },
+        {
+          "id": "event-3",
+          "narration": "A log event is a structured record. A metric is a counter, a gauge, or a histogram. A trace event is a span. Different shapes -- but one enum.",
+          "focus": [
+            "event"
+          ]
+        },
+        {
+          "id": "event-4",
+          "narration": "Which means every component -- all forty-six sources, all fifty-five sinks -- speaks exactly one language. The pipeline simply does not care which shape an event is.",
+          "reveal": [
+            "components",
+            "e-c"
+          ],
+          "focus": [
+            "components"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vrl",
+      "type": "code",
+      "accent": "amber",
+      "kicker": "03 // THE REMAP TRANSFORM",
+      "heading": "VRL — a language for events",
+      "file": "transforms/remap  —  Vector Remap Language",
+      "lang": "ruby",
+      "code": "# A VRL program — runs once per event, in the `remap` transform.\n. = parse_json!(.message)            # parse the raw line into fields\n\n.timestamp = parse_timestamp!(.timestamp, \"%+\")\n.env = get_env_var(\"DEPLOY_ENV\") ?? \"unknown\"\n\ndel(.debug)                          # drop a noisy field\n\nif .status >= 500 {\n    .severity = \"error\"\n}",
+      "beats": [
+        {
+          "id": "vrl-1",
+          "narration": "The most-used transform is remap -- and it runs a small language all its own: V-R-L, the Vector Remap Language. Purpose-built for exactly one job: reshaping an event."
+        },
+        {
+          "id": "vrl-2",
+          "narration": "An event is just data. A VRL program addresses its fields by path -- dot-message, dot-status -- and rewrites them. Here, a raw log line is parsed into structured fields.",
+          "highlight": [
+            2,
+            2
+          ]
+        },
+        {
+          "id": "vrl-3",
+          "narration": "VRL takes failure seriously. A function with a bang aborts the program if it fails; the double-question-mark coalesces an error into a fallback. Fallibility lives in the type system, checked before Vector ever starts.",
+          "highlight": [
+            4,
+            5
+          ]
+        },
+        {
+          "id": "vrl-4",
+          "narration": "And it mutates and routes -- delete a noisy field, tag an event by severity. VRL is compiled, not interpreted. A bad program is a startup error, never a three A-M surprise.",
+          "highlight": [
+            7,
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "id": "topology",
+      "type": "diagram",
+      "accent": "cyan",
+      "kicker": "04 // THE RUNTIME",
+      "heading": "Buffers, backpressure, acknowledgement",
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "config",
+          "label": "Config",
+          "sub": "components + connections",
+          "col": 1,
+          "row": 0,
+          "accent": "blue"
+        },
+        {
+          "id": "builder",
+          "label": "Topology builder",
+          "sub": "config → a graph of tasks",
+          "col": 1,
+          "row": 1,
+          "accent": "cyan",
+          "emphasis": true,
+          "tag": "runtime"
+        },
+        {
+          "id": "running",
+          "label": "Running topology",
+          "sub": "the live, async DAG",
+          "col": 1,
+          "row": 2,
+          "accent": "green"
+        },
+        {
+          "id": "buffers",
+          "label": "Buffers",
+          "sub": "memory or disk — backpressure",
+          "col": 0,
+          "row": 1,
+          "accent": "amber"
+        },
+        {
+          "id": "acks",
+          "label": "End-to-end acks",
+          "sub": "delivery guarantees",
+          "col": 2,
+          "row": 1,
+          "accent": "rose"
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-cb",
+          "from": "config",
+          "to": "builder"
+        },
+        {
+          "id": "e-br",
+          "from": "builder",
+          "to": "running"
+        },
+        {
+          "id": "e-bufr",
+          "from": "buffers",
+          "to": "running"
+        },
+        {
+          "id": "e-ackr",
+          "from": "acks",
+          "to": "running"
+        }
+      ],
+      "beats": [
+        {
+          "id": "topology-1",
+          "narration": "A Vector config is just components and the wires between them. The topology builder turns that into a running graph -- a directed graph of asynchronous tasks.",
+          "reveal": [
+            "config",
+            "builder",
+            "running",
+            "e-cb",
+            "e-br"
+          ],
+          "focus": [
+            "builder"
+          ]
+        },
+        {
+          "id": "topology-2",
+          "narration": "Between every connected pair of components sits a buffer -- in memory by default, on disk when you need durability across a restart.",
+          "reveal": [
+            "buffers",
+            "e-bufr"
+          ],
+          "focus": [
+            "buffers"
+          ]
+        },
+        {
+          "id": "topology-3",
+          "narration": "Buffers are also how Vector handles backpressure. If a sink slows down, its buffer fills, and the slowdown propagates upstream -- Vector slows the source, rather than dropping data or exhausting memory.",
+          "focus": [
+            "buffers"
+          ]
+        },
+        {
+          "id": "topology-4",
+          "narration": "And end-to-end acknowledgements close the loop. A source holds a record as unacknowledged until the sink confirms it landed -- so a crash mid-pipeline does not silently lose events.",
+          "reveal": [
+            "acks",
+            "e-ackr"
+          ],
+          "focus": [
+            "acks"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "flow",
+      "type": "sequence",
+      "accent": "rose",
+      "kicker": "05 // ONE EVENT, END TO END",
+      "heading": "One event — and its acknowledgement",
+      "actors": [
+        {
+          "id": "source",
+          "label": "Source",
+          "sub": "ingest"
+        },
+        {
+          "id": "transform",
+          "label": "Transform",
+          "sub": "VRL remap"
+        },
+        {
+          "id": "sink",
+          "label": "Sink",
+          "sub": "egress"
+        }
+      ],
+      "beats": [
+        {
+          "id": "flow-1",
+          "narration": "Follow one event the whole way through. A source ingests it and emits it -- but it does not let go. It holds the record as unacknowledged.",
+          "message": {
+            "from": "source",
+            "to": "transform",
+            "label": "Event",
+            "kind": "call"
+          }
+        },
+        {
+          "id": "flow-2",
+          "narration": "The event crosses a buffer into a transform, where a VRL program reshapes it, and continues on toward a sink.",
+          "message": {
+            "from": "transform",
+            "to": "sink",
+            "label": "Event, remapped",
+            "kind": "call"
+          }
+        },
+        {
+          "id": "flow-3",
+          "narration": "The sink batches events, then flushes the whole batch to its destination -- an Elasticsearch, an S-3 bucket, a vendor's A-P-I.",
+          "message": {
+            "from": "sink",
+            "to": "sink",
+            "label": "batch, then flush to the vendor",
+            "kind": "call"
+          }
+        },
+        {
+          "id": "flow-4",
+          "narration": "Only once that write is confirmed does the sink send an acknowledgement back upstream.",
+          "message": {
+            "from": "sink",
+            "to": "transform",
+            "label": "ack",
+            "kind": "return"
+          }
+        },
+        {
+          "id": "flow-5",
+          "narration": "The acknowledgement propagates, hop by hop, all the way back to the source.",
+          "message": {
+            "from": "transform",
+            "to": "source",
+            "label": "ack propagates",
+            "kind": "return"
+          }
+        },
+        {
+          "id": "flow-6",
+          "narration": "And only now does the source mark its record delivered. Crash anywhere in the middle, and the event is simply read again -- never lost, never silently dropped.",
+          "message": {
+            "from": "source",
+            "to": "source",
+            "label": "record marked delivered",
+            "kind": "call"
+          }
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "green",
+      "kicker": "RECAP // FOUR IDEAS",
+      "heading": "Vector, in four ideas",
+      "points": [
+        "One pipeline — sources in, transforms in the middle, sinks out.",
+        "One Event — logs, metrics, and traces, unified into a single type.",
+        "VRL — a compiled language built only for reshaping events.",
+        "Buffers and acks — backpressure and delivery guarantees, end to end."
+      ],
+      "beats": [
+        {
+          "id": "recap-1",
+          "narration": "So, Vector in four ideas. One pipeline -- sources in, transforms in the middle, sinks out.",
+          "reveal": 1
+        },
+        {
+          "id": "recap-2",
+          "narration": "One Event type -- logs, metrics, and traces, unified.",
+          "reveal": 2
+        },
+        {
+          "id": "recap-3",
+          "narration": "V-R-L, a compiled language built for one job -- reshaping events.",
+          "reveal": 3
+        },
+        {
+          "id": "recap-4",
+          "narration": "And buffers and acknowledgements that give you backpressure and delivery guarantees, end to end. A pipeline you can actually trust with your data.",
+          "reveal": 4
+        }
+      ]
+    }
+  ]
+}

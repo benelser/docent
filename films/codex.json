@@ -1,0 +1,187 @@
+{
+  "meta": {
+    "id": "codex",
+    "title": "Codex CLI",
+    "subject": "OpenAI Codex CLI",
+    "repo": "~/ventures/codex",
+    "prompt": "architecture review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "title",
+      "accent": "blue",
+      "kicker": "DOCENT // ARCHITECTURE REVIEW",
+      "title": "Codex CLI",
+      "tagline": "OpenAI's coding agent — taken apart",
+      "footnote": "a Rust workspace  ·  a thin npm wrapper  ·  SDKs",
+      "beats": [
+        {"id": "title-1", "narration": "Meet Codex C-L-I -- OpenAI's coding agent.", "show": "title"},
+        {"id": "title-2", "narration": "It runs entirely on your own machine. It reads your code, runs commands, and edits files -- an engineering collaborator that lives in your terminal.", "show": "tagline"},
+        {"id": "title-3", "narration": "Underneath the install, Codex is a large Rust workspace, wrapped in a thin layer of npm. Every box in this film was traced from the real source.", "show": "footnote"}
+      ]
+    },
+    {
+      "id": "overview",
+      "type": "diagram",
+      "accent": "cyan",
+      "kicker": "01 // THE SHAPE OF IT",
+      "heading": "One spine, five pieces",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "npm", "label": "@openai/codex", "sub": "npm launcher", "col": 1, "row": 0, "accent": "green"},
+        {"id": "cli", "label": "cli", "sub": "Rust multitool", "col": 1, "row": 1, "accent": "blue"},
+        {"id": "core", "label": "core", "sub": "the agent engine", "col": 1, "row": 2, "accent": "amber", "emphasis": true},
+        {"id": "model", "label": "Model provider", "sub": "OpenAI Responses API", "col": 2, "row": 2, "accent": "violet"},
+        {"id": "sandbox", "label": "Sandbox", "sub": "isolates commands", "col": 0, "row": 2, "accent": "rose"}
+      ],
+      "edges": [
+        {"id": "e-npm-cli", "from": "npm", "to": "cli"},
+        {"id": "e-cli-core", "from": "cli", "to": "core"},
+        {"id": "e-core-model", "from": "core", "to": "model"},
+        {"id": "e-core-sandbox", "from": "core", "to": "sandbox"}
+      ],
+      "beats": [
+        {"id": "overview-1", "narration": "Start with the shape of the whole system. What you install from npm is not the agent. It is a launcher -- a few hundred lines of JavaScript that pick the right native binary for your platform, and hand off.", "reveal": ["npm"]},
+        {"id": "overview-2", "narration": "That binary is the C-L-I: a Rust multitool. One executable, many subcommands -- the interactive session, headless runs, login, and more.", "reveal": ["cli", "e-npm-cli"]},
+        {"id": "overview-3", "narration": "Every subcommand leads to the same place. Core. The engine. It holds the agent loop and the business logic, and every other crate in the workspace exists to serve it.", "reveal": ["core", "e-cli-core"], "focus": ["core"]},
+        {"id": "overview-4", "narration": "From core, the system reaches two ways. Outward, to a model provider -- the language model that does the reasoning. And down, into a sandbox, which contains everything the agent does to your machine.", "reveal": ["model", "sandbox", "e-core-model", "e-core-sandbox"]}
+      ]
+    },
+    {
+      "id": "surfaces",
+      "type": "diagram",
+      "accent": "violet",
+      "kicker": "02 // FOUR WAYS IN",
+      "heading": "Four front doors, one engine",
+      "grid": {"cols": 4, "rows": 2},
+      "nodes": [
+        {"id": "tui", "label": "tui", "sub": "interactive terminal UI", "col": 0, "row": 0, "accent": "blue"},
+        {"id": "exec", "label": "exec", "sub": "headless, for CI", "col": 1, "row": 0, "accent": "green"},
+        {"id": "appserver", "label": "app-server", "sub": "JSON-RPC for IDEs & SDKs", "col": 2, "row": 0, "accent": "violet"},
+        {"id": "mcpserver", "label": "mcp-server", "sub": "Codex as a tool", "col": 3, "row": 0, "accent": "cyan"},
+        {"id": "core", "label": "core", "sub": "the agent engine", "col": 1.5, "row": 1, "accent": "amber", "emphasis": true}
+      ],
+      "edges": [
+        {"id": "e-tui", "from": "tui", "to": "core"},
+        {"id": "e-exec", "from": "exec", "to": "core"},
+        {"id": "e-app", "from": "appserver", "to": "core"},
+        {"id": "e-mcp", "from": "mcpserver", "to": "core"}
+      ],
+      "beats": [
+        {"id": "surfaces-1", "narration": "The engine never runs alone. It is reached through surfaces -- front doors, each one shaped for a different kind of caller. There are four.", "reveal": ["core"]},
+        {"id": "surfaces-2", "narration": "The t-u-i is the default. A fullscreen terminal interface, built with Ratatui. Run codex with no subcommand, and this is what opens.", "reveal": ["tui", "e-tui"], "focus": ["tui"]},
+        {"id": "surfaces-3", "narration": "exec is the headless door. Codex exec, with a prompt, runs the agent to completion and exits -- the form built for scripts and continuous integration.", "reveal": ["exec", "e-exec"], "focus": ["exec"]},
+        {"id": "surfaces-4", "narration": "The app-server exposes the engine as a structured service, speaking JSON R-P-C. The editor extensions and the software development kits all connect through it.", "reveal": ["appserver", "e-app"], "focus": ["appserver"]},
+        {"id": "surfaces-5", "narration": "And the m-c-p-server inverts the relationship. It publishes Codex itself as a tool, so another agent can call Codex, the way Codex calls its own tools.", "reveal": ["mcpserver", "e-mcp"], "focus": ["mcpserver"]}
+      ]
+    },
+    {
+      "id": "loop",
+      "type": "diagram",
+      "accent": "amber",
+      "kicker": "03 // THE AGENT LOOP",
+      "heading": "Reason, act, observe",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "center", "label": "Session · Turn", "sub": "one prompt, one response", "col": 1, "row": 1, "accent": "blue"},
+        {"id": "modelclient", "label": "ModelClient", "sub": "streams to the model", "col": 1, "row": 0, "accent": "violet"},
+        {"id": "router", "label": "Tool router", "sub": "dispatches each call", "col": 2, "row": 1, "accent": "cyan"},
+        {"id": "orch", "label": "Orchestrator", "sub": "approval · sandbox · retry", "col": 1, "row": 2, "accent": "rose"},
+        {"id": "handlers", "label": "Tool handlers", "sub": "shell · apply_patch · MCP", "col": 0, "row": 1, "accent": "green"}
+      ],
+      "edges": [
+        {"id": "r1", "from": "modelclient", "to": "router"},
+        {"id": "r2", "from": "router", "to": "orch"},
+        {"id": "r3", "from": "orch", "to": "handlers"},
+        {"id": "r4", "from": "handlers", "to": "modelclient"}
+      ],
+      "beats": [
+        {"id": "loop-1", "narration": "Open up core, and you find a loop. A session holds the conversation. Within it, a turn is one prompt out, and one response back.", "reveal": ["center"], "focus": ["center"]},
+        {"id": "loop-2", "narration": "The ModelClient streams that prompt to the model, and reads back not just text, but the model's requests to call tools.", "reveal": ["modelclient"], "focus": ["modelclient"]},
+        {"id": "loop-3", "narration": "Each request reaches the tool router, which matches it to the one handler that can carry it out. But nothing runs yet.", "reveal": ["router", "r1"], "focus": ["router"]},
+        {"id": "loop-4", "narration": "The orchestrator stands in the way. It is the single place for approvals, for selecting a sandbox, and for retrying when that sandbox is too tight. Every tool call is gated here.", "reveal": ["orch", "r2"], "focus": ["orch"]},
+        {"id": "loop-5", "narration": "Cleared, a handler does the real work -- a shell command, a patch to a file. The result returns to the model, and the loop turns again. Reason, act, observe, until the model has nothing left to call.", "reveal": ["handlers", "r3", "r4"], "pulse": [["modelclient", "router"], ["router", "orch"], ["orch", "handlers"], ["handlers", "modelclient"]]}
+      ]
+    },
+    {
+      "id": "sandbox",
+      "type": "diagram",
+      "accent": "rose",
+      "kicker": "04 // THE SANDBOX",
+      "heading": "Safe by default",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "cmd", "label": "shell command", "sub": "from a tool handler", "col": 1, "row": 0, "accent": "green"},
+        {"id": "sbox", "label": "Sandbox", "sub": "policy: read-only · workspace-write", "col": 1, "row": 1, "accent": "rose", "emphasis": true, "wide": true},
+        {"id": "seatbelt", "label": "Seatbelt", "sub": "macOS", "col": 0, "row": 2, "accent": "blue"},
+        {"id": "landlock", "label": "Landlock / bwrap", "sub": "Linux", "col": 1, "row": 2, "accent": "violet"},
+        {"id": "winsbox", "label": "Windows sandbox", "sub": "Windows", "col": 2, "row": 2, "accent": "cyan"}
+      ],
+      "edges": [
+        {"id": "s-in", "from": "cmd", "to": "sbox"},
+        {"id": "s-mac", "from": "sbox", "to": "seatbelt"},
+        {"id": "s-lin", "from": "sbox", "to": "landlock"},
+        {"id": "s-win", "from": "sbox", "to": "winsbox"},
+        {"id": "s-esc", "from": "sbox", "to": "cmd", "kind": "escalate", "label": "denied? ask, then retry wider"}
+      ],
+      "beats": [
+        {"id": "sandbox-1", "narration": "Now the uncomfortable part. A coding agent runs commands on your real machine. The sandbox is Codex's answer to that risk.", "reveal": ["cmd"]},
+        {"id": "sandbox-2", "narration": "Every shell command is intercepted before it touches the system. A policy sets the rules -- read only, workspace write, or full access -- and the sandbox holds the command to them.", "reveal": ["sbox", "s-in"], "focus": ["sbox"]},
+        {"id": "sandbox-3", "narration": "And the sandbox is not one mechanism. It is whichever your operating system provides. Seatbelt on macOS. Landlock, or bubblewrap, on Linux. A dedicated sandbox on Windows.", "reveal": ["seatbelt", "landlock", "winsbox", "s-mac", "s-lin", "s-win"]},
+        {"id": "sandbox-4", "narration": "When the policy is too tight, the orchestrator does not simply fail. It asks you, and on your approval, retries the command under a wider sandbox. Safe by default; escalated only with consent.", "reveal": ["s-esc"], "focus": ["s-esc"]}
+      ]
+    },
+    {
+      "id": "turn",
+      "type": "diagram",
+      "accent": "green",
+      "kicker": "05 // A TURN, END TO END",
+      "heading": "One turn, all the way through",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "you", "label": "You", "sub": "a prompt", "col": 0, "row": 0, "accent": "blue"},
+        {"id": "core", "label": "core", "sub": "the engine", "col": 1, "row": 0, "accent": "amber", "emphasis": true},
+        {"id": "model", "label": "Model", "sub": "reasons", "col": 2, "row": 0, "accent": "violet"},
+        {"id": "tools", "label": "Tools + Sandbox", "sub": "act, safely", "col": 1, "row": 2, "accent": "rose"},
+        {"id": "rollout", "label": "Rollout file", "sub": "the saved thread", "col": 2, "row": 2, "accent": "cyan"}
+      ],
+      "edges": [
+        {"id": "t-yc", "from": "you", "to": "core"},
+        {"id": "t-cm", "from": "core", "to": "model"},
+        {"id": "t-ct", "from": "core", "to": "tools"},
+        {"id": "t-cr", "from": "core", "to": "rollout"}
+      ],
+      "beats": [
+        {"id": "turn-1", "narration": "Now watch a single turn travel the whole system. You type a prompt, and a surface hands it to the engine.", "reveal": ["you", "core", "model", "tools", "rollout", "t-yc", "t-cm", "t-ct", "t-cr"], "pulse": [["you", "core"]]},
+        {"id": "turn-2", "narration": "The ModelClient streams it to the model. The model reasons, and answers with a request: call a tool.", "pulse": [["core", "model"]], "focus": ["model"]},
+        {"id": "turn-3", "narration": "The router and orchestrator clear the request. A handler runs it, inside the sandbox. The result returns to the engine, and on to the model.", "pulse": [["core", "tools"]], "focus": ["tools"]},
+        {"id": "turn-4", "narration": "Reason, act, observe. The loop turns as many times as the task demands. When the model stops asking for tools, the turn is complete.", "pulse": [["core", "model"], ["core", "tools"]]},
+        {"id": "turn-5", "narration": "Every event along the way is written to a rollout file -- the conversation, saved and replayable. And the surface renders the answer back to you.", "pulse": [["core", "rollout"]], "focus": ["rollout"]}
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "blue",
+      "kicker": "RECAP // FIVE IDEAS",
+      "heading": "Codex CLI, in four ideas",
+      "points": [
+        "One engine — core — reached through four surfaces.",
+        "An agent loop: reason → call a tool → observe.",
+        "Every command isolated by an OS-native sandbox.",
+        "Every turn saved to a replayable rollout."
+      ],
+      "beats": [
+        {"id": "recap-1", "narration": "That is Codex, end to end. One engine -- core -- reached through four surfaces.", "reveal": 1},
+        {"id": "recap-2", "narration": "An agent loop that reasons, calls a tool, and observes the result.", "reveal": 2},
+        {"id": "recap-3", "narration": "Every command isolated by a sandbox the operating system itself enforces, escalated past only with your consent.", "reveal": 3},
+        {"id": "recap-4", "narration": "And every turn saved to a rollout you can replay. A coding agent, and the discipline that makes it safe to run on your own machine.", "reveal": 4}
+      ]
+    }
+  ]
+}

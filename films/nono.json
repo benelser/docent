@@ -1,0 +1,580 @@
+{
+  "meta": {
+    "id": "nono",
+    "title": "nono",
+    "subject": "nono — capability-based sandboxing for AI agents",
+    "repo": "~/ventures/arch-repos/nono",
+    "prompt": "architecture review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "title",
+      "accent": "rose",
+      "kicker": "DOCENT // ARCHITECTURE REVIEW",
+      "title": "nono",
+      "tagline": "OS-enforced sandboxing for untrusted AI agents",
+      "footnote": "library  ·  CLI  ·  proxy  ·  C FFI",
+      "beats": [
+        {
+          "id": "title-1",
+          "narration": "This is nono -- a capability-based sandboxing system.",
+          "show": "title"
+        },
+        {
+          "id": "title-2",
+          "narration": "Its purpose: run an untrusted A-I agent on your own machine, behind isolation the operating system itself enforces -- Landlock on Linux, Seatbelt on macOS.",
+          "show": "tagline"
+        },
+        {
+          "id": "title-3",
+          "narration": "It comes from the creator of Sigstore. We traced it through a Cargo workspace of four crates.",
+          "show": "footnote"
+        }
+      ]
+    },
+    {
+      "id": "overview",
+      "type": "diagram",
+      "accent": "blue",
+      "kicker": "01 // MECHANISM vs POLICY",
+      "heading": "One conviction, four crates",
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "agent",
+          "label": "Untrusted agent",
+          "sub": "the process you don't trust",
+          "col": 1,
+          "row": 0,
+          "accent": "rose"
+        },
+        {
+          "id": "cli",
+          "label": "nono-cli",
+          "sub": "owns all security policy",
+          "col": 1,
+          "row": 1,
+          "accent": "blue",
+          "tag": "crate"
+        },
+        {
+          "id": "lib",
+          "label": "nono",
+          "sub": "the library — pure mechanism",
+          "col": 1,
+          "row": 2,
+          "accent": "cyan",
+          "emphasis": true,
+          "tag": "crate"
+        },
+        {
+          "id": "proxy",
+          "label": "nono-proxy",
+          "sub": "network filtering + credentials",
+          "col": 2,
+          "row": 1,
+          "accent": "violet",
+          "tag": "crate"
+        },
+        {
+          "id": "ffi",
+          "label": "nono-ffi",
+          "sub": "C bindings — auto-gen nono.h",
+          "col": 0,
+          "row": 1,
+          "accent": "green",
+          "tag": "crate"
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-agent-cli",
+          "from": "agent",
+          "to": "cli"
+        },
+        {
+          "id": "e-cli-lib",
+          "from": "cli",
+          "to": "lib"
+        },
+        {
+          "id": "e-cli-proxy",
+          "from": "cli",
+          "to": "proxy"
+        },
+        {
+          "id": "e-ffi-lib",
+          "from": "ffi",
+          "to": "lib"
+        }
+      ],
+      "beats": [
+        {
+          "id": "overview-1",
+          "narration": "nono is a Cargo workspace of four crates -- and a single architectural conviction: keep mechanism and policy apart.",
+          "reveal": [
+            "lib"
+          ],
+          "focus": [
+            "lib"
+          ]
+        },
+        {
+          "id": "overview-2",
+          "narration": "The library, nono, is a pure sandbox primitive. It ships with no security policy whatsoever. It applies exactly, and only, what a caller hands it.",
+          "reveal": [
+            "lib"
+          ],
+          "focus": [
+            "lib"
+          ]
+        },
+        {
+          "id": "overview-3",
+          "narration": "Every judgment call -- which paths are dangerous, which commands to refuse -- lives one layer up, in nono-cli. The library is the mechanism; the C-L-I is the policy.",
+          "reveal": [
+            "agent",
+            "cli",
+            "e-agent-cli",
+            "e-cli-lib"
+          ]
+        },
+        {
+          "id": "overview-4",
+          "narration": "Two more crates complete the set. nono-proxy governs the network. And nono-f-f-i exposes the library to C through an auto-generated header -- so anything at all can embed it.",
+          "reveal": [
+            "proxy",
+            "ffi",
+            "e-cli-proxy",
+            "e-ffi-lib"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capabilities",
+      "type": "code",
+      "accent": "green",
+      "kicker": "02 // THE LIBRARY API",
+      "heading": "The whole input, in one builder",
+      "file": "crates/nono/src/capability.rs",
+      "lang": "rust",
+      "code": "// A CapabilitySet is the library's entire input — built fluently.\nlet caps = CapabilitySet::new()\n    // read-only access to the project directory\n    .allow_path(\"/work/project\", AccessMode::Read)?\n    // read-write to a single scratch file\n    .allow_file(\"/work/agent.log\", AccessMode::ReadWrite)?\n    // deny the network outright...\n    .block_network()\n    // ...or force every connection through the audited proxy\n    .proxy_only(8080);\n\n// One call. After this line, the kernel is in charge.\nSandbox::apply(&caps)?;",
+      "beats": [
+        {
+          "id": "capabilities-1",
+          "narration": "This is the entire input to the nono library -- a CapabilitySet, assembled with a fluent builder. Nothing here is policy; it is a literal description of what will be permitted.",
+          "highlight": [
+            2,
+            2
+          ]
+        },
+        {
+          "id": "capabilities-2",
+          "narration": "Grant read access to a project directory. Read-write to a single scratch file. Every capability is explicit, and nothing at all is allowed by default.",
+          "highlight": [
+            3,
+            6
+          ]
+        },
+        {
+          "id": "capabilities-3",
+          "narration": "Set the network posture in one line -- block it outright, or force every connection through nono's auditing proxy.",
+          "highlight": [
+            7,
+            10
+          ]
+        },
+        {
+          "id": "capabilities-4",
+          "narration": "Then a single call: Sandbox apply. The builder is the entire policy surface. After this line, enforcement no longer belongs to nono -- it belongs to the kernel.",
+          "highlight": [
+            12,
+            13
+          ]
+        }
+      ]
+    },
+    {
+      "id": "flow",
+      "type": "sequence",
+      "accent": "cyan",
+      "kicker": "03 // A SANDBOXED RUN",
+      "heading": "An untrusted run, start to finish",
+      "actors": [
+        {
+          "id": "you",
+          "label": "You",
+          "sub": "the operator"
+        },
+        {
+          "id": "cli",
+          "label": "nono-cli",
+          "sub": "policy"
+        },
+        {
+          "id": "sandbox",
+          "label": "nono + kernel",
+          "sub": "mechanism"
+        },
+        {
+          "id": "agent",
+          "label": "Agent",
+          "sub": "untrusted"
+        }
+      ],
+      "beats": [
+        {
+          "id": "flow-1",
+          "narration": "Here is a sandboxed run, start to finish. You ask the C-L-I to run an untrusted agent.",
+          "message": {
+            "from": "you",
+            "to": "cli",
+            "label": "nono run ./agent",
+            "kind": "call"
+          }
+        },
+        {
+          "id": "flow-2",
+          "narration": "The C-L-I resolves your chosen policy into a concrete CapabilitySet, and hands it to the library's one function -- Sandbox apply.",
+          "message": {
+            "from": "cli",
+            "to": "sandbox",
+            "label": "Sandbox::apply(caps)",
+            "kind": "call"
+          }
+        },
+        {
+          "id": "flow-3",
+          "narration": "Apply installs the rules into the kernel itself -- Landlock on Linux, Seatbelt on macOS -- and returns. From this point, confinement is the operating system's job.",
+          "message": {
+            "from": "sandbox",
+            "to": "cli",
+            "label": "kernel rules installed",
+            "kind": "return"
+          }
+        },
+        {
+          "id": "flow-4",
+          "narration": "Only now does the C-L-I exec the agent. It begins life already inside the sandbox -- there is no unconfined moment.",
+          "message": {
+            "from": "cli",
+            "to": "agent",
+            "label": "exec — already confined",
+            "kind": "call"
+          }
+        },
+        {
+          "id": "flow-5",
+          "narration": "Say the agent reaches for something it should not -- your S-S-H keys, a credentials file, anything outside the capability set.",
+          "message": {
+            "from": "agent",
+            "to": "sandbox",
+            "label": "open(\"~/.ssh/id_ed25519\")",
+            "kind": "call"
+          }
+        },
+        {
+          "id": "flow-6",
+          "narration": "The kernel refuses. The syscall returns an ordinary permission error -- the very same one a missing file gives. The agent cannot tell it was sandboxed, and cannot reason its way around it.",
+          "message": {
+            "from": "sandbox",
+            "to": "agent",
+            "label": "EACCES — denied",
+            "kind": "return"
+          }
+        },
+        {
+          "id": "flow-7",
+          "narration": "The run finishes, contained. Nothing outside the CapabilitySet was ever, for one instant, reachable.",
+          "message": {
+            "from": "agent",
+            "to": "you",
+            "label": "exits — contained",
+            "kind": "return"
+          }
+        }
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "diagram",
+      "accent": "violet",
+      "kicker": "04 // THE NETWORK",
+      "heading": "The network, made governable",
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "agent",
+          "label": "Sandboxed agent",
+          "sub": "network: proxy-only",
+          "col": 0,
+          "row": 1,
+          "accent": "rose"
+        },
+        {
+          "id": "proxy",
+          "label": "nono-proxy",
+          "sub": "every byte passes through",
+          "col": 1,
+          "row": 1,
+          "accent": "violet",
+          "emphasis": true,
+          "tag": "crate"
+        },
+        {
+          "id": "internet",
+          "label": "The internet",
+          "sub": "only sanctioned hosts",
+          "col": 2,
+          "row": 1,
+          "accent": "blue"
+        },
+        {
+          "id": "filter",
+          "label": "Route filter",
+          "sub": "allow / deny by host",
+          "col": 1,
+          "row": 0,
+          "accent": "cyan"
+        },
+        {
+          "id": "creds",
+          "label": "Credential injection",
+          "sub": "tokens the agent never sees",
+          "col": 1,
+          "row": 2,
+          "accent": "green"
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-ag-px",
+          "from": "agent",
+          "to": "proxy"
+        },
+        {
+          "id": "e-px-net",
+          "from": "proxy",
+          "to": "internet"
+        },
+        {
+          "id": "e-filter",
+          "from": "filter",
+          "to": "proxy"
+        },
+        {
+          "id": "e-creds",
+          "from": "creds",
+          "to": "proxy"
+        }
+      ],
+      "beats": [
+        {
+          "id": "proxy-1",
+          "narration": "When a capability set says proxy-only, the sandbox permits exactly one network destination: nono-proxy. Every byte the agent sends goes through it first.",
+          "reveal": [
+            "agent",
+            "proxy",
+            "internet",
+            "e-ag-px",
+            "e-px-net"
+          ]
+        },
+        {
+          "id": "proxy-2",
+          "narration": "The proxy filters by route. Allow this host; refuse that one. A sandboxed agent reaches only the endpoints you explicitly sanctioned.",
+          "reveal": [
+            "filter",
+            "e-filter"
+          ],
+          "focus": [
+            "filter"
+          ]
+        },
+        {
+          "id": "proxy-3",
+          "narration": "It injects credentials. The agent asks to call an A-P-I; the proxy attaches the token on the way out. The secret is spent on the agent's behalf -- but the agent never sees it, so it cannot leak it.",
+          "reveal": [
+            "creds",
+            "e-creds"
+          ],
+          "focus": [
+            "creds"
+          ]
+        },
+        {
+          "id": "proxy-4",
+          "narration": "And because the proxy terminates T-L-S, it can audit the actual content of encrypted traffic -- not merely its destination. The network stops being a blind spot.",
+          "focus": [
+            "proxy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "undo",
+      "type": "diagram",
+      "accent": "amber",
+      "kicker": "05 // RECOVERY",
+      "heading": "Every run is reversible",
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "snapshot",
+          "label": "SnapshotManager",
+          "sub": "captured before the run",
+          "col": 1,
+          "row": 0,
+          "accent": "cyan"
+        },
+        {
+          "id": "merkle",
+          "label": "MerkleTree",
+          "sub": "content-addressed diffing",
+          "col": 1,
+          "row": 1,
+          "accent": "amber",
+          "emphasis": true,
+          "tag": "module"
+        },
+        {
+          "id": "objstore",
+          "label": "ObjectStore",
+          "sub": "deduplicated block storage",
+          "col": 0,
+          "row": 2,
+          "accent": "violet"
+        },
+        {
+          "id": "exclusion",
+          "label": "ExclusionFilter",
+          "sub": "skips caches & build output",
+          "col": 2,
+          "row": 1,
+          "accent": "green"
+        },
+        {
+          "id": "rollback",
+          "label": "Rollback",
+          "sub": "restore to the exact instant",
+          "col": 1,
+          "row": 2,
+          "accent": "rose"
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-snap-mk",
+          "from": "snapshot",
+          "to": "merkle"
+        },
+        {
+          "id": "e-mk-obj",
+          "from": "merkle",
+          "to": "objstore"
+        },
+        {
+          "id": "e-excl-mk",
+          "from": "exclusion",
+          "to": "merkle"
+        },
+        {
+          "id": "e-mk-roll",
+          "from": "merkle",
+          "to": "rollback"
+        }
+      ],
+      "beats": [
+        {
+          "id": "undo-1",
+          "narration": "Isolation contains a bad run, but it cannot reverse one. So nono also snapshots the filesystem.",
+          "reveal": [
+            "snapshot"
+          ]
+        },
+        {
+          "id": "undo-2",
+          "narration": "Before the agent starts, the SnapshotManager records the working tree through a Merkle tree -- content-addressed, so only the blocks that genuinely change are ever written.",
+          "reveal": [
+            "merkle",
+            "e-snap-mk"
+          ],
+          "focus": [
+            "merkle"
+          ]
+        },
+        {
+          "id": "undo-3",
+          "narration": "Changed blocks land in a deduplicated ObjectStore. An ExclusionFilter keeps build output and caches out of the snapshot entirely, so it stays small and fast.",
+          "reveal": [
+            "objstore",
+            "exclusion",
+            "e-mk-obj",
+            "e-excl-mk"
+          ]
+        },
+        {
+          "id": "undo-4",
+          "narration": "If a run goes wrong, you roll back -- the working tree returned, byte for byte, to the instant before the agent ever touched it.",
+          "reveal": [
+            "rollback",
+            "e-mk-roll"
+          ],
+          "focus": [
+            "rollback"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "rose",
+      "kicker": "RECAP // FOUR IDEAS",
+      "heading": "nono, in four ideas",
+      "points": [
+        "Mechanism and policy, split — the library applies, the CLI decides.",
+        "A CapabilitySet in; kernel-enforced isolation out.",
+        "A proxy that filters routes and spends credentials the agent never sees.",
+        "Merkle-tree snapshots make every run reversible."
+      ],
+      "beats": [
+        {
+          "id": "recap-1",
+          "narration": "So, nono in four ideas. Mechanism and policy held apart -- the library applies, the C-L-I decides.",
+          "reveal": 1
+        },
+        {
+          "id": "recap-2",
+          "narration": "A CapabilitySet goes in; kernel-enforced isolation comes out.",
+          "reveal": 2
+        },
+        {
+          "id": "recap-3",
+          "narration": "A proxy that filters every route, and spends credentials the agent itself never sees.",
+          "reveal": 3
+        },
+        {
+          "id": "recap-4",
+          "narration": "And Merkle-tree snapshots that make every run reversible. Confine the agent, govern its network, and keep an undo button. That is nono.",
+          "reveal": 4
+        }
+      ]
+    }
+  ]
+}

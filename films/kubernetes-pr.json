@@ -1,0 +1,138 @@
+{
+  "meta": {
+    "id": "kubernetes-pr",
+    "title": "Kubernetes PR #139003",
+    "subject": "Kubernetes PR #139003 — scheduler heap optimization",
+    "repo": "~/ventures/arch-repos/kubernetes",
+    "prompt": "pr review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "title",
+      "accent": "blue",
+      "kicker": "DOCENT // PR REVIEW",
+      "title": "The scheduler heap",
+      "tagline": "Kubernetes PR #139003 — map lookups out of the hot path",
+      "footnote": "+541 / −133   ·   2 files   ·   a performance refactor, reviewed honestly",
+      "beats": [
+        {"id": "title-1", "narration": "A pull request against Kubernetes. Pull request one-three-nine-thousand-and-three.", "show": "title"},
+        {"id": "title-2", "narration": "It is a performance refactor of one core data structure -- the priority heap the scheduler uses to pick the next pod. No new feature, no API change. Just: faster.", "show": "tagline"},
+        {"id": "title-3", "narration": "Two files, five hundred lines. We will not just admire it -- we will review it: the design, the trade it makes, the tests, and a verdict.", "show": "footnote"}
+      ]
+    },
+    {
+      "id": "context",
+      "type": "diagram",
+      "accent": "cyan",
+      "kicker": "01 // WHERE IT LIVES",
+      "heading": "A heap on the critical path",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "aq", "label": "activeQueue", "sub": "pods ready to schedule", "col": 0, "row": 0, "accent": "blue"},
+        {"id": "bq", "label": "backoffQueue", "sub": "pods waiting to retry", "col": 1, "row": 0, "accent": "green"},
+        {"id": "sq", "label": "schedulingQueue", "sub": "the queue façade", "col": 2, "row": 0, "accent": "violet"},
+        {"id": "heap", "label": "The priority heap", "sub": "backend/heap/heap.go", "col": 1, "row": 1, "accent": "cyan", "emphasis": true},
+        {"id": "less", "label": "Less / Swap", "sub": "the O(log n) comparison hot path", "col": 1, "row": 2, "accent": "amber", "wide": true}
+      ],
+      "edges": [
+        {"id": "e-a", "from": "aq", "to": "heap"},
+        {"id": "e-b", "from": "bq", "to": "heap"},
+        {"id": "e-s", "from": "sq", "to": "heap"},
+        {"id": "e-h", "from": "heap", "to": "less"}
+      ],
+      "beats": [
+        {"id": "ctx-1", "narration": "The Kubernetes scheduler keeps pending pods in priority heaps, so it can always pick the highest-priority pod next. Three different pending-pod queues all build on the same heap.", "reveal": ["aq", "bq", "sq"]},
+        {"id": "ctx-2", "narration": "Underneath all three is one generic heap implementation -- a single file: backend, heap, heap dot go.", "reveal": ["heap", "e-a", "e-b", "e-s"], "focus": ["heap"]},
+        {"id": "ctx-3", "narration": "And inside the heap, two functions sit squarely on the critical path -- Less and Swap. They are called order-log-n times for every Push, every Pop, every Fix.", "reveal": ["less", "e-h"], "focus": ["less"]},
+        {"id": "ctx-4", "narration": "In a large cluster with thousands of pending pods, the cost of those two tiny functions multiplies across thousands of operations every second. That is the cost this pull request goes after -- and the question a review must answer is what it pays to get there.", "focus": ["less"]}
+      ]
+    },
+    {
+      "id": "redesign",
+      "type": "diff",
+      "accent": "amber",
+      "kicker": "02 // THE REDESIGN",
+      "heading": "Keys and a map, became pointers",
+      "file": "pkg/scheduler/backend/heap/heap.go",
+      "lang": "go",
+      "code": " // The heap's backing storage.\n type data[T any] struct {\n-    // Before: a slice of KEYS, plus a side map from key to item.\n-    // Every comparison pays for two hash-map lookups.\n-    items map[string]*heapItem[T]\n-    queue []string\n+    // After: the queue holds item POINTERS, directly.\n+    // keyIndex is consulted only for key-based lookups.\n+    queue    []*heapItem[T]\n+    keyIndex map[string]int\n }",
+      "beats": [
+        {"id": "redesign-1", "narration": "Here is the redesign. Before, the heap stored a slice of string keys -- plus a side map, from each key to its item.", "highlight": [3, 6]},
+        {"id": "redesign-2", "narration": "The consequence: every comparison between two heap positions performed two hash-map lookups, purely to find the objects it was meant to compare.", "highlight": [5, 6]},
+        {"id": "redesign-3", "narration": "After, the queue holds the item pointers directly. The heap order lives in the slice itself -- there is no indirection left to resolve.", "highlight": [7, 10]},
+        {"id": "redesign-4", "narration": "Was a pointer slice the only option? No. An open-addressed index, or a generational slab, were both on the table. Pointers won because they are the simplest thing that removes the indirection -- and Go's garbage collector makes them safe to hold. The keyIndex map stays, but only for lookups by key, never on the compare path.", "highlight": [9, 10]}
+      ]
+    },
+    {
+      "id": "hotpath",
+      "type": "diff",
+      "accent": "green",
+      "kicker": "03 // THE HOT PATH",
+      "heading": "Seven lines became one",
+      "file": "pkg/scheduler/backend/heap/heap.go",
+      "lang": "go",
+      "code": " // Less reports whether the pod at i outranks the pod at j.\n func (h *data[T]) Less(i, j int) bool {\n-    // Before: bounds-guard, two map lookups, two guards, compare.\n-    if i > len(h.queue) || j > len(h.queue) { return false }\n-    itemi, ok := h.items[h.queue[i]]\n-    if !ok { return false }\n-    itemj, ok := h.items[h.queue[j]]\n-    if !ok { return false }\n-    return h.lessFunc(itemi.obj, itemj.obj)\n+    // After: a direct dereference. That is the whole function.\n+    return h.lessFunc(h.queue[i].obj, h.queue[j].obj)\n }",
+      "beats": [
+        {"id": "hotpath-1", "narration": "And here is the payoff, in the comparison function itself. Before, Less was seven lines -- a bounds check, two map lookups, two not-found guards, and finally the compare.", "highlight": [3, 9]},
+        {"id": "hotpath-2", "narration": "Every one of those lookups is a hash, a probe, a pointer-chase -- paid on every single comparison, order-log-n times per operation.", "highlight": [5, 8]},
+        {"id": "hotpath-3", "narration": "After, Less is one line. A direct dereference into the slice, and the compare. The hash-map lookups are simply gone.", "highlight": [10, 11]},
+        {"id": "hotpath-4", "narration": "But notice what else left: the bounds checks. The reasoning is that Go's container heap never passes an out-of-range index -- true, today. It does mean the change quietly traded a little defense-in-depth for speed: it is now load-bearing that every caller goes through container-slash-heap. A future caller that indexes Less directly used to get a safe false; now it panics. Small -- but a reviewer should say it out loud.", "highlight": [10, 11]}
+      ]
+    },
+    {
+      "id": "proof",
+      "type": "diagram",
+      "accent": "violet",
+      "kicker": "04 // THE EVIDENCE",
+      "heading": "Faster is proven. Correct is the question.",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "bench", "label": "Benchmarked", "sub": "100 / 1,000 / 5,000 pods", "col": 1, "row": 1, "accent": "violet", "emphasis": true},
+        {"id": "pop", "label": "Pop", "sub": "−43%", "col": 0, "row": 0, "accent": "green"},
+        {"id": "fix", "label": "AddOrUpdate / Fix", "sub": "−45%", "col": 1, "row": 0, "accent": "cyan"},
+        {"id": "mixed", "label": "Mixed workload", "sub": "−46%", "col": 2, "row": 0, "accent": "amber"},
+        {"id": "alloc", "label": "Allocations", "sub": "≈ halved", "col": 0, "row": 2, "accent": "blue"},
+        {"id": "leak", "label": "A leak fixed", "sub": "Pop nils the freed slot", "col": 2, "row": 2, "accent": "rose"}
+      ],
+      "edges": [
+        {"id": "e-p", "from": "bench", "to": "pop"},
+        {"id": "e-f", "from": "bench", "to": "fix"},
+        {"id": "e-m", "from": "bench", "to": "mixed"},
+        {"id": "e-al", "from": "bench", "to": "alloc"},
+        {"id": "e-l", "from": "bench", "to": "leak"}
+      ],
+      "beats": [
+        {"id": "proof-1", "narration": "Does it pay off? The author benchmarked it -- at heap sizes of one hundred, one thousand, and five thousand pods.", "reveal": ["bench"], "focus": ["bench"]},
+        {"id": "proof-2", "narration": "Pop, forty-three percent faster. Fix and AddOrUpdate, forty-five. The mixed workload, forty-six. Allocations per operation roughly halved -- real garbage-collector relief on a hot path.", "reveal": ["pop", "fix", "mixed", "alloc", "e-p", "e-f", "e-m", "e-al"]},
+        {"id": "proof-3", "narration": "But hold the applause. Benchmarks prove the code is faster. They do not prove it is correct. And the test suite was rewritten in this very same pull request -- the safety net was re-woven at the same moment as the thing it protects. A careful reviewer treats that as a mild yellow flag.", "focus": ["bench"]},
+        {"id": "proof-4", "narration": "The real question is whether the new table-driven tests still pin the heap's invariants -- pop-order, and the agreement between keyIndex and queue -- and not merely the speed. To its credit the PR also fixes a latent leak: Pop now nils the freed slot. And the whole change was validated on the hundred-node performance job.", "reveal": ["leak", "e-l"], "focus": ["leak"]}
+      ]
+    },
+    {
+      "id": "verdict",
+      "type": "sketch",
+      "accent": "amber",
+      "kicker": "THE VERDICT",
+      "heading": "The ruling",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "approve", "label": "Approve", "sub": "a clean, measured refactor", "col": 1, "row": 0, "accent": "green", "emphasis": true},
+        {"id": "risk", "label": "Risk — keyIndex ⇄ queue", "sub": "must stay in sync through every Swap", "col": 1, "row": 1, "kind": "risk"},
+        {"id": "before", "label": "Before merge", "sub": "assert the invariant in the tests", "col": 0, "row": 2, "accent": "amber"},
+        {"id": "watch", "label": "Watch in prod", "sub": "scheduler p99 at scale, not the microbench", "col": 2, "row": 2, "accent": "cyan"}
+      ],
+      "edges": [],
+      "beats": [
+        {"id": "verdict-1", "narration": "So -- the verdict. And a verdict is not a compliment. Approve: this is a clean, genuinely well-measured refactor of a real hot path, with no public A-P-I change. But here is what I would still say in the review.", "reveal": ["approve"], "focus": ["approve"]},
+        {"id": "verdict-2", "narration": "The real risk is not correctness today. It is the new invariant. keyIndex and queue must now stay perfectly in step through every single Swap. The old key-and-map design made that kind of desync structurally impossible -- this pull request trades that structural guarantee away, for speed.", "reveal": ["risk"], "focus": ["risk"]},
+        {"id": "verdict-3", "narration": "So before I would be fully comfortable, I would want one thing: the rewritten tests to assert that invariant directly -- that keyIndex agrees with queue after every mutation -- not merely re-check pop-order.", "reveal": ["before"], "focus": ["before"]},
+        {"id": "verdict-4", "narration": "And in production I would watch scheduler p99 latency on the large-node job -- the real signal -- not the microbenchmark in the pull request. The code lands with sig-scheduling, the right owners to hold it. The disposition: approve -- with that one invariant test asked for, first.", "reveal": ["watch"], "focus": ["watch"]}
+      ]
+    }
+  ]
+}

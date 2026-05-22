@@ -1,0 +1,136 @@
+{
+  "meta": {
+    "id": "rig-pr",
+    "title": "Rig PR #1702",
+    "subject": "Rig PR #1702 — conversation memory",
+    "repo": "~/ventures/arch-repos/rig",
+    "prompt": "pr review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "title",
+      "accent": "violet",
+      "kicker": "DOCENT // PR REVIEW",
+      "title": "Conversation memory",
+      "tagline": "Rig PR #1702 — chat history becomes a framework primitive",
+      "footnote": "+1,903 / −4   ·   16 files   ·   rig-core + a new rig-memory crate",
+      "beats": [
+        {"id": "title-1", "narration": "A close look at a real pull request -- against Rig, the Rust framework for L-L-M applications. Pull request seventeen-oh-two.", "show": "title"},
+        {"id": "title-2", "narration": "Its subject is conversation memory. Until this change, every Rig application had to hand-manage its own chat history. This pull request makes memory a first-class, framework-managed concern.", "show": "tagline"},
+        {"id": "title-3", "narration": "Sixteen files; about nineteen hundred lines added. A new module inside rig-core, and a brand-new companion crate.", "show": "footnote"}
+      ]
+    },
+    {
+      "id": "context",
+      "type": "diagram",
+      "accent": "violet",
+      "kicker": "01 // WHAT IT ADDS",
+      "heading": "Three parts, one feature",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "trait", "label": "ConversationMemory", "sub": "the new trait — load / append / clear", "col": 1, "row": 0, "accent": "violet", "emphasis": true, "tag": "new", "wide": true},
+        {"id": "backend", "label": "InMemoryConversationMemory", "sub": "default HashMap backend", "col": 0, "row": 1, "accent": "cyan", "tag": "new"},
+        {"id": "wiring", "label": "Builder + prompt loop", "sub": "memory threaded through", "col": 1, "row": 1, "accent": "amber"},
+        {"id": "crate", "label": "rig-memory", "sub": "companion crate — policies", "col": 2, "row": 1, "accent": "green", "tag": "new crate"},
+        {"id": "core", "label": "rig-core", "sub": "stays lean", "col": 1, "row": 2, "accent": "blue"}
+      ],
+      "edges": [
+        {"id": "e-bt", "from": "backend", "to": "trait"},
+        {"id": "e-ct", "from": "crate", "to": "trait"},
+        {"id": "e-tw", "from": "trait", "to": "wiring"},
+        {"id": "e-wc", "from": "wiring", "to": "core"}
+      ],
+      "beats": [
+        {"id": "context-1", "narration": "The change has three parts. First, a contract -- the ConversationMemory trait, in a new file: rig-core, source, memory dot r-s.", "reveal": ["trait"], "focus": ["trait"]},
+        {"id": "context-2", "narration": "Second, a default implementation -- an in-memory, HashMap-backed backend -- so the feature works out of the box, with nothing to configure.", "reveal": ["backend", "e-bt"], "focus": ["backend"]},
+        {"id": "context-3", "narration": "Third, the wiring. The agent builder and the prompt loop are both threaded with memory: on every prompt, history is loaded before, and the finished turn appended after.", "reveal": ["wiring", "core", "e-tw", "e-wc"], "focus": ["wiring"]},
+        {"id": "context-4", "narration": "And the opinionated parts -- the named history-shaping policies -- are pushed into a separate companion crate, rig-memory, so rig-core itself stays lean.", "reveal": ["crate", "e-ct"], "focus": ["crate"]}
+      ]
+    },
+    {
+      "id": "contract",
+      "type": "code",
+      "accent": "cyan",
+      "kicker": "02 // THE CONTRACT",
+      "heading": "The whole trait, in three methods",
+      "file": "crates/rig-core/src/memory.rs",
+      "lang": "rust",
+      "code": "// The storage contract — Rig calls load before a prompt,\n// and append after a successful turn.\npub trait ConversationMemory: WasmCompatSend + WasmCompatSync {\n    fn load<'a>(&'a self, conversation_id: &'a str)\n        -> WasmBoxedFuture<'a, Result<Vec<Message>, MemoryError>>;\n\n    fn append<'a>(&'a self, conversation_id: &'a str, messages: Vec<Message>)\n        -> WasmBoxedFuture<'a, Result<(), MemoryError>>;\n\n    fn clear<'a>(&'a self, conversation_id: &'a str)\n        -> WasmBoxedFuture<'a, Result<(), MemoryError>>;\n}",
+      "beats": [
+        {"id": "contract-1", "narration": "Here is the entire contract. Three methods -- load, append, clear -- each one keyed by a conversation I-D string."},
+        {"id": "contract-2", "narration": "load fetches the prior history for a conversation. Rig calls it automatically, before the prompt is ever sent to the model.", "highlight": [4, 5]},
+        {"id": "contract-3", "narration": "append writes a finished turn back. Notice the trait says nothing about where -- a HashMap, Postgres, Redis. That is precisely the point: storage is now pluggable.", "highlight": [7, 8]},
+        {"id": "contract-4", "narration": "And every method returns a WASM-compatible boxed future, rather than a raw async function -- so the trait stays object-safe, and Rig still compiles to WebAssembly.", "highlight": [3, 3]}
+      ]
+    },
+    {
+      "id": "wiring",
+      "type": "diff",
+      "accent": "amber",
+      "kicker": "03 // THE WIRING",
+      "heading": "How the prompt loop changed",
+      "file": "crates/rig-core/src/agent/prompt_request/mod.rs",
+      "lang": "rust",
+      "code": " // Resolve the history for this turn.\n-let chat_history = self.chat_history;\n+let (chat_history, memory_handle) = match self.chat_history {\n+    Some(history) => (Some(history), None),       // explicit history wins\n+    None => match (self.memory, self.conversation_id) {\n+        (Some(memory), Some(id)) => {\n+            let loaded = memory.load(&id).await?; // load failure is fatal\n+            (Some(loaded), Some((memory, id)))\n+        }\n+        _ => (None, None),                        // no backend -> no-op\n+    },\n+};\n let mut new_messages = vec![self.prompt.clone()];\n // ... the turn runs ...\n+if let Some((memory, id)) = memory_handle.as_ref() {\n+    let _ = memory.append(id, new_messages).await; // best-effort: only warns\n+}",
+      "beats": [
+        {"id": "wiring-1", "narration": "The wiring lives in the prompt loop. Before, the request simply used whatever history the caller passed -- a single line.", "highlight": [2, 2]},
+        {"id": "wiring-2", "narration": "After, it resolves history through a match. An explicit with-history call still wins, untouched -- so existing caller-managed code does not change behavior at all.", "highlight": [3, 4]},
+        {"id": "wiring-3", "narration": "But when the caller passes no history, and both a memory backend and a conversation I-D are present, the loop loads the prior history itself. A load failure is fatal -- the request cannot proceed without the history it was promised.", "highlight": [5, 12]},
+        {"id": "wiring-4", "narration": "After the turn succeeds, the new messages are appended back. This one is best-effort: a failed append only logs a warning, and the model's answer is still returned. Two failure modes -- and the asymmetry is deliberate.", "highlight": [14, 17]}
+      ]
+    },
+    {
+      "id": "ripple",
+      "type": "diagram",
+      "accent": "green",
+      "kicker": "04 // RIPPLE EFFECTS",
+      "heading": "What else it touches",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "pr", "label": "PR #1702", "sub": "the change", "col": 1, "row": 1, "accent": "violet", "emphasis": true},
+        {"id": "additive", "label": "Additive API", "sub": "no signature changed", "col": 0, "row": 0, "accent": "green"},
+        {"id": "errors", "label": "Error funneling", "sub": "via existing variants", "col": 2, "row": 0, "accent": "amber"},
+        {"id": "async", "label": "Asymmetric failure", "sub": "fatal load · best-effort append", "col": 1, "row": 0, "accent": "rose"},
+        {"id": "split", "label": "Crate split", "sub": "rig-core stays lean", "col": 0, "row": 2, "accent": "cyan"},
+        {"id": "future", "label": "Future backends", "sub": "Postgres · Redis · SQLite", "col": 2, "row": 2, "accent": "blue"}
+      ],
+      "edges": [
+        {"id": "e-a", "from": "pr", "to": "additive"},
+        {"id": "e-e", "from": "pr", "to": "errors"},
+        {"id": "e-y", "from": "pr", "to": "async"},
+        {"id": "e-s", "from": "pr", "to": "split"},
+        {"id": "e-f", "from": "pr", "to": "future"}
+      ],
+      "beats": [
+        {"id": "ripple-1", "narration": "What does this ripple into? Reassuringly little. The API change is purely additive -- not one existing function signature was altered.", "reveal": ["pr", "additive", "async", "errors", "e-a"], "focus": ["additive"]},
+        {"id": "ripple-2", "narration": "Memory failures are funneled through Rig's existing error variants -- so downstream code that exhaustively matches on those errors keeps compiling, with no new arms to handle.", "reveal": ["e-e"], "focus": ["errors"]},
+        {"id": "ripple-3", "narration": "The failure semantics, fatal on load and best-effort on append, are applied identically across both the streaming and non-streaming prompt paths -- no drift between them.", "reveal": ["e-y"], "focus": ["async"]},
+        {"id": "ripple-4", "narration": "And the crate split is the real discipline. The trait and default backend live in core; the opinionated policies live in rig-memory. The same trait surface is built to host Postgres or Redis backends later, with no further core changes.", "reveal": ["split", "future", "e-s", "e-f"]}
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "violet",
+      "kicker": "RECAP // THE VERDICT",
+      "heading": "PR #1702, in four ideas",
+      "points": [
+        "Conversation history becomes a trait — load, append, clear.",
+        "A default in-memory backend; the prompt loop wires it in for you.",
+        "Load failures are fatal; append failures only warn — by design.",
+        "Opinionated policies live in a companion crate; rig-core stays lean."
+      ],
+      "beats": [
+        {"id": "recap-1", "narration": "So, pull request seventeen-oh-two, in four ideas. Conversation history becomes a single trait -- load, append, clear.", "reveal": 1},
+        {"id": "recap-2", "narration": "A default in-memory backend ships with it, and the prompt loop wires it in automatically.", "reveal": 2},
+        {"id": "recap-3", "narration": "Load failures are fatal; append failures only warn -- a deliberate, considered asymmetry.", "reveal": 3},
+        {"id": "recap-4", "narration": "And the opinionated policies are kept in a companion crate, so rig-core stays lean. A clean, additive, well-scoped change -- the kind a reviewer is glad to approve.", "reveal": 4}
+      ]
+    }
+  ]
+}

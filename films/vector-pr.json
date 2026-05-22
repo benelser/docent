@@ -1,0 +1,136 @@
+{
+  "meta": {
+    "id": "vector-pr",
+    "title": "Vector PR #25312",
+    "subject": "Vector PR #25312 — splunk_hec second-stage decoding",
+    "repo": "~/ventures/arch-repos/vector",
+    "prompt": "pr review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "title",
+      "accent": "green",
+      "kicker": "DOCENT // PR REVIEW",
+      "title": "Second-stage decoding",
+      "tagline": "Vector PR #25312 — the splunk_hec source becomes composable",
+      "footnote": "+2,683 / −219   ·   7 files   ·   one source, made a pipeline",
+      "beats": [
+        {"id": "title-1", "narration": "A pull request against Vector -- the observability data pipeline. Pull request twenty-five-three-twelve.", "show": "title"},
+        {"id": "title-2", "narration": "Its subject: the Splunk H-E-C source. The change turns a fixed-shape envelope parser into a composable ingestion point -- one that can reframe and re-decode the payloads it receives.", "show": "tagline"},
+        {"id": "title-3", "narration": "Seven files; most of the work concentrated in a single source. An additive change, carefully kept safe.", "show": "footnote"}
+      ]
+    },
+    {
+      "id": "context",
+      "type": "diagram",
+      "accent": "green",
+      "kicker": "01 // WHAT IT ADDS",
+      "heading": "A second decoding stage",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "source", "label": "splunk_hec source", "sub": "the envelope parser", "col": 1, "row": 0, "accent": "green", "emphasis": true},
+        {"id": "codec", "label": "CodecConfig", "sub": "new per-endpoint config", "col": 1, "row": 1, "accent": "amber", "tag": "new"},
+        {"id": "pipeline", "label": "framing + decoding", "sub": "Vector's standard codecs", "col": 0, "row": 1, "accent": "cyan"},
+        {"id": "decoder", "label": "Decoder", "sub": "+ with_metadata_template", "col": 2, "row": 1, "accent": "blue"},
+        {"id": "vrl", "label": "VrlDeserializer", "sub": "+ envelope metadata", "col": 1, "row": 2, "accent": "violet"}
+      ],
+      "edges": [
+        {"id": "e-sc", "from": "source", "to": "codec"},
+        {"id": "e-cp", "from": "codec", "to": "pipeline"},
+        {"id": "e-cd", "from": "codec", "to": "decoder"},
+        {"id": "e-dv", "from": "decoder", "to": "vrl"}
+      ],
+      "beats": [
+        {"id": "context-1", "narration": "Before this change, the splunk H-E-C source did exactly one thing: it parsed the Splunk envelope and emitted the payload inside it -- one event, as-is.", "reveal": ["source"], "focus": ["source"]},
+        {"id": "context-2", "narration": "The pull request adds an optional, per-endpoint CodecConfig -- a framing choice, and a decoding choice.", "reveal": ["codec", "e-sc"], "focus": ["codec"]},
+        {"id": "context-3", "narration": "That config builds an optional Decoder, drawn from Vector's standard framing-and-decoding pipeline -- the very same codecs every other source already uses.", "reveal": ["pipeline", "decoder", "e-cp", "e-cd"]},
+        {"id": "context-4", "narration": "And the V-R-L deserializer is taught to carry envelope metadata -- host, sourcetype, the auth token -- so a remap program can route on it.", "reveal": ["vrl", "e-dv"], "focus": ["vrl"]}
+      ]
+    },
+    {
+      "id": "config",
+      "type": "code",
+      "accent": "cyan",
+      "kicker": "02 // THE CONFIG SURFACE",
+      "heading": "Opt-in, by construction",
+      "file": "src/sources/splunk_hec/mod.rs",
+      "lang": "rust",
+      "code": "// New: an optional codec, configured per endpoint.\npub struct CodecConfig {\n    pub framing:  Option<FramingConfig>,\n    pub decoding: Option<DeserializerConfig>,\n}\n\nimpl CodecConfig {\n    fn build_decoder(&self, ns: LogNamespace) -> Result<Option<Decoder>> {\n        match &self.decoding {\n            Some(decoding) => {\n                let framing = self.framing.clone().unwrap_or_else(\n                    || decoding.default_message_based_framing());\n                Ok(Some(DecodingConfig::new(framing, decoding, ns).build()?))\n            }\n            None => Ok(None),   // unset -> legacy behavior, unchanged\n        }\n    }\n}",
+      "beats": [
+        {"id": "config-1", "narration": "The new configuration surface is small. A CodecConfig is two optional fields -- a framing, and a decoding.", "highlight": [2, 5]},
+        {"id": "config-2", "narration": "build_decoder turns that config into an optional Decoder. When decoding is set, it constructs one from Vector's standard pipeline...", "highlight": [8, 14]},
+        {"id": "config-3", "narration": "...choosing a sensible default framing for the chosen codec, if the operator did not name one explicitly.", "highlight": [11, 12]},
+        {"id": "config-4", "narration": "And if decoding is unset -- the default -- it returns nothing. No decoder; the source behaves exactly as it always has. The feature is opt-in, and the legacy path is left untouched.", "highlight": [15, 15]}
+      ]
+    },
+    {
+      "id": "core",
+      "type": "diff",
+      "accent": "amber",
+      "kicker": "03 // THE CORE CHANGE",
+      "heading": "One envelope, many events",
+      "file": "src/sources/splunk_hec/mod.rs",
+      "lang": "rust",
+      "code": " // Build events from one HEC envelope.\n for result in iter {\n     match result {\n-        // Before: each envelope yields exactly one event.\n-        Ok(event) => events.push(event),\n+        // After: each envelope can decode into many events.\n+        Ok((chunk, errored)) => {\n+            events.extend(chunk);\n+            had_decode_errors |= errored;\n+        }\n         Err(err) => { error = Some(err); break; }\n     }\n }",
+      "beats": [
+        {"id": "core-1", "narration": "And here is the behavioral core. Before, the loop over a request's envelopes pushed exactly one event for each envelope.", "highlight": [4, 5]},
+        {"id": "core-2", "narration": "After, each envelope can decode into a whole chunk of events -- a single Splunk payload fanning out into many.", "highlight": [6, 10]},
+        {"id": "core-3", "narration": "The decode loop drives the codec to end-of-input, stamping the source type, the ingest timestamp, and the auth token onto every event it produces.", "highlight": [7, 9]},
+        {"id": "core-4", "narration": "It also tracks whether any frame failed to decode -- the errored flag. And that flag is the linchpin of the next, subtler change.", "highlight": [9, 9]}
+      ]
+    },
+    {
+      "id": "ripple",
+      "type": "diagram",
+      "accent": "violet",
+      "kicker": "04 // RIPPLE EFFECTS",
+      "heading": "The careful parts",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "pr", "label": "PR #25312", "sub": "the change", "col": 1, "row": 1, "accent": "green", "emphasis": true},
+        {"id": "ack", "label": "Honest acks", "sub": "refused on dropped data", "col": 1, "row": 0, "accent": "rose"},
+        {"id": "schema", "label": "Schema rework", "sub": "per-endpoint, then merged", "col": 0, "row": 0, "accent": "amber"},
+        {"id": "precedence", "label": "Field precedence", "sub": "decoder output wins", "col": 2, "row": 0, "accent": "cyan"},
+        {"id": "crosscrate", "label": "Cross-crate hook", "sub": "any source can reuse it", "col": 0, "row": 2, "accent": "blue"},
+        {"id": "legacy", "label": "Legacy fast path", "sub": "byte-for-byte preserved", "col": 2, "row": 2, "accent": "violet"}
+      ],
+      "edges": [
+        {"id": "e-ack", "from": "pr", "to": "ack"},
+        {"id": "e-sch", "from": "pr", "to": "schema"},
+        {"id": "e-pre", "from": "pr", "to": "precedence"},
+        {"id": "e-cc", "from": "pr", "to": "crosscrate"},
+        {"id": "e-leg", "from": "pr", "to": "legacy"}
+      ],
+      "beats": [
+        {"id": "ripple-1", "narration": "The subtle part is acknowledgements. With a decoder in play, ack registration is deferred -- and refused outright if the codec dropped a frame. Splunk is never told a payload landed when Vector silently lost part of it.", "reveal": ["pr", "ack", "schema", "precedence", "e-ack"], "focus": ["ack"]},
+        {"id": "ripple-2", "narration": "The output schema was reworked -- built per-endpoint, then merged -- because each endpoint now decides, at runtime, whether envelope metadata overwrites decoded fields.", "reveal": ["e-sch"], "focus": ["schema"]},
+        {"id": "ripple-3", "narration": "Which sets a precedence rule: with a decoder, decoder output wins on a field conflict. Envelope keys are inserted only where the decoder left a gap.", "reveal": ["e-pre"], "focus": ["precedence"]},
+        {"id": "ripple-4", "narration": "And the metadata hook was added to the generic codecs crate -- so any future source, not only splunk H-E-C, can feed per-request context into a V-R-L decoder. Meanwhile the no-decoder path stays byte-for-byte the old behavior.", "reveal": ["crosscrate", "legacy", "e-cc", "e-leg"]}
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "green",
+      "kicker": "RECAP // THE VERDICT",
+      "heading": "PR #25312, in four ideas",
+      "points": [
+        "An optional per-endpoint codec — opt-in; the legacy path untouched.",
+        "One HEC payload can now fan out into many events.",
+        "Acknowledgements are deferred, and refused if a frame was dropped.",
+        "The VRL decoder can route on envelope metadata and the auth token."
+      ],
+      "beats": [
+        {"id": "recap-1", "narration": "Pull request twenty-five-three-twelve, in four ideas. An optional, per-endpoint codec -- opt-in, with the legacy path entirely untouched.", "reveal": 1},
+        {"id": "recap-2", "narration": "One Splunk H-E-C payload can now fan out into many events.", "reveal": 2},
+        {"id": "recap-3", "narration": "Acknowledgements are deferred, and refused if any frame was dropped -- so a success is always honest.", "reveal": 3},
+        {"id": "recap-4", "narration": "And the V-R-L decoder can route on envelope metadata and the auth token. A genuinely additive feature -- the kind of change that earns trust rather than spending it.", "reveal": 4}
+      ]
+    }
+  ]
+}

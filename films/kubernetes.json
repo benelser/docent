@@ -1,0 +1,195 @@
+{
+  "meta": {
+    "id": "kubernetes",
+    "title": "Kubernetes",
+    "subject": "Kubernetes — declarative container orchestration",
+    "repo": "~/ventures/arch-repos/kubernetes",
+    "prompt": "architecture review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "title",
+      "accent": "blue",
+      "kicker": "DOCENT // ARCHITECTURE REVIEW",
+      "title": "Kubernetes",
+      "tagline": "Declarative orchestration for containers, at scale",
+      "footnote": "Go   ·   control plane + nodes   ·   reviewed past the happy path",
+      "beats": [
+        {"id": "title-1", "narration": "This is Kubernetes -- the system that runs containers, in production, at scale.", "show": "title"},
+        {"id": "title-2", "narration": "You declare the state you want. Kubernetes' job, forever after, is to make reality match it -- and to keep it matching, through failure, scaling, and upgrade.", "show": "tagline"},
+        {"id": "title-3", "narration": "It is written in Go. We traced it through cmd and pkg -- and this time, deliberately, past the happy path, into where it strains.", "show": "footnote"}
+      ]
+    },
+    {
+      "id": "controlplane",
+      "type": "diagram",
+      "accent": "cyan",
+      "kicker": "01 // THE CONTROL PLANE",
+      "heading": "One front door, one source of truth",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "apiserver", "label": "kube-apiserver", "sub": "the only front door", "col": 1, "row": 1, "accent": "cyan", "emphasis": true, "wide": true},
+        {"id": "etcd", "label": "etcd", "sub": "a Raft cluster — quorum-bound", "col": 1, "row": 0, "accent": "amber"},
+        {"id": "scheduler", "label": "kube-scheduler", "sub": "binds pods to nodes", "col": 0, "row": 2, "accent": "green"},
+        {"id": "controllers", "label": "controller-manager", "sub": "dozens of control loops", "col": 2, "row": 2, "accent": "violet"}
+      ],
+      "edges": [
+        {"id": "e-ae", "from": "apiserver", "to": "etcd"},
+        {"id": "e-sa", "from": "scheduler", "to": "apiserver"},
+        {"id": "e-ca", "from": "controllers", "to": "apiserver"}
+      ],
+      "beats": [
+        {"id": "cp-1", "narration": "A Kubernetes cluster has a control plane -- a small set of components that together are its brain.", "reveal": ["apiserver"], "focus": ["apiserver"]},
+        {"id": "cp-2", "narration": "At the centre, the A-P-I server -- the only component anything else talks to, and the only one that touches storage. That is a deliberate choice: one front door makes authentication, admission, and audit uniform. The bill for it: the A-P-I server now sits on the critical path of everything.", "reveal": ["apiserver"], "focus": ["apiserver"]},
+        {"id": "cp-3", "narration": "Behind it, etcd -- and not merely 'a database'. A Raft cluster. It needs a quorum, a majority of an odd-numbered set, so it tolerates exactly (n minus one), over two, node failures -- and a network partition leaves the minority side unable to read or write. The whole control plane's availability is therefore bounded by etcd's.", "reveal": ["etcd", "e-ae"], "focus": ["etcd"]},
+        {"id": "cp-4", "narration": "The scheduler watches for pods that have no node yet, and binds each one -- by resource fit, by constraints, by spread.", "reveal": ["scheduler", "e-sa"], "focus": ["scheduler"]},
+        {"id": "cp-5", "narration": "And the controller-manager runs dozens of control loops -- one per kind of object. Hold on to that word: loops. It is the key to everything that follows.", "reveal": ["controllers", "e-ca"], "focus": ["controllers"]}
+      ]
+    },
+    {
+      "id": "nodes",
+      "type": "diagram",
+      "accent": "green",
+      "kicker": "02 // THE NODE",
+      "heading": "Where containers actually run",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "apiserver", "label": "kube-apiserver", "sub": "the control plane", "col": 1, "row": 0, "accent": "cyan"},
+        {"id": "kubelet", "label": "kubelet", "sub": "the node's agent", "col": 0, "row": 1, "accent": "green", "emphasis": true},
+        {"id": "proxy", "label": "kube-proxy", "sub": "Service networking", "col": 2, "row": 1, "accent": "violet"},
+        {"id": "runtime", "label": "Container runtime", "sub": "containerd, via the CRI", "col": 0, "row": 2, "accent": "amber"},
+        {"id": "pods", "label": "Pods", "sub": "≈110 per node, then it is full", "col": 1, "row": 2, "accent": "rose"}
+      ],
+      "edges": [
+        {"id": "e-ak", "from": "apiserver", "to": "kubelet"},
+        {"id": "e-ap", "from": "apiserver", "to": "proxy"},
+        {"id": "e-kr", "from": "kubelet", "to": "runtime"},
+        {"id": "e-rp", "from": "runtime", "to": "pods"}
+      ],
+      "beats": [
+        {"id": "nd-1", "narration": "Then the worker nodes -- the machines that actually run containers. Each runs two agents; and a node holds on the order of a hundred and ten pods before Kubernetes considers it full.", "reveal": ["apiserver"]},
+        {"id": "nd-2", "narration": "The kubelet is the node's agent. It does not poll the A-P-I server -- it holds a watch: a streamed, locally-cached mirror of just the pods bound to this node.", "reveal": ["kubelet", "e-ak"], "focus": ["kubelet"]},
+        {"id": "nd-3", "narration": "It runs no containers itself. It drives a container runtime -- containerd -- across a stable interface, the C-R-I.", "reveal": ["runtime", "pods", "e-kr", "e-rp"], "focus": ["runtime"]},
+        {"id": "nd-4", "narration": "kube-proxy programs the node's networking, so a Service -- a stable virtual address -- routes to whichever pods are healthy right now.", "reveal": ["proxy", "e-ap"], "focus": ["proxy"]},
+        {"id": "nd-5", "narration": "Both agents report status back, continuously, on that same stream. The control plane never asks 'what is running' -- it is told.", "focus": ["kubelet"]}
+      ]
+    },
+    {
+      "id": "declarative",
+      "type": "code",
+      "accent": "amber",
+      "kicker": "03 // DESIRED STATE",
+      "heading": "You declare what, never how",
+      "file": "deployment.yaml",
+      "lang": "yaml",
+      "code": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: 3            # the desired state: three of them\n  selector:\n    matchLabels: { app: web }\n  template:\n    metadata:\n      labels: { app: web }\n    spec:\n      containers:\n        - name: web\n          image: nginx:1.27",
+      "beats": [
+        {"id": "dc-1", "narration": "Everything in Kubernetes is an object -- and you describe objects declaratively, almost always in YAML."},
+        {"id": "dc-2", "narration": "This is a Deployment. Notice what it never contains: the word how. It states a desired state, and asks the cluster to hold it true.", "highlight": [1, 4]},
+        {"id": "dc-3", "narration": "Three replicas. That number is a promise the cluster makes to you. Kill a pod, and a controller sees the count has fallen to two -- and creates a third, within seconds.", "highlight": [6, 6]},
+        {"id": "dc-4", "narration": "A template describes the pods -- their labels, their containers, the exact image. Nothing on this screen is a command. It is, top to bottom, a description.", "highlight": [9, 15]}
+      ]
+    },
+    {
+      "id": "reconcile",
+      "type": "diagram",
+      "accent": "violet",
+      "kicker": "04 // THE CORE IDEA",
+      "heading": "The reconciliation loop",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "desired", "label": "Desired state", "sub": "what you declared", "col": 1, "row": 0, "accent": "amber"},
+        {"id": "diff", "label": "Diff", "sub": "desired vs. actual", "col": 1, "row": 1, "accent": "violet", "emphasis": true},
+        {"id": "act", "label": "Act", "sub": "create · update · delete", "col": 2, "row": 1, "accent": "rose"},
+        {"id": "actual", "label": "Actual state", "sub": "an informer cache", "col": 1, "row": 2, "accent": "green"},
+        {"id": "observe", "label": "Observe", "sub": "a watch-fed local mirror", "col": 0, "row": 1, "accent": "cyan"}
+      ],
+      "edges": [
+        {"id": "e-dd", "from": "desired", "to": "diff"},
+        {"id": "e-da", "from": "diff", "to": "act"},
+        {"id": "e-aa", "from": "act", "to": "actual"},
+        {"id": "e-ao", "from": "actual", "to": "observe"},
+        {"id": "e-od", "from": "observe", "to": "diff"}
+      ],
+      "beats": [
+        {"id": "rc-1", "narration": "Under every controller is one pattern: the reconciliation loop. It is the most important idea in Kubernetes.", "reveal": ["diff"], "focus": ["diff"]},
+        {"id": "rc-2", "narration": "The controller knows the desired state -- it watches the A-P-I server for the objects it owns.", "reveal": ["desired", "e-dd"], "focus": ["desired"]},
+        {"id": "rc-3", "narration": "It observes the actual state -- but not by asking. It reads an informer cache: a local mirror, fed by a watch stream. Fast to read -- and always very slightly behind reality.", "reveal": ["observe", "actual", "e-od", "e-ao"], "focus": ["observe"]},
+        {"id": "rc-4", "narration": "It diffs, and it acts. And because two controllers may write the same object from slightly stale views, every write carries a resourceVersion -- optimistic concurrency. A conflicting write is rejected, and simply retried.", "reveal": ["act", "e-da", "e-aa"], "focus": ["act"]},
+        {"id": "rc-5", "narration": "One subtlety decides the whole design: this loop is level-triggered. It re-reads the entire world every pass, instead of reacting only to change events. It is more work -- and it is exactly why a single missed event cannot break the cluster.", "focus": ["diff"]}
+      ]
+    },
+    {
+      "id": "flow",
+      "type": "sequence",
+      "accent": "rose",
+      "kicker": "05 // kubectl apply",
+      "heading": "A Deployment becomes running pods",
+      "actors": [
+        {"id": "kubectl", "label": "kubectl", "sub": "you"},
+        {"id": "apiserver", "label": "apiserver", "sub": "front door"},
+        {"id": "etcd", "label": "etcd", "sub": "storage"},
+        {"id": "scheduler", "label": "scheduler", "sub": "placement"},
+        {"id": "kubelet", "label": "kubelet", "sub": "the node"}
+      ],
+      "beats": [
+        {"id": "flow-1", "narration": "Watch a Deployment become running containers. You run kubectl apply.", "message": {"from": "kubectl", "to": "apiserver", "label": "apply deployment.yaml", "kind": "call"}},
+        {"id": "flow-2", "narration": "The A-P-I server validates the objects and writes them to etcd. They now exist -- as desired state, and nothing more. Not one container is running yet.", "message": {"from": "apiserver", "to": "etcd", "label": "persist objects", "kind": "call"}},
+        {"id": "flow-3", "narration": "A controller turns the Deployment into Pod objects. The scheduler, watching, sees three pods with no node.", "message": {"from": "apiserver", "to": "scheduler", "label": "watch: 3 unscheduled pods", "kind": "call"}},
+        {"id": "flow-4", "narration": "The scheduler picks a node for each, and writes the binding back -- through the A-P-I server, of course. Nothing bypasses it.", "message": {"from": "scheduler", "to": "apiserver", "label": "bind pod → node", "kind": "return"}},
+        {"id": "flow-5", "narration": "On the chosen node, the kubelet is watching too. It sees a pod assigned to it.", "message": {"from": "apiserver", "to": "kubelet", "label": "watch: pod assigned here", "kind": "call"}},
+        {"id": "flow-6", "narration": "The kubelet pulls the image and tells the runtime to start the container. And this is the step that most often fails in the real world -- a missing image, a registry rate-limit, a quota rejection.", "message": {"from": "kubelet", "to": "kubelet", "label": "pull image, start container", "kind": "call"}},
+        {"id": "flow-7", "narration": "It reports status back. Desired state is now actual state -- and every component reached that point by watching the A-P-I server. No direct calls, no central conductor.", "message": {"from": "kubelet", "to": "apiserver", "label": "status: Running", "kind": "return"}}
+      ]
+    },
+    {
+      "id": "failure",
+      "type": "sketch",
+      "accent": "rose",
+      "kicker": "06 // WHAT IT COSTS",
+      "heading": "Failure modes & trade-offs",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {"id": "etcd", "label": "etcd: quorum or nothing", "sub": "a partition freezes the minority", "col": 0, "row": 0, "kind": "risk"},
+        {"id": "thrash", "label": "Reconcile can wedge", "sub": "CrashLoopBackOff · controller thrash", "col": 1, "row": 0, "kind": "risk"},
+        {"id": "stale", "label": "Caches go stale", "sub": "controllers act on an old view", "col": 2, "row": 0, "kind": "risk"},
+        {"id": "level", "label": "Level-triggered", "sub": "re-reads the world every pass", "col": 0, "row": 2, "accent": "green"},
+        {"id": "edge", "label": "Edge-triggered", "sub": "lighter — but events get missed", "col": 2, "row": 2, "kind": "rejected"}
+      ],
+      "edges": [],
+      "beats": [
+        {"id": "fm-1", "narration": "Every architecture buys something, and pays for it -- so here is Kubernetes' bill, the part a tour leaves out. Start with etcd. A network partition leaves the minority side unable to read or write, and there is a hard ceiling on the database, in the single-digit gigabytes. The cluster's availability simply is etcd's availability.", "reveal": ["etcd"], "focus": ["etcd"]},
+        {"id": "fm-2", "narration": "Reconciliation is not guaranteed to converge. A controller can wedge on a permanent error and retry forever under exponential backoff; two controllers can fight over one object; a pod can crash-loop, so reality never reaches the spec at all.", "reveal": ["thrash"], "focus": ["thrash"]},
+        {"id": "fm-3", "narration": "And every controller acts on a cache that is always a little behind. Usually harmless -- but occasionally a controller acts on a world that has already moved.", "reveal": ["stale"], "focus": ["stale"]},
+        {"id": "fm-4", "narration": "Now the deepest choice of all. Kubernetes is level-triggered -- each loop re-reads the entire world, from scratch, every pass.", "reveal": ["level"], "focus": ["level"]},
+        {"id": "fm-5", "narration": "It could have been edge-triggered -- act only on change events, far less work. But events can be dropped, and a dropped edge is a permanent mistake. So Kubernetes pays for resilience with constant, redundant re-reading. That is the trade -- and for a cluster, it is the right one.", "reveal": ["edge"], "focus": ["edge"]}
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "blue",
+      "kicker": "RECAP // THE SCORECARD",
+      "heading": "Kubernetes — an honest scorecard",
+      "points": [
+        "Strong — declare the end state; the cluster converges, and self-heals.",
+        "Strong — one API, one source of truth: uniform auth, admission, audit.",
+        "Costly — the control plane's availability is bounded by an etcd quorum.",
+        "Costly — convergence is eventual; never instant, never fully guaranteed.",
+        "Skip it — for a handful of static services; the reconciliation tax only pays at scale."
+      ],
+      "beats": [
+        {"id": "recap-1", "narration": "The honest scorecard. In its favour: you declare the end state, and the cluster converges to it -- and re-converges when reality drifts. That is genuine self-healing.", "reveal": 1},
+        {"id": "recap-2", "narration": "And one A-P-I, one source of truth, means authentication, admission, and audit are uniform across the whole system.", "reveal": 2},
+        {"id": "recap-3", "narration": "Against it: the entire control plane's availability is bounded by an etcd quorum -- a hard, unavoidable limit.", "reveal": 3},
+        {"id": "recap-4", "narration": "And convergence is only eventual. Never instant -- and, as we saw, never fully guaranteed.", "reveal": 4},
+        {"id": "recap-5", "narration": "So do not reach for Kubernetes to run three static services -- the reconciliation tax is only worth paying at scale. Paid there, though, it buys a system that heals itself. That is the trade, named honestly.", "reveal": 5}
+      ]
+    }
+  ]
+}
