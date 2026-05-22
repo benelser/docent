@@ -1,0 +1,58 @@
+{
+  "pass": false,
+  "scores": [
+    {
+      "dimension": "triage",
+      "score": 5,
+      "note": "It finds the load-bearing claim\u2014a July crisis entering a preloaded European system\u2014instead of touring every cause on the page with equal weight."
+    },
+    {
+      "dimension": "where-wrong",
+      "score": 2,
+      "note": "It names blurred agency as a risk, but never walks the analysis's hardest edge case\u2014non-automatic alignments and Britain's retained freedom\u2014or any concrete way the overdetermined account degrades."
+    },
+    {
+      "dimension": "tests-prove-it",
+      "score": 2,
+      "note": "The film quotes the page's conclusion and reenacts July, but it rarely points from a specific claim to the exact evidence in the notes that earns it; conclusion substitutes for proof."
+    },
+    {
+      "dimension": "the-numbers",
+      "score": 3,
+      "note": "The reserve and tonnage figures are real, but only the reserve scale does much reasoning work; the numeric scene mostly sets atmosphere rather than pressure-testing the causal claim."
+    },
+    {
+      "dimension": "the-trade-off",
+      "score": 4,
+      "note": "It names the rejected single-culprit alternative and costs the chosen systemic account with blurred agency, though the bill stays more abstract than concrete."
+    },
+    {
+      "dimension": "verdict-adjudicates",
+      "score": 2,
+      "note": "The closing recap sounds approving and caveated, but it still summarizes more than it rules; the article's weak side and the skepticism to carry forward are not stated sharply enough."
+    }
+  ],
+  "critiques": [
+    {
+      "target": "claim / wwi-claim-3; july / wwi-july-6",
+      "problem": "\"The camps were real, yet they still depended on choice\" and later \"Britain is pulled in through Belgian neutrality and its own alignments\" raise the non-automatic-alliance edge, but never interrogate the analysis's hardest boundary: the Triple Entente was not a mutual-defense alliance and Britain still had policy freedom.",
+      "fix": "Walk that weird input explicitly. Show that the alignment story breaks if treated as automatic dominoes, then rule on why the page still survives that edge case: the camps were real, but Britain's discretion means alignments explain pressure, not mechanical compulsion."
+    },
+    {
+      "target": "tension / wwi-tension-2",
+      "problem": "\"Overdetermination can fail into a shrug: everyone caused it, therefore no one decisive did\" names the trade-off, but only at slogan level. The notes make the sharper failure concrete: encyclopedic breadth can flatten background pressure and decisive late-July risk-taking into the same weight.",
+      "fix": "Interrogate that breakage directly. Ask whether the article can still distinguish long-run atmosphere from the blank cheque, ultimatum, and mobilization chain, and say whether the page handles that distinction or blurs it."
+    },
+    {
+      "target": "text / wwi-text-1; text / wwi-text-2; recap / wwi-recap-2",
+      "problem": "\"Here is the source's own ruling on method\" and \"it earns a mechanism\" mostly quote or assert the thesis. They do not point to the specific evidence in the notes that proves the mechanism rather than merely restating the article's conclusion.",
+      "fix": "Replace thesis restatement with proof. Tie the claim to the concrete steps the notes identify: Vienna treating Sarajevo as casus belli, Berlin's blank cheque, Russia's failed partial mobilization, German two-front planning, and the later Germany-responsibility caveat."
+    },
+    {
+      "target": "recap / wwi-recap-1; recap / wwi-recap-2; recap / wwi-recap-3; recap / wwi-recap-4; recap / wwi-recap-5",
+      "problem": "\"Sound,\" \"Earned,\" and \"Grounded\" make the verdict read like approving labels. Even with the Germany caveat, the scene mostly restates the film instead of adjudicating where the article is strong, where it is weak, and what skepticism the viewer should carry.",
+      "fix": "Make the verdict rule more sharply: strong as an explanation of escalation, weak as a ranking of deep causes or a clean allocator of blame; biggest residual risk is that overdetermination washes late-July agency into atmosphere; the viewer should test every systemic claim against that boundary."
+    }
+  ],
+  "summary": "This draft is not a tour of every subsection; it finds the article's real center of gravity and does name the core trade-off. But it still misses the depth bar because the hardest edge cases remain abstract, the proof beats quote the thesis more than they earn it, and the closing scene summarizes instead of adjudicating. Revise it into a harsher argument about where the article's systemic account holds and where it starts to blur agency."
+}

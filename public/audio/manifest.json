@@ -1842,5 +1842,137 @@
   "grammar-check/figure-2": {
     "file": "audio/grammar-check/figure-2.mp3",
     "seconds": 3.2
+  },
+  "wwi-causes/wwi-frame-1": {
+    "file": "audio/wwi-causes/wwi-frame-1.mp3",
+    "seconds": 10.9
+  },
+  "wwi-causes/wwi-frame-2": {
+    "file": "audio/wwi-causes/wwi-frame-2.mp3",
+    "seconds": 11.825
+  },
+  "wwi-causes/wwi-frame-3": {
+    "file": "audio/wwi-causes/wwi-frame-3.mp3",
+    "seconds": 13.45
+  },
+  "wwi-causes/wwi-claim-1": {
+    "file": "audio/wwi-causes/wwi-claim-1.mp3",
+    "seconds": 14.675
+  },
+  "wwi-causes/wwi-claim-2": {
+    "file": "audio/wwi-causes/wwi-claim-2.mp3",
+    "seconds": 12.725
+  },
+  "wwi-causes/wwi-claim-3": {
+    "file": "audio/wwi-causes/wwi-claim-3.mp3",
+    "seconds": 13.625
+  },
+  "wwi-causes/wwi-claim-4": {
+    "file": "audio/wwi-causes/wwi-claim-4.mp3",
+    "seconds": 13.575
+  },
+  "wwi-causes/wwi-clocks-1": {
+    "file": "audio/wwi-causes/wwi-clocks-1.mp3",
+    "seconds": 10.625
+  },
+  "wwi-causes/wwi-clocks-2": {
+    "file": "audio/wwi-causes/wwi-clocks-2.mp3",
+    "seconds": 13.8
+  },
+  "wwi-causes/wwi-clocks-3": {
+    "file": "audio/wwi-causes/wwi-clocks-3.mp3",
+    "seconds": 11.55
+  },
+  "wwi-causes/wwi-clocks-4": {
+    "file": "audio/wwi-causes/wwi-clocks-4.mp3",
+    "seconds": 11.1
+  },
+  "wwi-causes/wwi-scale-1": {
+    "file": "audio/wwi-causes/wwi-scale-1.mp3",
+    "seconds": 17.775
+  },
+  "wwi-causes/wwi-scale-2": {
+    "file": "audio/wwi-causes/wwi-scale-2.mp3",
+    "seconds": 12.0
+  },
+  "wwi-causes/wwi-scale-3": {
+    "file": "audio/wwi-causes/wwi-scale-3.mp3",
+    "seconds": 17.675
+  },
+  "wwi-causes/wwi-scale-4": {
+    "file": "audio/wwi-causes/wwi-scale-4.mp3",
+    "seconds": 14.5
+  },
+  "wwi-causes/wwi-text-1": {
+    "file": "audio/wwi-causes/wwi-text-1.mp3",
+    "seconds": 8.175
+  },
+  "wwi-causes/wwi-text-2": {
+    "file": "audio/wwi-causes/wwi-text-2.mp3",
+    "seconds": 9.05
+  },
+  "wwi-causes/wwi-text-3": {
+    "file": "audio/wwi-causes/wwi-text-3.mp3",
+    "seconds": 12.25
+  },
+  "wwi-causes/wwi-july-1": {
+    "file": "audio/wwi-causes/wwi-july-1.mp3",
+    "seconds": 12.925
+  },
+  "wwi-causes/wwi-july-2": {
+    "file": "audio/wwi-causes/wwi-july-2.mp3",
+    "seconds": 9.025
+  },
+  "wwi-causes/wwi-july-3": {
+    "file": "audio/wwi-causes/wwi-july-3.mp3",
+    "seconds": 10.15
+  },
+  "wwi-causes/wwi-july-4": {
+    "file": "audio/wwi-causes/wwi-july-4.mp3",
+    "seconds": 12.075
+  },
+  "wwi-causes/wwi-july-5": {
+    "file": "audio/wwi-causes/wwi-july-5.mp3",
+    "seconds": 14.075
+  },
+  "wwi-causes/wwi-july-6": {
+    "file": "audio/wwi-causes/wwi-july-6.mp3",
+    "seconds": 18.95
+  },
+  "wwi-causes/wwi-july-7": {
+    "file": "audio/wwi-causes/wwi-july-7.mp3",
+    "seconds": 15.075
+  },
+  "wwi-causes/wwi-tension-1": {
+    "file": "audio/wwi-causes/wwi-tension-1.mp3",
+    "seconds": 16.175
+  },
+  "wwi-causes/wwi-tension-2": {
+    "file": "audio/wwi-causes/wwi-tension-2.mp3",
+    "seconds": 12.55
+  },
+  "wwi-causes/wwi-tension-3": {
+    "file": "audio/wwi-causes/wwi-tension-3.mp3",
+    "seconds": 23.525
+  },
+  "wwi-causes/wwi-recap-1": {
+    "file": "audio/wwi-causes/wwi-recap-1.mp3",
+    "seconds": 9.25
+  },
+  "wwi-causes/wwi-recap-2": {
+    "file": "audio/wwi-causes/wwi-recap-2.mp3",
+    "seconds": 9.675
+  },
+  "wwi-causes/wwi-recap-3": {
+    "file": "audio/wwi-causes/wwi-recap-3.mp3",
+    "seconds": 9.8
+  },
+  "wwi-causes/wwi-recap-4": {
+    "file": "audio/wwi-causes/wwi-recap-4.mp3",
+    "seconds": 17.6
+  },
+  "wwi-causes/wwi-recap-5": {
+    "file": "audio/wwi-causes/wwi-recap-5.mp3",
+    "seconds": 12.525
   }
 }
