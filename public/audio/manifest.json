@@ -1406,5 +1406,117 @@
   "kubernetes-scheduler/recap-5": {
     "file": "audio/kubernetes-scheduler/recap-5.mp3",
     "seconds": 17.275
+  },
+  "nono/split-1": {
+    "file": "audio/nono/split-1.mp3",
+    "seconds": 9.0
+  },
+  "nono/split-2": {
+    "file": "audio/nono/split-2.mp3",
+    "seconds": 19.175
+  },
+  "nono/split-3": {
+    "file": "audio/nono/split-3.mp3",
+    "seconds": 19.625
+  },
+  "nono/split-4": {
+    "file": "audio/nono/split-4.mp3",
+    "seconds": 8.525
+  },
+  "nono/split-5": {
+    "file": "audio/nono/split-5.mp3",
+    "seconds": 14.925
+  },
+  "nono/cap-1": {
+    "file": "audio/nono/cap-1.mp3",
+    "seconds": 9.275
+  },
+  "nono/cap-2": {
+    "file": "audio/nono/cap-2.mp3",
+    "seconds": 17.65
+  },
+  "nono/cap-3": {
+    "file": "audio/nono/cap-3.mp3",
+    "seconds": 19.15
+  },
+  "nono/cap-4": {
+    "file": "audio/nono/cap-4.mp3",
+    "seconds": 22.875
+  },
+  "nono/plat-1": {
+    "file": "audio/nono/plat-1.mp3",
+    "seconds": 7.65
+  },
+  "nono/plat-2": {
+    "file": "audio/nono/plat-2.mp3",
+    "seconds": 22.625
+  },
+  "nono/plat-3": {
+    "file": "audio/nono/plat-3.mp3",
+    "seconds": 19.35
+  },
+  "nono/plat-4": {
+    "file": "audio/nono/plat-4.mp3",
+    "seconds": 24.65
+  },
+  "nono/plat-5": {
+    "file": "audio/nono/plat-5.mp3",
+    "seconds": 14.9
+  },
+  "nono/run-1": {
+    "file": "audio/nono/run-1.mp3",
+    "seconds": 6.05
+  },
+  "nono/run-2": {
+    "file": "audio/nono/run-2.mp3",
+    "seconds": 15.025
+  },
+  "nono/run-3": {
+    "file": "audio/nono/run-3.mp3",
+    "seconds": 14.775
+  },
+  "nono/run-4": {
+    "file": "audio/nono/run-4.mp3",
+    "seconds": 26.675
+  },
+  "nono/run-5": {
+    "file": "audio/nono/run-5.mp3",
+    "seconds": 14.325
+  },
+  "nono/run-6": {
+    "file": "audio/nono/run-6.mp3",
+    "seconds": 16.225
+  },
+  "nono/run-7": {
+    "file": "audio/nono/run-7.mp3",
+    "seconds": 8.1
+  },
+  "nono/proxy-5": {
+    "file": "audio/nono/proxy-5.mp3",
+    "seconds": 17.05
+  },
+  "nono/cost-1": {
+    "file": "audio/nono/cost-1.mp3",
+    "seconds": 6.25
+  },
+  "nono/cost-2": {
+    "file": "audio/nono/cost-2.mp3",
+    "seconds": 20.8
+  },
+  "nono/cost-3": {
+    "file": "audio/nono/cost-3.mp3",
+    "seconds": 19.5
+  },
+  "nono/cost-4": {
+    "file": "audio/nono/cost-4.mp3",
+    "seconds": 14.175
+  },
+  "nono/cost-5": {
+    "file": "audio/nono/cost-5.mp3",
+    "seconds": 28.475
+  },
+  "nono/recap-5": {
+    "file": "audio/nono/recap-5.mp3",
+    "seconds": 23.375
   }
 }

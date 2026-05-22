@@ -71,12 +71,12 @@ export const survey = async (o: SurveyOpts): Promise<number> => {
     console.error(`\x1b[31m✗\x1b[0m repo not found: ${repoAbs}`);
     return 1;
   }
-  if (o.agent !== 'claude') {
-    console.error(`\x1b[31m✗\x1b[0m agent "${o.agent}" not wired — proof-first is Claude only`);
+  if (o.agent !== 'claude' && o.agent !== 'codex') {
+    console.error(`\x1b[31m✗\x1b[0m unknown agent "${o.agent}" — use claude or codex`);
     return 1;
   }
-  if (!Bun.which('claude')) {
-    console.error(`\x1b[31m✗\x1b[0m claude not on PATH`);
+  if (!Bun.which(o.agent)) {
+    console.error(`\x1b[31m✗\x1b[0m ${o.agent} not on PATH`);
     return 1;
   }
 
@@ -88,15 +88,24 @@ export const survey = async (o: SurveyOpts): Promise<number> => {
   );
   const t0 = performance.now();
 
-  const proc = Bun.spawn(
-    [
-      'claude', '-p', prompt,
-      '--add-dir', repoAbs,
-      '--permission-mode', 'bypassPermissions',
-      '--model', 'opus',
-    ],
-    {cwd: REPO_ROOT, stdout: 'inherit', stderr: 'inherit', env: process.env},
-  );
+  // Each agent's headless invocation. Both run with the docent repo as the
+  // working root (to write films/<id>.json) and full filesystem access (to
+  // read the target repo); the brief reaches the agent through the prompt.
+  const cmd =
+    o.agent === 'claude'
+      ? ['claude', '-p', prompt,
+         '--add-dir', repoAbs,
+         '--permission-mode', 'bypassPermissions',
+         '--model', 'opus']
+      : ['codex', 'exec', prompt,
+         '-C', REPO_ROOT,
+         '--dangerously-bypass-approvals-and-sandbox'];
+  const proc = Bun.spawn(cmd, {
+    cwd: REPO_ROOT,
+    stdout: 'inherit',
+    stderr: 'inherit',
+    env: process.env,
+  });
   const timeoutMin = o.timeoutMin ?? 30;
   const killer = setTimeout(() => {
     console.error(`\n\x1b[31m✗\x1b[0m survey exceeded ${timeoutMin}m — killing the agent`);
