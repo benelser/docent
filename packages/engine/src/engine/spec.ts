@@ -3,9 +3,6 @@
 // as one of these JSON files under films/. The engine renders it; it knows
 // nothing about Codex (or any particular codebase) specifically.
 
-import kubernetesPr from '../../../../films/kubernetes-pr.json';
-import grammarCheck from '../../../../films/grammar-check.json';
-import linearAlgebra from '../../../../films/linear-algebra.json';
 import manifestJson from '../../../../public/audio/manifest.json';
 
 export type Message = {
@@ -148,12 +145,10 @@ export type FilmSpec = {
   scenes: Scene[];
 };
 
-// Film registry. A new film is one JSON file plus one line here.
-export const FILMS: Record<string, FilmSpec> = {
-  'kubernetes-pr': kubernetesPr as FilmSpec,
-  'grammar-check': grammarCheck as FilmSpec,
-  'linear-algebra': linearAlgebra as FilmSpec,
-};
+// Film registry. Auto-discovered: a new film is just one JSON file under
+// films/ — re-run `bun cli/gen-registry.ts` and films.generated.ts catches up.
+// Re-exported here so other modules keep importing FILMS from './spec'.
+export {FILMS} from './films.generated';
 
 const manifest = manifestJson as Record<string, {file: string; seconds: number}>;
 

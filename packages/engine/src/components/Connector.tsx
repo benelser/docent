@@ -27,7 +27,12 @@ export const Connector: React.FC<{
   if (state === 'hidden') return null;
 
   const feedback = kind === 'feedback';
-  const path = feedback ? curvedPath(from, to) : connectorPath(from, to);
+  // Two path shapes: a straight connector has `.start`, a curved feedback edge
+  // has `.mid`. Branch on `feedback` so each side keeps its concrete type
+  // (rather than a union where neither member is statically known).
+  const curved = feedback ? curvedPath(from, to) : null;
+  const straight = feedback ? null : connectorPath(from, to);
+  const path = curved ?? straight!;
   const evolve = evolvePath(draw, path.d);
   const dim = state === 'dim';
   const focus = state === 'focus';
@@ -42,11 +47,14 @@ export const Connector: React.FC<{
   const flowOffset = -((frame * speed) % 26);
   const flowOpacity = flowIn * opacity * (focus ? 1 : dim ? 0.4 : 0.7);
 
-  // arrowhead direction
-  const ref = feedback
-    ? path.mid
-    : (path as ReturnType<typeof connectorPath>).start;
+  // arrowhead direction — its anchor is the curve's control point on a
+  // feedback edge, or the connector's start on a straight one.
+  const ref = curved ? curved.mid : straight!.start;
   const end = path.end;
+  // label anchor — the curve's control point, or the straight chord's midpoint.
+  const mid = curved
+    ? curved.mid
+    : {x: (straight!.start.x + end.x) / 2, y: (straight!.start.y + end.y) / 2};
   const angle = (Math.atan2(end.y - ref.y, end.x - ref.x) * 180) / Math.PI;
   const headOpacity = Math.max(0, (draw - 0.6) / 0.4) * opacity;
 
@@ -90,8 +98,8 @@ export const Connector: React.FC<{
       </g>
       {label ? (
         <text
-          x={path.mid.x - 18}
-          y={path.mid.y + 5}
+          x={mid.x - 18}
+          y={mid.y + 5}
           textAnchor="end"
           fontFamily={monoFamily}
           fontSize={17}
