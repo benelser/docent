@@ -1,0 +1,17 @@
+{
+  "description": "Pinned fixtures for the docent hermetic harness. Each entry is a film spec committed under films/. The harness runs the engine cascade end-to-end and asserts the output is a valid video of the expected shape. What is pinned: the spec, the engine, the doctor manifest. What is NOT yet pinned: the survey stage (the agent authors the spec) — that arrives with the docent-agent APM package; until then the harness validates the deterministic half, the cascade.",
+  "fixtures": [
+    {
+      "id": "kubernetes-pr",
+      "mode": "pr",
+      "subject": "Kubernetes PR #139003 — scheduler heap optimization",
+      "expect": {"minScenes": 5, "minSeconds": 120}
+    },
+    {
+      "id": "kubernetes",
+      "mode": "ar",
+      "subject": "Kubernetes — declarative container orchestration",
+      "expect": {"minScenes": 6, "minSeconds": 180}
+    }
+  ]
+}

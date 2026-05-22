@@ -17,3 +17,4 @@ __pycache__/
 # misc
 .DS_Store
 archive/v1/media/
+hermetic/report.json

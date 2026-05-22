@@ -16,6 +16,7 @@ import {ENGINE_ROOT, REPO_ROOT, paths} from './paths';
 import {doctor} from './doctor';
 import {runCascade} from './cascade';
 import {scorePr} from './score';
+import {hermetic} from './hermetic';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -116,6 +117,11 @@ const main = async (): Promise<number> => {
       return 0;
     }
 
+    case 'hermetic': {
+      const scale = num(opt('scale')) ?? (flag('full') ? 1 : 0.5);
+      return hermetic({fixtureId: positionals[0], scale, json: flag('json')});
+    }
+
     default:
       console.log('docent — narrated, animated explainers for code\n');
       console.log('  docent doctor [--json]            validate the environment');
@@ -123,6 +129,7 @@ const main = async (): Promise<number> => {
       console.log('  docent pr     <repo> <pr#>        PR-review film');
       console.log('  docent ar     <repo> [subsystem]  architecture-review film');
       console.log('  docent score  <owner/repo> <pr#>  the triggering matrix — no render');
+      console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
       console.log('  docent env                        resolved paths and versions');
       return cmd ? 1 : 0;
   }
