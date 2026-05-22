@@ -62,8 +62,12 @@ This is where a film stops being a summary. For the load-bearing idea:
 - **The misconception it must kill** — name the specific wrong model the
   viewer probably arrives with. A good explainer does not just state the right
   answer; it *displaces* the wrong one. What is that wrong answer?
-- **Where it breaks** — the boundary case, the paradox, the place the idea
-  strains or appears to contradict itself, the objection a sharp critic raises.
+- **Where it breaks — walk one boundary case to the failure.** The boundary
+  case, the paradox, the place the idea strains or appears to contradict
+  itself, the objection a sharp critic raises. Pick the single most concrete
+  failing case and walk it through: what assumption gives, what prediction
+  misses, what an observer would actually see. Gesturing at "edges exist" is
+  rejected.
 - **The mechanism, not just the conclusion** — *why* is it true, not only
   *that* it is true. If the source asserts a conclusion without a mechanism,
   that is itself a finding (see section 5).

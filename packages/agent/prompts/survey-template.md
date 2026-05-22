@@ -47,9 +47,14 @@ now, why this *shape*.
 
 ## 3. Hard parts
 
-- **Failure & partial failure** — for every dependency and every hop: what
-  happens when it is slow, errors, or disappears mid-operation? Fail open or
-  closed? Name the single most likely 3am page.
+- **Failure & partial failure — walk one weird-input and one at-scale case to
+  break.** For every dependency and every hop: what happens when it is slow,
+  errors, or disappears mid-operation? Fail open or closed? Name the single
+  most likely 3am page. Then pick the single most likely *weird-input* case
+  AND the single most likely *at-scale* case, and walk each through to the
+  failure: the trigger, the cascade, the observable symptom, the recovery (or
+  its absence). Gesturing at "could fail" or naming a metric without a failure
+  mode is rejected.
 - **Delivery / ordering / consistency** — name the guarantee with the real
   words: at-most-once / at-least-once / exactly-once; ordered or not; strongly
   or eventually consistent; idempotent or not.
