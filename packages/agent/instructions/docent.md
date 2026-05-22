@@ -61,6 +61,34 @@ where it breaks) · `closeup` (annotate one artifact) · `demonstrate` (play the
 phenomenon itself) · `recap` (the takeaway) · `diff` (what changed — PR films
 only).
 
+## Intent knobs — how a film should *feel*
+
+The scene grammar is *what* is on screen; these optional knobs are *how it
+feels*. Each is a semantic dial — set it by intent, the engine interprets it.
+Leave them all off and the film renders at sensible defaults; reach for them
+to turn a default film into an authored one.
+
+- **`register`** (film, in `meta`) — the overall mood: `grave · neutral ·
+  calm · urgent · playful`. Set it once from the survey; it biases every
+  scene's defaults. A security PR review is `grave`; a playful explainer is
+  `playful`.
+- **`pace`** (beat) — the breath after the narration: `hold · settle ·
+  normal · brisk`. Let a verdict or a hard truth *land* with `hold`; rush an
+  enumeration with `brisk`. The beat that is the point of its scene is almost
+  always `pace: hold`.
+- **`weight`** (node) — the emphasis gradient: `hero · primary · normal ·
+  recede`. At most one `hero` per scene — the point of it. `recede` is
+  background context the viewer should not dwell on.
+- **`shot`** (beat) — the camera verb: `wide` (survey the whole diagram) ·
+  `follow` (lean toward the focus) · `push` (a decisive close-in) · `hold`
+  (a dead-still emphasis frame).
+- **`cut`** (scene) — the transition into the next scene: `dissolve` ·
+  `hold` (a section break) · `continue` (momentum into a closely-linked
+  scene).
+
+Use them sparingly and with intent — a film where every beat is `hold` has no
+rhythm.
+
 ## The depth bar — a film *interrogates*, it does not admire
 
 The line between a tour and a review: a tour explains the happy path; a review

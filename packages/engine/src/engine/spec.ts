@@ -3,6 +3,7 @@
 // as one of these JSON files under films/. The engine renders it; it knows
 // nothing about Codex (or any particular codebase) specifically.
 
+import {interpolate, spring} from 'remotion';
 import manifestJson from '../../../../public/audio/manifest.json';
 
 export type Message = {
@@ -10,6 +11,17 @@ export type Message = {
   to: string;
   label: string;
   kind?: 'forward' | 'reply' | 'aside';
+};
+
+// A tween — a beat that *changes* a named value rather than just revealing it.
+// `to` is the target the beat drives toward; the engine eases from whatever the
+// previous set-beat held (or `from`, or 0) across the beat boundary. `ease`
+// picks the easing curve. This mirrors how `resolveCamera` eases the camera
+// from the prior beat's shot to the current one.
+export type Tween = {
+  to: number;
+  from?: number;
+  ease?: 'linear' | 'spring' | 'accelerate' | 'settle';
 };
 
 export type Beat = {
@@ -30,6 +42,9 @@ export type Beat = {
   pace?: 'hold' | 'settle' | 'normal' | 'brisk'; // breath held after the narration
   cadence?: 'cascade' | 'together' | 'snap'; // rhythm of revealed items entering
   shot?: 'wide' | 'follow' | 'push' | 'hold'; // the camera verb for this beat
+  // tween directive — the named values this beat drives. A bare number is a
+  // jump-to-target; a Tween eases from the value the prior set-beat held.
+  set?: Record<string, number | Tween>;
 };
 
 export type Actor = {id: string; label: string; sub?: string};
@@ -74,6 +89,20 @@ export type CompareRow = {id: string; label: string; cells: CompareCell[]};
 // quantities scenes — magnitudes as figures, or a worked numeric grid.
 export type Figure = {id: string; label: string; value: string; unit?: string; note?: string};
 export type Matrix = {rowLabels: string[]; colLabels: string[]; cells: string[][]};
+
+// A metric — a node-like figure card whose displayed number IS a tweened
+// value. `bind` names a value driven by beats' `set` directives; the engine
+// projects it at the current frame. `col`/`row` place it on a grid.
+export type Metric = {
+  id: string;
+  label: string;
+  col: number;
+  row: number;
+  bind: string; // the `set` key this metric's number reads from
+  format?: 'int' | 'float1' | 'percent';
+  unit?: string;
+  accent?: string;
+};
 
 // probe scenes — vary one input from a baseline, follow the consequence.
 export type Variation = {
@@ -125,6 +154,7 @@ export type Scene = {
   // quantities
   figures?: Figure[];
   matrix?: Matrix;
+  metrics?: Metric[];
   // probe
   baseline?: {label: string; outcome: string};
   variations?: Variation[];
