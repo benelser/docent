@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "demonstrate", "recap", "diff", "chart"]},
+        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -58,6 +58,24 @@
           "type": "array",
           "description": "chart scenes — the plotted series (line / bars / point)",
           "items": {"$ref": "#/$defs/series"}
+        },
+        "text": {
+          "type": "string",
+          "description": "passage scenes — the plain-text artifact (a poem, prose, a primary source), typeset as prose/verse with line breaks preserved"
+        },
+        "marks": {
+          "type": "array",
+          "description": "passage scenes — the annotatable spans of `text`, activated by beats' reveal/focus",
+          "items": {"$ref": "#/$defs/mark"}
+        },
+        "image": {
+          "type": "string",
+          "description": "figure scenes — the still image, resolved via staticFile (a bare filename resolves under public/figures/)"
+        },
+        "callouts": {
+          "type": "array",
+          "description": "figure scenes — labelled markers pinned to normalized regions of `image`, activated by beats' reveal/focus",
+          "items": {"$ref": "#/$defs/callout"}
         },
         "beats": {
           "type": "array",
@@ -237,6 +255,35 @@
         },
         "bind": {"type": "string", "description": "point series — a `set` key giving the marker's x"},
         "along": {"type": "string", "description": "point series — the line series id whose curve gives the marker's y"}
+      }
+    },
+    "mark": {
+      "type": "object",
+      "description": "passage scenes — one annotatable span. `quote` is the exact substring of the scene's `text` to highlight; the engine underlines it and pins `note` beside it. A beat activates marks by id through reveal/focus.",
+      "required": ["id", "quote", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id"},
+        "quote": {"type": "string", "description": "the exact substring of `text` to locate and highlight"},
+        "note": {"type": "string", "description": "the short annotation pinned to the span"}
+      }
+    },
+    "callout": {
+      "type": "object",
+      "description": "figure scenes — one labelled marker pinned to a region of the image. `at` is a normalized 0..1 (x, y) position. A beat activates callouts by id through reveal/focus.",
+      "required": ["id", "at", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id"},
+        "at": {
+          "type": "array",
+          "description": "normalized [x, y] position over the image, each in 0..1",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"type": "number", "minimum": 0, "maximum": 1}
+        },
+        "label": {"type": "string", "description": "the marker's label"},
+        "note": {"type": "string", "description": "an optional longer note under the label"}
       }
     }
   }

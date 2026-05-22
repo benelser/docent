@@ -16,6 +16,8 @@ import {DiffScene} from './scenes/DiffScene';
 import {TensionScene} from './scenes/TensionScene';
 import {RecapScene} from './scenes/RecapScene';
 import {ChartScene} from './scenes/ChartScene';
+import {PassageScene} from './scenes/PassageScene';
+import {FigureScene} from './scenes/FigureScene';
 
 // `treatment` (a scene knob) — the visual *skin*, decoupled from scene type.
 // Today the hand-drawn chalkboard skin is welded to the `tension` type and the
@@ -87,6 +89,10 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
               <RecapScene {...common} />
             ) : t === 'chart' ? (
               <ChartScene {...common} />
+            ) : t === 'passage' ? (
+              <PassageScene {...common} />
+            ) : t === 'figure' ? (
+              <FigureScene {...common} />
             ) : t === 'tension' || t === 'structure' ? (
               // Skin chosen by `treatment`: sketch → chalkboard, crisp →
               // console. Default keeps tension=sketch / structure=crisp.

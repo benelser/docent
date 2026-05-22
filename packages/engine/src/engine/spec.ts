@@ -139,6 +139,30 @@ export type Variation = {
   flips?: boolean; // whether the outcome flipped from the baseline
 };
 
+// passage scenes — annotate a plain-text artifact (a poem, prose, a primary
+// source). The annotation unit is a *span*: a `quote` is the exact substring
+// to locate in the text; the engine underlines/highlights it and pins `note`
+// beside it. A beat activates marks through the existing reveal/focus model —
+// `reveal` brings a mark in, `focus` narrows attention to a subset. Several
+// marks can be live at once. The author writes *what to mark*, never pixels.
+export type Mark = {
+  id: string;
+  quote: string; // exact substring of Scene.text to highlight
+  note: string; // the short annotation pinned to the span
+};
+
+// figure scenes — annotate a still image (a painting, a map, a photograph, an
+// experimental stimulus). A callout pins a labelled marker to a region of the
+// image. `at` is a normalized 0..1 (x, y) position over the image. A beat
+// reveals/focuses callout ids — same model as passage `marks` and structure
+// `nodes`. The author pins regions; the engine owns the pixels.
+export type Callout = {
+  id: string;
+  at: [number, number]; // normalized [x, y], each in 0..1
+  label: string;
+  note?: string;
+};
+
 // chart scenes — a plotted coordinate graph. An axis is a labelled domain:
 // the engine maps [min, max] onto STAGE pixels (the analogue of `cellCenter`).
 export type Axis = {
@@ -193,6 +217,8 @@ export type Scene = {
     | 'probe'
     | 'tension'
     | 'closeup'
+    | 'passage'
+    | 'figure'
     | 'demonstrate'
     | 'recap'
     | 'diff'
@@ -235,6 +261,16 @@ export type Scene = {
   file?: string;
   lang?: string;
   code?: string;
+  // passage — a plain-text artifact and the spans to mark on it. `text` is
+  // typeset as prose/verse in a serif face (line breaks preserved); `marks`
+  // are the annotatable spans, activated by beats' reveal/focus.
+  text?: string;
+  marks?: Mark[];
+  // figure — a still image and the regions to call out. `image` is resolved
+  // via Remotion staticFile (e.g. under public/figures/); `callouts` pin
+  // labelled markers, activated by beats' reveal/focus.
+  image?: string;
+  callouts?: Callout[];
   // demonstrate
   clip?: string;
   // recap

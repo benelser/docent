@@ -1734,5 +1734,97 @@
   "morph-scratch/morph-3": {
     "file": "audio/morph-scratch/morph-3.mp3",
     "seconds": 4.625
+  },
+  "knob-test/title-1": {
+    "file": "audio/knob-test/title-1.mp3",
+    "seconds": 5.475
+  },
+  "knob-test/title-2": {
+    "file": "audio/knob-test/title-2.mp3",
+    "seconds": 11.675
+  },
+  "knob-test/title-3": {
+    "file": "audio/knob-test/title-3.mp3",
+    "seconds": 8.425
+  },
+  "knob-test/ctx-1": {
+    "file": "audio/knob-test/ctx-1.mp3",
+    "seconds": 11.15
+  },
+  "knob-test/ctx-2": {
+    "file": "audio/knob-test/ctx-2.mp3",
+    "seconds": 7.05
+  },
+  "knob-test/ctx-3": {
+    "file": "audio/knob-test/ctx-3.mp3",
+    "seconds": 10.8
+  },
+  "knob-test/ctx-4": {
+    "file": "audio/knob-test/ctx-4.mp3",
+    "seconds": 16.775
+  },
+  "knob-test/redesign-1": {
+    "file": "audio/knob-test/redesign-1.mp3",
+    "seconds": 7.475
+  },
+  "knob-test/redesign-2": {
+    "file": "audio/knob-test/redesign-2.mp3",
+    "seconds": 9.425
+  },
+  "knob-test/redesign-3": {
+    "file": "audio/knob-test/redesign-3.mp3",
+    "seconds": 8.8
+  },
+  "knob-test/redesign-4": {
+    "file": "audio/knob-test/redesign-4.mp3",
+    "seconds": 21.0
+  },
+  "knob-test/hotpath-1": {
+    "file": "audio/knob-test/hotpath-1.mp3",
+    "seconds": 10.725
+  },
+  "knob-test/hotpath-2": {
+    "file": "audio/knob-test/hotpath-2.mp3",
+    "seconds": 8.925
+  },
+  "knob-test/hotpath-3": {
+    "file": "audio/knob-test/hotpath-3.mp3",
+    "seconds": 7.725
+  },
+  "knob-test/hotpath-4": {
+    "file": "audio/knob-test/hotpath-4.mp3",
+    "seconds": 24.675
+  },
+  "knob-test/proof-1": {
+    "file": "audio/knob-test/proof-1.mp3",
+    "seconds": 7.275
+  },
+  "knob-test/proof-2": {
+    "file": "audio/knob-test/proof-2.mp3",
+    "seconds": 12.825
+  },
+  "knob-test/proof-3": {
+    "file": "audio/knob-test/proof-3.mp3",
+    "seconds": 18.175
+  },
+  "knob-test/proof-4": {
+    "file": "audio/knob-test/proof-4.mp3",
+    "seconds": 20.125
+  },
+  "knob-test/verdict-1": {
+    "file": "audio/knob-test/verdict-1.mp3",
+    "seconds": 14.0
+  },
+  "knob-test/verdict-2": {
+    "file": "audio/knob-test/verdict-2.mp3",
+    "seconds": 18.55
+  },
+  "knob-test/verdict-3": {
+    "file": "audio/knob-test/verdict-3.mp3",
+    "seconds": 13.2
+  },
+  "knob-test/verdict-4": {
+    "file": "audio/knob-test/verdict-4.mp3",
+    "seconds": 18.125
   }
 }

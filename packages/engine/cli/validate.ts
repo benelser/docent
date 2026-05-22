@@ -3,7 +3,7 @@
 // is a focused check of the shape the engine actually depends on.
 // schema/film.schema.json is the documented contract this mirrors.
 
-const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'demonstrate', 'recap', 'diff', 'chart'];
+const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart'];
 const ACCENTS = ['blue', 'cyan', 'green', 'amber', 'rose', 'violet'];
 
 // chart scenes — the closed allowlist of named functions a `line` series may
@@ -308,6 +308,95 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
           if (se.along !== undefined && (typeof se.along !== 'string' || !se.along.trim())) {
             issues.push({path: `${seAt}.along`, message: 'along must be a non-empty string naming a line series id'});
           }
+        }
+      });
+    }
+
+    // passage — a plain-text artifact and the spans (`marks`) to annotate on
+    // it. `text` is a string; each mark carries an id, the exact `quote`
+    // substring to locate, and a `note`. A quote that is not a substring of
+    // `text` is rejected — the engine would have nowhere to pin the mark.
+    if (sc.text !== undefined && typeof sc.text !== 'string') {
+      issues.push({path: `${at}.text`, message: 'text must be a string'});
+    }
+    if (sc.marks !== undefined && !Array.isArray(sc.marks)) {
+      issues.push({path: `${at}.marks`, message: 'marks must be an array'});
+    } else if (Array.isArray(sc.marks)) {
+      const markIds = new Set<string>();
+      const passageText = typeof sc.text === 'string' ? sc.text : '';
+      sc.marks.forEach((m: Record<string, any>, k: number) => {
+        const mAt = `${at}.marks[${k}]`;
+        if (!m || typeof m !== 'object') {
+          issues.push({path: mAt, message: 'mark must be an object {id, quote, note}'});
+          return;
+        }
+        if (typeof m.id !== 'string' || !m.id.trim()) {
+          issues.push({path: `${mAt}.id`, message: 'missing or empty string'});
+        } else if (markIds.has(m.id)) {
+          issues.push({path: `${mAt}.id`, message: `duplicate mark id "${m.id}"`});
+        } else {
+          markIds.add(m.id);
+        }
+        if (typeof m.quote !== 'string' || !m.quote.trim()) {
+          issues.push({path: `${mAt}.quote`, message: 'missing or empty string'});
+        } else if (passageText && !passageText.includes(m.quote)) {
+          issues.push({
+            path: `${mAt}.quote`,
+            message: `quote is not a substring of the passage text`,
+          });
+        }
+        if (typeof m.note !== 'string' || !m.note.trim()) {
+          issues.push({path: `${mAt}.note`, message: 'missing or empty string'});
+        }
+      });
+      if (sc.marks.length > 0 && !passageText.trim()) {
+        issues.push({
+          path: `${at}.text`,
+          message: 'a passage with marks needs non-empty text to locate them in',
+        });
+      }
+    }
+
+    // figure — a still image and the regions (`callouts`) to annotate on it.
+    // `image` is a path resolved via staticFile; each callout carries an id, a
+    // normalized 0..1 `at` point, a `label`, and an optional `note`.
+    if (sc.image !== undefined && (typeof sc.image !== 'string' || !sc.image.trim())) {
+      issues.push({path: `${at}.image`, message: 'image must be a non-empty string path'});
+    }
+    if (sc.callouts !== undefined && !Array.isArray(sc.callouts)) {
+      issues.push({path: `${at}.callouts`, message: 'callouts must be an array'});
+    } else if (Array.isArray(sc.callouts)) {
+      const calloutIds = new Set<string>();
+      sc.callouts.forEach((c: Record<string, any>, k: number) => {
+        const cAt = `${at}.callouts[${k}]`;
+        if (!c || typeof c !== 'object') {
+          issues.push({path: cAt, message: 'callout must be an object {id, at, label, note?}'});
+          return;
+        }
+        if (typeof c.id !== 'string' || !c.id.trim()) {
+          issues.push({path: `${cAt}.id`, message: 'missing or empty string'});
+        } else if (calloutIds.has(c.id)) {
+          issues.push({path: `${cAt}.id`, message: `duplicate callout id "${c.id}"`});
+        } else {
+          calloutIds.add(c.id);
+        }
+        if (typeof c.label !== 'string' || !c.label.trim()) {
+          issues.push({path: `${cAt}.label`, message: 'missing or empty string'});
+        }
+        if (c.note !== undefined && (typeof c.note !== 'string' || !c.note.trim())) {
+          issues.push({path: `${cAt}.note`, message: 'note must be a non-empty string when present'});
+        }
+        if (
+          !Array.isArray(c.at) ||
+          c.at.length !== 2 ||
+          !c.at.every(
+            (v: any) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1,
+          )
+        ) {
+          issues.push({
+            path: `${cAt}.at`,
+            message: 'at must be a normalized [x, y] pair, each in 0..1',
+          });
         }
       });
     }
