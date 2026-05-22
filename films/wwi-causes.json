@@ -1,0 +1,702 @@
+{
+  "meta": {
+    "id": "wwi-causes",
+    "title": "Causes of World War I",
+    "subject": "World War I causation — a July crisis inside a preloaded European system",
+    "repo": "https://en.wikipedia.org/wiki/Causes_of_World_War_I",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "grave"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "accent": "blue",
+      "kicker": "DOCENT // EXPLAINER",
+      "title": "Causes of World War I",
+      "tagline": "A murder in Sarajevo mattered because Europe was already primed for escalation",
+      "footnote": "Wikipedia source page   ·   reviewed as an argument, not a timeline   ·   surveyed past the one-bullet myth",
+      "beats": [
+        {
+          "id": "wwi-frame-1",
+          "narration": "This is not a film about every grievance before 1914. It is about one harder claim: why a local assassination could widen into a general European war.",
+          "show": "title"
+        },
+        {
+          "id": "wwi-frame-2",
+          "narration": "The misconception to kill is the schoolbook version that one bullet caused World War I. The article's real argument is rougher: the bullet was the trigger, but Europe was already loaded.",
+          "show": "tagline"
+        },
+        {
+          "id": "wwi-frame-3",
+          "narration": "So we are not relaying the page section by section. We are testing its core explanation: long-term polarization, short-term July decisions, and the trade-off that comes with calling the outbreak overdetermined.",
+          "show": "footnote"
+        }
+      ]
+    },
+    {
+      "id": "claim",
+      "type": "structure",
+      "accent": "cyan",
+      "kicker": "01 // THE CLAIM",
+      "heading": "A trigger landed in a loaded system",
+      "grid": {
+        "cols": 3,
+        "rows": 2
+      },
+      "nodes": [
+        {
+          "id": "trigger",
+          "label": "Sarajevo assassination",
+          "sub": "28 June 1914",
+          "col": 0,
+          "row": 0,
+          "accent": "rose"
+        },
+        {
+          "id": "empire",
+          "label": "Austro-Serbian struggle",
+          "sub": "empire integrity vs. Yugoslav nationalism",
+          "col": 1,
+          "row": 0,
+          "accent": "amber",
+          "wide": true
+        },
+        {
+          "id": "align",
+          "label": "Competing alignments",
+          "sub": "real camps, but not automatic dominoes",
+          "col": 2,
+          "row": 0,
+          "accent": "blue",
+          "wide": true
+        },
+        {
+          "id": "plans",
+          "label": "Arms and timetables",
+          "sub": "millions in reserve, rail mobilization, offensive doctrine",
+          "col": 0,
+          "row": 1,
+          "accent": "violet",
+          "wide": true
+        },
+        {
+          "id": "crisis",
+          "label": "July Crisis choices",
+          "sub": "blank cheque, ultimatum, mobilization",
+          "col": 1,
+          "row": 1,
+          "accent": "green",
+          "weight": "hero",
+          "wide": true
+        },
+        {
+          "id": "war",
+          "label": "General European war",
+          "sub": "a Balkan crisis becomes continental",
+          "col": 2,
+          "row": 1,
+          "accent": "rose",
+          "wide": true
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-trigger-crisis",
+          "from": "trigger",
+          "to": "crisis",
+          "kind": "causes",
+          "strength": "contributing"
+        },
+        {
+          "id": "e-empire-crisis",
+          "from": "empire",
+          "to": "crisis",
+          "kind": "causes",
+          "strength": "contributing"
+        },
+        {
+          "id": "e-align-crisis",
+          "from": "align",
+          "to": "crisis",
+          "kind": "causes",
+          "strength": "contributing"
+        },
+        {
+          "id": "e-plans-crisis",
+          "from": "plans",
+          "to": "crisis",
+          "kind": "causes",
+          "strength": "contributing"
+        },
+        {
+          "id": "e-crisis-war",
+          "from": "crisis",
+          "to": "war",
+          "kind": "causes",
+          "strength": "necessary"
+        },
+        {
+          "id": "e-align-war",
+          "from": "align",
+          "to": "war",
+          "kind": "causes",
+          "strength": "contributing"
+        },
+        {
+          "id": "e-plans-war",
+          "from": "plans",
+          "to": "war",
+          "kind": "causes",
+          "strength": "contributing"
+        }
+      ],
+      "beats": [
+        {
+          "id": "wwi-claim-1",
+          "narration": "The page's first important move is conceptual. It does not say: assassination, then war. It says a short-term crisis entered a system already full of rival alignments, military preparation, and imperial fear.",
+          "reveal": [
+            "crisis"
+          ],
+          "focus": [
+            "crisis"
+          ]
+        },
+        {
+          "id": "wwi-claim-2",
+          "narration": "The assassination mattered because Vienna read it as a casus belli and an existential challenge to a multi-national empire, not because one murder mechanically forces a continent into battle.",
+          "reveal": [
+            "trigger",
+            "empire",
+            "e-trigger-crisis",
+            "e-empire-crisis"
+          ],
+          "focus": [
+            "trigger",
+            "empire"
+          ],
+          "shot": "follow"
+        },
+        {
+          "id": "wwi-claim-3",
+          "narration": "The alignments mattered too, but with one corrective the page is careful about: Britain, France, and Russia were not a perfectly automatic alliance machine. The camps were real, yet they still depended on choice.",
+          "reveal": [
+            "align",
+            "e-align-crisis",
+            "e-align-war"
+          ],
+          "focus": [
+            "align"
+          ]
+        },
+        {
+          "id": "wwi-claim-4",
+          "narration": "And beneath the diplomacy sat the harder machinery: mass reserves, rail mobilization, and offensive war plans. Once the July decisions hit that machinery, the crisis stopped being local and became war.",
+          "reveal": [
+            "plans",
+            "war",
+            "e-plans-crisis",
+            "e-crisis-war",
+            "e-plans-war"
+          ],
+          "focus": [
+            "plans",
+            "war"
+          ],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "clocks",
+      "type": "progression",
+      "accent": "violet",
+      "kicker": "02 // TWO CLOCKS",
+      "heading": "Long-term pressure met one short month",
+      "flow": "braided",
+      "stages": [
+        {
+          "id": "s-align",
+          "label": "Alignment hardens",
+          "sub": "1887-1907",
+          "track": 0
+        },
+        {
+          "id": "s-sarajevo",
+          "label": "Sarajevo",
+          "sub": "28 June 1914",
+          "track": 1
+        },
+        {
+          "id": "s-crises",
+          "label": "Morocco, Bosnia, Balkans",
+          "sub": "1905-1913",
+          "track": 0
+        },
+        {
+          "id": "s-ultimatum",
+          "label": "Blank cheque to ultimatum",
+          "sub": "5-23 July",
+          "track": 1
+        },
+        {
+          "id": "s-arms",
+          "label": "Arms and war plans",
+          "sub": "1890s-1914",
+          "track": 0
+        },
+        {
+          "id": "s-mobilize",
+          "label": "General mobilizations",
+          "sub": "25-30 July",
+          "track": 1
+        },
+        {
+          "id": "s-war",
+          "label": "General war",
+          "sub": "28 July-4 August",
+          "track": 1,
+          "gate": true
+        }
+      ],
+      "beats": [
+        {
+          "id": "wwi-clocks-1",
+          "narration": "The article runs on two clocks at once. One is the long clock: decades of alignment. The other is the short clock: a single month between Sarajevo and war.",
+          "reveal": 2
+        },
+        {
+          "id": "wwi-clocks-2",
+          "narration": "By 1914 the long clock had already passed through Moroccan, Bosnian, and Balkan crises. The short clock added Berlin's blank cheque and Vienna's ultimatum, which made the local dispute harder to contain.",
+          "reveal": 4
+        },
+        {
+          "id": "wwi-clocks-3",
+          "narration": "Then the two clocks touched. Arms races and war plans were ready before the shooting started; once mobilization began, diplomacy had less room to stall or reverse the slide.",
+          "reveal": 6,
+          "focus": [
+            "s-arms",
+            "s-mobilize"
+          ]
+        },
+        {
+          "id": "wwi-clocks-4",
+          "narration": "That is the page's real explanation. Not inevitability in 1887, and not accident in Sarajevo. Convergence in late July 1914.",
+          "reveal": 7,
+          "focus": [
+            "s-war"
+          ],
+          "pace": "hold",
+          "shot": "push"
+        }
+      ]
+    },
+    {
+      "id": "scale",
+      "type": "quantities",
+      "accent": "amber",
+      "kicker": "03 // THE SCALE",
+      "heading": "The war machinery already ran in millions",
+      "metrics": [
+        {
+          "id": "m-de",
+          "label": "German reserves",
+          "col": 0,
+          "row": 0,
+          "bind": "de",
+          "format": "float1",
+          "unit": "M",
+          "accent": "blue"
+        },
+        {
+          "id": "m-fr",
+          "label": "French reservists",
+          "col": 1,
+          "row": 0,
+          "bind": "fr",
+          "format": "float1",
+          "unit": "M",
+          "accent": "cyan"
+        },
+        {
+          "id": "m-at",
+          "label": "Austro-Hungarian reserves",
+          "col": 2,
+          "row": 0,
+          "bind": "at",
+          "format": "float1",
+          "unit": "M",
+          "accent": "amber"
+        },
+        {
+          "id": "m-ru",
+          "label": "Russian reserves",
+          "col": 0,
+          "row": 1,
+          "bind": "ru",
+          "format": "float1",
+          "unit": "M",
+          "accent": "rose"
+        },
+        {
+          "id": "m-ton",
+          "label": "Britain:Germany tonnage, 1914",
+          "col": 2,
+          "row": 1,
+          "bind": "ton",
+          "format": "float1",
+          "unit": "x",
+          "accent": "green"
+        }
+      ],
+      "beats": [
+        {
+          "id": "wwi-scale-1",
+          "narration": "Numbers do not cause wars by themselves, but they tell you what kind of continent July 1914 landed in. By 1897 Germany had 3.4 million reserves and France 3.4 million reservists already standing behind their regular armies.",
+          "set": {
+            "de": {
+              "to": 3.4
+            },
+            "fr": {
+              "to": 3.4
+            }
+          }
+        },
+        {
+          "id": "wwi-scale-2",
+          "narration": "Austria-Hungary stood at 2.6 million reserves and Russia at 4.0 million. This is the article's scale signal: before the war starts, the manpower already runs into the millions.",
+          "set": {
+            "at": {
+              "to": 2.6
+            },
+            "ru": {
+              "to": 4.0
+            }
+          }
+        },
+        {
+          "id": "wwi-scale-3",
+          "narration": "Naval rivalry was similar. Britain still held a 2.1 to 1 tonnage edge over Germany in 1914 after a decade of racing. The point is not that every number here mechanically causes war; it is that Europe had already built the capacity and habits for one.",
+          "set": {
+            "ton": {
+              "to": 2.1
+            }
+          },
+          "pace": "settle"
+        },
+        {
+          "id": "wwi-scale-4",
+          "narration": "And one more limit in the source matters. The plans assumed a short, decisive opening. They did not plan the food and munitions needs of the long stalemate that actually followed. The machinery was huge and still badly imagined.",
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "text",
+      "type": "passage",
+      "accent": "green",
+      "kicker": "04 // THE PAGE'S OWN THESIS",
+      "heading": "The article rejects single-cause history",
+      "text": "Indeed, the search for a single main cause is not a helpful approach to history. Instead, there are multiple causes any one or two of which could have launched the war. The fact that so many plausible explanations for the outbreak of the war have been advanced over the years indicates on the one hand that it was massively overdetermined, and on the other that no effort to analyze the causal factors involved can ever fully succeed.",
+      "marks": [
+        {
+          "id": "mk-single",
+          "quote": "not a helpful approach to history",
+          "note": "the page explicitly rejects the one-cause frame"
+        },
+        {
+          "id": "mk-multiple",
+          "quote": "multiple causes any one or two of which could have launched the war",
+          "note": "several live wires were sufficient"
+        },
+        {
+          "id": "mk-over",
+          "quote": "massively overdetermined",
+          "note": "more than one path ran from crisis to catastrophe"
+        }
+      ],
+      "beats": [
+        {
+          "id": "wwi-text-1",
+          "narration": "Here is the source's own ruling on method. Searching for one main cause is, in its words, not a helpful approach to history.",
+          "reveal": [
+            "mk-single"
+          ]
+        },
+        {
+          "id": "wwi-text-2",
+          "narration": "The stronger claim is not vague complexity but multiple live causes, any one or two sufficient to launch the war once the crisis tightened.",
+          "reveal": [
+            "mk-multiple"
+          ],
+          "focus": [
+            "mk-multiple"
+          ]
+        },
+        {
+          "id": "wwi-text-3",
+          "narration": "And that is the loaded word the film has to interrogate: overdetermined. Not random. Not unavoidable from birth. But crowded with enough causes that the system had more than one way to break.",
+          "reveal": [
+            "mk-over"
+          ],
+          "focus": [
+            "mk-over"
+          ],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "july",
+      "type": "walkthrough",
+      "accent": "rose",
+      "kicker": "05 // JULY 1914",
+      "heading": "How the local crisis widened",
+      "actors": [
+        {
+          "id": "sarajevo",
+          "label": "Sarajevo",
+          "sub": "the trigger"
+        },
+        {
+          "id": "vienna",
+          "label": "Vienna",
+          "sub": "Austria-Hungary"
+        },
+        {
+          "id": "berlin",
+          "label": "Berlin",
+          "sub": "Germany"
+        },
+        {
+          "id": "petersburg",
+          "label": "St. Petersburg",
+          "sub": "Russia"
+        },
+        {
+          "id": "europe",
+          "label": "Europe",
+          "sub": "the wider alignments"
+        }
+      ],
+      "beats": [
+        {
+          "id": "wwi-july-1",
+          "narration": "Start at the trigger. Franz Ferdinand is assassinated in Sarajevo on 28 June, and Vienna reads the killing not as one outrage among many but as a direct challenge to imperial survival.",
+          "message": {
+            "from": "sarajevo",
+            "to": "vienna",
+            "label": "heir assassinated",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "wwi-july-2",
+          "narration": "Austria-Hungary does not move in isolation. Before striking Serbia, Vienna asks Berlin for backing against the wider consequences.",
+          "message": {
+            "from": "vienna",
+            "to": "berlin",
+            "label": "back us against Serbia?",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "wwi-july-3",
+          "narration": "Berlin answers with the blank cheque. Support first, localization second. That is the point where a punitive Balkan war becomes much harder to keep Balkan.",
+          "message": {
+            "from": "berlin",
+            "to": "vienna",
+            "label": "blank cheque",
+            "kind": "reply"
+          }
+        },
+        {
+          "id": "wwi-july-4",
+          "narration": "Vienna then issues the harsh ultimatum and moves against Serbia, knowing Russia is Serbia's major supporter. The crisis is now testing the wider system, not just punishing one state.",
+          "message": {
+            "from": "vienna",
+            "to": "petersburg",
+            "label": "ultimatum and attack on Serbia",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "wwi-july-5",
+          "narration": "Russia first tries partial mobilization, then discovers its own plans do not bend cleanly enough to stop there. By 30 July it has moved to general mobilization, along both the Austrian and German fronts.",
+          "message": {
+            "from": "petersburg",
+            "to": "berlin",
+            "label": "general mobilization",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "wwi-july-6",
+          "narration": "At that point German planning assumes a two-front war and races west through Belgium before Russia fully ripens. France is already tied to Russia, Britain is pulled in through Belgian neutrality and its own alignments, and the war becomes general. The local crisis did not vanish. It propagated.",
+          "message": {
+            "from": "berlin",
+            "to": "europe",
+            "label": "two-front war plan activates",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "wwi-july-7",
+          "narration": "That is the mechanism the page earns. Misperception, rigid timetables, and reciprocal backing do not make war inevitable in the abstract. They do make late July a situation that breaks faster than diplomacy can repair it.",
+          "message": {
+            "from": "europe",
+            "to": "europe",
+            "label": "alliances and neutrality widen the war",
+            "kind": "aside"
+          },
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "tension",
+      "type": "tension",
+      "accent": "amber",
+      "kicker": "06 // THE TRADE-OFF",
+      "heading": "Overdetermination explains the mechanism, at the cost of clean blame",
+      "cut": "hold",
+      "treatment": "sketch",
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "system",
+          "label": "Systemic account",
+          "sub": "many live causes, crowded into one crisis",
+          "col": 0,
+          "row": 0,
+          "accent": "green",
+          "weight": "hero",
+          "wide": true
+        },
+        {
+          "id": "single",
+          "label": "Single-culprit story",
+          "sub": "one state, one clean cause",
+          "col": 2,
+          "row": 0,
+          "kind": "rejected"
+        },
+        {
+          "id": "blur",
+          "label": "Risk — agency blurs",
+          "sub": "many causes can wash out late-July choices",
+          "col": 1,
+          "row": 1,
+          "kind": "risk",
+          "wide": true
+        },
+        {
+          "id": "mechanism",
+          "label": "Why choose it",
+          "sub": "it explains how a Balkan murder widened",
+          "col": 0,
+          "row": 2,
+          "accent": "cyan",
+          "wide": true
+        },
+        {
+          "id": "germany",
+          "label": "What keeps blame sharp",
+          "sub": "the page still gives Germany a larger share",
+          "col": 2,
+          "row": 2,
+          "accent": "rose",
+          "wide": true
+        }
+      ],
+      "edges": [],
+      "beats": [
+        {
+          "id": "wwi-tension-1",
+          "narration": "Here is the trade-off. This account chooses the systemic view over the satisfying one-culprit story because the system view explains the mechanism of escalation. It shows why one assassination could widen, instead of merely naming who to hate.",
+          "reveal": [
+            "system",
+            "single",
+            "mechanism"
+          ],
+          "focus": [
+            "system",
+            "mechanism"
+          ]
+        },
+        {
+          "id": "wwi-tension-2",
+          "narration": "But that choice pays a real bill. If every wire matters, agency can blur into atmosphere. Overdetermination can fail into a shrug: everyone caused it, therefore no one decisive did.",
+          "reveal": [
+            "blur"
+          ],
+          "focus": [
+            "blur"
+          ],
+          "shot": "push"
+        },
+        {
+          "id": "wwi-tension-3",
+          "narration": "The page partly repairs that by keeping one sharper claim in reserve: later scholarly consensus still gives Germany a larger share of responsibility. So the honest position is not single culprit instead of system, or system instead of blame. It is this: choose the systemic account to explain the outbreak, and keep the Germany caveat so nuance does not become evasion.",
+          "reveal": [
+            "germany"
+          ],
+          "focus": [
+            "germany",
+            "blur"
+          ],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "blue",
+      "kicker": "RECAP // THE VERDICT",
+      "heading": "Causes of World War I — an honest verdict",
+      "points": [
+        "Sound — the page correctly kills the assassination-only myth.",
+        "Earned — it ties long-term polarization to concrete July decisions.",
+        "Grounded — by the 1890s the reserve pools already ran from 2.6 to 4.0 million.",
+        "Caveat — overdetermination can blur agency, so the Germany-responsibility caveat matters.",
+        "Carry it — the assassination was the spark; the system made catastrophe possible, and leaders made it actual."
+      ],
+      "beats": [
+        {
+          "id": "wwi-recap-1",
+          "narration": "The verdict starts cleanly. The page is sound to reject the assassination-only myth. One bullet is too small an explanation for what followed.",
+          "reveal": 1
+        },
+        {
+          "id": "wwi-recap-2",
+          "narration": "It is stronger than a brochure because it earns a mechanism: long-term polarization, then late-July decisions, then mobilization and widening.",
+          "reveal": 2
+        },
+        {
+          "id": "wwi-recap-3",
+          "narration": "It is also grounded. Before the war starts, the reserve pools already sit in the millions, and the plans are rigid enough that diplomacy can break against them.",
+          "reveal": 3
+        },
+        {
+          "id": "wwi-recap-4",
+          "narration": "But carry the caveat. Overdetermination is illuminating up to the point where it begins to blur agency. That is why the article's own caveat about Germany's larger share of responsibility is not optional garnish; it keeps the account honest about fragility and blame.",
+          "reveal": 4
+        },
+        {
+          "id": "wwi-recap-5",
+          "narration": "So the durable sentence is this: the assassination was the spark, not the fuel. Europe had already built a war-prone system. July 1914 turned that system from dangerous to actual.",
+          "reveal": 5,
+          "pace": "hold"
+        }
+      ]
+    }
+  ]
+}
