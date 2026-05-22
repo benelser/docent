@@ -227,6 +227,38 @@
         {"id": "chart-1", "narration": "A chart scene plots data on real axes — bars that grow to their value.", "reveal": ["bars"]},
         {"id": "chart-2", "narration": "The move docent could not make until now: not a diagram about data, but the data itself.", "reveal": ["bars"], "pace": "hold"}
       ]
+    },
+    {
+      "id": "s-passage",
+      "type": "passage",
+      "accent": "amber",
+      "kicker": "GRAMMAR // 14",
+      "heading": "passage — annotate a text",
+      "text": "Content is data; the engine is the typesetter.\nThe author chooses the move — and the move is never a pixel.",
+      "marks": [
+        {"id": "mk-type", "quote": "typesetter", "note": "the engine owns every pixel of layout"},
+        {"id": "mk-move", "quote": "the move", "note": "one of fifteen scene types — a grammar of explanation"}
+      ],
+      "beats": [
+        {"id": "passage-1", "narration": "A passage scene annotates a plain text — a poem, a primary source — not code.", "reveal": ["mk-type"]},
+        {"id": "passage-2", "narration": "Marks pin to a phrase, not a line number, and several can be live at once.", "reveal": ["mk-move"], "focus": ["mk-move"], "pace": "hold"}
+      ]
+    },
+    {
+      "id": "s-figure",
+      "type": "figure",
+      "accent": "violet",
+      "kicker": "GRAMMAR // 15",
+      "heading": "figure — annotate an image",
+      "image": "figures/grammar-check/plate.png",
+      "callouts": [
+        {"id": "co-1", "at": [0.28, 0.42], "label": "a region of the image"},
+        {"id": "co-2", "at": [0.72, 0.6], "label": "a second point of interest"}
+      ],
+      "beats": [
+        {"id": "figure-1", "narration": "A figure scene annotates a still image — a painting, a map, a photograph.", "reveal": ["co-1"]},
+        {"id": "figure-2", "narration": "Callouts pin to regions of the image itself.", "reveal": ["co-2"], "pace": "hold"}
+      ]
     }
   ]
 }
