@@ -4,6 +4,17 @@
   "workspaces": {
     "": {
       "name": "archcast",
+    },
+    "packages/agent": {
+      "name": "@docent/agent",
+      "version": "2.0.0",
+    },
+    "packages/engine": {
+      "name": "@docent/engine",
+      "version": "2.0.0",
+      "bin": {
+        "docent": "./cli/docent.ts",
+      },
       "dependencies": {
         "@remotion/cli": "^4.0.464",
         "@remotion/google-fonts": "^4.0.464",
@@ -32,6 +43,10 @@
     "@babel/parser": ["@babel/parser@7.24.1", "", { "bin": { "parser": "bin/babel-parser.js" } }, "sha512-Zo9c7N3xdOIQrNip7Lc9wvRPzlRtovHVE4lkz8WEDr7uYh/GMQhSiIgFxGIArRHYdJE5kxtZjAf8rT0xhdLCzg=="],
 
     "@babel/types": ["@babel/types@7.24.0", "", { "dependencies": { "@babel/helper-string-parser": "^7.23.4", "@babel/helper-validator-identifier": "^7.22.20", "to-fast-properties": "^2.0.0" } }, "sha512-+j7a5c253RfKh8iABBhywc8NSfP5LURe7Uh4qpsh6jc+aLJguvmIUBdjSdEMQv2bENrCR5MfRdjGo7vzS/ob7w=="],
+
+    "@docent/agent": ["@docent/agent@workspace:packages/agent"],
+
+    "@docent/engine": ["@docent/engine@workspace:packages/engine"],
 
     "@emnapi/core": ["@emnapi/core@1.10.0", "", { "dependencies": { "@emnapi/wasi-threads": "1.2.1", "tslib": "^2.4.0" } }, "sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw=="],
 

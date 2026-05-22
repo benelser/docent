@@ -3,18 +3,18 @@
 // as one of these JSON files under films/. The engine renders it; it knows
 // nothing about Codex (or any particular codebase) specifically.
 
-import codex from '../../films/codex.json';
-import rig from '../../films/rig.json';
-import nono from '../../films/nono.json';
-import vector from '../../films/vector.json';
-import bun from '../../films/bun.json';
-import kubernetes from '../../films/kubernetes.json';
-import rigPr from '../../films/rig-pr.json';
-import nonoPr from '../../films/nono-pr.json';
-import vectorPr from '../../films/vector-pr.json';
-import bunPr from '../../films/bun-pr.json';
-import kubernetesPr from '../../films/kubernetes-pr.json';
-import manifestJson from '../../public/audio/manifest.json';
+import codex from '../../../../films/codex.json';
+import rig from '../../../../films/rig.json';
+import nono from '../../../../films/nono.json';
+import vector from '../../../../films/vector.json';
+import bun from '../../../../films/bun.json';
+import kubernetes from '../../../../films/kubernetes.json';
+import rigPr from '../../../../films/rig-pr.json';
+import nonoPr from '../../../../films/nono-pr.json';
+import vectorPr from '../../../../films/vector-pr.json';
+import bunPr from '../../../../films/bun-pr.json';
+import kubernetesPr from '../../../../films/kubernetes-pr.json';
+import manifestJson from '../../../../public/audio/manifest.json';
 
 export type Message = {
   from: string;

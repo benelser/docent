@@ -22,7 +22,20 @@ import sys
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+def _repo_root() -> Path:
+    """Root holding films/ and public/. The docent CLI sets DOCENT_ROOT; fall
+    back to walking up to the .git dir so the script also runs standalone."""
+    env = os.environ.get("DOCENT_ROOT")
+    if env:
+        return Path(env).resolve()
+    here = Path(__file__).resolve()
+    for p in [here, *here.parents]:
+        if (p / ".git").exists():
+            return p
+    return here.parent.parent
+
+
+ROOT = _repo_root()
 SAMPLE_RATE = 24000
 
 # One Kokoro pipeline per worker process, lazily built and reused.

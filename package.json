@@ -1,34 +1,11 @@
 {
   "name": "docent",
-  "version": "2.0.0",
-  "description": "Turn a codebase into a narrated, animated architecture film — Remotion + Manim hybrid.",
   "private": true,
-  "type": "module",
+  "version": "2.0.0",
+  "description": "Turn a codebase or a pull request into a narrated, animated explainer.",
+  "workspaces": ["packages/engine", "packages/agent"],
   "scripts": {
-    "build": "bun run pipeline/build.ts",
-    "tts": "uv run python pipeline/tts.py",
-    "clips": "uv run python pipeline/clips.py",
-    "studio": "remotion studio src/index.ts",
-    "render": "remotion render src/index.ts codex out/codex_architecture_review.mp4 --concurrency=8",
-    "render:scene": "remotion render src/index.ts"
+    "docent": "bun packages/engine/cli/docent.ts"
   },
-  "license": "MIT",
-  "dependencies": {
-    "@remotion/cli": "^4.0.464",
-    "@remotion/google-fonts": "^4.0.464",
-    "@remotion/paths": "^4.0.464",
-    "@remotion/shapes": "^4.0.464",
-    "@remotion/transitions": "^4.0.464",
-    "prism-react-renderer": "^2.4.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "remotion": "^4.0.464",
-    "roughjs": "^4.6.6"
-  },
-  "devDependencies": {
-    "@types/node": "^25.9.1",
-    "@types/react": "^18.3.29",
-    "@types/react-dom": "^18.3.7",
-    "typescript": "^6.0.3"
-  }
+  "license": "MIT"
 }

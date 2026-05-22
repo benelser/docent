@@ -1,0 +1,33 @@
+{
+  "name": "@docent/engine",
+  "version": "2.0.0",
+  "description": "docent render engine — the Remotion film engine, the cascade pipeline, and the docent CLI.",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "docent": "./cli/docent.ts"
+  },
+  "scripts": {
+    "docent": "bun cli/docent.ts",
+    "studio": "remotion studio src/index.ts"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@remotion/cli": "^4.0.464",
+    "@remotion/google-fonts": "^4.0.464",
+    "@remotion/paths": "^4.0.464",
+    "@remotion/shapes": "^4.0.464",
+    "@remotion/transitions": "^4.0.464",
+    "prism-react-renderer": "^2.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.464",
+    "roughjs": "^4.6.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@types/react": "^18.3.29",
+    "@types/react-dom": "^18.3.7",
+    "typescript": "^6.0.3"
+  }
+}
