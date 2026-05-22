@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://docent.dev/schema/film.schema.json",
+  "title": "docent film spec",
+  "description": "The contract between the agent layer (which authors a spec) and the engine (which renders it). Versioned; the engine validates every spec against the structural subset of this in cli/validate.ts.",
+  "type": "object",
+  "required": ["meta", "scenes"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["id", "title", "subject", "prompt", "fps", "width", "height"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+        "title": {"type": "string"},
+        "subject": {"type": "string"},
+        "repo": {"type": "string"},
+        "prompt": {"type": "string", "description": "architecture review | pr review"},
+        "fps": {"type": "number", "exclusiveMinimum": 0},
+        "width": {"type": "number", "exclusiveMinimum": 0},
+        "height": {"type": "number", "exclusiveMinimum": 0},
+        "voice": {"type": "string"}
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/scene"}
+    }
+  },
+  "$defs": {
+    "scene": {
+      "type": "object",
+      "required": ["id", "type", "beats"],
+      "properties": {
+        "id": {"type": "string"},
+        "type": {"enum": ["title", "diagram", "sequence", "code", "diff", "sketch", "recap"]},
+        "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
+        "kicker": {"type": "string"},
+        "heading": {"type": "string"},
+        "beats": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/beat"}
+        }
+      }
+    },
+    "beat": {
+      "type": "object",
+      "required": ["id", "narration"],
+      "properties": {
+        "id": {"type": "string", "description": "unique across the whole film — the TTS cache keys on it"},
+        "narration": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
