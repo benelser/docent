@@ -50,16 +50,17 @@ subject; it renders a closed grammar of explanation.
 
 ## The scene grammar
 
-The spec is a closed grammar of **explanation moves**, not of software — 12
+The spec is a closed grammar of **explanation moves**, not of software — 13
 scene types, defined in `schema/film.schema.json`:
 
 `frame` (set up the subject) · `structure` (how the parts relate) ·
 `progression` (stages along a path) · `walkthrough` (one instance, step by
 step) · `compare` (options side by side) · `quantities` (the numbers) ·
-`probe` (vary one input, follow the consequence) · `tension` (the trade-off,
-where it breaks) · `closeup` (annotate one artifact) · `demonstrate` (play the
-phenomenon itself) · `recap` (the takeaway) · `diff` (what changed — PR films
-only).
+`chart` (plot data on real axes — a curve, bars that grow, a point on a
+curve) · `probe` (vary one input, follow the consequence) · `tension` (the
+trade-off, where it breaks) · `closeup` (annotate one artifact) ·
+`demonstrate` (play the phenomenon itself) · `recap` (the takeaway) · `diff`
+(what changed — PR films only).
 
 ## Intent knobs — how a film should *feel*
 
@@ -88,6 +89,13 @@ to turn a default film into an authored one.
 
 Use them sparingly and with intent — a film where every beat is `hold` has no
 rhythm.
+
+## Animated values — make a number *move*
+
+A `quantities` scene can carry `metrics` — figure cards whose number is
+*tweened*. A beat's `set` directive drives the value, and the engine counts it
+up to its target rather than cutting to it. Reach for it when the film *earns*
+a number on screen — a measured result arriving, not merely appearing.
 
 ## The depth bar — a film *interrogates*, it does not admire
 

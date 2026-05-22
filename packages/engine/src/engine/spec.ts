@@ -24,6 +24,18 @@ export type Tween = {
   ease?: 'linear' | 'spring' | 'accelerate' | 'settle';
 };
 
+// A morph directive — re-binds an existing node to a new definition. The
+// engine eases old→new across the beat that carries the transform: the
+// bounding box tweens continuously, the representations cross-fade. This is
+// cross-beat object identity — a node can *become* something else, the same
+// `id` carrying a redefined geometry and content. `into` is a partial Node:
+// only the fields it names change; everything else is inherited from the
+// node's prior definition.
+export type Transform = {
+  node: string; // the id of an existing node, redefined by this beat
+  into: Partial<Node>;
+};
+
 export type Beat = {
   id: string;
   narration: string;
@@ -31,6 +43,9 @@ export type Beat = {
   reveal?: string[] | number;
   focus?: string[];
   pulse?: [string, string][];
+  // morph directive — re-bind named nodes to new definitions; the engine
+  // morphs old→new across this beat. The deepest primitive: object identity.
+  transform?: Transform[];
   // frame directive
   show?: string;
   // closeup directive — [firstLine, lastLine], 1-indexed
@@ -49,6 +64,13 @@ export type Beat = {
 
 export type Actor = {id: string; label: string; sub?: string};
 
+// A node's *representation* — how its content is drawn inside its box. The
+// default, `box`, is today's Card (a labelled component card). `matrix` /
+// `vector` / `grid` draw `cells` as a grid of mono cells; `code` draws a
+// small code window. A node keeps the same `id` and box geometry across
+// representations — a morph swaps the representation, not the identity.
+export type NodeRepr = 'box' | 'matrix' | 'vector' | 'grid' | 'code';
+
 export type Node = {
   id: string;
   label: string;
@@ -62,6 +84,10 @@ export type Node = {
   wide?: boolean;
   // tension scenes: a node can be a flagged risk or a rejected alternative
   kind?: 'risk' | 'rejected';
+  // morph — the node's representation. `box` (default) is the Card; the
+  // others draw `code` / `cells` instead. A `transform` beat can swap this.
+  as?: NodeRepr;
+  cells?: (string | number)[][]; // matrix/vector/grid contents, row-major
 };
 
 export type Edge = {
