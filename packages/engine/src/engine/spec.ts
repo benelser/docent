@@ -303,6 +303,90 @@ export const activeBeatIndex = (beats: TimedBeat[], frame: number): number => {
   return 0;
 };
 
+// Normalise a `set` entry — a bare number is a jump (it eases from the prior
+// held value with the default spring; a number alone has no `from`/`ease`).
+const asTween = (v: number | Tween): Tween =>
+  typeof v === 'number' ? {to: v} : v;
+
+// The eased progress 0..1 for a tween, given local frame within the beat.
+// Mirrors `resolveCamera`: `spring` is the default settle; `linear` is flat;
+// `accelerate` eases in (slow-then-fast); `settle` eases out hard. A tween
+// completes within the beat's own duration, so the value rests before the
+// next beat begins.
+const easeProgress = (
+  ease: NonNullable<Tween['ease']>,
+  local: number,
+  duration: number,
+  fps: number,
+): number => {
+  if (local <= 0) return 0;
+  if (local >= duration) return 1;
+  switch (ease) {
+    case 'linear':
+      return local / duration;
+    case 'accelerate':
+      return interpolate(local / duration, [0, 1], [0, 1], {
+        easing: (t) => t * t,
+      });
+    case 'settle':
+      return spring({frame: local, fps, config: {damping: 200, mass: 1.4}});
+    case 'spring':
+    default:
+      return spring({frame: local, fps, config: {damping: 200, mass: 1.1}});
+  }
+};
+
+// The resolved value of a named tweened key at a given (scene-relative) frame.
+// A pure read over TimedBeat[] — like `activeBeatIndex`, deterministic, with no
+// state. Finds the most recent beat at or before `frame` whose `set` includes
+// `key`, then eases from the value the prior set-beat held (or this tween's
+// `from`, or 0) toward the target. If `frame` precedes the first set-beat the
+// value is its `from`/0; if no beat ever sets the key the value is 0.
+export const tweenValue = (
+  beats: TimedBeat[],
+  key: string,
+  frame: number,
+  fps: number,
+): number => {
+  // The beats that drive this key, in timeline order.
+  const setBeats = beats.filter(
+    (b): b is TimedBeat & {set: Record<string, number | Tween>} =>
+      Boolean(b.set) && key in (b.set as object),
+  );
+  if (setBeats.length === 0) return 0;
+
+  // The most recent set-beat at or before `frame`.
+  let active = -1;
+  for (let i = setBeats.length - 1; i >= 0; i--) {
+    if (frame >= setBeats[i].from) {
+      active = i;
+      break;
+    }
+  }
+  // Before the first set-beat — rest at that beat's start value.
+  if (active < 0) {
+    const first = asTween(setBeats[0].set[key]);
+    return first.from ?? 0;
+  }
+
+  const tw = asTween(setBeats[active].set[key]);
+  // The value the timeline held entering this beat: the previous set-beat's
+  // target, else this tween's explicit `from`, else 0.
+  const start =
+    active > 0
+      ? asTween(setBeats[active - 1].set[key]).to
+      : tw.from ?? 0;
+
+  const local = frame - setBeats[active].from;
+  const p = easeProgress(
+    tw.ease ?? 'spring',
+    local,
+    setBeats[active].durationInFrames,
+    fps,
+  );
+  return interpolate(p, [0, 1], [start, tw.to]);
+};
+
 export type FilmMeta = FilmSpec['meta'];
 
 // Every scene template receives exactly this — including the film's meta, so a

@@ -19,6 +19,9 @@ const KNOBS: Record<string, string[]> = {
   cadence: ['cascade', 'together', 'snap'],
   shot: ['wide', 'follow', 'push', 'hold'],
   weight: ['hero', 'primary', 'normal', 'recede'],
+  // tween directive — a metric's number formatter and a tween's easing curve.
+  format: ['int', 'float1', 'percent'],
+  ease: ['linear', 'spring', 'accelerate', 'settle'],
 };
 
 export type ValidationIssue = {path: string; message: string};
@@ -95,6 +98,34 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       });
     }
 
+    // metrics — figure cards whose number is a tweened value. Each must name a
+    // grid cell, a label, and a `bind` key driven by a beat's `set`.
+    if (sc.metrics !== undefined && !Array.isArray(sc.metrics)) {
+      issues.push({path: `${at}.metrics`, message: 'metrics must be an array'});
+    } else if (Array.isArray(sc.metrics)) {
+      sc.metrics.forEach((m: Record<string, any>, k: number) => {
+        const mAt = `${at}.metrics[${k}]`;
+        if (!m || typeof m !== 'object') {
+          issues.push({path: mAt, message: 'metric must be an object'});
+          return;
+        }
+        for (const f of ['id', 'label', 'bind']) {
+          if (typeof m[f] !== 'string' || !m[f].trim()) {
+            issues.push({path: `${mAt}.${f}`, message: 'missing or empty string'});
+          }
+        }
+        for (const f of ['col', 'row']) {
+          if (typeof m[f] !== 'number' || !Number.isInteger(m[f]) || m[f] < 0) {
+            issues.push({path: `${mAt}.${f}`, message: 'must be a non-negative integer'});
+          }
+        }
+        checkKnob(m, 'format', mAt, issues);
+        if (m.accent !== undefined && !ACCENTS.includes(m.accent)) {
+          issues.push({path: `${mAt}.accent`, message: `unknown accent "${m.accent}"`});
+        }
+      });
+    }
+
     if (!Array.isArray(sc.beats) || sc.beats.length === 0) {
       issues.push({path: `${at}.beats`, message: 'missing or empty beats array'});
       return;
@@ -114,6 +145,30 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       checkKnob(b, 'pace', bAt, issues);
       checkKnob(b, 'cadence', bAt, issues);
       checkKnob(b, 'shot', bAt, issues);
+
+      // set — the tween directive. Each entry is a bare number (a jump) or a
+      // Tween object {to, from?, ease?}; nothing else.
+      if (b.set !== undefined) {
+        if (typeof b.set !== 'object' || b.set === null || Array.isArray(b.set)) {
+          issues.push({path: `${bAt}.set`, message: 'set must be a map of name → number | Tween'});
+        } else {
+          for (const [name, v] of Object.entries(b.set as Record<string, any>)) {
+            const sAt = `${bAt}.set.${name}`;
+            if (typeof v === 'number') continue;
+            if (!v || typeof v !== 'object') {
+              issues.push({path: sAt, message: 'must be a number or a Tween object {to, from?, ease?}'});
+              continue;
+            }
+            if (typeof v.to !== 'number') {
+              issues.push({path: `${sAt}.to`, message: 'Tween requires a numeric "to"'});
+            }
+            if (v.from !== undefined && typeof v.from !== 'number') {
+              issues.push({path: `${sAt}.from`, message: '"from" must be a number'});
+            }
+            checkKnob(v, 'ease', sAt, issues);
+          }
+        }
+      }
     });
   });
 
