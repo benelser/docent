@@ -1,37 +1,78 @@
 # docent
 
 Turn any **codebase** — or any **pull request** — into a **narrated, animated
-explainer**: a short film that shows and explains software, the way a museum
-docent walks you through an exhibit. Point it at a repository, give it a
-prompt, and it runs the whole pipeline.
+explainer**: a short film that shows and explains software the way a museum
+docent walks you through an exhibit.
 
 docent works in two modes:
 
-- **Architecture review** — the whole system, or a subsystem, in depth.
-- **PR review** — a pull request, reviewed the way a principled engineer
-  would: the motivation, the design, the core diff, the ripple, the verdict.
-
-It is generic machinery. A coding agent surveys the subject and writes a
-declarative **film spec**; the engine renders it.
+- **PR review** — `docent pr <repo> <pr#>`. A pull request reviewed the way a
+  principal engineer would: why the change exists, the core before → after,
+  what could break, a verdict. Built for the sprawling AI-agent PR no human can
+  review as a wall of text — the film *triages* it.
+- **Architecture review** — `docent ar <repo> [subsystem]`. A whole system, or
+  one subsystem, in depth: the components, the flow, the failure modes, the
+  trade-offs.
 
 ## How it works
 
-**Content is data; presentation is the engine.** You never write animation
-code for a particular codebase — you author one JSON file (`films/<id>.json`)
-describing scenes, narration, and a diagram of nodes and edges. The engine
-knows nothing about any specific repository.
+**Content is data; the engine is generic.** A coding agent surveys a subject
+and authors one declarative JSON file — a *film spec*. The engine renders it.
+The engine knows nothing about any specific repository.
 
-The pipeline is a cascade, parallel at every stage:
+The pipeline is a cascade, cached per stage:
 
 ```
-survey   →  films/<id>.json       the spec  (authored by the agent)
+survey   →  films/<id>.json       the spec — authored by the agent
 tts      →  public/audio/<id>/*   Kokoro narration, beats in parallel
-clips    →  public/clips/<id>/*   optional Manim inserts, in parallel
-render   →  out/<id>.mp4          Remotion, frames in parallel
+clips    →  public/clips/<id>/*   optional Manim inserts
+render   →  out/<id>.mp4          Remotion, frame-parallel
 ```
 
-Stages are decoupled and individually cached — narration never blocks
-rendering, and re-running redoes only what changed.
+## Two packages
+
+docent is a bun workspace of two packages, split along the line between the
+*runtime* and the *brain*:
+
+- **`@docent/engine`** — the Remotion render engine, the cascade pipeline, and
+  the `docent` CLI. The runtime.
+- **`@docent/agent`** — the agent layer: review skills, the structured survey
+  prompt, the depth-review sub-agent. Distributed via
+  [APM](https://github.com/microsoft/apm) so docent rides inside any coding
+  agent (Claude Code, Codex, …) rather than being bound to one.
+
+The boundary between them is the film spec JSON Schema
+(`packages/engine/schema/film.schema.json`). Any agent that produces a
+schema-valid, depth-checked spec works — docent is not bound to Claude.
+
+## The docent CLI
+
+```
+docent doctor                    validate the environment, per cascade stage
+docent pr    <repo> <pr#>        a PR-review film
+docent ar    <repo> [subsystem]  an architecture-review film
+docent score <owner/repo> <pr#>  the triggering matrix — skip / glance / full
+docent depthcheck <film>         the depth contract over a spec
+docent hermetic [id] [--full]    end-to-end cascade validation
+docent build <film> [--still N]  run the cascade for a known spec
+docent env                       resolved paths and versions
+```
+
+## Depth enforcement
+
+A docent film must *interrogate*, not admire. Three layers enforce it:
+
+1. the structured survey — `packages/agent/prompts/survey-template.md`
+2. `docent depthcheck` — a machine-checkable contract: a risk node, a
+   quantified claim, a failure-modes scene, a verdict that adjudicates
+3. the depth-review sub-agent — `packages/agent/agents/depth-review.md`
+
+## The hermetic harness
+
+`docent hermetic` validates the engine cascade end-to-end against pinned
+fixtures (`hermetic/fixtures.json`): doctor green, spec valid, depth contract
+met, cascade renders, output a valid video. It is also the eval rig for the
+depth-prompt work.
 
 ## The stack — all local, no API keys
 
@@ -45,35 +86,21 @@ rendering, and re-running redoes only what changed.
 ## Setup
 
 ```
-bun install      # Remotion + React engine
+bun install      # the engine + workspace
 uv sync          # Kokoro TTS + Manim
-```
-
-## Use
-
-1. Open a coding agent here with **`AGENTS.md`** as its brief.
-2. Tell it the repository and the prompt.
-3. It surveys the code, writes `films/<id>.json`, and runs the build.
-
-```
-bun run build --film <id>               # full cascade → out/<id>.mp4
-bun run build --film <id> --still 4980  # one frame, for quick checks
-bun run studio                          # live preview in Remotion Studio
+docent doctor    # confirm the cascade is ready
 ```
 
 ## Layout
 
 ```
 docent/
-  AGENTS.md       brief for the coding agent
-  films/          film specs — one JSON per subject
-  src/            the engine — scene templates, components, layout
-    engine/         spec loader, timing, layout math
-    components/     SceneFrame, Card, Connector, Pulse, Narration
-    scenes/         TitleScene, DiagramScene, RecapScene
-  pipeline/       build.ts (cascade), tts.py (Kokoro), clips.py (Manim)
-  manim/          optional Manim clip scenes, per film
-  analysis/       the agent's survey notes
-  public/         rendered narration + clips
-  out/            rendered films
+  packages/
+    engine/   @docent/engine — src/ (engine), pipeline/, cli/, schema/
+    agent/    @docent/agent  — APM package: instructions/, prompts/, agents/
+  films/      film specs — one JSON per subject
+  analysis/   the agent's survey notes
+  hermetic/   fixtures + the harness report
+  public/     rendered narration + clips (cache)
+  out/        rendered films
 ```
