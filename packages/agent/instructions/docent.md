@@ -102,7 +102,10 @@ to turn a default film into an authored one.
 - **`palette`** (scene) — accent as *meaning*: `cool` (calm, explanatory) ·
   `warm` (consequential) · `signal` (a warning) · `mono` (a quiet baseline).
 - **`treatment`** (scene) — the visual skin: `crisp` (the console look) ·
-  `sketch` (the hand-drawn chalkboard).
+  `sketch` (the hand-drawn chalkboard) · `whiteboard` (marker on paper — a
+  light, friendly skin for explainer subjects). Default to `crisp`; reach for
+  `whiteboard` when the subject is a friendly idea-explainer (an `ex` mode
+  film, a non-code subject). Do not use it on a grave PR review.
 
 Use them sparingly and with intent — a film where every beat is `hold` has no
 rhythm.

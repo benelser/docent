@@ -23,7 +23,7 @@ const KNOBS: Record<string, string[]> = {
   register: ['grave', 'neutral', 'calm', 'urgent', 'playful'],
   cut: ['dissolve', 'hold', 'continue'],
   palette: ['cool', 'warm', 'signal', 'mono'],
-  treatment: ['crisp', 'sketch'],
+  treatment: ['crisp', 'sketch', 'whiteboard'],
   pace: ['hold', 'settle', 'normal', 'brisk'],
   cadence: ['cascade', 'together', 'snap'],
   shot: ['wide', 'follow', 'push', 'hold'],

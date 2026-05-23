@@ -27,13 +27,15 @@ import {FigureScene} from './scenes/FigureScene';
 // The implicit default reproduces today exactly — `tension` defaults to
 // `sketch`, every other type to `crisp` — so a film that sets no `treatment`
 // renders byte-identically. An explicit `treatment` overrides:
-//   structure + treatment:'sketch' → the chalkboard renderer
-//   tension   + treatment:'crisp'  → the crisp node-diagram renderer
+//   structure + treatment:'sketch'     → the chalkboard renderer
+//   tension   + treatment:'crisp'      → the crisp node-diagram renderer
+//   any       + treatment:'whiteboard' → marker-on-paper, reuses the rough.js
+//                                         renderer; TensionScene picks the palette
 //
 // The skin swap is honest only for the node-diagram family (structure ⇄
 // tension): both consume the same `nodes`/`edges`/`grid` spec. See the report
 // for the feature deltas a full version would need to close.
-type Treatment = 'crisp' | 'sketch';
+type Treatment = 'crisp' | 'sketch' | 'whiteboard';
 const treatmentOf = (scene: {type: string; treatment?: Treatment}): Treatment =>
   scene.treatment ?? (scene.type === 'tension' ? 'sketch' : 'crisp');
 
@@ -94,9 +96,12 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
             ) : t === 'figure' ? (
               <FigureScene {...common} />
             ) : t === 'tension' || t === 'structure' ? (
-              // Skin chosen by `treatment`: sketch → chalkboard, crisp →
-              // console. Default keeps tension=sketch / structure=crisp.
-              treatmentOf(ts.scene) === 'sketch' ? (
+              // Skin chosen by `treatment`: sketch → chalkboard, whiteboard →
+              // marker-on-paper (same rough.js renderer, light palette picked
+              // inside TensionScene), crisp → console. Default keeps
+              // tension=sketch / structure=crisp.
+              treatmentOf(ts.scene) === 'sketch' ||
+              treatmentOf(ts.scene) === 'whiteboard' ? (
                 <TensionScene {...common} />
               ) : (
                 <StructureScene {...common} />

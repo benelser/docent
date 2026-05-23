@@ -252,7 +252,7 @@ export type Scene = {
   // intent knobs — scene-level; the engine interprets these.
   cut?: 'dissolve' | 'hold' | 'continue'; // transition feeling into the next scene
   palette?: 'cool' | 'warm' | 'signal' | 'mono'; // accent family / mood
-  treatment?: 'crisp' | 'sketch'; // visual skin, decoupled from scene type
+  treatment?: 'crisp' | 'sketch' | 'whiteboard'; // visual skin, decoupled from scene type
   // frame
   title?: string;
   tagline?: string;

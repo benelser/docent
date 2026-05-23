@@ -41,7 +41,7 @@
         "heading": {"type": "string"},
         "cut": {"enum": ["dissolve", "hold", "continue"]},
         "palette": {"enum": ["cool", "warm", "signal", "mono"]},
-        "treatment": {"enum": ["crisp", "sketch"]},
+        "treatment": {"enum": ["crisp", "sketch", "whiteboard"]},
         "metrics": {
           "type": "array",
           "description": "quantities scenes — figure cards whose number is a tweened value that counts up across beats",
