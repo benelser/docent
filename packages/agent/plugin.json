@@ -1,6 +1,6 @@
 {
   "name": "docent-agent",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "The docent agent layer — four mode-centric skills (/docent-doctor, /docent-pr, /docent-ar, /docent-explain), the docent review brief, the survey prompts, and the depth-review sub-agent. Installs into Claude Code, Codex, Cursor, and any APM-supported coding agent.",
   "author": {
     "name": "benelser"

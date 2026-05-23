@@ -1,6 +1,6 @@
 {
   "name": "docent-agent",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "docent — narrated, animated explainer films for any subject (a codebase, a PR, an essay, a wiki, a URL). Four mode-centric slash commands: /docent-doctor (first-run bootstrap and health check), /docent-pr (PR-review film), /docent-ar (architecture-review film), /docent-explain (the one-shot — any subject, any mode, end to end). Use when the user asks to review a codebase as a film, explain a subject as a video, review a pull request at depth, or hands over a subject expecting an artifact at the end.",
   "author": {
     "name": "benelser"

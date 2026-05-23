@@ -12,7 +12,7 @@
 # spec that satisfies that contract and clears `docent depthcheck`. Any agent
 # that does so works — docent is not bound to Claude.
 name: docent-agent
-version: 2.0.0
+version: 2.0.1
 description: >-
   docent skills (/docent-doctor, /docent-survey, /docent-build, /docent-explain),
   the structured survey prompts, and the depth-review sub-agent — so docent
