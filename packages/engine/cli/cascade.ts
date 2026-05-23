@@ -5,7 +5,7 @@
 import {$} from 'bun';
 import {existsSync, mkdirSync} from 'node:fs';
 import {join} from 'node:path';
-import {REPO_ROOT, paths} from './paths';
+import {ENGINE_ROOT, REPO_ROOT, paths} from './paths';
 import {validateSpec} from './validate';
 import {runDepthCheck, depthSummary} from './depthcheck';
 
@@ -39,6 +39,15 @@ export const runCascade = async (opts: CascadeOpts): Promise<CascadeResult> => {
   const specPath = join(paths.films, `${film}.json`);
   if (!existsSync(specPath)) {
     throw new Error(`films/${film}.json not found — author the spec first.`);
+  }
+
+  // Auto-regen the films registry so Remotion's bundler always sees the
+  // current films/ on disk. Without this, `docent build` fails on a fresh
+  // checkout if the committed films.generated.ts references a spec that
+  // got renamed, deleted, or never tracked.
+  const genScript = join(ENGINE_ROOT, 'cli', 'gen-registry.ts');
+  if (existsSync(genScript)) {
+    await $`bun ${genScript}`.cwd(REPO_ROOT).env(cascadeEnv).quiet();
   }
 
   // The spec contract — the engine refuses to render a malformed film.

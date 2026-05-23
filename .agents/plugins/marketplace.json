@@ -1,0 +1,20 @@
+{
+  "name": "docent",
+  "interface": {
+    "displayName": "docent"
+  },
+  "plugins": [
+    {
+      "name": "docent-agent",
+      "source": {
+        "source": "local",
+        "path": "./packages/agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Engineering"
+    }
+  ]
+}

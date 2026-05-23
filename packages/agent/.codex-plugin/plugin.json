@@ -1,0 +1,40 @@
+{
+  "name": "docent-agent",
+  "version": "2.0.0",
+  "description": "docent — narrated, animated explainer films for any subject (a codebase, a PR, an essay, a wiki, a URL). Four mode-centric slash commands: /docent-doctor (first-run bootstrap and health check), /docent-pr (PR-review film), /docent-ar (architecture-review film), /docent-explain (the one-shot — any subject, any mode, end to end). Use when the user asks to review a codebase as a film, explain a subject as a video, review a pull request at depth, or hands over a subject expecting an artifact at the end.",
+  "author": {
+    "name": "benelser"
+  },
+  "homepage": "https://github.com/benelser/docent",
+  "repository": "https://github.com/benelser/docent",
+  "license": "MIT",
+  "keywords": [
+    "docent",
+    "explainer",
+    "educational-video",
+    "code-review",
+    "architecture-review",
+    "remotion",
+    "kokoro"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "docent",
+    "shortDescription": "Turn any subject into a narrated, animated explainer film",
+    "longDescription": "Point docent at a codebase, a pull request, an essay, a wiki, or a URL — any subject — and it produces a narrated, animated film that interrogates the subject. Not a tour that admires it. Every film is graded by an adversarial sub-agent before it ships.\n\nFour skills:\n  /docent-doctor   — first-run bootstrap and ongoing health check\n  /docent-pr       — PR-review film (load-bearing 5%, the trade-off, a verdict)\n  /docent-ar       — architecture-review film (components, flow, failure modes)\n  /docent-explain  — the one-shot, any subject, any mode\n\nFirst /docent-doctor invocation clones the engine to ~/.local/share/docent/engine, installs every cascade dependency (uv, ffmpeg, Kokoro voice weights, Remotion), and puts a `docent` CLI on PATH.",
+    "developerName": "benelser",
+    "category": "Engineering",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/benelser/docent",
+    "brandColor": "#6ea8fe",
+    "defaultPrompt": [
+      "Review the architecture of https://github.com/owner/repo as a docent film",
+      "Make a docent explainer of <subject>",
+      "Set up docent on this machine"
+    ]
+  }
+}
