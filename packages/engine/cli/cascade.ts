@@ -112,10 +112,31 @@ export const runCascade = async (opts: CascadeOpts): Promise<CascadeResult> => {
 
   const output = join(paths.out, `${film}.mp4`);
   const scaleArg = opts.scale ? [`--scale=${opts.scale}`] : [];
-  const {seconds} = await step('render · Remotion (frame-parallel)', async () => {
+  // Retry the render once on transient failures. Remotion's headless
+  // browser fetches Google Fonts on first render of a spec using a new
+  // font (e.g. Caveat for sketch/whiteboard treatments); a network blip
+  // mid-fetch produces a 30 s setup timeout and kills a 10+ minute render
+  // that was ~80 % done. After the first successful fetch the font is
+  // cached and the retry succeeds instantly.
+  const renderOnce = async () => {
     await $`${paths.remotionBin} render ${paths.entry} ${film} ${output} --concurrency=${concurrency} --public-dir=${paths.publicDir} ${scaleArg}`
       .cwd(REPO_ROOT)
       .env(cascadeEnv);
+  };
+  const {seconds} = await step('render · Remotion (frame-parallel)', async () => {
+    try {
+      await renderOnce();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const isTransient =
+        /ERR_NETWORK_CHANGED|setting up the headless browser|timed out|ECONNRESET|ETIMEDOUT/i.test(msg);
+      if (!isTransient) throw e;
+      process.stdout.write(
+        `\x1b[33m⚠ render failed with a transient error — retrying once\x1b[0m\n` +
+          `  ${msg.split('\n')[0]}\n`,
+      );
+      await renderOnce();
+    }
   });
   stages.push({name: 'render', seconds});
   return {film, output, stages};
