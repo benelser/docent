@@ -159,19 +159,6 @@ After the engine layer updates, re-run `/docent-doctor` to pick up any
 new dependencies. The engine `git pull`s itself the next time the
 cascade runs.
 
-## Status
-
-Engineering: **feature-complete**. Quality cycle: **operational**, with
-a 5 / 5 PASS corpus across five domains, two validated install paths
-(Claude Code + Codex), and an end-to-end test gate (`docent hermetic
---explain <url>`) that catches transient failures in both authoring
-hosts.
-
-Three patch releases shipped this week: [v2.0.0](https://github.com/benelser/docent/releases/tag/v2.0.0)
-(first pinnable agent layer), [v2.0.1](https://github.com/benelser/docent/releases/tag/v2.0.1)
-(resilience patches), [v2.0.2](https://github.com/benelser/docent/releases/tag/v2.0.2)
-(manifest version sync). The README's install line tracks latest.
-
 ## License
 
 MIT (see [`LICENSE`](LICENSE)). Distribution: APM
