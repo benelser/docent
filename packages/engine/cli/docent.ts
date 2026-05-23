@@ -18,6 +18,7 @@ import {runCascade} from './cascade';
 import {scorePr} from './score';
 import {hermetic} from './hermetic';
 import {hermeticFreshUser, type FreshUserTarget} from './fresh-user';
+import {hermeticExplain, type ExplainTarget} from './hermetic-explain';
 import {depthcheck} from './depthcheck';
 import {survey} from './survey';
 import {authorTreatment, treatmentToSpec} from './treatment';
@@ -223,6 +224,23 @@ const main = async (): Promise<number> => {
         });
         return code;
       }
+      if (flag('explain')) {
+        // `docent hermetic --explain <url> --target all` — the end-to-end
+        // Go Live gate. Runs the FULL skill cascade per agent host and
+        // asserts an mp4 lands on disk. ~30-50 min for --target all.
+        const url = positionals[0] ?? opt('url') ?? die('usage: docent hermetic --explain <url> [--target claude|codex|all]');
+        const rawTarget = opt('target') ?? 'all';
+        if (rawTarget !== 'claude' && rawTarget !== 'codex' && rawTarget !== 'all') {
+          die(`--target must be claude | codex | all (got: ${rawTarget})`);
+        }
+        const scale = num(opt('scale')) ?? 0.5;
+        const {code} = await hermeticExplain({
+          url,
+          target: rawTarget as ExplainTarget,
+          scale,
+        });
+        return code;
+      }
       const scale = num(opt('scale')) ?? (flag('full') ? 1 : 0.5);
       return hermetic({fixtureId: positionals[0], scale, json: flag('json')});
     }
@@ -245,6 +263,7 @@ const main = async (): Promise<number> => {
       console.log('  docent depthcheck <film>          the depth contract over a spec');
       console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
       console.log('  docent hermetic --fresh-user [--target claude|codex|all]  simulate install → first film in a tmpdir');
+      console.log('  docent hermetic --explain <url> [--target all]            full /docent-explain cascade per agent host (~30-50 min)');
       console.log('  docent preflight                  · Go Live readiness — environment, contracts, cycle surface, hygiene');
       console.log('  docent env                        resolved paths and versions');
       return cmd ? 1 : 0;
