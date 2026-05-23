@@ -1,0 +1,656 @@
+{
+  "meta": {
+    "id": "stopping-by-woods",
+    "title": "Stopping by Woods on a Snowy Evening",
+    "subject": "Stopping by Woods on a Snowy Evening -- a winter pause tightened into duty",
+    "repo": "https://en.wikipedia.org/wiki/Stopping_by_Woods_on_a_Snowy_Evening",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "calm"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "accent": "blue",
+      "kicker": "DOCENT // EXPLAINER",
+      "title": "Stopping by Woods on a Snowy Evening",
+      "tagline": "A quiet winter scene that turns into a self-command",
+      "footnote": "Wikipedia source page   ·   reviewed as an idea, not a biography   ·   surveyed past the inspirational-quote reading",
+      "beats": [
+        {
+          "id": "sbw-frame-1",
+          "narration": "This is Robert Frost's Stopping by Woods on a Snowy Evening -- not all of Frost, and not every later reuse of the last stanza. The unit is one 16-line lyric and one question: what kind of stopping is this?",
+          "show": "title"
+        },
+        {
+          "id": "sbw-frame-2",
+          "narration": "The misconception to kill is the postcard reading. The poem is not just a peaceful winter picture, and the ending is not just a detachable quotation. The page's stronger claim is that a brief hush is interrupted, then overridden by obligation.",
+          "show": "tagline"
+        },
+        {
+          "id": "sbw-frame-3",
+          "narration": "So the film tests whether the page earns that reading through the poem's own mechanics -- scene, sound, rhyme, repetition -- and where the page leaves a darker symbolic reading unproved.",
+          "show": "footnote"
+        }
+      ]
+    },
+    {
+      "id": "pressures",
+      "type": "structure",
+      "accent": "cyan",
+      "kicker": "01 // THE SCENE",
+      "heading": "One pause, ringed by pressure",
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "traveler",
+          "label": "Traveler",
+          "sub": "stops to watch snow",
+          "col": 1,
+          "row": 1,
+          "accent": "green",
+          "weight": "hero"
+        },
+        {
+          "id": "woods",
+          "label": "Woods",
+          "sub": "lovely, dark, and deep",
+          "col": 0,
+          "row": 1,
+          "accent": "cyan"
+        },
+        {
+          "id": "owner",
+          "label": "Owner",
+          "sub": "his house is elsewhere",
+          "col": 0,
+          "row": 0,
+          "accent": "blue"
+        },
+        {
+          "id": "village",
+          "label": "Village",
+          "sub": "the social world, away from here",
+          "col": 1,
+          "row": 0,
+          "accent": "amber",
+          "wide": true
+        },
+        {
+          "id": "horse",
+          "label": "Horse",
+          "sub": "the practical witness",
+          "col": 2,
+          "row": 1,
+          "accent": "violet"
+        },
+        {
+          "id": "night",
+          "label": "Darkest evening",
+          "sub": "between woods and frozen lake",
+          "col": 1,
+          "row": 2,
+          "accent": "rose",
+          "wide": true
+        },
+        {
+          "id": "promises",
+          "label": "Promises",
+          "sub": "what pulls him back into motion",
+          "col": 2,
+          "row": 2,
+          "accent": "green",
+          "wide": true
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-owner-woods",
+          "from": "owner",
+          "to": "woods",
+          "kind": "relation"
+        },
+        {
+          "id": "e-village-owner",
+          "from": "village",
+          "to": "owner",
+          "kind": "relation"
+        },
+        {
+          "id": "e-woods-traveler",
+          "from": "woods",
+          "to": "traveler",
+          "kind": "causes",
+          "strength": "contributing",
+          "label": "draws the stop"
+        },
+        {
+          "id": "e-night-woods",
+          "from": "night",
+          "to": "woods",
+          "kind": "causes",
+          "strength": "contributing",
+          "label": "intensifies the scene"
+        },
+        {
+          "id": "e-horse-traveler",
+          "from": "horse",
+          "to": "traveler",
+          "kind": "causes",
+          "strength": "contributing",
+          "label": "questions the halt"
+        },
+        {
+          "id": "e-promises-traveler",
+          "from": "promises",
+          "to": "traveler",
+          "kind": "causes",
+          "strength": "necessary",
+          "label": "ends the halt"
+        }
+      ],
+      "beats": [
+        {
+          "id": "sbw-pressures-1",
+          "narration": "At the center is one act: a traveler stops to watch the woods fill with snow. The page's analysis never leaves that concrete scene.",
+          "reveal": [
+            "traveler",
+            "woods",
+            "e-woods-traveler"
+          ],
+          "focus": [
+            "traveler",
+            "woods"
+          ]
+        },
+        {
+          "id": "sbw-pressures-2",
+          "narration": "But the stop is not nowhere. These woods belong to someone else, whose house is in the village, so the pause is unwitnessed and slightly furtive.",
+          "reveal": [
+            "owner",
+            "village",
+            "e-owner-woods",
+            "e-village-owner"
+          ],
+          "focus": [
+            "owner",
+            "village",
+            "traveler"
+          ],
+          "shot": "follow"
+        },
+        {
+          "id": "sbw-pressures-3",
+          "narration": "Then the setting strips away shelter: no farmhouse near, between woods and frozen lake, on the darkest evening of the year. The hush is beautiful because it is isolated.",
+          "reveal": [
+            "night",
+            "e-night-woods"
+          ],
+          "focus": [
+            "night",
+            "woods"
+          ]
+        },
+        {
+          "id": "sbw-pressures-4",
+          "narration": "Two pressures close the poem. The horse treats the stop as a possible mistake, and the promises waiting beyond the woods are what finally break it.",
+          "reveal": [
+            "horse",
+            "promises",
+            "e-horse-traveler",
+            "e-promises-traveler"
+          ],
+          "focus": [
+            "horse",
+            "promises",
+            "traveler"
+          ],
+          "pace": "hold",
+          "shot": "push"
+        }
+      ]
+    },
+    {
+      "id": "stanzas",
+      "type": "progression",
+      "accent": "green",
+      "kicker": "02 // THE TURN",
+      "heading": "Four stanzas, one tightening pause",
+      "flow": "linear",
+      "stages": [
+        {
+          "id": "s-private",
+          "label": "Private pause",
+          "sub": "he knows whose woods these are"
+        },
+        {
+          "id": "s-isolated",
+          "label": "Isolation",
+          "sub": "no farmhouse, frozen lake, darkest evening"
+        },
+        {
+          "id": "s-interrupt",
+          "label": "Interruption",
+          "sub": "bells, wind, and the word mistake"
+        },
+        {
+          "id": "s-command",
+          "label": "Self-command",
+          "sub": "promises and miles to go"
+        }
+      ],
+      "beats": [
+        {
+          "id": "sbw-stanzas-1",
+          "narration": "Stanza one establishes privacy. The speaker knows whose woods these are, and knows he will not be seen stopping here.",
+          "reveal": 1
+        },
+        {
+          "id": "sbw-stanzas-2",
+          "narration": "Stanza two removes the ordinary excuses for stopping. There is no farmhouse, only woods, frozen lake, and the year's darkest evening.",
+          "reveal": 2
+        },
+        {
+          "id": "sbw-stanzas-3",
+          "narration": "Stanza three breaks the trance. The horse shakes the bells, and the poem itself says the gesture asks whether there is some mistake.",
+          "reveal": 3
+        },
+        {
+          "id": "sbw-stanzas-4",
+          "narration": "Stanza four answers that question. The woods remain lovely, dark, and deep -- but the sentence turns on But, and the poem walks back into obligation.",
+          "reveal": 4,
+          "focus": [
+            "s-command"
+          ],
+          "pace": "hold",
+          "shot": "push"
+        }
+      ]
+    },
+    {
+      "id": "passage",
+      "type": "passage",
+      "accent": "amber",
+      "kicker": "03 // THE WORDS",
+      "heading": "The hinge is written into the poem",
+      "text": "Whose woods these are I think I know.\nHis house is in the village though;\nHe will not see me stopping here\nTo watch his woods fill up with snow.\n\nMy little horse must think it queer\nTo stop without a farmhouse near\nBetween the woods and frozen lake\nThe darkest evening of the year.\n\nHe gives his harness bells a shake\nTo ask if there is some mistake.\nThe only other sound's the sweep\nOf easy wind and downy flake.\n\nThe woods are lovely, dark and deep,\nBut I have promises to keep,\nAnd miles to go before I sleep,\nAnd miles to go before I sleep.",
+      "marks": [
+        {
+          "id": "mk-seen",
+          "quote": "He will not see me stopping here",
+          "note": "privacy matters; the pause is unwitnessed"
+        },
+        {
+          "id": "mk-darkest",
+          "quote": "The darkest evening of the year",
+          "note": "the scene is not neutral winter scenery"
+        },
+        {
+          "id": "mk-mistake",
+          "quote": "To ask if there is some mistake.",
+          "note": "the horse voices the poem's practical objection"
+        },
+        {
+          "id": "mk-but",
+          "quote": "But I have promises to keep",
+          "note": "the hinge: desire yields to duty"
+        },
+        {
+          "id": "mk-sleep",
+          "quote": "And miles to go before I sleep",
+          "note": "repeated once, then again, until it sounds like self-command"
+        }
+      ],
+      "beats": [
+        {
+          "id": "sbw-passage-1",
+          "narration": "Read the opening tension literally. The speaker is not arriving home or visiting a friend; he is stopping where he expects not to be seen.",
+          "reveal": [
+            "mk-seen"
+          ],
+          "focus": [
+            "mk-seen"
+          ]
+        },
+        {
+          "id": "sbw-passage-2",
+          "narration": "Then the page's darkness enters. The setting is the darkest evening of the year, which makes the pause feel less like tourism and more like a pull away from the road.",
+          "reveal": [
+            "mk-darkest"
+          ],
+          "focus": [
+            "mk-darkest"
+          ]
+        },
+        {
+          "id": "sbw-passage-3",
+          "narration": "The horse is not cute decoration. Some mistake is the poem's own phrase for the break in routine.",
+          "reveal": [
+            "mk-mistake"
+          ],
+          "focus": [
+            "mk-mistake"
+          ]
+        },
+        {
+          "id": "sbw-passage-4",
+          "narration": "And here is the hinge. But I have promises to keep does not cancel the woods' beauty; it outranks it.",
+          "reveal": [
+            "mk-but"
+          ],
+          "focus": [
+            "mk-but"
+          ],
+          "pace": "settle"
+        },
+        {
+          "id": "sbw-passage-5",
+          "narration": "The doubled last line is why the ending lingers. Said once, it is information. Said twice, it becomes an order the speaker gives himself.",
+          "reveal": [
+            "mk-sleep"
+          ],
+          "focus": [
+            "mk-sleep"
+          ],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "form",
+      "type": "quantities",
+      "accent": "violet",
+      "kicker": "04 // THE FORM",
+      "heading": "The form keeps walking",
+      "metrics": [
+        {
+          "id": "m-stanzas",
+          "label": "Stanzas",
+          "col": 0,
+          "row": 0,
+          "bind": "stanzas",
+          "format": "int",
+          "accent": "blue"
+        },
+        {
+          "id": "m-beats",
+          "label": "Beats per line",
+          "col": 1,
+          "row": 0,
+          "bind": "beats",
+          "format": "int",
+          "accent": "cyan"
+        },
+        {
+          "id": "m-handoffs",
+          "label": "Rhyme handoffs",
+          "col": 2,
+          "row": 0,
+          "bind": "handoffs",
+          "format": "int",
+          "accent": "amber"
+        },
+        {
+          "id": "m-repeats",
+          "label": "Final-line readings",
+          "col": 1,
+          "row": 1,
+          "bind": "repeats",
+          "format": "int",
+          "accent": "rose"
+        }
+      ],
+      "beats": [
+        {
+          "id": "sbw-form-1",
+          "narration": "The poem is only 4 stanzas long. That brevity matters: the halt is real, but it is brief enough that the whole poem can feel like one held breath.",
+          "set": {
+            "stanzas": {
+              "to": 4
+            }
+          }
+        },
+        {
+          "id": "sbw-form-2",
+          "narration": "Each line is iambic tetrameter -- 4 beats. Even when the wagon stops, the meter keeps a walking rhythm underneath it.",
+          "set": {
+            "beats": {
+              "to": 4
+            }
+          }
+        },
+        {
+          "id": "sbw-form-3",
+          "narration": "The rhyme scheme hands one sound forward 3 times: AABA, then BBCB, then CCDC. The poem keeps carrying motion across stanza borders instead of letting each stanza settle on its own.",
+          "set": {
+            "handoffs": {
+              "to": 3
+            }
+          },
+          "pace": "settle"
+        },
+        {
+          "id": "sbw-form-4",
+          "narration": "Only at the end does the chain lock shut, and the last line is heard 2 times. Repetition is doing reasoning work here: it tightens resolve.",
+          "set": {
+            "repeats": {
+              "to": 2
+            }
+          },
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "probe",
+      "type": "probe",
+      "accent": "green",
+      "kicker": "05 // PUSH ON IT",
+      "heading": "Which details are load-bearing?",
+      "baseline": {
+        "label": "Keep the poem exactly as written",
+        "outcome": "a private pause is broken and the journey resumes"
+      },
+      "variations": [
+        {
+          "id": "v-owner",
+          "label": "Let the owner see him",
+          "change": "remove the unwitnessed stop",
+          "outcome": "the scene becomes a social visit, not a private suspension",
+          "flips": true
+        },
+        {
+          "id": "v-horse",
+          "label": "Silence the harness bells",
+          "change": "remove the objection",
+          "outcome": "the reverie holds longer; the practical check weakens",
+          "flips": true
+        },
+        {
+          "id": "v-repeat",
+          "label": "Say the last line once",
+          "change": "remove the final repetition",
+          "outcome": "duty is stated, but it lands with less pressure",
+          "flips": true
+        }
+      ],
+      "beats": [
+        {
+          "id": "sbw-probe-1",
+          "narration": "Push on the mechanism by changing one feature at a time. If the owner can see him, the stop stops being private; the poem loses its furtive interiority.",
+          "reveal": 1,
+          "focus": [
+            "v-owner"
+          ]
+        },
+        {
+          "id": "sbw-probe-2",
+          "narration": "Silence the harness bells and the pause becomes much harder to break. The horse is load-bearing, because it gives the poem an external objection instead of a purely inward mood.",
+          "reveal": 2,
+          "focus": [
+            "v-horse"
+          ]
+        },
+        {
+          "id": "sbw-probe-3",
+          "narration": "Say the last line only once and the ending weakens. Duty would still be named, but it would not press with the same doubled force.",
+          "reveal": 3,
+          "focus": [
+            "v-repeat"
+          ],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "tension",
+      "type": "tension",
+      "accent": "amber",
+      "kicker": "06 // THE TRADE-OFF",
+      "heading": "The page chooses proof over total allegory",
+      "cut": "hold",
+      "treatment": "whiteboard",
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "grounded",
+          "label": "Grounded reading",
+          "sub": "pause, interruption, obligation",
+          "col": 0,
+          "row": 0,
+          "accent": "green",
+          "weight": "hero",
+          "wide": true
+        },
+        {
+          "id": "allegory",
+          "label": "Single symbolic key",
+          "sub": "sleep simply means death",
+          "col": 2,
+          "row": 0,
+          "kind": "rejected",
+          "wide": true
+        },
+        {
+          "id": "proof",
+          "label": "Why choose it",
+          "sub": "meter, rhyme, sound shift, and prose support it",
+          "col": 0,
+          "row": 2,
+          "accent": "cyan",
+          "wide": true
+        },
+        {
+          "id": "risk",
+          "label": "Risk -- darkness outruns proof",
+          "sub": "ominousness is hinted, not fully argued",
+          "col": 1,
+          "row": 1,
+          "kind": "risk",
+          "wide": true
+        },
+        {
+          "id": "afterlife",
+          "label": "What leaks out",
+          "sub": "funerals, memoir titles, spy-plot code words",
+          "col": 2,
+          "row": 2,
+          "accent": "rose",
+          "wide": true
+        }
+      ],
+      "edges": [],
+      "beats": [
+        {
+          "id": "sbw-tension-1",
+          "narration": "Here is the trade-off. The page chose the grounded reading -- a traveler's pause broken by obligation -- instead of declaring one total allegory where sleep simply means death.",
+          "reveal": [
+            "grounded",
+            "allegory"
+          ],
+          "focus": [
+            "grounded",
+            "allegory"
+          ]
+        },
+        {
+          "id": "sbw-tension-2",
+          "narration": "That choice is right on the evidence. Meter, chain rhyme, sound shift, and the article's own analysis are all demonstrable on the page. A full death reading would go further than the source can prove, and that stronger claim breaks on proof.",
+          "reveal": [
+            "proof"
+          ],
+          "focus": [
+            "proof",
+            "grounded"
+          ]
+        },
+        {
+          "id": "sbw-tension-3",
+          "narration": "But the bill is real. The page's best hint of menace is tucked into a reference note on the woods' ominous darkness, and the Usage section shows the last stanza migrating into funerals, memoirs, and even sleeper-agent code phrases. So the page is stronger on how the poem works than on why its darkness keeps traveling.",
+          "reveal": [
+            "risk",
+            "afterlife"
+          ],
+          "focus": [
+            "risk",
+            "afterlife"
+          ],
+          "pace": "hold",
+          "shot": "push"
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "blue",
+      "kicker": "RECAP // THE VERDICT",
+      "heading": "Stopping by Woods -- an honest verdict",
+      "points": [
+        "Sound with caveats -- the page earns interrupted stillness, not a mere snow postcard.",
+        "Earned -- 4-beat lines, chained rhyme, and the repeated close keep motion alive under the pause.",
+        "Caveat -- the page cannot prove one final symbolic key for sleep.",
+        "Weak point -- ominous darkness and cultural afterlife are named better than explained.",
+        "Carry it -- hear the ending first as self-command, while doubting any single total allegory."
+      ],
+      "beats": [
+        {
+          "id": "sbw-recap-1",
+          "narration": "The verdict is sound with caveats. The page earns a reading of the poem as interrupted stillness, not as a mere snow postcard.",
+          "reveal": 1
+        },
+        {
+          "id": "sbw-recap-2",
+          "narration": "Its strongest move is formal. 4-beat lines, chained rhyme, and the repeated close keep motion alive under the pause.",
+          "reveal": 2
+        },
+        {
+          "id": "sbw-recap-3",
+          "narration": "Its first caveat is scope. The page cannot prove one final symbolic key for sleep, and it is right not to pretend otherwise.",
+          "reveal": 3
+        },
+        {
+          "id": "sbw-recap-4",
+          "narration": "Its weak point is darkness. Ominousness and cultural afterlife are named better than they are explained.",
+          "reveal": 4
+        },
+        {
+          "id": "sbw-recap-5",
+          "narration": "So the durable sentence is this: hear the ending first as a self-command to continue. And keep one skepticism active: if someone tells you the poem means only one thing, the page has not earned that certainty.",
+          "reveal": 5,
+          "pace": "hold"
+        }
+      ]
+    }
+  ]
+}
