@@ -16,33 +16,43 @@ cycle that grades every film before it ships.
 
 ## Install
 
-One command:
+One command. Pick the target that matches your coding agent.
+
+**Claude Code:**
 
 ```bash
 apm install -t claude benelser/docent/packages/agent
 ```
 
-Then, inside Claude Code (or Codex / Cursor):
+**Codex:**
 
+```bash
+apm install -t codex benelser/docent/packages/agent
 ```
-/docent-doctor
-```
 
-The first `/docent-doctor` invocation is the bootstrap. It clones the
-engine into `~/.local/share/docent/engine`, installs every cascade
-dependency (uv, ffmpeg, Python env, Kokoro voice weights, Remotion),
-and puts the `docent` CLI on your PATH. Subsequent invocations just
-re-verify and repair.
-
-Pick your agent with `-t`:
+Both are validated end-to-end — skills land at `.claude/skills/` and
+`.agents/skills/` respectively, four skills each. For other targets
+APM supports the same shape:
 
 | Agent | Flag | Skills land at |
 |---|---|---|
 | Claude Code | `-t claude` | `.claude/skills/` |
 | Codex | `-t codex` | `.agents/skills/` |
 | Cursor | `-t cursor` | `.cursor/skills/` |
-| Copilot | `-t copilot` (default) | `.github/skills/` |
+| Copilot (default) | `-t copilot` | `.github/skills/` |
 | All of the above | `-t all` | every target |
+
+Then, inside your coding agent, run:
+
+```
+/docent-doctor
+```
+
+The first invocation is the bootstrap: it clones the engine into
+`~/.local/share/docent/engine`, installs every cascade dependency
+(uv, ffmpeg, Python env, Kokoro voice weights, Remotion), and puts
+the `docent` CLI on your PATH. Subsequent invocations just re-verify
+and repair.
 
 > docent needs `bun` (the runtime that runs the bootstrap itself).
 > If you don't have it: `curl -fsSL https://bun.sh/install | bash`,
