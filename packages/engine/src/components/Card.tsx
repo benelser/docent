@@ -55,15 +55,18 @@ export const Card: React.FC<{
   // the left + 26-px padding on each side of the body + an optional 92-px
   // tag column on the right is the geometry to subtract from `box.w`.
   const innerW = Math.max(60, box.w - 5 - 52 - (tag ? 92 : 0));
-  // Two-line floor: 11px for very long labels, 10px for very long subs.
-  // Below those, ellipsis kicks in. With both floor + ellipsis the worst
-  // case is "first part of the words…", never "first part of a word cut".
-  const fitFont = (text: string, base: number, floor: number): number => {
+  // Label stays single-line (it's usually short — 3-6 words); sub is allowed
+  // to WRAP to 2 lines (typical descriptive text — 10-20 words). The fit
+  // calculation gives sub roughly 2× the budget before shrinking, because
+  // it has 2 lines to use. Below the floor, the line-clamp ellipsis kicks
+  // in as the last-resort safety net.
+  const fitFont = (text: string, base: number, floor: number, lines = 1): number => {
+    const budget = innerW * lines;
     const est = text.length * base * 0.6;
-    return est <= innerW ? base : Math.max(floor, innerW / (text.length * 0.6));
+    return est <= budget ? base : Math.max(floor, budget / (text.length * 0.6));
   };
-  const labelSize = fitFont(label, w === 'hero' ? 30 : 27, 13);
-  const subSize = sub ? fitFont(sub, 15.5, 11) : 15.5;
+  const labelSize = fitFont(label, w === 'hero' ? 30 : 27, 13, 1);
+  const subSize = sub ? fitFont(sub, 15.5, 11, 2) : 15.5;
 
   return (
     <div
@@ -135,10 +138,17 @@ export const Card: React.FC<{
               fontSize: subSize,
               color: focus ? theme.ink.mid : theme.ink.low,
               letterSpacing: 0.2,
-              whiteSpace: 'nowrap',
+              // Wrap to 2 lines instead of truncating a long descriptive
+              // sub mid-thought. -webkit-line-clamp is the multi-line
+              // ellipsis pattern (Chromium-backed Remotion supports it),
+              // so a sub that genuinely overflows 2 lines still gets a
+              // clean "…" rather than a hard mid-word clip.
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 2,
               overflow: 'hidden',
-              textOverflow: 'ellipsis',
               maxWidth: innerW,
+              lineHeight: 1.25,
             }}
           >
             {sub}

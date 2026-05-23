@@ -501,9 +501,13 @@ const LedgerCard: React.FC<{
                       ? reg.inkMid
                       : reg.inkMid,
               letterSpacing: 0.2,
-              whiteSpace: 'nowrap',
+              // Wrap to 2 lines (multi-line ellipsis) so a long ledger
+              // sub doesn't truncate mid-thought. Same pattern as Card.tsx.
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 2,
               overflow: 'hidden',
-              textOverflow: 'ellipsis',
+              lineHeight: 1.25,
             }}
           >
             {node.sub}
