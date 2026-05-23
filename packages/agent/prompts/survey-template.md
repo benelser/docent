@@ -45,6 +45,42 @@ cannot trial this themselves — so the triage is the review.
 The change or the system, in two or three sentences. For a PR: why this, why
 now, why this *shape*.
 
+## § 1.5 The premise  *(architecture mode — mandatory)*
+
+What does this system claim about the world? What is its bet? One short
+paragraph. State the claim the system would lose its reason to exist without —
+not what it does, but what it asserts. ("Schedulers should re-decide at
+runtime, not at admission." / "The replica is a file, not a service.")
+
+## § 1.6 The novelty  *(architecture mode — mandatory)*
+
+What does this system do that prior systems don't? Where does it draw a new
+line? **One sentence — the line itself, not the consequences of it.** Not
+"this system is faster" (a consequence) but "this system makes the scheduling
+decision at runtime rather than at admission time" (the line). If the novelty
+cannot be stated as a *line drawn somewhere a prior system did not draw it*,
+the system has no novelty and the film has no argument.
+
+## § 1.7 Prior and similar works  *(architecture mode — mandatory)*
+
+Name **2 to 4 systems** that occupy similar terrain. For each, give:
+
+- **Name** — the real name (no "older systems" or "traditional approaches").
+- **Year or version context** — when it appeared, or the version you are
+  reading against (e.g. "Mesos, 2009"; "Litestream v0.3, 2022").
+- **The dimensional trade-off that distinguishes it from the subject.** Not
+  "X is better" — "X traded the timestamp-correctness for the concurrency."
+  Each system should differ on at least one of the **2-4 trade-off
+  dimensions** you will compare on; pick dimensions that are *choices the
+  field has made differently* (storage layout, when the decision is made,
+  what the unit of replication is), never qualities ("speed", "ease of use").
+- **One of the dimensions is the novelty dimension** — the row the film will
+  argue from, the one carrying § 1.6. Mark it.
+
+The film's Prior Art scene reads directly from this section. A survey that
+lists components without naming a lineage will not author a Prior Art scene;
+a film without a Prior Art scene cannot pass AR validation.
+
 ## 3. Hard parts
 
 - **Failure & partial failure — walk one weird-input and one at-scale case to

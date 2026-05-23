@@ -34,7 +34,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
 2. **Survey** — architecture mode:
 
    ```bash
-   docent survey <repo> --mode ar [--subsystem X] [--id X]
+   bun packages/engine/cli/docent.ts survey <repo> --mode ar [--subsystem X] [--id X]
    ```
 
    The survey lands at `analysis/<id>.md`. When a subsystem is named,
@@ -44,10 +44,20 @@ idioms, the failure modes, the trade-offs, with a verdict.
    it, but a depth-first reading that names the trade-off and the
    failure mode.
 
+   **Before moving on, surface the lineage sections to the user**:
+   - **§ 1.5 The premise** — one paragraph: the bet this system makes
+     about the world.
+   - **§ 1.6 The novelty** — one sentence: the line this system draws
+     somewhere a prior system did not.
+   - **§ 1.7 Prior and similar works** — the 2-4 named, dated systems
+     the film will compare against and the dimension on which each
+     diverges. Confirm with the user that the named lineage is the right
+     lineage *before* moving on — the rest of the cascade reads from it.
+
 3. **Treatment.**
 
    ```bash
-   docent treatment <id>
+   bun packages/engine/cli/docent.ts treatment <id>
    ```
 
    Writes `treatments/<id>.md`. Print the *Angle* line so the user sees
@@ -56,8 +66,8 @@ idioms, the failure modes, the trade-offs, with a verdict.
 4. **Spec — and interrogate it.**
 
    ```bash
-   docent treatment <id> --to-spec
-   docent review <id> --max-rounds 2
+   bun packages/engine/cli/docent.ts treatment <id> --to-spec
+   bun packages/engine/cli/docent.ts review <id> --max-rounds 2
    ```
 
    The first compiles the treatment into `films/<id>.json`. The second
@@ -66,14 +76,27 @@ idioms, the failure modes, the trade-offs, with a verdict.
    lifts a first-draft spec by ~7 points / 30 — the difference between
    an architecture film that passes the depth contract and one that
    does not. Surface the verdict score and the weakest dimension
-   (often `trade-off` or `the-numbers` for AR films) before rendering.
-   If `review` exhausts its round budget, stop and ask — do not ship a
-   film the judge rejected.
+   (often `trade-off`, `the-numbers`, or `novelty-named` /
+   `prior-art-honest` for AR films) before rendering. If `review`
+   exhausts its round budget, stop and ask — do not ship a film the
+   judge rejected.
+
+   **Before rendering, surface the Prior Art table and the novelty
+   dimension to the user.** Open `films/<id>.json`, find the
+   `type: 'prior-art'` scene, and tell the user, in one line:
+
+   > "This film argues that &lt;subject&gt;'s novelty is
+   > **&lt;dimension label&gt;**: &lt;novelty.statement&gt;. The lineage:
+   > &lt;system labels&gt;. Confirm before render."
+
+   Wait for confirmation. A user who pushes back on the novelty
+   dimension is steering the film's spine — do not render past their
+   objection.
 
 5. **Render.**
 
    ```bash
-   docent build <id> --scale 1
+   bun packages/engine/cli/docent.ts build <id> --scale 1
    ```
 
 6. **Open the result** (unless `--no-open`). On macOS: `open out/<id>.mp4`.

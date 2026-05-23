@@ -135,6 +135,40 @@ export type CompareColumn = {id: string; label: string; sub?: string};
 export type CompareCell = {text: string; verdict?: 'win' | 'lose' | 'neutral'};
 export type CompareRow = {id: string; label: string; cells: CompareCell[]};
 
+// prior-art scenes (AR mode) — the subject against 2-4 systems that occupy
+// similar terrain, on 2-4 trade-off dimensions. Each cell marks the system as
+// `same` (same choice) or `diverges` (different trade-off) and pins a one-line
+// claim. `novelty` is the dimension the film argues from — the row that
+// lights up. Dimensional by construction: a cell carries a trade-off claim,
+// never "X is better than Y".
+export type PriorArtSystem = {id: string; label: string; sub?: string; year?: string};
+export type PriorArtDimension = {id: string; label: string};
+export type PriorArtCell = {
+  system: string;     // an id from `systems`
+  dimension: string;  // an id from `dimensions`
+  mark: 'same' | 'diverges';
+  note: string;       // one short claim (≤ 10 words editorial bar)
+};
+export type PriorArtNovelty = {
+  dimension: string;  // the dimension id this scene's novelty rides on
+  statement: string;  // the one-liner — what's new, dimensionally
+};
+
+// big-idea scenes (explainer mode) — the takeaway. The single sentence a
+// viewer should leave with: not a verdict (the recap rules), not a summary,
+// a claim. The contract is rigid: one sentence (≤ 20 words), one held breath,
+// one visual anchor. `kind` picks the anchor's geometry — a `glyph` (a
+// typographic mark, a small symbol), an `equation` fragment (typeset by the
+// engine), an `image` (a public/figures path, like figure scenes), or a
+// `chart-fragment` (a stripped chart shape, a sparkline-style polyline of
+// numeric pairs "x1,y1; x2,y2; ..."). The author picks the anchor; the
+// engine owns the pixels. The narration restates the statement; the visual
+// lets it land.
+export type BigIdeaAnchor = {
+  kind: 'glyph' | 'equation' | 'image' | 'chart-fragment';
+  value: string;
+};
+
 // quantities scenes — magnitudes as figures, or a worked numeric grid.
 export type Figure = {id: string; label: string; value: string; unit?: string; note?: string};
 export type Matrix = {rowLabels: string[]; colLabels: string[]; cells: string[][]};
@@ -245,7 +279,9 @@ export type Scene = {
     | 'demonstrate'
     | 'recap'
     | 'diff'
-    | 'chart';
+    | 'chart'
+    | 'big-idea'
+    | 'prior-art';
   accent: string;
   kicker: string;
   heading?: string;
@@ -275,6 +311,19 @@ export type Scene = {
   // compare
   columns?: CompareColumn[];
   rows?: CompareRow[];
+  // prior-art (AR mode) — 2-4 prior systems × 2-4 trade-off dimensions, one
+  // cell per pair, one named novelty. Validator pins position to immediately
+  // after `frame` and immediately before the first `structure`.
+  systems?: PriorArtSystem[];
+  dimensions?: PriorArtDimension[];
+  cells?: PriorArtCell[];
+  novelty?: PriorArtNovelty;
+  // big-idea (explainer mode) — the single-sentence takeaway. `statement` is
+  // the sentence; `anchor` is the visual that lands it. Validator forbids
+  // more than one big-idea per explainer and pins position to immediately
+  // before the recap.
+  statement?: string;
+  anchor?: BigIdeaAnchor;
   // quantities
   figures?: Figure[];
   matrix?: Matrix;

@@ -48,10 +48,12 @@ export type ReviseLoopOpts = JudgeOpts & {
   maxRounds?: number;
 };
 
-// The depth dimensions the depth-review brief defines — its six numbered
+// The depth dimensions the depth-review brief defines — eight numbered
 // judgement questions. The judge scores each; this list is what the prompt
 // names and what the printed summary expects back. Kept here so the structured
-// verdict has a fixed, checkable shape.
+// verdict has a fixed, checkable shape. Some dimensions are mode-scoped — the
+// brief tells the judge when to mark a dimension n/a (e.g. takeaway-earned for
+// non-explainers, novelty-named/prior-art-honest for non-AR).
 const DEPTH_DIMENSIONS = [
   {id: 'triage', label: 'Triage — finds the load-bearing change, reviews that'},
   {id: 'where-wrong', label: 'Where it could be wrong — weird input + at-scale failure walked'},
@@ -59,6 +61,11 @@ const DEPTH_DIMENSIONS = [
   {id: 'the-numbers', label: 'The numbers — a real quantity, used to reason'},
   {id: 'the-trade-off', label: 'The trade-off — a rejected alternative named, with its cost'},
   {id: 'verdict-adjudicates', label: 'The verdict adjudicates — a disposition, a residual risk'},
+  // Explainer-mode: the Big Idea must be earned by the film, not asserted.
+  {id: 'takeaway-earned', label: 'The takeaway earned — the Big Idea is proven by the film, not asserted'},
+  // AR-mode: the film argues against a lineage. PR films mark these n/a.
+  {id: 'novelty-named', label: 'Novelty named — the film says what is *new*, not what the components are'},
+  {id: 'prior-art-honest', label: 'Prior art honest — prior systems named with version/year, divergence is dimensional'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per

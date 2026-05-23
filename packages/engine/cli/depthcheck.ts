@@ -16,11 +16,17 @@ import {join} from 'node:path';
 import {paths} from './paths';
 
 type Spec = {
-  meta: {prompt?: string};
+  meta: {prompt?: string; id?: string};
   scenes: {
     type: string;
+    statement?: string;
     nodes?: {kind?: string}[];
     beats: {id: string; narration: string}[];
+    // prior-art scene fields — only present on `type: 'prior-art'`.
+    systems?: {id: string; label: string; year?: string}[];
+    dimensions?: {id: string; label: string}[];
+    cells?: {system: string; dimension: string; mark: 'same' | 'diverges'; note: string}[];
+    novelty?: {dimension: string; statement: string};
   }[];
 };
 
@@ -45,6 +51,26 @@ const SCORECARD =
   /\b(fragil|weak|limit|when not to|the cost|caveat|shortcoming|cannot|breaks down|not the right)\b/i;
 
 const isPr = (s: Spec): boolean => /pr|pull request/i.test(s.meta.prompt ?? '');
+const isExplainer = (s: Spec): boolean => /explain/i.test(s.meta.prompt ?? '');
+
+// big-idea contract: ≤ 20 words, ends with a period, no filler opening.
+const BIG_IDEA_FILLER = /^\s*(this is|it is)\b/i;
+const BIG_IDEA_GRANDFATHERED = new Set([
+  'euclid-primes',
+  'linear-algebra',
+  'stopping-by-woods',
+]);
+// AR mode — the hyphenated string the cascade emits and the new AR contract
+// triggers on. A non-PR, non-AR film (an `explainer`) does not get the
+// prior-art depth checks: it is not arguing against a lineage.
+const isAr = (s: Spec): boolean => /^architecture[- ]review$/i.test((s.meta.prompt ?? '').trim());
+
+// Reject evaluative novelty statements — the trap the brief calls out:
+// "X is better than Y" is a fail; "X is a runtime decision, Y was
+// admission-time" is a pass. This pattern looks for the verdict-shaped
+// vocabulary that betrays an evaluation, not a dimensional difference.
+const EVALUATIVE_NOVELTY =
+  /\b(better|worse|best|worst|inferior|superior|stronger|weaker|faster than|slower than|wins?\b|beats?\b|outperforms?|defeats?|the right (choice|answer)|the wrong (choice|answer))\b/i;
 const narrationOf = (scenes: Spec['scenes']): string =>
   scenes.flatMap((sc) => sc.beats).map((b) => b.narration).join('  ');
 
@@ -117,6 +143,80 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
         ? 'the close names a limit or fragility'
         : 'the close reads as unqualified praise',
     });
+
+    // AR-mode-only — the prior-art depth contract. A non-AR explainer is not
+    // arguing against a lineage, so this section is skipped for it. For AR
+    // films the prior-art scene must exist (the structural validator already
+    // caught that), name a real novelty dimension among its own dimensions,
+    // and the novelty statement must be DIMENSIONAL — never evaluative.
+    if (isAr(spec)) {
+      const priorArt = spec.scenes.find((sc) => sc.type === 'prior-art');
+      if (priorArt) {
+        const dimensionIds = (priorArt.dimensions ?? []).map((d) => d.id);
+        const noveltyDim = priorArt.novelty?.dimension;
+        const noveltyInDims =
+          typeof noveltyDim === 'string' && dimensionIds.includes(noveltyDim);
+        findings.push({
+          id: 'novelty-dimension',
+          label:
+            'The novelty rides a real dimension — the row the film argues from is one of its own',
+          status: noveltyInDims ? 'ok' : 'fail',
+          detail: noveltyInDims
+            ? `novelty.dimension "${noveltyDim}" is named in the comparison`
+            : `novelty.dimension "${noveltyDim ?? '(unset)'}" is not among the scene's dimensions [${dimensionIds.join(', ') || '(none)'}]`,
+        });
+        const statement = priorArt.novelty?.statement ?? '';
+        const evaluative = EVALUATIVE_NOVELTY.test(statement);
+        findings.push({
+          id: 'novelty-dimensional',
+          label:
+            'The novelty statement is dimensional, not evaluative — what was traded, not what is "better"',
+          status: statement.trim() && !evaluative ? 'ok' : 'fail',
+          detail: !statement.trim()
+            ? 'novelty.statement is empty'
+            : evaluative
+              ? `novelty reads as evaluative ("better"/"wins"/etc.) — restate as a trade-off: "X is a runtime decision; Y was admission-time"`
+              : 'the statement names a dimensional difference',
+        });
+      }
+    }
+  }
+
+  // big-idea contract — the takeaway sentence the viewer should leave with.
+  // Every NEW explainer ships exactly one. Grandfathered films skip the
+  // check (the brief forbids retrofitting them).
+  if (isExplainer(spec) && !BIG_IDEA_GRANDFATHERED.has(spec.meta.id ?? '')) {
+    const bigIdeas = spec.scenes.filter((sc) => sc.type === 'big-idea');
+    if (bigIdeas.length !== 1) {
+      findings.push({
+        id: 'big-idea-present',
+        label: 'A Big Idea scene — the single takeaway',
+        status: 'fail',
+        detail:
+          bigIdeas.length === 0
+            ? 'no big-idea scene — the takeaway is missing'
+            : `${bigIdeas.length} big-idea scenes — an explainer must include exactly one`,
+      });
+    } else {
+      const statement = (bigIdeas[0].statement ?? '').trim();
+      const words = statement.split(/\s+/).filter(Boolean).length;
+      const endsWithPeriod = /\.$/.test(statement);
+      const filler = BIG_IDEA_FILLER.test(statement);
+      const ok = statement.length > 0 && words <= 20 && endsWithPeriod && !filler;
+      const reasons: string[] = [];
+      if (!statement) reasons.push('statement is empty');
+      if (words > 20) reasons.push(`${words} words (> 20)`);
+      if (!endsWithPeriod) reasons.push('statement does not end with a period');
+      if (filler) reasons.push('statement starts with "This is" / "It is" — a filler opening');
+      findings.push({
+        id: 'big-idea-shape',
+        label: 'Big Idea — one sentence (≤ 20 words), ends with a period, no filler opening',
+        status: ok ? 'ok' : 'fail',
+        detail: ok
+          ? `"${statement}" — ${words} words`
+          : `the big-idea sentence fails the contract: ${reasons.join('; ')}`,
+      });
+    }
   }
 
   return findings;

@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart"]},
+        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -90,6 +90,37 @@
           "type": "array",
           "description": "figure scenes — labelled markers pinned to normalized regions of `image`, activated by beats' reveal/focus",
           "items": {"$ref": "#/$defs/callout"}
+        },
+        "statement": {
+          "type": "string",
+          "description": "big-idea scenes — the single sentence the viewer should leave with. ≤ 20 words, ends with a period, must not start with 'This is' / 'It is' (a filler opening). Enforced by depthcheck."
+        },
+        "anchor": {
+          "$ref": "#/$defs/anchor",
+          "description": "big-idea scenes — the visual that lands the statement (a glyph, an equation fragment, an image, or a chart fragment)"
+        },
+        "systems": {
+          "type": "array",
+          "description": "prior-art scenes — the 2-4 prior systems compared against (columns of the table)",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {"$ref": "#/$defs/prior-art-system"}
+        },
+        "dimensions": {
+          "type": "array",
+          "description": "prior-art scenes — the 2-4 trade-off dimensions compared on (rows of the table)",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {"$ref": "#/$defs/prior-art-dimension"}
+        },
+        "cells": {
+          "type": "array",
+          "description": "prior-art scenes — one cell per (system, dimension) pair; each marks same/diverges with a short claim",
+          "items": {"$ref": "#/$defs/prior-art-cell"}
+        },
+        "novelty": {
+          "$ref": "#/$defs/prior-art-novelty",
+          "description": "prior-art scenes — which dimension carries the novelty, and the one-liner the film argues from"
         },
         "beats": {
           "type": "array",
@@ -337,6 +368,50 @@
         },
         "label": {"type": "string", "description": "the marker's label"},
         "note": {"type": "string", "description": "an optional longer note under the label"}
+      }
+    },
+    "prior-art-system": {
+      "type": "object",
+      "description": "prior-art scenes — one prior system (a column of the comparison table). `year` is optional version/release context (e.g. '2014', 'v3.x'); without it the judge will flag the survey as 'older systems' rather than named ones.",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id"},
+        "label": {"type": "string", "description": "the system's name"},
+        "sub": {"type": "string", "description": "a one-line gloss"},
+        "year": {"type": "string", "description": "version or year context (e.g. '2014', 'v3.x')"}
+      }
+    },
+    "prior-art-dimension": {
+      "type": "object",
+      "description": "prior-art scenes — one trade-off dimension (a row of the comparison table). The label should name a *choice*, not a quality — 'storage layout' not 'speed'.",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; the novelty dimension references this id"},
+        "label": {"type": "string", "description": "the dimension's name — a trade-off the field has made differently"}
+      }
+    },
+    "prior-art-cell": {
+      "type": "object",
+      "description": "prior-art scenes — one (system, dimension) cell. `mark` is `same` (the system makes the same choice as the subject) or `diverges` (a different choice). `note` is a short dimensional claim, ≤ ~10 words; not 'X is better' but 'X traded A for B'.",
+      "required": ["system", "dimension", "mark", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "system": {"type": "string", "description": "a system id from this scene's `systems`"},
+        "dimension": {"type": "string", "description": "a dimension id from this scene's `dimensions`"},
+        "mark": {"enum": ["same", "diverges"]},
+        "note": {"type": "string", "minLength": 1, "description": "the dimensional claim — a trade-off, not a verdict"}
+      }
+    },
+    "prior-art-novelty": {
+      "type": "object",
+      "description": "prior-art scenes — the named novelty: which of this scene's dimensions the film argues from, and the one-line statement of what is new. The statement must be dimensional ('X is a runtime decision, Y was admission-time'), never evaluative ('X is better than Y').",
+      "required": ["dimension", "statement"],
+      "additionalProperties": false,
+      "properties": {
+        "dimension": {"type": "string", "description": "a dimension id from this scene's `dimensions` — the row the film lights up"},
+        "statement": {"type": "string", "minLength": 1, "description": "the one-line novelty: what is new, dimensionally"}
       }
     }
   }

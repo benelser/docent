@@ -144,7 +144,18 @@ const main = async (): Promise<number> => {
         positionals[0] ??
         die('usage: docent survey <subject> [--mode pr|ar|ex] [--subsystem X] [--pr N] [--agent claude] [--id X]');
       const mode = (opt('mode') as 'pr' | 'ar' | 'ex') ?? 'ar';
-      const agent = (opt('agent') as 'claude' | 'codex') ?? 'claude';
+      // Default agent: prefer the host we're running under. Codex sets
+      // CODEX_* env vars; Claude Code sets CLAUDE_* / runs inside a session
+      // tagged via CLAUDECODE. Fall back to whichever is on PATH; final
+      // fallback is claude (the historic default).
+      const detectAgent = (): 'claude' | 'codex' => {
+        if (process.env.CODEX || process.env.CODEX_HOME || process.env.CODEX_SESSION_ID) return 'codex';
+        if (process.env.CLAUDE_CODE || process.env.CLAUDECODE) return 'claude';
+        if (Bun.which('claude')) return 'claude';
+        if (Bun.which('codex')) return 'codex';
+        return 'claude';
+      };
+      const agent = (opt('agent') as 'claude' | 'codex') ?? detectAgent();
       const subsystem = opt('subsystem');
       const pr = opt('pr');
       // A film id slugged from the subject — works for a repo path, a wiki
@@ -164,7 +175,15 @@ const main = async (): Promise<number> => {
       const id =
         positionals[0] ??
         die('usage: docent treatment <id> [--feedback "..."] [--to-spec] [--agent claude]');
-      const agent = (opt('agent') as 'claude' | 'codex') ?? 'claude';
+      // Same auto-detect logic as `survey` — pick the host we're under.
+      const detectTreatmentAgent = (): 'claude' | 'codex' => {
+        if (process.env.CODEX || process.env.CODEX_HOME || process.env.CODEX_SESSION_ID) return 'codex';
+        if (process.env.CLAUDE_CODE || process.env.CLAUDECODE) return 'claude';
+        if (Bun.which('claude')) return 'claude';
+        if (Bun.which('codex')) return 'codex';
+        return 'claude';
+      };
+      const agent = (opt('agent') as 'claude' | 'codex') ?? detectTreatmentAgent();
       return flag('to-spec')
         ? treatmentToSpec({id, agent})
         : authorTreatment({id, agent, subject: opt('subject'), feedback: opt('feedback')});

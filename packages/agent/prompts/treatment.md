@@ -87,6 +87,29 @@ verdict or an honest scorecard. Surface those as ordinary outline items in
 plain language ("Where this design strains", "The numbers behind the claim",
 "The verdict") — the depth bar is editorial too, and the human should see it.
 
+**Architecture-review films carry one fixed early beat: the lineage.** Right
+after the opening, before any part of the system is shown, the film places
+the subject against 2-4 prior systems that occupy similar terrain and names —
+**dimensionally** — what is new. Not "X is better than Y" but "X took this
+trade-off; Y took that one". Carry this as the second outline item — title
+something like "The lineage and the divergence" or "Against the prior art".
+Commit to one *novelty dimension* — the single row of comparison the film
+argues from, the line of difference the rest of the film will pay off. Name
+that dimension explicitly in the outline item's intent ("argues the novelty
+is *when the decision is made* — at runtime, not at admission"). A treatment
+that names prior systems but does not commit to a novelty dimension is not
+yet approved.
+
+**Explainer films carry one fixed late beat: the Big Idea.** The
+next-to-last outline item is always **"The Big Idea — <sentence>"**: one
+sentence (≤ 20 words) the viewer leaves with, written out in the outline so
+the human can edit it. Phrase it as a real claim — not "Anchoring matters"
+but the specific sentence that carries the mechanism. The recap that follows
+formalizes; the Big Idea is the moment the film commits. State it as plainly
+as you would say it aloud — the editor will judge whether the sentence is
+the one the film should land on, and they cannot do that if the takeaway is
+buried in machinery.
+
 **3. Open choices** — one to three *genuine* framing forks, each a real
 decision the human is better placed to make than you are. For each:
 
@@ -129,6 +152,12 @@ re-scoping:
   This is the one place the two contracts meet. Read each treatment item's
   intent and pick the grammar scene type that best realises it:
   - an opening title / framing → `frame`
+  - the single takeaway sentence (explainer mode, immediately before recap)
+    → `big-idea`
+  - **the lineage and what is new (AR only) → `prior-art`** — a side-by-side
+    table of 2-4 prior systems against 2-4 trade-off dimensions, with the
+    *novelty dimension* lighting up. AR films require exactly one, sitting
+    immediately after `frame` and before the first `structure`.
   - components and how they connect → `structure`
   - stages along a path or over time → `progression`
   - a message-passing flow between actors → `walkthrough`

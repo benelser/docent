@@ -68,11 +68,30 @@ const metaOf = (html: string): {title?: string; description?: string} => {
   return {title, description};
 };
 
+// Per-host URL rewrites that prefer a fuller-prose surface than the user's
+// original URL. arXiv's /abs/ page is the abstract stub (~6k chars); the
+// /html/ surface is the full paper text (~40k chars). Without this rewrite,
+// an explainer about an arXiv paper renders a film about the abstract, not
+// the paper itself.
+const rewriteHostUrl = (url: string): string => {
+  // arXiv: /abs/<id> → /html/<id>. The /pdf/ surface exists too but is a
+  // binary; /html/ is the HTML5 rendering of the LaTeX, server-rendered.
+  const arxiv = url.match(/^https?:\/\/(?:www\.)?arxiv\.org\/abs\/([^/?#]+)/i);
+  if (arxiv) return `https://arxiv.org/html/${arxiv[1]}`;
+  return url;
+};
+
 export const fetchSource = async (url: string, dest: string): Promise<FetchResult> => {
+  const fetchUrl = rewriteHostUrl(url);
+  if (fetchUrl !== url) {
+    process.stdout.write(
+      `\x1b[2m   url rewrite: ${url} → ${fetchUrl} (full text surface)\x1b[0m\n`,
+    );
+  }
   let html: string;
-  let finalUrl = url;
+  let finalUrl = fetchUrl;
   try {
-    const res = await fetch(url, {
+    const res = await fetch(fetchUrl, {
       redirect: 'follow',
       headers: {
         // Some hosts serve a stub to unknown agents; present as a real browser.

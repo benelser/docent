@@ -3,8 +3,11 @@
 // is a focused check of the shape the engine actually depends on.
 // schema/film.schema.json is the documented contract this mirrors.
 
-const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart'];
+const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art'];
 const ACCENTS = ['blue', 'cyan', 'green', 'amber', 'rose', 'violet'];
+// big-idea — the closed allowlist of anchor kinds. An anchor outside this list
+// is rejected: the author picks the kind, the engine owns the pixels.
+const BIG_IDEA_ANCHOR_KINDS = ['glyph', 'equation', 'image', 'chart-fragment'];
 
 // chart scenes — the closed allowlist of named functions a `line` series may
 // plot, and the closed set of series kinds. Like the intent knobs above, a
@@ -539,6 +542,189 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       });
     }
 
+    // prior-art — the AR placement scene. 2-4 prior systems (columns), 2-4
+    // trade-off dimensions (rows), one cell per (system, dimension) pair, and
+    // one named novelty. The HARD-FAIL contracts are:
+    //   - orphan cells (cells that reference a missing system or dimension)
+    //   - a system with no `diverges` cell (it isn't prior art, it *is* the
+    //     subject — the table makes no claim against it)
+    //   - novelty.dimension must reference a real dimension id
+    // The AR position contract — that exactly one prior-art scene sits between
+    // frame and the first structure — is enforced at the film level below.
+    if (sc.type === 'prior-art') {
+      // systems
+      const systemIds = new Set<string>();
+      if (!Array.isArray(sc.systems) || sc.systems.length < 2 || sc.systems.length > 4) {
+        issues.push({
+          path: `${at}.systems`,
+          message: 'prior-art requires 2-4 systems (the columns of the comparison)',
+        });
+      } else {
+        sc.systems.forEach((p: Record<string, any>, k: number) => {
+          const pAt = `${at}.systems[${k}]`;
+          if (!p || typeof p !== 'object') {
+            issues.push({path: pAt, message: 'system must be an object {id, label, sub?, year?}'});
+            return;
+          }
+          if (typeof p.id !== 'string' || !p.id.trim()) {
+            issues.push({path: `${pAt}.id`, message: 'missing or empty string'});
+          } else if (systemIds.has(p.id)) {
+            issues.push({path: `${pAt}.id`, message: `duplicate system id "${p.id}"`});
+          } else {
+            systemIds.add(p.id);
+          }
+          if (typeof p.label !== 'string' || !p.label.trim()) {
+            issues.push({path: `${pAt}.label`, message: 'missing or empty string'});
+          }
+          if (p.sub !== undefined && (typeof p.sub !== 'string' || !p.sub.trim())) {
+            issues.push({path: `${pAt}.sub`, message: 'sub must be a non-empty string when present'});
+          }
+          if (p.year !== undefined && (typeof p.year !== 'string' || !p.year.trim())) {
+            issues.push({path: `${pAt}.year`, message: 'year must be a non-empty string when present'});
+          }
+        });
+      }
+      // dimensions
+      const dimensionIds = new Set<string>();
+      if (!Array.isArray(sc.dimensions) || sc.dimensions.length < 2 || sc.dimensions.length > 4) {
+        issues.push({
+          path: `${at}.dimensions`,
+          message: 'prior-art requires 2-4 dimensions (the rows of the comparison)',
+        });
+      } else {
+        sc.dimensions.forEach((d: Record<string, any>, k: number) => {
+          const dAt = `${at}.dimensions[${k}]`;
+          if (!d || typeof d !== 'object') {
+            issues.push({path: dAt, message: 'dimension must be an object {id, label}'});
+            return;
+          }
+          if (typeof d.id !== 'string' || !d.id.trim()) {
+            issues.push({path: `${dAt}.id`, message: 'missing or empty string'});
+          } else if (dimensionIds.has(d.id)) {
+            issues.push({path: `${dAt}.id`, message: `duplicate dimension id "${d.id}"`});
+          } else {
+            dimensionIds.add(d.id);
+          }
+          if (typeof d.label !== 'string' || !d.label.trim()) {
+            issues.push({path: `${dAt}.label`, message: 'missing or empty string'});
+          }
+        });
+      }
+      // cells — every cell must reference a real (system, dimension) pair.
+      const divergesBySystem = new Map<string, number>();
+      if (sc.cells === undefined || !Array.isArray(sc.cells)) {
+        issues.push({path: `${at}.cells`, message: 'prior-art requires a cells array'});
+      } else {
+        sc.cells.forEach((c: Record<string, any>, k: number) => {
+          const cAt = `${at}.cells[${k}]`;
+          if (!c || typeof c !== 'object') {
+            issues.push({path: cAt, message: 'cell must be an object {system, dimension, mark, note}'});
+            return;
+          }
+          if (typeof c.system !== 'string' || !c.system.trim()) {
+            issues.push({path: `${cAt}.system`, message: 'missing or empty system id'});
+          } else if (!systemIds.has(c.system)) {
+            issues.push({
+              path: `${cAt}.system`,
+              message: `orphan cell — system "${c.system}" is not a system in this scene`,
+            });
+          }
+          if (typeof c.dimension !== 'string' || !c.dimension.trim()) {
+            issues.push({path: `${cAt}.dimension`, message: 'missing or empty dimension id'});
+          } else if (!dimensionIds.has(c.dimension)) {
+            issues.push({
+              path: `${cAt}.dimension`,
+              message: `orphan cell — dimension "${c.dimension}" is not a dimension in this scene`,
+            });
+          }
+          if (c.mark !== 'same' && c.mark !== 'diverges') {
+            issues.push({
+              path: `${cAt}.mark`,
+              message: 'mark must be "same" or "diverges"',
+            });
+          }
+          if (typeof c.note !== 'string' || !c.note.trim()) {
+            issues.push({path: `${cAt}.note`, message: 'missing or empty string'});
+          }
+          if (c.mark === 'diverges' && typeof c.system === 'string') {
+            divergesBySystem.set(c.system, (divergesBySystem.get(c.system) ?? 0) + 1);
+          }
+        });
+      }
+      // Every system needs at least one `diverges` cell — a system that's
+      // "same" on every dimension isn't prior art, it's the same system. The
+      // table would make no claim against it.
+      for (const sid of systemIds) {
+        if ((divergesBySystem.get(sid) ?? 0) === 0) {
+          issues.push({
+            path: `${at}.cells`,
+            message: `system "${sid}" has no diverges cell — a prior system that's "same" on every dimension is the same system, not prior art`,
+          });
+        }
+      }
+      // novelty
+      if (!sc.novelty || typeof sc.novelty !== 'object') {
+        issues.push({path: `${at}.novelty`, message: 'prior-art requires a novelty {dimension, statement}'});
+      } else {
+        if (typeof sc.novelty.dimension !== 'string' || !sc.novelty.dimension.trim()) {
+          issues.push({path: `${at}.novelty.dimension`, message: 'missing or empty dimension id'});
+        } else if (!dimensionIds.has(sc.novelty.dimension)) {
+          issues.push({
+            path: `${at}.novelty.dimension`,
+            message: `novelty references dimension "${sc.novelty.dimension}", which is not a dimension in this scene`,
+          });
+        }
+        if (typeof sc.novelty.statement !== 'string' || !sc.novelty.statement.trim()) {
+          issues.push({path: `${at}.novelty.statement`, message: 'missing or empty statement'});
+        }
+      }
+    }
+
+    // big-idea — the takeaway scene. Non-empty statement; optional anchor
+    // with a valid kind. Position/uniqueness enforced film-wide below.
+    if (sc.type === 'big-idea') {
+      if (typeof sc.statement !== 'string' || !sc.statement.trim()) {
+        issues.push({
+          path: `${at}.statement`,
+          message: 'a big-idea scene requires a non-empty statement (the sentence the viewer leaves with)',
+        });
+      }
+      if (sc.anchor !== undefined) {
+        if (!sc.anchor || typeof sc.anchor !== 'object' || Array.isArray(sc.anchor)) {
+          issues.push({path: `${at}.anchor`, message: 'anchor must be an object {kind, value}'});
+        } else {
+          if (!BIG_IDEA_ANCHOR_KINDS.includes(sc.anchor.kind)) {
+            issues.push({
+              path: `${at}.anchor.kind`,
+              message: `not a valid anchor kind — one of: ${BIG_IDEA_ANCHOR_KINDS.join(', ')}`,
+            });
+          }
+          if (typeof sc.anchor.value !== 'string' || !sc.anchor.value.trim()) {
+            issues.push({path: `${at}.anchor.value`, message: 'anchor.value must be a non-empty string'});
+          }
+        }
+      }
+    } else {
+      if (sc.statement !== undefined) {
+        issues.push({path: `${at}.statement`, message: `statement has no meaning for type "${sc.type}" — only big-idea`});
+      }
+      if (sc.anchor !== undefined) {
+        issues.push({path: `${at}.anchor`, message: `anchor has no meaning for type "${sc.type}" — only big-idea`});
+      }
+    }
+
+    // recap — must carry visible body content. Today a recap scene with
+    // empty `points` renders a black void while narration plays (the bug
+    // from the rig film). Enforce: at least 3 points on every recap.
+    if (sc.type === 'recap') {
+      if (!Array.isArray(sc.points) || sc.points.length < 3) {
+        issues.push({
+          path: `${at}.points`,
+          message: 'recap requires at least 3 points (the body the narration speaks to)',
+        });
+      }
+    }
+
     if (!Array.isArray(sc.beats) || sc.beats.length === 0) {
       issues.push({path: `${at}.beats`, message: 'missing or empty beats array'});
       return;
@@ -615,6 +801,116 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       }
     });
   });
+
+  // AR-mode contract — every architecture-review film must carry exactly one
+  // prior-art scene, sitting immediately after the frame and immediately
+  // before the first structure scene. The position is part of the grammar:
+  // the viewer learns what's at stake (frame), then what's been tried
+  // (prior-art), then sees the system itself (structure). A film with no
+  // prior-art is admiring its subject without placing it; two is incoherent.
+  //
+  // The contract triggers on `meta.prompt === 'architecture-review'` — the
+  // hyphenated string the cascade emits in AR mode. Existing gallery films
+  // (which use the legacy "architecture review" string, or no AR mode at all)
+  // are untouched.
+  const promptStr = typeof s.meta?.prompt === 'string' ? s.meta.prompt.trim() : '';
+  if (promptStr === 'architecture-review' && Array.isArray(s.scenes)) {
+    const priorArtIdx: number[] = [];
+    let firstStructureIdx = -1;
+    let firstFrameIdx = -1;
+    s.scenes.forEach((sc: Record<string, any>, i: number) => {
+      if (sc.type === 'prior-art') priorArtIdx.push(i);
+      if (sc.type === 'structure' && firstStructureIdx === -1) firstStructureIdx = i;
+      if (sc.type === 'frame' && firstFrameIdx === -1) firstFrameIdx = i;
+    });
+    if (priorArtIdx.length === 0) {
+      issues.push({
+        path: 'scenes',
+        message:
+          'architecture-review films require a `prior-art` scene — placing the subject against 2-4 prior systems on 2-4 dimensions',
+      });
+    } else if (priorArtIdx.length > 1) {
+      issues.push({
+        path: 'scenes',
+        message: `architecture-review films require exactly one prior-art scene; ${priorArtIdx.length} found (indices ${priorArtIdx.join(', ')})`,
+      });
+    } else {
+      const paIdx = priorArtIdx[0];
+      // Position contract — immediately after frame, immediately before the
+      // first structure. If there is no frame, prior-art must be index 0; if
+      // there is no structure, prior-art must come before every other
+      // non-frame scene type that would normally follow it.
+      if (firstFrameIdx >= 0 && paIdx !== firstFrameIdx + 1) {
+        issues.push({
+          path: `scenes[${paIdx}]`,
+          message: `prior-art must sit immediately after the frame scene (expected index ${firstFrameIdx + 1}, found ${paIdx})`,
+        });
+      }
+      if (firstStructureIdx >= 0 && paIdx >= firstStructureIdx) {
+        issues.push({
+          path: `scenes[${paIdx}]`,
+          message: `prior-art must sit immediately before the first structure scene (structure at index ${firstStructureIdx})`,
+        });
+      }
+      if (firstFrameIdx < 0 && paIdx !== 0) {
+        issues.push({
+          path: `scenes[${paIdx}]`,
+          message: `prior-art must open the film when no frame scene is present (expected index 0, found ${paIdx})`,
+        });
+      }
+    }
+  }
+
+  // big-idea — the explainer contract. Every explainer film MUST carry
+  // exactly one big-idea scene, sitting immediately before the recap
+  // (the recap is the last scene). The takeaway lifts the film off;
+  // the recap formalizes. Less / more / out-of-position → HARD FAIL.
+  //
+  // Grandfather: the pre-Big-Idea gallery was authored before the contract
+  // existed. Retrofitting them is out of scope; they render as-is. Every
+  // NEW explainer must comply.
+  const BIG_IDEA_GRANDFATHERED = new Set([
+    'euclid-primes',
+    'linear-algebra',
+    'stopping-by-woods',
+  ]);
+  const isExplainer =
+    typeof s.meta?.prompt === 'string' && /explain/i.test(s.meta.prompt);
+  const isBigIdeaGrandfathered =
+    typeof s.meta?.id === 'string' && BIG_IDEA_GRANDFATHERED.has(s.meta.id);
+  if (isExplainer && !isBigIdeaGrandfathered && Array.isArray(s.scenes)) {
+    const bigIdeaIdx: number[] = [];
+    s.scenes.forEach((sc: Record<string, any>, i: number) => {
+      if (sc?.type === 'big-idea') bigIdeaIdx.push(i);
+    });
+    if (bigIdeaIdx.length === 0) {
+      issues.push({
+        path: 'scenes',
+        message: 'an explainer film MUST include exactly one big-idea scene (the takeaway)',
+      });
+    } else if (bigIdeaIdx.length > 1) {
+      issues.push({
+        path: 'scenes',
+        message: `an explainer film must include exactly one big-idea scene — found ${bigIdeaIdx.length}`,
+      });
+    } else {
+      const lastIdx = s.scenes.length - 1;
+      const lastScene = s.scenes[lastIdx];
+      const idx = bigIdeaIdx[0];
+      if (lastScene?.type !== 'recap') {
+        issues.push({
+          path: `scenes[${lastIdx}]`,
+          message:
+            'an explainer film must end with a recap; the big-idea sits immediately before it',
+        });
+      } else if (idx !== lastIdx - 1) {
+        issues.push({
+          path: `scenes[${idx}]`,
+          message: `the big-idea must sit immediately before the recap (expected at scenes[${lastIdx - 1}], found at scenes[${idx}])`,
+        });
+      }
+    }
+  }
 
   return issues;
 };

@@ -117,7 +117,43 @@ there is no competing view, the idea was never tested. ("This account beats X
 because Z; it costs W.") A film that presents one idea as the only idea is a
 brochure.
 
-## 7. Verdict inputs — the recap must *rule*, not restate
+## 7. The Big Idea
+
+One sentence the viewer should leave with — the claim that survives if
+everything else is forgotten. Not a verdict, not a summary; a takeaway.
+≤ 20 words. Provide the sentence and one anchor (glyph, equation, image,
+chart fragment) that lands it visually.
+
+The sentence must do real work. It is the line that carries the idea after the
+film ends, so:
+
+- It is a **claim**, not an adjective. "Anchoring is fascinating" is rejected.
+  "The first number rewrites the search itself" is a claim.
+- It carries the **mechanism**, not just the conclusion. The sentence the film
+  earns is the one that names *why*, not only *that*.
+- It must not open with **"This is"** or **"It is"** — those are filler
+  openings explainer authors fall into and they kill the claim. Write the
+  sentence so the first word is load-bearing.
+- It ends with a period. It is a statement.
+
+Pair the sentence with the **anchor** — the visual that lands it. Pick the
+kind that best carries the idea:
+
+- **glyph** — a typographic mark or short symbol (a Greek letter, a single
+  character, a tiny ideogram) when the idea has a memorable shorthand.
+- **equation** — an algebra fragment the engine typesets, when the mechanism
+  is a relation. Not a full derivation; the *fragment* that names the move.
+- **image** — a still under `public/figures/<id>/`, when a primary source or
+  diagram already carries the visual.
+- **chart-fragment** — a sparkline (numeric pairs in normalized 0..1 space)
+  when the idea is the *shape* of a curve — anchoring's pull, a power-law
+  tail, a step function.
+
+Surface the sentence and the anchor here. The treatment writer turns this
+into the named beat in the outline; the spec author surfaces it before
+rendering.
+
+## 8. Verdict inputs — the recap must *rule*, not restate
 
 A non-code film still ends on a stated position, never "this is interesting"
 and never a restatement of its own claims. **Approving labels — "sound",
