@@ -112,16 +112,27 @@ tells you what is missing.
 
 ## The sample films
 
-Three example films exercise the grammar across three domains, all currently
-passing the depth-review judge:
+Three example films exercise the grammar across three domains — math,
+software, and history. All currently pass the depth-review judge.
 
-- **`linear-algebra`** — *the dot product as the keystone operation,
-  restacked.* A close reading of one chapter of an applied-math wiki. **26/30
-  PASS.**
-- **`kubernetes-pr`** — *a PR review of the Kubernetes scheduler heap
-  refactor.* Climbed `18 → 26` through the inner loop. **26/30 PASS.**
-- **`wwi-causes`** — *the causes of WWI, with ranked causal edges and a
-  chalkboard adjudication.* Climbed `18 → 27`. **27/30 PASS.**
+### `linear-algebra` — the dot product as the keystone operation, restacked
+
+A close reading of one chapter of an applied-math wiki. **26/30 PASS.**
+
+![linear-algebra — the recap](docs/stills/linear-algebra-recap.png)
+
+### `kubernetes-pr` — a PR review of the Kubernetes scheduler heap refactor
+
+Climbed `18 → 26` through the inner loop. **26/30 PASS.**
+
+![kubernetes-pr — the verdict adjudicates with named risks](docs/stills/kubernetes-pr-recap.png)
+
+### `wwi-causes` — the causes of WWI, with ranked causal edges
+
+A non-code history film. Climbed `18 → 27`. **27/30 PASS.**
+
+![wwi-causes — braided progression: long-term pressure met one short month](docs/stills/wwi-two-clocks.png)
+![wwi-causes — an honest verdict, structured as a ruling](docs/stills/wwi-recap.png)
 
 Render any of them with `docent build <id>`.
 
