@@ -713,17 +713,64 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       }
     }
 
-    // recap — must carry visible body content. Today a recap scene with
-    // empty `points` renders a black void while narration plays (the bug
-    // from the rig film). Enforce: at least 3 points on every recap.
-    if (sc.type === 'recap') {
-      if (!Array.isArray(sc.points) || sc.points.length < 3) {
-        issues.push({
-          path: `${at}.points`,
-          message: 'recap requires at least 3 points (the body the narration speaks to)',
-        });
-      }
+    // Every scene type carries narration via beats; every scene type must
+    // also carry SOMETHING visible for that narration to land on. A scene
+    // that ships narration with no body renders a void with audio playing
+    // over it — terrible UX, and the validator's job to prevent.
+    const hasN = (n: number | undefined): boolean => typeof n === 'number' && n > 0;
+    const arrLen = (a: unknown): number => (Array.isArray(a) ? a.length : 0);
+    const requiredBody: Record<string, () => string | null> = {
+      // recap — at least 3 ruling points the narration speaks to.
+      recap: () => (arrLen(sc.points) < 3 ? 'recap requires at least 3 points (the body the narration speaks to)' : null),
+      // structure — at least one node. Edges optional.
+      structure: () => (arrLen(sc.nodes) < 1 ? 'structure requires at least 1 node (the diagram body)' : null),
+      // progression — at least one stage on a track.
+      progression: () => (arrLen(sc.stages) < 1 ? 'progression requires at least 1 stage' : null),
+      // compare — at least one column AND one row.
+      compare: () => (arrLen(sc.columns) < 1 || arrLen(sc.rows) < 1 ? 'compare requires at least 1 column and 1 row' : null),
+      // quantities — at least one of figures, matrix cells, or metrics.
+      quantities: () => {
+        const hasFigs = arrLen(sc.figures) >= 1;
+        const hasMatrix = sc.matrix && arrLen((sc.matrix as Record<string, unknown>).cells) >= 1;
+        const hasMetrics = arrLen(sc.metrics) >= 1;
+        return hasFigs || hasMatrix || hasMetrics ? null : 'quantities requires at least one of figures, matrix.cells, or metrics';
+      },
+      // walkthrough — at least 2 actors (a message goes between two).
+      walkthrough: () => (arrLen(sc.actors) < 2 ? 'walkthrough requires at least 2 actors' : null),
+      // probe — at least one variation (the baseline alone is not interrogated).
+      probe: () => (arrLen(sc.variations) < 1 ? 'probe requires at least 1 variation against the baseline' : null),
+      // passage — non-empty text body.
+      passage: () => (typeof sc.text !== 'string' || !sc.text.trim() ? 'passage requires non-empty text' : null),
+      // figure — non-empty image reference.
+      figure: () => (typeof sc.image !== 'string' || !sc.image.trim() ? 'figure requires an image path' : null),
+      // closeup — non-empty code or file reference.
+      closeup: () => (
+        (typeof sc.code !== 'string' || !sc.code.trim()) && (typeof sc.file !== 'string' || !sc.file.trim())
+          ? 'closeup requires either code or file'
+          : null
+      ),
+      // chart — at least one series.
+      chart: () => (arrLen(sc.series) < 1 ? 'chart requires at least 1 series' : null),
+      // tension — at least one node (the ledger items).
+      tension: () => (arrLen(sc.nodes) < 1 ? 'tension requires at least 1 node (chosen/rejected/risk)' : null),
+      // demonstrate — non-empty clip reference.
+      demonstrate: () => (typeof sc.clip !== 'string' || !sc.clip.trim() ? 'demonstrate requires a clip path' : null),
+      // frame — title is the load-bearing visual. Subtitle/footnote optional.
+      frame: () => (typeof sc.title !== 'string' || !sc.title.trim() ? 'frame requires a title' : null),
+      // big-idea — statement is the load-bearing visual. Anchor optional.
+      'big-idea': () => null, // already enforced above (statement required)
+      // prior-art / diff — already enforced by their dedicated checks above.
+      'prior-art': () => null,
+      diff: () => null,
+    };
+    const bodyCheck = requiredBody[sc.type];
+    if (bodyCheck) {
+      const msg = bodyCheck();
+      if (msg) issues.push({path: `${at}`, message: msg});
     }
+    // Use hasN to silence the unused-name warning while keeping the helper
+    // available for future per-beat checks (e.g. reveal references).
+    void hasN;
 
     if (!Array.isArray(sc.beats) || sc.beats.length === 0) {
       issues.push({path: `${at}.beats`, message: 'missing or empty beats array'});
@@ -740,6 +787,38 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       }
       if (typeof b.narration !== 'string' || !b.narration.trim()) {
         issues.push({path: `${bAt}.narration`, message: 'missing narration text'});
+      }
+
+      // First beat of every scene MUST drive a visual change — otherwise the
+      // scene opens with narration playing over a void (the bug the user
+      // saw across multiple films). After the first beat, silent beats are
+      // fine: the scene already has content visible. Scene types that show
+      // their body from frame 1 — passage text, figure image, closeup code,
+      // frame title, diff (before/after code), demonstrate (clip playing) —
+      // don't need a per-beat trigger and are exempt.
+      const ALWAYS_ON = new Set(['passage', 'figure', 'closeup', 'frame', 'diff', 'demonstrate']);
+      if (j === 0 && !ALWAYS_ON.has(sc.type)) {
+        const hasReveal =
+          (Array.isArray(b.reveal) && b.reveal.length > 0) ||
+          (typeof b.reveal === 'number' && b.reveal > 0);
+        const hasFocus = Array.isArray(b.focus) && b.focus.length > 0;
+        const hasShow = typeof b.show === 'string' && b.show.trim().length > 0;
+        const hasPulse = Array.isArray(b.pulse) && b.pulse.length > 0;
+        const hasTransform = Array.isArray(b.transform) && b.transform.length > 0;
+        const hasMessage = b.message && typeof b.message === 'object';
+        const hasSet =
+          b.set && typeof b.set === 'object' && !Array.isArray(b.set) && Object.keys(b.set).length > 0;
+        const hasAnyVisual =
+          hasReveal || hasFocus || hasShow || hasPulse || hasTransform || hasMessage || hasSet;
+        if (!hasAnyVisual) {
+          issues.push({
+            path: bAt,
+            message:
+              'the first beat of a scene must drive a visual change ' +
+              '(reveal | focus | show | pulse | transform | message | set) — ' +
+              'otherwise narration plays over a void',
+          });
+        }
       }
       checkKnob(b, 'pace', bAt, issues);
       checkKnob(b, 'cadence', bAt, issues);
