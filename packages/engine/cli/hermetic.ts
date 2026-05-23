@@ -27,7 +27,13 @@ type Fixture = {
 };
 
 type CaseCheck = {name: string; pass: boolean; detail: string};
-type CaseResult = {id: string; pass: boolean; checks: CaseCheck[]; wallSeconds: number};
+type CaseResult = {
+  id: string;
+  pass: boolean;
+  checks: CaseCheck[];
+  warnings: string[];
+  wallSeconds: number;
+};
 
 const ffprobe = async (
   file: string,
@@ -88,6 +94,7 @@ export const hermetic = async (opts: {
   const results: CaseResult[] = [];
   for (const fx of fixtures) {
     const checks: CaseCheck[] = [];
+    const warnings: string[] = [];
     const t0 = performance.now();
     const specPath = join(paths.films, `${fx.id}.json`);
     let spec: {meta: {width: number; height: number}; scenes: unknown[]} | null = null;
@@ -96,11 +103,21 @@ export const hermetic = async (opts: {
       checks.push({name: 'spec present', pass: false, detail: `films/${fx.id}.json missing`});
     } else {
       spec = await Bun.file(specPath).json();
+      // Mirror cascade.ts — only `severity !== 'warning'` issues are hard
+      // fails. Warnings (e.g. box-overlap on a `nodes` grid that resolveLayout
+      // handles at render time) are surfaced but do NOT block the verdict.
       const issues = validateSpec(spec);
+      const hardFails = issues.filter((i) => i.severity !== 'warning');
+      const softWarns = issues.filter((i) => i.severity === 'warning');
+      for (const w of softWarns) warnings.push(`${w.path || '(root)'}: ${w.message}`);
       checks.push({
         name: 'spec valid',
-        pass: issues.length === 0,
-        detail: issues.length ? `${issues.length} contract issue(s)` : 'passes the contract',
+        pass: hardFails.length === 0,
+        detail: hardFails.length
+          ? `${hardFails.length} contract issue(s)`
+          : softWarns.length
+            ? `passes the contract (${softWarns.length} warning${softWarns.length === 1 ? '' : 's'})`
+            : 'passes the contract',
       });
       checks.push({
         name: 'scene count',
@@ -156,10 +173,16 @@ export const hermetic = async (opts: {
 
     const wallSeconds = (performance.now() - t0) / 1000;
     const pass = checks.every((c) => c.pass);
-    results.push({id: fx.id, pass, checks, wallSeconds});
+    results.push({id: fx.id, pass, checks, warnings, wallSeconds});
 
     console.log(`\x1b[1m${fx.id}\x1b[0m — ${fx.subject}`);
     for (const c of checks) console.log(`  ${c.pass ? C.ok : C.no} ${c.name} — ${c.detail}`);
+    if (warnings.length) {
+      console.log(
+        `  \x1b[33m⚠ ${warnings.length} warning(s)\x1b[0m — resolveLayout handles the visual; non-blocking:`,
+      );
+      for (const w of warnings) console.log(`    \x1b[33m⚠\x1b[0m ${w}`);
+    }
     console.log(
       `  ${pass ? '\x1b[32m✔ pass\x1b[0m' : '\x1b[31m✗ fail\x1b[0m'}  ·  wall ${wallSeconds.toFixed(1)}s\n`,
     );
@@ -180,6 +203,15 @@ export const hermetic = async (opts: {
   if (opts.json) console.log(JSON.stringify(report, null, 2));
 
   const passed = results.filter((r) => r.pass).length;
+  const withWarnings = results.filter((r) => r.warnings.length > 0);
+  if (withWarnings.length) {
+    const total = withWarnings.reduce((n, r) => n + r.warnings.length, 0);
+    console.log(
+      `\x1b[33m⚠ ${total} warning(s) across ${withWarnings.length} fixture(s): ${withWarnings
+        .map((r) => `${r.id} (${r.warnings.length})`)
+        .join(', ')} — non-blocking\x1b[0m`,
+    );
+  }
   console.log(
     allPass
       ? `\x1b[32m✔ hermetic — ${passed}/${results.length} fixtures validated end-to-end\x1b[0m`
