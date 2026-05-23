@@ -11,6 +11,7 @@ export type Box = {cx: number; cy: number; w: number; h: number};
 const NODE_W = 332;
 const NODE_W_WIDE = 516;
 const NODE_H = 132;
+const CELL_GUTTER = 26;  // pixels between adjacent boxes — must be > 0 always
 
 export const nodeSize = (n: Node): {w: number; h: number} => ({
   w: n.wide ? NODE_W_WIDE : NODE_W,
@@ -29,10 +30,27 @@ export const cellCenter = (
   cy: STAGE.y + ((row + 0.5) / rows) * STAGE.h,
 });
 
+// Box geometry with a hard overlap guarantee.
+//
+// The default NODE_W and NODE_W_WIDE constants were chosen for a 3-col grid
+// (cellW ≈ 483). On a tighter grid (4 cols → cellW ≈ 362; 5 cols → ≈ 290), a
+// 332-wide box overlaps its neighbours. NODE_W_WIDE (516) overlaps a 3-col
+// grid even at the original size.
+//
+// Cap the box to the cell's available pixels, minus a gutter. A wide box
+// spans two cells. The renderer (Card.tsx) then auto-fits text inside the
+// resulting (possibly narrower) box.
+const clampedBoxWidth = (n: Node, cols: number): number => {
+  const cellW = STAGE.w / cols;
+  const desired = n.wide ? NODE_W_WIDE : NODE_W;
+  const maxAllowed = (n.wide ? cellW * 2 : cellW) - CELL_GUTTER;
+  return Math.min(desired, Math.max(180, maxAllowed));
+};
+
 export const nodeBox = (n: Node, cols: number, rows: number): Box => {
   const {cx, cy} = cellCenter(n.col, n.row, cols, rows);
-  const {w, h} = nodeSize(n);
-  return {cx, cy, w, h};
+  const w = clampedBoxWidth(n, cols);
+  return {cx, cy, w, h: NODE_H};
 };
 
 // Render-time guarantee: a card can never visually overlap another, even if

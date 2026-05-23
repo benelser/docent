@@ -51,14 +51,19 @@ export const Card: React.FC<{
   const breathe = focus ? 0.5 + 0.5 * Math.sin((frame / fps) * 3.2) : 0;
 
   // Fit text to the card — overflow must be impossible. Reserve room for the
-  // corner tag so a label can never collide with it.
-  const innerW = box.w - 5 - 52 - (tag ? 92 : 0);
-  const fitFont = (text: string, base: number): number => {
-    const est = text.length * base * 0.6; // conservative per-char advance
-    return est <= innerW ? base : Math.max(13, innerW / (text.length * 0.6));
+  // corner tag so a label can never collide with it. A 5-px accent rail on
+  // the left + 26-px padding on each side of the body + an optional 92-px
+  // tag column on the right is the geometry to subtract from `box.w`.
+  const innerW = Math.max(60, box.w - 5 - 52 - (tag ? 92 : 0));
+  // Two-line floor: 11px for very long labels, 10px for very long subs.
+  // Below those, ellipsis kicks in. With both floor + ellipsis the worst
+  // case is "first part of the words…", never "first part of a word cut".
+  const fitFont = (text: string, base: number, floor: number): number => {
+    const est = text.length * base * 0.6;
+    return est <= innerW ? base : Math.max(floor, innerW / (text.length * 0.6));
   };
-  const labelSize = fitFont(label, w === 'hero' ? 30 : 27);
-  const subSize = sub ? fitFont(sub, 15.5) : 15.5;
+  const labelSize = fitFont(label, w === 'hero' ? 30 : 27, 13);
+  const subSize = sub ? fitFont(sub, 15.5, 11) : 15.5;
 
   return (
     <div
@@ -112,6 +117,13 @@ export const Card: React.FC<{
             color: theme.ink.hi,
             letterSpacing: -0.2,
             whiteSpace: 'nowrap',
+            // Belt-and-braces — fitFont already shrinks; this ellipsis is
+            // the last-resort safety net for the case where a label is so
+            // long even the 13-px floor doesn't fit. Cleaner than a hard
+            // mid-word clip.
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: innerW,
           }}
         >
           {label}
@@ -124,6 +136,9 @@ export const Card: React.FC<{
               color: focus ? theme.ink.mid : theme.ink.low,
               letterSpacing: 0.2,
               whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: innerW,
             }}
           >
             {sub}

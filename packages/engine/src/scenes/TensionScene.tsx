@@ -402,8 +402,12 @@ const LedgerCard: React.FC<{
   const innerW = w - 18 /* left rail */ - 26 * 2 /* hpad */ - 110 /* pill */;
   const labelBase = lane === 'risk' ? 28 : 28;
   const subBase = 16;
-  const labelSize = fitFont(node.label, labelBase, innerW);
-  const subSize = node.sub ? fitFont(node.sub, subBase, innerW) : subBase;
+  // Aggressive floor — for monospaced sub lines (e.g. a snippet of code) the
+  // 14-px default leaves room for ~25 chars before truncation. Lowering to
+  // 10 lets ~40 chars fit, which is what "default_max_turns.unwrap_or_default()
+  // — agent body runs forever" needs.
+  const labelSize = fitFont(node.label, labelBase, innerW, 12);
+  const subSize = node.sub ? fitFont(node.sub, subBase, innerW, 10) : subBase;
 
   return (
     <div

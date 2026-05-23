@@ -179,11 +179,20 @@ export const SceneFrame: React.FC<{
         {heading ? (
           <div
             style={{
-              fontSize: 54,
+              // Heading auto-shrinks for long lines so it never escapes the
+              // safe band (left:120 → right:120 = max 1680px). Short
+              // headings keep the full 54px; long ones step down.
+              fontSize:
+                heading.length <= 38 ? 54
+                : heading.length <= 50 ? 46
+                : heading.length <= 64 ? 40
+                : 34,
               fontWeight: 700,
               color: theme.ink.hi,
               marginTop: 14,
               letterSpacing: -0.5,
+              maxWidth: 1680,
+              lineHeight: 1.06,
             }}
           >
             {heading}

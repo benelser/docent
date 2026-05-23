@@ -436,10 +436,23 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                 <div
                   style={{
                     fontFamily: interFamily,
-                    fontSize: 24,
+                    // Auto-shrink to keep the label on one line. The stage
+                    // card is ~360 px wide; at 24 px Inter Bold we get
+                    // about 14 chars on a line. Step down for longer ones
+                    // (e.g. "If ToolCall — fan out").
+                    fontSize:
+                      s.label.length <= 14 ? 24
+                      : s.label.length <= 22 ? 19
+                      : s.label.length <= 30 ? 16
+                      : 14,
                     fontWeight: 600,
                     color: theme.ink.hi,
                     letterSpacing: -0.2,
+                    lineHeight: 1.12,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '100%',
                   }}
                 >
                   {s.label}
@@ -448,8 +461,17 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                   <div
                     style={{
                       fontFamily: monoFamily,
-                      fontSize: 14.5,
+                      // Same idea on the sub line — shrink before wrapping.
+                      fontSize:
+                        s.sub.length <= 28 ? 14.5
+                        : s.sub.length <= 40 ? 12.5
+                        : 11,
                       color: focused ? theme.ink.mid : theme.ink.low,
+                      lineHeight: 1.2,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '100%',
                     }}
                   >
                     {s.sub}
