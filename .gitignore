@@ -48,7 +48,7 @@ __pycache__/
 
 # misc
 .DS_Store
-hermetic/report.json
+tests/report.json
 
 
 # APM dogfood artifacts — the agent package's apm.yml lives in

@@ -62,9 +62,9 @@ export const hermetic = async (opts: {
   scale: number;
   json: boolean;
 }): Promise<number> => {
-  const fixturesPath = join(REPO_ROOT, 'hermetic', 'fixtures.json');
+  const fixturesPath = join(REPO_ROOT, 'tests', 'fixtures.json');
   if (!existsSync(fixturesPath)) {
-    console.error('\x1b[31m✗\x1b[0m hermetic/fixtures.json not found');
+    console.error('\x1b[31m✗\x1b[0m tests/fixtures.json not found');
     return 1;
   }
   let {fixtures} = (await Bun.file(fixturesPath).json()) as {fixtures: Fixture[]};
