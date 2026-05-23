@@ -324,15 +324,29 @@ export const treatmentToSpec = async (o: TreatmentOpts): Promise<number> => {
     return 1;
   }
   const issues = validateSpec(spec);
+  // Mirror cascade.ts / hermetic.ts: severity:'warning' issues (layout
+  // overlap, wide-at-last-col — things resolveLayout handles at render
+  // time) are surfaced but do NOT block the verdict. Only contract-level
+  // errors block. Without this split, the authoring agent loops for
+  // minutes trying to 'fix' a warning that was never a hard fail.
+  const hardFails = issues.filter((i) => i.severity !== 'warning');
+  const softWarns = issues.filter((i) => i.severity === 'warning');
   const ds = depthSummary(runDepthCheck(spec as Parameters<typeof runDepthCheck>[0]));
   console.log(
-    `  schema:  ${issues.length === 0 ? '\x1b[32mvalid\x1b[0m' : `\x1b[31m${issues.length} issue(s)\x1b[0m`}`,
+    `  schema:  ${
+      hardFails.length === 0
+        ? softWarns.length === 0
+          ? '\x1b[32mvalid\x1b[0m'
+          : `\x1b[33mvalid (${softWarns.length} warning${softWarns.length === 1 ? '' : 's'})\x1b[0m`
+        : `\x1b[31m${hardFails.length} issue(s)\x1b[0m`
+    }`,
   );
-  for (const i of issues) console.log(`    \x1b[31m✗\x1b[0m ${i.path || '(root)'}: ${i.message}`);
+  for (const i of hardFails) console.log(`    \x1b[31m✗\x1b[0m ${i.path || '(root)'}: ${i.message}`);
+  for (const w of softWarns) console.log(`    \x1b[33m⚠\x1b[0m ${w.path || '(root)'}: ${w.message}`);
   console.log(
     `  depth:   ${ds.fail === 0 ? `\x1b[32mcontract met ${ds.ok}/${ds.total}\x1b[0m` : `\x1b[31m${ds.fail} fail\x1b[0m`}`,
   );
-  const ok = issues.length === 0 && ds.fail === 0;
+  const ok = hardFails.length === 0 && ds.fail === 0;
   console.log(
     ok
       ? `\x1b[32m✔ treatment authored a valid, depth-clean spec\x1b[0m`
