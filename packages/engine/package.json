@@ -12,6 +12,12 @@
     "studio": "remotion studio src/index.ts"
   },
   "license": "MIT",
+  "homepage": "https://github.com/benelser/docent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benelser/docent.git",
+    "directory": "packages/engine"
+  },
   "dependencies": {
     "@remotion/cli": "^4.0.464",
     "@remotion/google-fonts": "^4.0.464",

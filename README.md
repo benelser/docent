@@ -90,10 +90,20 @@ re-rendered. `docent doctor` verifies every step of the environment.
 
 ## Quickstart
 
+docent ships through [APM](https://github.com/microsoft/apm) — the agent
+layer installs into your coding agent, the engine runs locally.
+
 ```bash
+# 1. Install the docent agent into your coding agent (Claude Code, Codex, …)
+apm install docent-agent
+
+# 2. Set up the local engine (one-time)
+git clone https://github.com/benelser/docent && cd docent
 bun install
 bun packages/engine/cli/docent.ts doctor    # verify the cascade
-bun packages/engine/cli/docent.ts build linear-algebra   # render a sample
+
+# 3. Render a sample film
+bun packages/engine/cli/docent.ts build linear-algebra
 ```
 
 You will need: `bun`, `ffmpeg`, Python with `kokoro` (TTS), and a coding agent

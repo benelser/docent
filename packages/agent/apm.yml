@@ -18,6 +18,17 @@ description: >-
   the docent engine renders.
 author: benelser
 license: MIT
+repository: https://github.com/benelser/docent
+homepage: https://github.com/benelser/docent
+keywords:
+  - docent
+  - explainer
+  - educational-video
+  - code-review
+  - architecture-review
+  - apm
+  - claude-code
+  - codex
 dependencies:
   apm: []
   mcp: []
