@@ -74,11 +74,66 @@ const metaOf = (html: string): {title?: string; description?: string} => {
 // an explainer about an arXiv paper renders a film about the abstract, not
 // the paper itself.
 const rewriteHostUrl = (url: string): string => {
-  // arXiv: /abs/<id> → /html/<id>. The /pdf/ surface exists too but is a
-  // binary; /html/ is the HTML5 rendering of the LaTeX, server-rendered.
+  // arXiv: /abs/<id> → /html/<id>. The /pdf/ surface is handled below by
+  // the PDF code path. /html/ is the HTML5 rendering of the LaTeX, fastest
+  // to parse cleanly.
   const arxiv = url.match(/^https?:\/\/(?:www\.)?arxiv\.org\/abs\/([^/?#]+)/i);
   if (arxiv) return `https://arxiv.org/html/${arxiv[1]}`;
   return url;
+};
+
+// PDF extraction — for sources that are inherently binary (an arXiv /pdf/
+// link, a direct .pdf URL, anything served with application/pdf). Uses
+// `pdftotext` (ships with poppler; doctor's ffmpeg step usually pulls it
+// in transitively, but the check below is honest). On failure the caller
+// gets the same FetchResult shape with a clear empty/degraded signal.
+const isPdfUrl = (url: string): boolean =>
+  /\.pdf(?:$|\?|#)/i.test(url) || /\/arxiv\.org\/pdf\//i.test(url);
+
+const fetchAsPdf = async (
+  url: string,
+  dest: string,
+): Promise<{text: string; title: string; description: string}> => {
+  // Lazy import — `pdftotext` is the actual workhorse; this code path is
+  // skipped entirely for HTML sources.
+  const pdfDest = dest.replace(/\.[^.]+$/, '') + '.pdf';
+  const res = await fetch(url, {
+    redirect: 'follow',
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
+        '(KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+      Accept: 'application/pdf,*/*',
+    },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  const buf = await res.arrayBuffer();
+  await Bun.write(pdfDest, buf);
+  // Convert with pdftotext if present. The flag `-layout` preserves column
+  // structure on academic papers; `-` writes to stdout.
+  if (!Bun.which('pdftotext')) {
+    throw new Error(
+      `pdftotext not on PATH — install poppler (brew install poppler / apt-get install poppler-utils) for PDF sources`,
+    );
+  }
+  const proc = Bun.spawn(['pdftotext', '-layout', pdfDest, '-'], {
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+  const text = await new Response(proc.stdout).text();
+  await proc.exited;
+  if (proc.exitCode !== 0) {
+    const err = await new Response(proc.stderr).text();
+    throw new Error(`pdftotext failed: ${err.slice(0, 200)}`);
+  }
+  // The first non-empty line of the extracted PDF is usually the paper
+  // title. arXiv PDFs in particular put the title on line 1.
+  const firstLine = text.split('\n').map((l) => l.trim()).find((l) => l.length > 5);
+  return {
+    text,
+    title: firstLine ? firstLine.slice(0, 180) : url,
+    description: '',
+  };
 };
 
 export const fetchSource = async (url: string, dest: string): Promise<FetchResult> => {
@@ -88,6 +143,26 @@ export const fetchSource = async (url: string, dest: string): Promise<FetchResul
       `\x1b[2m   url rewrite: ${url} → ${fetchUrl} (full text surface)\x1b[0m\n`,
     );
   }
+
+  // PDF source — handle binary directly, never run it through the HTML
+  // parser. This is what unblocks 'docent explain https://arxiv.org/pdf/<id>'.
+  if (isPdfUrl(fetchUrl)) {
+    process.stdout.write(
+      `\x1b[2m   pdf source — extracting text with pdftotext\x1b[0m\n`,
+    );
+    const {text, title, description} = await fetchAsPdf(fetchUrl, dest);
+    const header = [
+      `# ${title || fetchUrl}`,
+      '',
+      `<!-- source: ${url} -->`,
+      `<!-- fetched: ${new Date().toISOString()} -->`,
+      `<!-- format: pdf -->`,
+      '',
+    ].join('\n');
+    await Bun.write(dest, header + text);
+    return {url: fetchUrl, finalUrl: fetchUrl, title, description, length: text.length};
+  }
+
   let html: string;
   let finalUrl = fetchUrl;
   try {

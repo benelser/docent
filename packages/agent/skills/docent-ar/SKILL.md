@@ -1,6 +1,11 @@
 ---
 name: docent-ar
-description: Render an architecture-review film — a whole system, or one named subsystem, at depth: the components, how control and data flow, the idioms, the failure modes, and the trade-offs. Use when the user says "/docent-ar <repo>", asks to "review the architecture of X", "explain how X works as a film", or hands over a repo URL expecting a system-level explainer film.
+description: |
+  Render an architecture-review film — a whole system, or one named subsystem,
+  at depth (components, how control and data flow, the idioms, the failure
+  modes, and the trade-offs). Use when the user says "/docent-ar <repo>",
+  asks to "review the architecture of X", "explain how X works as a film",
+  or hands over a repo URL expecting a system-level explainer film.
 ---
 
 # docent-ar — the architecture-review film

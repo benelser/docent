@@ -168,7 +168,14 @@ const subjectBlock = (o: SurveyOpts, subject: Subject): string[] => {
 
 const buildPrompt = (o: SurveyOpts, subject: Subject): string => {
   const isEx = o.mode === 'ex';
-  const example = o.mode === 'pr' ? 'films/kubernetes-pr.json' : 'films/kubernetes.json';
+  // Worked-example references — every entry must exist in the current
+  // films/ checkout. `kubernetes.json` was removed in the v2 cleanup; AR
+  // mode pivots to the kitchen-sink grammar-check fixture; explainer mode
+  // points at linear-algebra (one of the gallery).
+  const example =
+    o.mode === 'pr' ? 'films/kubernetes-pr.json'
+    : o.mode === 'ex' ? 'films/linear-algebra.json'
+    : 'films/grammar-check.json';
   const surveyDoc = isEx
     ? 'packages/agent/prompts/survey-explainer.md'
     : 'packages/agent/prompts/survey-template.md';
