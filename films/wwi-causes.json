@@ -563,7 +563,7 @@
       "kicker": "06 // THE TRADE-OFF",
       "heading": "Overdetermination explains the mechanism, at the cost of clean blame",
       "cut": "hold",
-      "treatment": "sketch",
+      "treatment": "whiteboard",
       "grid": {
         "cols": 3,
         "rows": 3
