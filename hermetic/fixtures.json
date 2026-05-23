@@ -1,23 +1,35 @@
 {
-  "description": "Pinned fixtures for the docent hermetic harness. Each entry is a film spec committed under films/. The harness runs the engine cascade end-to-end and asserts the output is a valid video of the expected shape. What is pinned: the spec, the engine, the doctor manifest. What is NOT yet pinned: the survey stage (the agent authors the spec) — that arrives with the docent-agent APM package; until then the harness validates the deterministic half, the cascade.",
+  "description": "Pinned fixtures for the docent hermetic harness. Each entry is a film spec committed under films/. The harness runs the engine cascade end-to-end and asserts the output is a valid video of the expected shape. The five entries are the gallery — every film docent ships with — across the five proven domains (math wiki, software PR, history, math proof, literature). `docent preflight` runs the harness on the smallest fixture as the end-to-end gate; `docent hermetic` (no fixture id) runs the full gallery.",
   "fixtures": [
     {
       "id": "kubernetes-pr",
       "mode": "pr",
       "subject": "Kubernetes PR #139003 — scheduler heap optimization",
-      "expect": {"minScenes": 5, "minSeconds": 120}
+      "expect": {"minScenes": 5, "minSeconds": 60}
     },
     {
-      "id": "kubernetes",
-      "mode": "ar",
-      "subject": "Kubernetes — declarative container orchestration",
-      "expect": {"minScenes": 6, "minSeconds": 180}
+      "id": "linear-algebra",
+      "mode": "ex",
+      "subject": "Linear algebra — the dot product as the keystone operation",
+      "expect": {"minScenes": 5, "minSeconds": 60}
     },
     {
-      "id": "kubernetes-scheduler",
-      "mode": "ar-subsystem",
-      "subject": "Kubernetes — the scheduler subsystem (pkg/scheduler)",
-      "expect": {"minScenes": 6, "minSeconds": 150}
+      "id": "wwi-causes",
+      "mode": "ex",
+      "subject": "Causes of World War I — a July crisis inside a preloaded system",
+      "expect": {"minScenes": 6, "minSeconds": 60}
+    },
+    {
+      "id": "euclid-primes",
+      "mode": "ex",
+      "subject": "Euclid's theorem — infinitely many primes",
+      "expect": {"minScenes": 5, "minSeconds": 60}
+    },
+    {
+      "id": "stopping-by-woods",
+      "mode": "ex",
+      "subject": "Robert Frost — Stopping by Woods on a Snowy Evening, a close reading",
+      "expect": {"minScenes": 6, "minSeconds": 60}
     }
   ]
 }

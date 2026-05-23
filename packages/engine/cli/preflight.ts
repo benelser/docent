@@ -11,7 +11,7 @@
 // verdict aggregates: GREEN (all pass), YELLOW (any warn, no fail), RED (any
 // fail). Exit code 0 for GREEN/YELLOW, 1 for RED.
 
-import {existsSync, readdirSync} from 'node:fs';
+import {existsSync, readdirSync, statSync, unlinkSync} from 'node:fs';
 import {join} from 'node:path';
 import {REPO_ROOT, paths} from './paths';
 import {runChecks} from './doctor';
@@ -19,6 +19,7 @@ import {validateSpec} from './validate';
 import {runDepthCheck, depthSummary} from './depthcheck';
 import * as judgeModule from './judge';
 import {flywheel} from './flywheel';
+import {hermetic} from './hermetic';
 
 // Films that are kitchen-sink test fixtures, not gallery items. They exercise
 // the engine's scene grammar end to end; they are not authored to clear the
@@ -300,7 +301,160 @@ const checkFlywheel = async (): Promise<CheckResult> => {
   }
 };
 
-// --- (5) README ↔ registry hygiene ------------------------------------------
+// --- (5) cascade smoke — every gallery film renders a still -----------------
+
+// Drive Remotion's `still` command per gallery film and confirm a non-empty
+// PNG lands on disk. This is the cheapest possible "the engine can actually
+// render every spec" check: no TTS, no clips, no ffprobe — just bundle the
+// engine, render one frame, write a PNG. Serial on purpose so Remotion's
+// internal bundle cache is reused across films (a parallel run rebuilds the
+// bundle per child and dominates wall time).
+const checkCascadeSmoke = async (): Promise<CheckResult> => {
+  const ids = knownFilmIds().filter((id) => !FIXTURES.has(id));
+  if (ids.length === 0) {
+    return {
+      name: 'cascade smoke',
+      status: 'warn',
+      detail: 'no gallery films to smoke-test',
+    };
+  }
+
+  const perFilm: {id: string; ok: boolean; seconds: number; detail: string}[] = [];
+  const outputs: string[] = [];
+
+  for (const id of ids) {
+    const t0 = performance.now();
+    const output = join(paths.out, `preflight-${id}.png`);
+    outputs.push(output);
+    // Best-effort: drop any stale artifact so a zero-byte file from a previous
+    // failed run cannot mask a fresh failure.
+    try {
+      if (existsSync(output)) unlinkSync(output);
+    } catch {}
+
+    const proc = Bun.spawn(
+      [
+        paths.remotionBin,
+        'still',
+        paths.entry,
+        id,
+        output,
+        '--frame=100',
+        `--public-dir=${paths.publicDir}`,
+      ],
+      {
+        cwd: REPO_ROOT,
+        env: {...process.env, DOCENT_ROOT: REPO_ROOT},
+        stdout: 'pipe',
+        stderr: 'pipe',
+      },
+    );
+    const stderrText = await new Response(proc.stderr).text();
+    await new Response(proc.stdout).text();
+    const exitCode = await proc.exited;
+    const seconds = (performance.now() - t0) / 1000;
+
+    if (exitCode !== 0) {
+      const tail = stderrText.trim().split('\n').slice(-3).join(' ⏎ ').slice(-240);
+      perFilm.push({
+        id,
+        ok: false,
+        seconds,
+        detail: `exit ${exitCode} (${seconds.toFixed(1)}s) — ${tail || 'no stderr'}`,
+      });
+      continue;
+    }
+    if (!existsSync(output)) {
+      perFilm.push({
+        id,
+        ok: false,
+        seconds,
+        detail: `no PNG written (${seconds.toFixed(1)}s)`,
+      });
+      continue;
+    }
+    const size = statSync(output).size;
+    if (size === 0) {
+      perFilm.push({
+        id,
+        ok: false,
+        seconds,
+        detail: `zero-byte PNG (${seconds.toFixed(1)}s)`,
+      });
+      continue;
+    }
+    perFilm.push({
+      id,
+      ok: true,
+      seconds,
+      detail: `${(size / 1024).toFixed(0)}KB · ${seconds.toFixed(1)}s`,
+    });
+  }
+
+  const failed = perFilm.filter((f) => !f.ok);
+  const totalSeconds = perFilm.reduce((acc, f) => acc + f.seconds, 0);
+  const perFilmSummary = perFilm.map((f) => `${f.id} ${f.seconds.toFixed(1)}s`).join(', ');
+
+  if (failed.length > 0) {
+    const firstFail = failed[0];
+    return {
+      name: 'cascade smoke',
+      status: 'fail',
+      detail: `${failed.length}/${ids.length} failed — ${firstFail.id}: ${firstFail.detail}`,
+    };
+  }
+  return {
+    name: 'cascade smoke',
+    status: 'pass',
+    detail: `${ids.length}/${ids.length} stills @ frame 100 in ${totalSeconds.toFixed(1)}s — ${perFilmSummary}`,
+  };
+};
+
+// --- (6) hermetic harness — pinned fixtures render end-to-end ---------------
+
+// Invoke the hermetic harness directly so the cascade actually runs (TTS +
+// clips + render + ffprobe) on the pinned fixtures. Silence its console
+// chatter like checkFlywheel does so the preflight stays a one-line-per-check
+// report. Pinned-fixture wall time is dominated by render; with cached TTS
+// and clips this is the deterministic end-to-end gate.
+const checkHermeticHarness = async (): Promise<CheckResult> => {
+  const origLog = console.log;
+  const origErr = console.error;
+  console.log = () => {};
+  console.error = () => {};
+  const t0 = performance.now();
+  try {
+    // Run hermetic on the smallest gallery fixture as the end-to-end gate.
+    // The cascade smoke (above) covers all gallery films at frame 100; the
+    // full-gallery mp4 validation is `docent hermetic` invoked directly.
+    const code = await hermetic({fixtureId: 'kubernetes-pr', scale: 0.5, json: false});
+    const seconds = (performance.now() - t0) / 1000;
+    if (code === 0) {
+      return {
+        name: 'hermetic harness',
+        status: 'pass',
+        detail: `pinned fixtures render end-to-end in ${seconds.toFixed(1)}s`,
+      };
+    }
+    return {
+      name: 'hermetic harness',
+      status: 'fail',
+      detail: `hermetic exited ${code} after ${seconds.toFixed(1)}s — run: docent hermetic`,
+    };
+  } catch (e) {
+    const seconds = (performance.now() - t0) / 1000;
+    return {
+      name: 'hermetic harness',
+      status: 'fail',
+      detail: `hermetic threw after ${seconds.toFixed(1)}s: ${e instanceof Error ? e.message.split('\n')[0] : String(e)}`,
+    };
+  } finally {
+    console.log = origLog;
+    console.error = origErr;
+  }
+};
+
+// --- (7) README ↔ registry hygiene ------------------------------------------
 
 const readReadmeFilmIds = async (): Promise<string[]> => {
   const readmePath = join(REPO_ROOT, 'README.md');
@@ -402,6 +556,18 @@ export const preflight = async (): Promise<number> => {
   const fly = await checkFlywheel();
   printCheck(fly);
   all.push(fly);
+  console.log('');
+
+  printSection('Cascade smoke — every gallery film renders a still');
+  const smoke = await checkCascadeSmoke();
+  printCheck(smoke);
+  all.push(smoke);
+  console.log('');
+
+  printSection('Hermetic harness — pinned fixtures render end-to-end');
+  const harness = await checkHermeticHarness();
+  printCheck(harness);
+  all.push(harness);
   console.log('');
 
   printSection('Hygiene — README ↔ films registry');
