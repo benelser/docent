@@ -194,8 +194,13 @@ re-scoping:
 and match the worked examples. Read before authoring:
 
 - `packages/engine/schema/film.schema.json` — the structural contract.
-- `films/kubernetes-pr.json` — a worked PR-mode film. Match its format,
-  its scene directives, and its narration voice exactly.
+- `films/linear-algebra.json` — a worked **explainer** film. The default
+  reference for any non-code subject: match its format, its scene
+  directives, its narration voice.
+- `films/euclid-primes.json` — a second worked explainer with a different
+  subject but the same contract — useful when the first feels too topic-specific.
+- `films/kubernetes-pr.json` — a worked **PR-mode** film. Useful for shared
+  JSON idioms, not for explainer framing.
 - `packages/agent/instructions/docent.md` — the review method and depth bar.
 
 Every scene needs `id`, `type`, and a non-empty `beats` array; every beat needs
