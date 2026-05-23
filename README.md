@@ -19,12 +19,26 @@ cycle that grades every film before it ships.
 ```bash
 git clone https://github.com/benelser/docent && cd docent
 bun packages/engine/cli/docent.ts doctor --install --yes
-apm install benelser/docent/packages/agent
+apm install -t claude benelser/docent/packages/agent
 ```
 
 The first command bootstraps the cascade (uv, ffmpeg, Python env,
 Kokoro voice weights, Remotion). The second installs the four mode
-skills into your coding agent (Claude Code, Codex, Cursor).
+skills into your coding agent.
+
+Pick your agent with `-t`:
+
+| Agent | Flag | Skills land at |
+|---|---|---|
+| Claude Code | `-t claude` | `.claude/skills/` |
+| Codex | `-t codex` | `.agents/skills/` |
+| Cursor | `-t cursor` | `.cursor/skills/` |
+| Copilot | `-t copilot` (default) | `.github/skills/` |
+| All of the above | `-t all` | every target |
+
+Without `-t`, APM auto-detects from the cwd (a `.claude/` marker picks
+`claude`, etc.) and falls back to `copilot`. Pass `-t` explicitly to
+avoid the fallback.
 
 > Don't have bun yet? `curl -fsSL https://bun.sh/install | bash`, then
 > re-shell. Everything else is `docent doctor --install --yes`.
