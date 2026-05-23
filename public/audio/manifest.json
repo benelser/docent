@@ -1974,5 +1974,13 @@
   "wwi-causes/wwi-recap-5": {
     "file": "audio/wwi-causes/wwi-recap-5.mp3",
     "seconds": 12.525
+  },
+  "wwi-causes/wwi-july-8": {
+    "file": "audio/wwi-causes/wwi-july-8.mp3",
+    "seconds": 14.45
+  },
+  "kubernetes-pr/verdict-5": {
+    "file": "audio/kubernetes-pr/verdict-5.mp3",
+    "seconds": 29.1
   }
 }
