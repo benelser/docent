@@ -1982,5 +1982,117 @@
   "kubernetes-pr/verdict-5": {
     "file": "audio/kubernetes-pr/verdict-5.mp3",
     "seconds": 29.1
+  },
+  "euclid-primes/euclid-frame-1": {
+    "file": "audio/euclid-primes/euclid-frame-1.mp3",
+    "seconds": 11.15
+  },
+  "euclid-primes/euclid-frame-2": {
+    "file": "audio/euclid-primes/euclid-frame-2.mp3",
+    "seconds": 9.85
+  },
+  "euclid-primes/euclid-frame-3": {
+    "file": "audio/euclid-primes/euclid-frame-3.mp3",
+    "seconds": 9.6
+  },
+  "euclid-primes/euclid-escape-1": {
+    "file": "audio/euclid-primes/euclid-escape-1.mp3",
+    "seconds": 10.95
+  },
+  "euclid-primes/euclid-escape-2": {
+    "file": "audio/euclid-primes/euclid-escape-2.mp3",
+    "seconds": 11.8
+  },
+  "euclid-primes/euclid-escape-3": {
+    "file": "audio/euclid-primes/euclid-escape-3.mp3",
+    "seconds": 11.425
+  },
+  "euclid-primes/euclid-escape-4": {
+    "file": "audio/euclid-primes/euclid-escape-4.mp3",
+    "seconds": 7.275
+  },
+  "euclid-primes/euclid-cases-1": {
+    "file": "audio/euclid-primes/euclid-cases-1.mp3",
+    "seconds": 3.6
+  },
+  "euclid-primes/euclid-cases-2": {
+    "file": "audio/euclid-primes/euclid-cases-2.mp3",
+    "seconds": 4.125
+  },
+  "euclid-primes/euclid-cases-3": {
+    "file": "audio/euclid-primes/euclid-cases-3.mp3",
+    "seconds": 5.7
+  },
+  "euclid-primes/euclid-cases-4": {
+    "file": "audio/euclid-primes/euclid-cases-4.mp3",
+    "seconds": 5.45
+  },
+  "euclid-primes/euclid-cases-5": {
+    "file": "audio/euclid-primes/euclid-cases-5.mp3",
+    "seconds": 7.55
+  },
+  "euclid-primes/euclid-cases-6": {
+    "file": "audio/euclid-primes/euclid-cases-6.mp3",
+    "seconds": 5.65
+  },
+  "euclid-primes/euclid-misread-1": {
+    "file": "audio/euclid-primes/euclid-misread-1.mp3",
+    "seconds": 7.325
+  },
+  "euclid-primes/euclid-misread-2": {
+    "file": "audio/euclid-primes/euclid-misread-2.mp3",
+    "seconds": 10.675
+  },
+  "euclid-primes/euclid-misread-3": {
+    "file": "audio/euclid-primes/euclid-misread-3.mp3",
+    "seconds": 7.9
+  },
+  "euclid-primes/euclid-scale-1": {
+    "file": "audio/euclid-primes/euclid-scale-1.mp3",
+    "seconds": 10.0
+  },
+  "euclid-primes/euclid-scale-2": {
+    "file": "audio/euclid-primes/euclid-scale-2.mp3",
+    "seconds": 8.325
+  },
+  "euclid-primes/euclid-scale-3": {
+    "file": "audio/euclid-primes/euclid-scale-3.mp3",
+    "seconds": 11.175
+  },
+  "euclid-primes/euclid-scale-4": {
+    "file": "audio/euclid-primes/euclid-scale-4.mp3",
+    "seconds": 11.875
+  },
+  "euclid-primes/euclid-tension-1": {
+    "file": "audio/euclid-primes/euclid-tension-1.mp3",
+    "seconds": 11.0
+  },
+  "euclid-primes/euclid-tension-2": {
+    "file": "audio/euclid-primes/euclid-tension-2.mp3",
+    "seconds": 11.9
+  },
+  "euclid-primes/euclid-tension-3": {
+    "file": "audio/euclid-primes/euclid-tension-3.mp3",
+    "seconds": 14.1
+  },
+  "euclid-primes/euclid-recap-1": {
+    "file": "audio/euclid-primes/euclid-recap-1.mp3",
+    "seconds": 8.075
+  },
+  "euclid-primes/euclid-recap-2": {
+    "file": "audio/euclid-primes/euclid-recap-2.mp3",
+    "seconds": 10.25
+  },
+  "euclid-primes/euclid-recap-3": {
+    "file": "audio/euclid-primes/euclid-recap-3.mp3",
+    "seconds": 9.75
+  },
+  "euclid-primes/euclid-recap-4": {
+    "file": "audio/euclid-primes/euclid-recap-4.mp3",
+    "seconds": 8.325
+  },
+  "euclid-primes/euclid-recap-5": {
+    "file": "audio/euclid-primes/euclid-recap-5.mp3",
+    "seconds": 10.625
   }
 }
