@@ -1,6 +1,7 @@
 # dependencies
 node_modules/
 .venv/
+.claude/
 
 # build artifacts
 out/
@@ -10,11 +11,41 @@ public/clips/
 .remotion/
 .manim-cache/
 
+# local dev work — never committed
+archive/
+dogfood/
+reviews/
+treatments/
+manim/
+*.log
+
+# survey scratch — gallery surveys are tracked; experiments stay local
+analysis/bun*.md
+analysis/codex.md
+analysis/kubernetes.md
+analysis/nono*.md
+analysis/rig*.md
+analysis/vector*.md
+analysis/extenddb*.md
+analysis/lethal-trifecta*.md
+analysis/depth-review-*.md
+
 # python
 __pycache__/
 *.pyc
 
 # misc
 .DS_Store
-archive/v1/media/
 hermetic/report.json
+
+
+# APM dogfood artifacts — the agent package's apm.yml lives in
+# packages/agent/. The root apm.yml/apm.lock.yaml/apm_modules/ are created
+# when we install the agent INTO this repo for dogfooding. They are not
+# part of the package itself.
+/apm.yml
+/apm.lock.yaml
+apm_modules/
+
+# we use bun, not npm — keep the dead lockfile from coming back
+package-lock.json
