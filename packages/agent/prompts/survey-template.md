@@ -62,8 +62,13 @@ now, why this *shape*.
   vs sequential; which inputs *cannot* be back-pressured.
 - **State & invariants** — every piece of mutable/persistent state, what
   invariant must hold, what invalidates it.
-- **At least one real number** — Big-O on the hot path, a latency, a hard cap,
-  quorum math. A review without a number is a brochure.
+- **At least one real number, and every number does work** — Big-O on the hot
+  path, a latency, a hard cap, quorum math, a benchmark gap. State, for each
+  number you will use, the *claim it pressures* or the *mechanism it carries*.
+  A number that only decorates (an impressive total cited as atmosphere, a
+  count repeated from the source without a load-bearing role) is rejected. A
+  review without a number is a brochure; a review where the numbers only set
+  the mood is a slide deck.
 
 ## 4. The alternative not taken
 

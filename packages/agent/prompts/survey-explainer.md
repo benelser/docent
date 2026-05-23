@@ -93,6 +93,13 @@ locates it in the source. The survey records the anchor, and the spec must
 carry it through into the narration. A claim with no named anchor is treated
 as unearned.
 
+**Numbers must do reasoning work.** If you put a quantity on screen — a count,
+a magnitude, a percent, a ratio — state the *claim it pressures* or the
+*mechanism it carries*. A number cited for atmosphere (an impressive
+source-count repeated without a load-bearing role, a tonnage that sets mood
+rather than testing the claim) is rejected. Decorative numbers belong on a
+slide deck, not in a docent film.
+
 ## 5. The scope of the claim — where the idea does not apply
 
 Every real idea has a boundary. Name at least one place the idea **does not
