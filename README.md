@@ -16,15 +16,23 @@ cycle that grades every film before it ships.
 
 ## Install
 
+One command:
+
 ```bash
-git clone https://github.com/benelser/docent && cd docent
-bun packages/engine/cli/docent.ts doctor --install --yes
 apm install -t claude benelser/docent/packages/agent
 ```
 
-The first command bootstraps the cascade (uv, ffmpeg, Python env,
-Kokoro voice weights, Remotion). The second installs the four mode
-skills into your coding agent.
+Then, inside Claude Code (or Codex / Cursor):
+
+```
+/docent-doctor
+```
+
+The first `/docent-doctor` invocation is the bootstrap. It clones the
+engine into `~/.local/share/docent/engine`, installs every cascade
+dependency (uv, ffmpeg, Python env, Kokoro voice weights, Remotion),
+and puts the `docent` CLI on your PATH. Subsequent invocations just
+re-verify and repair.
 
 Pick your agent with `-t`:
 
@@ -36,12 +44,9 @@ Pick your agent with `-t`:
 | Copilot | `-t copilot` (default) | `.github/skills/` |
 | All of the above | `-t all` | every target |
 
-Without `-t`, APM auto-detects from the cwd (a `.claude/` marker picks
-`claude`, etc.) and falls back to `copilot`. Pass `-t` explicitly to
-avoid the fallback.
-
-> Don't have bun yet? `curl -fsSL https://bun.sh/install | bash`, then
-> re-shell. Everything else is `docent doctor --install --yes`.
+> docent needs `bun` (the runtime that runs the bootstrap itself).
+> If you don't have it: `curl -fsSL https://bun.sh/install | bash`,
+> then `exec $SHELL -l`. Everything else `/docent-doctor` handles.
 
 ## Use
 
