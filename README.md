@@ -112,8 +112,8 @@ tells you what is missing.
 
 ## The sample films
 
-Three example films exercise the grammar across three domains — math,
-software, and history. All currently pass the depth-review judge.
+Five example films exercise the grammar across five domains — math, software,
+history, math proof, and literature. **All pass the depth-review judge.**
 
 ### `linear-algebra` — the dot product as the keystone operation, restacked
 
@@ -134,12 +134,28 @@ A non-code history film. Climbed `18 → 27`. **27/30 PASS.**
 ![wwi-causes — braided progression: long-term pressure met one short month](docs/stills/wwi-two-clocks.png)
 ![wwi-causes — an honest verdict, structured as a ruling](docs/stills/wwi-recap.png)
 
+### `euclid-primes` — Euclid's proof, infinitely many primes
+
+A short deductive proof, the engine's `entails` edges and `equation` nodes
+exercised on a real subject. Climbed `20 → 23` through the inner loop. **23/30 PASS.**
+
+![euclid-primes — the proof's deductive chain](docs/stills/euclid-primes-structure.png)
+
+### `stopping-by-woods` — a close reading of Robert Frost
+
+The poem annotated by phrase, the critical-reception debate adjudicated. The
+first film authored fresh under all four outer-loop distillations. **27/30 PASS, first try.**
+
+![stopping-by-woods — the hinge is written into the poem](docs/stills/stopping-by-woods-passage.png)
+
 Render any of them with `docent build <id>`.
 
 ## Status
 
-Engineering: feature-complete and verified. Quality cycle: operational, with
-a three-film corpus all passing the judge.
+Engineering: feature-complete. Quality cycle: operational, with a **5/5 PASS
+corpus across 5 domains**. The brief has raised its own floor four times via
+the outer-loop distillation; the inner loop iterates failing films to PASS;
+the flywheel surfaces recurring weaknesses across the corpus.
 
-Pre-launch. Repo private until ready; both packages currently marked
-`"private": true`. License: MIT (see `LICENSE`).
+License: MIT (see `LICENSE`). Distribution: [APM](https://github.com/microsoft/apm)
+only — the agent layer installs into your coding agent; the engine runs locally.
