@@ -7,19 +7,15 @@
 import type {FilmSpec} from './spec';
 
 import euclidPrimes from '../../../../films/euclid-primes.json';
-import extenddb from '../../../../films/extenddb.json';
 import grammarCheck from '../../../../films/grammar-check.json';
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
-import lethalTrifecta from '../../../../films/lethal-trifecta.json';
 import linearAlgebra from '../../../../films/linear-algebra.json';
 import stoppingByWoods from '../../../../films/stopping-by-woods.json';
 
 export const FILMS: Record<string, FilmSpec> = {
   'euclid-primes': euclidPrimes as FilmSpec,
-  'extenddb': extenddb as FilmSpec,
   'grammar-check': grammarCheck as FilmSpec,
   'kubernetes-pr': kubernetesPr as FilmSpec,
-  'lethal-trifecta': lethalTrifecta as FilmSpec,
   'linear-algebra': linearAlgebra as FilmSpec,
   'stopping-by-woods': stoppingByWoods as FilmSpec,
 };
