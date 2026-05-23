@@ -16,7 +16,7 @@ would break.
    workspace script), run:
 
    ```bash
-   bun packages/engine/cli/docent.ts doctor
+   docent doctor
    ```
 
    If a `docent` binary is on PATH, `docent doctor` works too. Prefer the

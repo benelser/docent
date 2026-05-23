@@ -32,7 +32,7 @@ core before → after, what ripples, what could break, and a verdict.
 2. **Survey** — PR mode:
 
    ```bash
-   bun packages/engine/cli/docent.ts survey <repo> --mode pr --pr <n> [--id X]
+   docent survey <repo> --mode pr --pr <n> [--id X]
    ```
 
    The survey lands at `analysis/<id>.md`. Surface the path and the
@@ -44,7 +44,7 @@ core before → after, what ripples, what could break, and a verdict.
 3. **Treatment.**
 
    ```bash
-   bun packages/engine/cli/docent.ts treatment <id>
+   docent treatment <id>
    ```
 
    Writes `treatments/<id>.md`. Print the *Angle* line so the user sees
@@ -53,8 +53,8 @@ core before → after, what ripples, what could break, and a verdict.
 4. **Spec — and interrogate it.**
 
    ```bash
-   bun packages/engine/cli/docent.ts treatment <id> --to-spec
-   bun packages/engine/cli/docent.ts review <id> --max-rounds 2
+   docent treatment <id> --to-spec
+   docent review <id> --max-rounds 2
    ```
 
    The first compiles the treatment into `films/<id>.json`. The second is
@@ -69,7 +69,7 @@ core before → after, what ripples, what could break, and a verdict.
 5. **Render.**
 
    ```bash
-   bun packages/engine/cli/docent.ts build <id> --scale 1
+   docent build <id> --scale 1
    ```
 
 6. **Open the result** (unless `--no-open`). On macOS: `open out/<id>.mp4`.

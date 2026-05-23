@@ -34,7 +34,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
 2. **Survey** — architecture mode:
 
    ```bash
-   bun packages/engine/cli/docent.ts survey <repo> --mode ar [--subsystem X] [--id X]
+   docent survey <repo> --mode ar [--subsystem X] [--id X]
    ```
 
    The survey lands at `analysis/<id>.md`. When a subsystem is named,
@@ -47,7 +47,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
 3. **Treatment.**
 
    ```bash
-   bun packages/engine/cli/docent.ts treatment <id>
+   docent treatment <id>
    ```
 
    Writes `treatments/<id>.md`. Print the *Angle* line so the user sees
@@ -56,8 +56,8 @@ idioms, the failure modes, the trade-offs, with a verdict.
 4. **Spec — and interrogate it.**
 
    ```bash
-   bun packages/engine/cli/docent.ts treatment <id> --to-spec
-   bun packages/engine/cli/docent.ts review <id> --max-rounds 2
+   docent treatment <id> --to-spec
+   docent review <id> --max-rounds 2
    ```
 
    The first compiles the treatment into `films/<id>.json`. The second
@@ -73,7 +73,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
 5. **Render.**
 
    ```bash
-   bun packages/engine/cli/docent.ts build <id> --scale 1
+   docent build <id> --scale 1
    ```
 
 6. **Open the result** (unless `--no-open`). On macOS: `open out/<id>.mp4`.

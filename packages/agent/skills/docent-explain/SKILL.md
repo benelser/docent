@@ -34,7 +34,7 @@ those only when the user explicitly wants to pause between stages.
 2. **Survey.**
 
    ```bash
-   bun packages/engine/cli/docent.ts survey <subject> --mode <pr|ar|ex> [--subsystem X] [--pr N] [--id X]
+   docent survey <subject> --mode <pr|ar|ex> [--subsystem X] [--pr N] [--id X]
    ```
 
    Read the brief and the survey template first (linked in the
@@ -44,7 +44,7 @@ those only when the user explicitly wants to pause between stages.
 3. **Treatment.**
 
    ```bash
-   bun packages/engine/cli/docent.ts treatment <id>
+   docent treatment <id>
    ```
 
    This writes a plain-language outline to `treatments/<id>.md` — the
@@ -55,8 +55,8 @@ those only when the user explicitly wants to pause between stages.
 4. **Spec — and interrogate it.**
 
    ```bash
-   bun packages/engine/cli/docent.ts treatment <id> --to-spec
-   bun packages/engine/cli/docent.ts review <id> --max-rounds 2
+   docent treatment <id> --to-spec
+   docent review <id> --max-rounds 2
    ```
 
    The first compiles the treatment into `films/<id>.json`. The second is
@@ -72,7 +72,7 @@ those only when the user explicitly wants to pause between stages.
 5. **Render.**
 
    ```bash
-   bun packages/engine/cli/docent.ts build <id> --scale 1
+   docent build <id> --scale 1
    ```
 
    Print the resulting `🎬 out/<id>.mp4` line verbatim.
