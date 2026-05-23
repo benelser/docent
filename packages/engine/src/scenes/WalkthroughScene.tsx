@@ -182,13 +182,37 @@ export const WalkthroughScene: React.FC<SceneProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               gap: 4,
+              overflow: 'hidden',
+              padding: '8px 12px',
+              boxSizing: 'border-box',
             }}
           >
-            <div style={{fontFamily: interFamily, fontSize: 22, fontWeight: 600, color: theme.ink.hi}}>
+            <div
+              style={{
+                fontFamily: interFamily,
+                fontSize:
+                  a.label.length <= 14 ? 22 : a.label.length <= 20 ? 18 : 15,
+                fontWeight: 600,
+                color: theme.ink.hi,
+                textAlign: 'center',
+                lineHeight: 1.1,
+                maxWidth: '100%',
+              }}
+            >
               {a.label}
             </div>
             {a.sub ? (
-              <div style={{fontFamily: monoFamily, fontSize: 13, color: theme.ink.low}}>
+              <div
+                style={{
+                  fontFamily: monoFamily,
+                  fontSize:
+                    a.sub.length <= 24 ? 13 : a.sub.length <= 34 ? 11 : 10,
+                  color: theme.ink.low,
+                  textAlign: 'center',
+                  lineHeight: 1.2,
+                  maxWidth: '100%',
+                }}
+              >
                 {a.sub}
               </div>
             ) : null}

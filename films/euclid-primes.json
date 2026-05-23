@@ -45,7 +45,7 @@
       "kicker": "01 // THE MOVE",
       "heading": "No finite list stays closed",
       "grid": {
-        "cols": 3,
+        "cols": 4,
         "rows": 3
       },
       "nodes": [
@@ -110,7 +110,7 @@
           "id": "outside",
           "label": "Prime outside the list",
           "sub": "either q itself or a factor of q",
-          "col": 1,
+          "col": 0,
           "row": 2,
           "accent": "rose",
           "weight": "hero",

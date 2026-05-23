@@ -7,7 +7,7 @@ import {Connector, type EdgeState} from '../components/Connector';
 import {Pulse} from '../components/Pulse';
 import {Narration} from '../components/Narration';
 import {NodeRepresentation} from '../components/NodeRepr';
-import {nodeBox, type Box} from '../engine/layout';
+import {nodeBox, resolveLayout, type Box} from '../engine/layout';
 import {resolveCamera} from '../engine/camera';
 import {
   activeBeatIndex,
@@ -47,7 +47,10 @@ export const StructureScene: React.FC<SceneProps> = ({
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const cols = scene.grid?.cols ?? 3;
   const rows = scene.grid?.rows ?? 3;
-  const nodes = scene.nodes ?? [];
+  // Resolve any wide-flag collisions before computing boxes — the layout-level
+  // belt that ensures a card cannot visually overlap another, even if the spec
+  // is bad. validate.ts is the suspenders; this is the belt.
+  const nodes = resolveLayout(scene.nodes ?? [], cols);
   const edges = scene.edges ?? [];
 
   const boxes: Record<string, Box> = {};

@@ -185,6 +185,41 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       });
     }
 
+    // Box-overlap guarantee — a card MUST never sit on top of another. Each
+    // node's occupied cells are (col, row) plus (col+1, row) if wide; two
+    // nodes sharing a cell, or a cell poking outside the grid, is rejected.
+    // The engine cannot recover from a static-render collision; the validator
+    // must catch it before the cascade ever runs.
+    if (Array.isArray(sc.nodes) && sc.nodes.length > 0) {
+      const gCols = (sc.grid?.cols as number | undefined) ?? 3;
+      const gRows = (sc.grid?.rows as number | undefined) ?? 3;
+      const occupied = new Map<string, string>();
+      sc.nodes.forEach((n: Record<string, any>, k: number) => {
+        if (typeof n.col !== 'number' || typeof n.row !== 'number') return;
+        const cells: [number, number][] = [[n.col, n.row]];
+        if (n.wide === true) cells.push([n.col + 1, n.row]);
+        for (const [c, r] of cells) {
+          if (c < 0 || c >= gCols || r < 0 || r >= gRows) {
+            issues.push({
+              path: `${at}.nodes[${k}]`,
+              message: `cell (col=${c}, row=${r}) is outside the ${gCols}×${gRows} grid`,
+            });
+            continue;
+          }
+          const key = `${c},${r}`;
+          const prior = occupied.get(key);
+          if (prior !== undefined && prior !== n.id) {
+            issues.push({
+              path: `${at}.nodes[${k}]`,
+              message: `box overlap — "${n.id}" and "${prior}" both occupy cell (col=${c}, row=${r})`,
+            });
+          } else {
+            occupied.set(key, n.id);
+          }
+        }
+      });
+    }
+
     // edges — the lines of a structure diagram. `kind` types what the line
     // asserts (`relation`/`feedback`/`entails`/`causes`); `strength` qualifies
     // a causal claim's weight. Both are closed enums. `strength` only has

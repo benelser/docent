@@ -35,6 +35,35 @@ export const nodeBox = (n: Node, cols: number, rows: number): Box => {
   return {cx, cy, w, h};
 };
 
+// Render-time guarantee: a card can never visually overlap another, even if
+// the spec's `wide` flag would put two cards on the same cell, or push one
+// outside the grid. A wide node spans (col, row) + (col+1, row); if (col+1)
+// is held by another node OR is outside the grid, drop wide on this node. The
+// validator (cli/validate.ts) rejects the bad spec; this is the additional
+// belt-and-braces so a bad film still cannot render with overlapping boxes.
+export const resolveLayout = (
+  nodes: Node[],
+  cols: number,
+): Node[] => {
+  // Each node claims its primary cell (col, row); a wide one *requests* the
+  // next cell over, but yields if the request collides or escapes the grid.
+  const owners = new Map<string, string>();
+  for (const n of nodes) {
+    if (typeof n.col === 'number' && typeof n.row === 'number') {
+      owners.set(`${n.col},${n.row}`, n.id);
+    }
+  }
+  return nodes.map((n) => {
+    if (!n.wide) return n;
+    const nextCol = (n.col ?? 0) + 1;
+    const collision = owners.get(`${nextCol},${n.row}`);
+    if (nextCol >= cols || (collision !== undefined && collision !== n.id)) {
+      return {...n, wide: false};
+    }
+    return n;
+  });
+};
+
 // Point where the ray from a box centre toward (tx,ty) exits the box edge.
 // Unlike snapping to a corner, this lands on the true edge — so stacked boxes
 // connect at their face midpoints.
