@@ -125,20 +125,36 @@ export const FrameScene: React.FC<SceneProps> = ({
           {scene.tagline}
         </div>
 
-        {/* footnote */}
-        <div
-          style={{
-            fontFamily: monoFamily,
-            fontSize: 23,
-            color: theme.ink.low,
-            opacity: footA,
-            transform: `translateY(${(1 - footA) * 12}px)`,
-            marginTop: 70,
-            letterSpacing: 1,
-          }}
-        >
-          {scene.footnote}
-        </div>
+        {/* footnote — auto-shrink + maxWidth so a long footnote never bleeds
+            past the safe band. Same belt-and-braces shape as the heading in
+            SceneFrame.tsx: tier fontSize by length, cap width, centre. */}
+        {(() => {
+          const text = scene.footnote ?? '';
+          const fs = text.length <= 80 ? 23
+                   : text.length <= 130 ? 19
+                   : text.length <= 180 ? 16
+                   : 14;
+          return (
+            <div
+              style={{
+                fontFamily: monoFamily,
+                fontSize: fs,
+                color: theme.ink.low,
+                opacity: footA,
+                transform: `translateY(${(1 - footA) * 12}px)`,
+                marginTop: 70,
+                letterSpacing: 1,
+                maxWidth: 1480,
+                textAlign: 'center',
+                lineHeight: 1.4,
+                padding: '0 16px',
+                alignSelf: 'center',
+              }}
+            >
+              {text}
+            </div>
+          );
+        })()}
       </AbsoluteFill>
       <Narration beats={ts.beats} />
     </SceneFrame>
