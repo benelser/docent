@@ -117,3 +117,30 @@ Required by cascade stage:
 Optional (warnings, not failures): `gh-auth` (interactive — `docent
 ar` and the PR poster need it eventually), `manim` (only films with
 a `manim/<id>` directory use it).
+
+## Codex-specific install behaviors (worth flagging to the user)
+
+These are not docent bugs — they are how the `codex plugin` CLI behaves
+today. Knowing them up front saves debugging time when something is
+silently wrong:
+
+- **`marketplace.json` `source.path` must be relative**, not absolute.
+  An absolute path is silently accepted by `codex plugin marketplace add`
+  but `codex plugin list -m <name>` then shows "no plugins found in
+  marketplace `<name>`" — no error, no warning. The docent repo's
+  `.agents/plugins/marketplace.json` uses `./packages/agent` (relative)
+  for this reason.
+- **The marketplace's `name:` field is the collision key**, not the
+  directory path. If the user already has a marketplace named `docent`
+  (e.g. from a prior install), `codex plugin marketplace add <newpath>`
+  refuses to add a second one with the same name. They can either
+  `codex plugin marketplace remove docent` first, or accept that the
+  existing one will be re-resolved.
+- **`codex plugin remove docent-agent` leaves the cache dir on disk**.
+  Cached files live at `~/.codex/plugins/cache/<marketplace>/`. If a
+  re-install gets stuck reading stale skills, the fix is
+  `rm -rf ~/.codex/plugins/cache/docent/` and re-running `codex plugin
+  add docent-agent@docent`.
+
+If the user reports "I installed but `/docent-doctor` doesn't show up in
+Codex", check these three before anything else.
