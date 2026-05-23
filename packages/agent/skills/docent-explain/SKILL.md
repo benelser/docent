@@ -31,15 +31,39 @@ those only when the user explicitly wants to pause between stages.
    anything obvious is missing, suggest `/docent-doctor` and stop. Do not
    run `doctor` here implicitly — it has its own skill.
 
-2. **Survey.**
+2. **Find the right surface, then survey.** The fetcher behind `docent
+   survey` does one thing — fetch the URL you give it and report what came
+   back. It does **not** know that arXiv's `/abs/` is a stub or that a
+   paper's full text lives at `/html/` or `/pdf/`. That intelligence is
+   yours — you are the agent. Walk the surfaces deliberately:
 
-   ```bash
-   bun packages/engine/cli/docent.ts survey <subject> --mode <pr|ar|ex> [--subsystem X] [--pr N] [--id X]
-   ```
+   - If the user passed a URL that looks like an *abstract*, *stub*, or
+     *landing page* (arxiv.org/abs/, a paper's homepage, a wiki article's
+     "main" page), assume there is a richer surface and try it first.
+     Common patterns worth trying in order:
+       - `arxiv.org/abs/<id>` → try `arxiv.org/html/<id>` (rendered LaTeX,
+         ~40k chars) then `arxiv.org/pdf/<id>` (PDF via pdftotext).
+       - `biorxiv.org/content/<doi>` → try the same URL with `.full`
+         appended.
+       - A paper homepage → look for a "PDF" or "Full text" link and use
+         that URL.
+   - **Always do an exploratory fetch first.**
+     ```bash
+     docent survey <url> --mode ex --id <slug>
+     ```
+     The fetcher writes `analysis/<id>.source.md` and logs a character
+     count. If the count is below ~5 000 chars and you have an alternative
+     surface, **stop the in-progress survey**, swap the URL, and re-run.
+     Surveying a stub returns a film about a stub.
+   - **PDFs work natively.** Pass `https://…/whatever.pdf` directly; the
+     engine pipes it through `pdftotext`. No special invocation.
+   - **When you've exhausted surfaces and the source is still thin**,
+     don't paper over it — say so in the survey explicitly and narrow the
+     film's claim to what the text actually supports.
 
-   Read the brief and the survey template first (linked in the
-   `docent-survey` skill). The survey lands at `analysis/<id>.md`. Surface
-   the path and the load-bearing finding before moving on.
+   When the survey lands at `analysis/<id>.md`, surface the source's
+   final URL + character count + the load-bearing finding before moving
+   on to treatment.
 
 3. **Treatment.**
 

@@ -17,7 +17,7 @@ import {doctor} from './doctor';
 import {runCascade} from './cascade';
 import {scorePr} from './score';
 import {hermetic} from './hermetic';
-import {hermeticFreshUser} from './fresh-user';
+import {hermeticFreshUser, type FreshUserTarget} from './fresh-user';
 import {depthcheck} from './depthcheck';
 import {survey} from './survey';
 import {authorTreatment, treatmentToSpec} from './treatment';
@@ -33,7 +33,7 @@ const opt = (n: string): string | undefined => {
   return i >= 0 ? argv[i + 1] : undefined;
 };
 // positionals — args that are neither a --flag nor a value consumed by one.
-const VALUE_FLAGS = new Set(['scale', 'still', 'mode', 'subsystem', 'pr', 'agent', 'id', 'feedback', 'subject', 'max-rounds']);
+const VALUE_FLAGS = new Set(['scale', 'still', 'mode', 'subsystem', 'pr', 'agent', 'id', 'feedback', 'subject', 'max-rounds', 'target']);
 const positionals: string[] = [];
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
@@ -213,7 +213,14 @@ const main = async (): Promise<number> => {
 
     case 'hermetic': {
       if (flag('fresh-user')) {
-        const {code} = await hermeticFreshUser({keep: flag('keep')});
+        const rawTarget = opt('target') ?? 'claude';
+        if (rawTarget !== 'claude' && rawTarget !== 'codex' && rawTarget !== 'all') {
+          die(`--target must be claude | codex | all (got: ${rawTarget})`);
+        }
+        const {code} = await hermeticFreshUser({
+          target: rawTarget as FreshUserTarget,
+          keep: flag('keep'),
+        });
         return code;
       }
       const scale = num(opt('scale')) ?? (flag('full') ? 1 : 0.5);
@@ -237,7 +244,7 @@ const main = async (): Promise<number> => {
       console.log('  docent flywheel                   the outer loop — recurring failures');
       console.log('  docent depthcheck <film>          the depth contract over a spec');
       console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
-      console.log('  docent hermetic --fresh-user      simulate apm install → first film in a tmpdir');
+      console.log('  docent hermetic --fresh-user [--target claude|codex|all]  simulate install → first film in a tmpdir');
       console.log('  docent preflight                  · Go Live readiness — environment, contracts, cycle surface, hygiene');
       console.log('  docent env                        resolved paths and versions');
       return cmd ? 1 : 0;

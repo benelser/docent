@@ -68,55 +68,27 @@ const metaOf = (html: string): {title?: string; description?: string} => {
   return {title, description};
 };
 
-// Per-host rewrites that prefer a fuller-prose surface than the user's
-// original URL. The table is the contract: each entry names a known
-// "abstract/stub → full text" pattern for one publication host. Adding a
-// new host means adding a row, not branching the code. Empty by default
-// would be cleaner, but arXiv is the canonical case people hit first.
+// docent's fetcher does one thing: it fetches a URL and tells you what came
+// back (chars, format, title). It does NOT know about specific hosts,
+// abstract vs. full text, or which surface is "better" for a paper. That
+// intelligence lives in the skill — the agent reads the docent-explain
+// brief, sees the URL, knows the patterns of arxiv/biorxiv/etc., and
+// retries with an alternate URL if the first fetch is thin. The engine
+// just transports bytes.
 //
-// To add a host: append {match: RegExp, rewrite: (m) => newUrl, reason}.
-// To remove docent's preference for full-text on a host: delete the row.
-type HostRewrite = {
-  match: RegExp;
-  rewrite: (m: RegExpMatchArray) => string;
-  reason: string;
-};
-const HOST_REWRITES: HostRewrite[] = [
-  {
-    // arXiv's /abs/<id> page is the abstract stub (~6k chars). /html/<id>
-    // is the server-rendered LaTeX (~40k chars). /pdf/<id> falls through
-    // to the generic PDF path below — no rewrite needed.
-    match: /^https?:\/\/(?:www\.)?arxiv\.org\/abs\/([^/?#]+)/i,
-    rewrite: (m) => `https://arxiv.org/html/${m[1]}`,
-    reason: 'arxiv abstract → full-paper HTML',
-  },
-  {
-    // bioRxiv / medRxiv: /content/<doi>v<n> is the abstract; appending
-    // .full pulls the rendered article body.
-    match: /^https?:\/\/(?:www\.)?(?:bio|med)rxiv\.org\/content\/([^?#]+?)(?:\.full)?$/i,
-    rewrite: (m) => {
-      // Preserve scheme + host
-      const host = m.input!.match(/^https?:\/\/[^/]+/)![0];
-      return `${host}/content/${m[1]}.full`;
-    },
-    reason: 'bioRxiv/medRxiv abstract → full-article body',
-  },
-];
-
-const rewriteHostUrl = (url: string): {url: string; reason?: string} => {
-  for (const r of HOST_REWRITES) {
-    const m = url.match(r.match);
-    if (m) return {url: r.rewrite(m), reason: r.reason};
-  }
-  return {url};
-};
-
-// PDF detection — generic over hosts. Two signals: the URL pattern (cheap,
-// runs before the fetch) and the response Content-Type (authoritative, only
-// available after the HTTP call). A URL ending in .pdf is unambiguous; any
-// other URL we treat as HTML until the Content-Type proves otherwise. This
-// means a host that serves PDFs without a .pdf suffix (e.g. arxiv.org/pdf/
-// — a redirect to a binary) is caught by the Content-Type branch below.
+// Two things the engine *does* need to know, because they're format
+// concerns the agent can't paper over:
+//
+//   URL_LOOKS_PDF: any URL ending in .pdf is a binary; don't run it
+//                  through the HTML parser. Cheap pre-fetch check.
+//   RESPONSE_IS_PDF: the same fact after the HTTP call. Hosts that
+//                    serve PDFs without a .pdf suffix (the only common
+//                    example today is arxiv.org/pdf/<id>) are caught
+//                    here by Content-Type, not by URL pattern.
+//
+// These are the only host-agnostic facts the engine cares about. Everything
+// else — "this looked like an abstract stub, try the full text URL" — is
+// the skill's job.
 const URL_LOOKS_PDF = (url: string): boolean => /\.pdf(?:$|\?|#)/i.test(url);
 const RESPONSE_IS_PDF = (res: Response): boolean =>
   /^application\/pdf\b/i.test(res.headers.get('content-type') ?? '');
@@ -170,21 +142,14 @@ const fetchAsPdf = async (
 };
 
 export const fetchSource = async (url: string, dest: string): Promise<FetchResult> => {
-  const {url: fetchUrl, reason} = rewriteHostUrl(url);
-  if (fetchUrl !== url) {
-    process.stdout.write(
-      `\x1b[2m   url rewrite: ${url} → ${fetchUrl} (${reason})\x1b[0m\n`,
-    );
-  }
-
   // Pre-fetch PDF fast-path — when the URL itself ends in .pdf we know
-  // before the request that this is a binary. Saves us one round trip of
+  // before the request that this is a binary. Saves a round trip of
   // 'fetch HTML, discover Content-Type is application/pdf, refetch as PDF'.
-  if (URL_LOOKS_PDF(fetchUrl)) {
+  if (URL_LOOKS_PDF(url)) {
     process.stdout.write(`\x1b[2m   pdf source — extracting with pdftotext\x1b[0m\n`);
-    const {text, title, description} = await fetchAsPdf(fetchUrl, dest);
+    const {text, title, description} = await fetchAsPdf(url, dest);
     const header = [
-      `# ${title || fetchUrl}`,
+      `# ${title || url}`,
       '',
       `<!-- source: ${url} -->`,
       `<!-- fetched: ${new Date().toISOString()} -->`,
@@ -192,11 +157,12 @@ export const fetchSource = async (url: string, dest: string): Promise<FetchResul
       '',
     ].join('\n');
     await Bun.write(dest, header + text);
-    return {url: fetchUrl, finalUrl: fetchUrl, title, description, length: text.length};
+    return {url, finalUrl: url, title, description, length: text.length};
   }
 
   let html: string;
-  let finalUrl = fetchUrl;
+  let finalUrl = url;
+  const fetchUrl = url;
   try {
     const res = await fetch(fetchUrl, {
       redirect: 'follow',

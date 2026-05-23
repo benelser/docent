@@ -464,16 +464,21 @@ const checkHermeticHarness = async (): Promise<CheckResult> => {
 const checkFreshUser = async (): Promise<CheckResult> => {
   const t0 = performance.now();
   try {
-    const {report} = await hermeticFreshUser({silent: true});
+    // `--target all` exercises BOTH the Claude (apm) and Codex (codex plugin)
+    // install paths so Go Live covers every host the docs ship.
+    const {report} = await hermeticFreshUser({silent: true, target: 'all'});
     const seconds = (performance.now() - t0) / 1000;
     const fails = report.steps.filter((s) => s.status === 'fail');
     const warns = report.steps.filter((s) => s.status === 'warn');
+    const legSummary = report.legs && report.legs.length > 1
+      ? ` [${report.legs.map((l) => `${l.target}:${l.steps.filter((s) => s.status === 'pass').length}/${l.steps.length}`).join(' ')}]`
+      : '';
     if (fails.length > 0) {
       const firstFail = fails[0];
       return {
         name: 'fresh-user simulation',
         status: 'fail',
-        detail: `${fails.length} step(s) failed after ${seconds.toFixed(1)}s — ${firstFail.name}: ${firstFail.detail}`,
+        detail: `${fails.length} step(s) failed after ${seconds.toFixed(1)}s${legSummary} — ${firstFail.name}: ${firstFail.detail}`,
       };
     }
     if (warns.length > 0) {
