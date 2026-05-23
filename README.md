@@ -16,33 +16,22 @@ cycle that grades every film before it ships.
 
 ## Install
 
-One command. Pick the target that matches your coding agent.
+Pick the path that matches your coding agent. Both validated end-to-end.
 
-**Claude Code:**
+**Claude Code** (via APM):
 
 ```bash
 apm install -t claude benelser/docent/packages/agent
 ```
 
-**Codex:**
+**Codex** (via Codex's plugin marketplace):
 
 ```bash
-apm install -t codex benelser/docent/packages/agent
+codex plugin marketplace add github.com/benelser/docent
+codex plugin add docent-agent@docent
 ```
 
-Both are validated end-to-end — skills land at `.claude/skills/` and
-`.agents/skills/` respectively, four skills each. For other targets
-APM supports the same shape:
-
-| Agent | Flag | Skills land at |
-|---|---|---|
-| Claude Code | `-t claude` | `.claude/skills/` |
-| Codex | `-t codex` | `.agents/skills/` |
-| Cursor | `-t cursor` | `.cursor/skills/` |
-| Copilot (default) | `-t copilot` | `.github/skills/` |
-| All of the above | `-t all` | every target |
-
-Then, inside your coding agent, run:
+Then, inside your coding agent:
 
 ```
 /docent-doctor
