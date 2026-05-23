@@ -174,7 +174,7 @@ export const hermetic = async (opts: {
     cases: results,
   };
   await Bun.write(
-    join(REPO_ROOT, 'hermetic', 'report.json'),
+    join(REPO_ROOT, 'tests', 'report.json'),
     JSON.stringify(report, null, 2) + '\n',
   );
   if (opts.json) console.log(JSON.stringify(report, null, 2));
