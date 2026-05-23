@@ -133,12 +133,16 @@ const WHITEBOARD: Register = {
 // risk band, when present, takes the bottom strip; the chosen/rejected
 // columns shrink to fit so nothing overflows.
 
-const COLUMN_GAP = 56; // pixels between the chosen and rejected columns
+const COLUMN_GAP = 110; // pixels between chosen/rejected — wide enough that the
+//                       60-pixel "vs" pill sitting on the divider keeps a real
+//                       ~25-pixel gutter to each column's cards.
 const HEADER_H = 46; // height of a column header above its cards
 const HEADER_GAP = 12; // air between a header and its first card
 const RISK_HEADER_H = 38; // the bottom band's header is shorter
-const RISK_TOP_GAP = 28; // air between the upper ledger and the risk band
-const CARD_GAP = 18; // vertical air between stacked cards in a column
+const RISK_TOP_GAP = 56; // air between the upper ledger and the risk band — must
+//                         be > 0 even when the upper column body fills, so the
+//                         "RISK" header never gets stomped by a tall stack.
+const CARD_GAP = 16; // vertical air between stacked cards in a column
 
 // The ledger lane a node lives in. The mapping is rigid and explicit so a
 // reader doesn't have to puzzle out the layout: kind decides lane.
@@ -171,9 +175,11 @@ const layoutLedger = (nodes: Node[]): Slot[] => {
   // The risk band height is chosen by content: one risk → a short strip; two
   // or three → a slightly taller band. Bounded so the upper ledger always
   // gets at least 60% of the stage.
+  // A slimmer risk band — one risk is a single strip, not a panel. Bounded so
+  // the upper ledger (where the trade-off itself lives) keeps the lion's share.
   const riskBandH = !hasRisk
     ? 0
-    : Math.min(STAGE.h * 0.4, risks.length === 1 ? 188 : risks.length === 2 ? 206 : 220);
+    : Math.min(STAGE.h * 0.34, risks.length === 1 ? 138 : risks.length === 2 ? 160 : 180);
   const upperH = STAGE.h - (hasRisk ? riskBandH + RISK_TOP_GAP : 0);
 
   // Each column's body region (below the header).
@@ -201,10 +207,11 @@ const layoutLedger = (nodes: Node[]): Slot[] => {
     if (list.length === 0) return [];
     const gaps = (list.length - 1) * CARD_GAP;
     const each = (bodyH - gaps) / list.length;
-    // Soft floor + ceiling so a single card doesn't fill an entire column
-    // (which would read as a panel, not a card), and a four-card stack still
-    // gives every card legible internal padding.
-    const h = Math.max(96, Math.min(186, each));
+    // Ceiling — a single card must not balloon into a panel. Floor — the card
+    // must never exceed its share of the body (an explicit hard cap, since a
+    // soft floor like `max(96, …)` would push a four-card stack past the body
+    // and into the RISK header below).
+    const h = Math.min(180, each);
     // Re-centre vertically if the soft ceiling left air at the bottom.
     const usedH = h * list.length + gaps;
     const y0 = bodyTop + Math.max(0, (bodyH - usedH) / 2);
@@ -967,9 +974,10 @@ export const TensionScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount})
   // The risk band's header sits above its cards.
   const upperH = (() => {
     if (!hasRisk) return STAGE.h;
+    // Mirror layoutLedger's slimmer band — keep the two computations in lockstep.
     const riskBandH = Math.min(
-      STAGE.h * 0.4,
-      riskSlots.length === 1 ? 188 : riskSlots.length === 2 ? 206 : 220,
+      STAGE.h * 0.34,
+      riskSlots.length === 1 ? 138 : riskSlots.length === 2 ? 160 : 180,
     );
     return STAGE.h - (riskBandH + RISK_TOP_GAP);
   })();

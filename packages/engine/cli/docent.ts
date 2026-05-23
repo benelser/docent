@@ -17,6 +17,7 @@ import {doctor} from './doctor';
 import {runCascade} from './cascade';
 import {scorePr} from './score';
 import {hermetic} from './hermetic';
+import {hermeticFreshUser} from './fresh-user';
 import {depthcheck} from './depthcheck';
 import {survey} from './survey';
 import {authorTreatment, treatmentToSpec} from './treatment';
@@ -80,7 +81,7 @@ const buildOrExplain = async (
 const main = async (): Promise<number> => {
   switch (cmd) {
     case 'doctor':
-      return doctor(flag('json'));
+      return doctor(flag('json'), {install: flag('install'), yes: flag('yes')});
 
     case 'env':
       console.log('docent — resolved environment');
@@ -192,6 +193,10 @@ const main = async (): Promise<number> => {
       return flywheel();
 
     case 'hermetic': {
+      if (flag('fresh-user')) {
+        const {code} = await hermeticFreshUser({keep: flag('keep')});
+        return code;
+      }
       const scale = num(opt('scale')) ?? (flag('full') ? 1 : 0.5);
       return hermetic({fixtureId: positionals[0], scale, json: flag('json')});
     }
@@ -201,7 +206,7 @@ const main = async (): Promise<number> => {
 
     default:
       console.log('docent — narrated, animated explainers for code\n');
-      console.log('  docent doctor [--json]            validate the environment');
+      console.log('  docent doctor [--json] [--install [--yes]]  validate (or bootstrap) the environment');
       console.log('  docent build  <film> [--still N]  run the cascade for a known spec');
       console.log('  docent pr     <repo> <pr#>        PR-review film');
       console.log('  docent ar     <repo> [subsystem]  architecture-review film');
@@ -213,6 +218,7 @@ const main = async (): Promise<number> => {
       console.log('  docent flywheel                   the outer loop — recurring failures');
       console.log('  docent depthcheck <film>          the depth contract over a spec');
       console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
+      console.log('  docent hermetic --fresh-user      simulate apm install → first film in a tmpdir');
       console.log('  docent preflight                  · Go Live readiness — environment, contracts, cycle surface, hygiene');
       console.log('  docent env                        resolved paths and versions');
       return cmd ? 1 : 0;

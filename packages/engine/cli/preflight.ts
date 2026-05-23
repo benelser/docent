@@ -20,6 +20,7 @@ import {runDepthCheck, depthSummary} from './depthcheck';
 import * as judgeModule from './judge';
 import {flywheel} from './flywheel';
 import {hermetic} from './hermetic';
+import {hermeticFreshUser} from './fresh-user';
 
 // Films that are kitchen-sink test fixtures, not gallery items. They exercise
 // the engine's scene grammar end to end; they are not authored to clear the
@@ -454,6 +455,50 @@ const checkHermeticHarness = async (): Promise<CheckResult> => {
   }
 };
 
+// --- (6b) fresh-user — apm install → /docent-doctor → first film ----------
+
+// Runs the same simulation as `docent hermetic --fresh-user` but silently —
+// the preflight stays a one-line-per-check report. This is the gate that
+// proves a brand-new user following the README Quickstart will actually land
+// an mp4 on disk, not just that the engine works for the maintainer.
+const checkFreshUser = async (): Promise<CheckResult> => {
+  const t0 = performance.now();
+  try {
+    const {report} = await hermeticFreshUser({silent: true});
+    const seconds = (performance.now() - t0) / 1000;
+    const fails = report.steps.filter((s) => s.status === 'fail');
+    const warns = report.steps.filter((s) => s.status === 'warn');
+    if (fails.length > 0) {
+      const firstFail = fails[0];
+      return {
+        name: 'fresh-user simulation',
+        status: 'fail',
+        detail: `${fails.length} step(s) failed after ${seconds.toFixed(1)}s — ${firstFail.name}: ${firstFail.detail}`,
+      };
+    }
+    if (warns.length > 0) {
+      const names = warns.map((w) => w.name).join(', ');
+      return {
+        name: 'fresh-user simulation',
+        status: 'warn',
+        detail: `${report.steps.length - warns.length}/${report.steps.length} pass in ${seconds.toFixed(1)}s; warn: ${names}`,
+      };
+    }
+    return {
+      name: 'fresh-user simulation',
+      status: 'pass',
+      detail: `apm install → /docent-doctor → /docent-build clean in ${seconds.toFixed(1)}s`,
+    };
+  } catch (e) {
+    const seconds = (performance.now() - t0) / 1000;
+    return {
+      name: 'fresh-user simulation',
+      status: 'fail',
+      detail: `threw after ${seconds.toFixed(1)}s: ${e instanceof Error ? e.message.split('\n')[0] : String(e)}`,
+    };
+  }
+};
+
 // --- (7) README ↔ registry hygiene ------------------------------------------
 
 const readReadmeFilmIds = async (): Promise<string[]> => {
@@ -568,6 +613,12 @@ export const preflight = async (): Promise<number> => {
   const harness = await checkHermeticHarness();
   printCheck(harness);
   all.push(harness);
+  console.log('');
+
+  printSection('Fresh-user simulation — apm install → /docent-doctor → first film');
+  const fresh = await checkFreshUser();
+  printCheck(fresh);
+  all.push(fresh);
   console.log('');
 
   printSection('Hygiene — README ↔ films registry');

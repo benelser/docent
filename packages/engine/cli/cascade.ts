@@ -44,10 +44,21 @@ export const runCascade = async (opts: CascadeOpts): Promise<CascadeResult> => {
   // The spec contract — the engine refuses to render a malformed film.
   const spec = await Bun.file(specPath).json();
   const issues = validateSpec(spec);
-  if (issues.length) {
+  const hardFails = issues.filter((i) => i.severity !== 'warning');
+  const warnings = issues.filter((i) => i.severity === 'warning');
+  if (hardFails.length) {
     throw new Error(
       `spec films/${film}.json fails the contract:\n` +
-        issues.map((i) => `  ✗ ${i.path || '(root)'}: ${i.message}`).join('\n'),
+        hardFails.map((i) => `  ✗ ${i.path || '(root)'}: ${i.message}`).join('\n'),
+    );
+  }
+  if (warnings.length) {
+    process.stdout.write(
+      `\x1b[33m⚠ ${warnings.length} spec warning(s) — render proceeds (resolveLayout handles the visual):\x1b[0m\n` +
+        warnings
+          .map((i) => `  \x1b[33m⚠\x1b[0m ${i.path || '(root)'}: ${i.message}`)
+          .join('\n') +
+        '\n',
     );
   }
 

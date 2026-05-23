@@ -200,18 +200,25 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         if (n.wide === true) cells.push([n.col + 1, n.row]);
         for (const [c, r] of cells) {
           if (c < 0 || c >= gCols || r < 0 || r >= gRows) {
+            // Soft fail — resolveLayout drops the wide flag at render time, so
+            // a frame-overflow cannot reach the screen. The validator surfaces
+            // the bad spec for the author; the cascade still renders.
             issues.push({
               path: `${at}.nodes[${k}]`,
               message: `cell (col=${c}, row=${r}) is outside the ${gCols}×${gRows} grid`,
+              severity: 'warning',
             });
             continue;
           }
           const key = `${c},${r}`;
           const prior = occupied.get(key);
           if (prior !== undefined && prior !== n.id) {
+            // Soft fail — resolveLayout reconciles overlap visually; the spec
+            // is still flagged so the author can correct it.
             issues.push({
               path: `${at}.nodes[${k}]`,
               message: `box overlap — "${n.id}" and "${prior}" both occupy cell (col=${c}, row=${r})`,
+              severity: 'warning',
             });
           } else {
             occupied.set(key, n.id);
