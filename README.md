@@ -1,83 +1,124 @@
 # docent
 
-> **An explanation engine.** Point it at a codebase, a pull request, an
-> essay, a wiki, a URL — *any subject* — and it produces a narrated,
-> animated film that **interrogates** the subject. Not a tour that admires
-> it.
+> **Point it at anything. Get back a narrated, animated film that argues for what it explains.**
+>
+> Codebases. Pull requests. Essays. Wiki articles. PDFs. arXiv papers. Any
+> subject. Five minutes. A real film, not a tour.
 
-[![distribution](https://img.shields.io/badge/distribution-APM-6ea8fe)](https://github.com/microsoft/apm)
+[![release](https://img.shields.io/github/v/release/benelser/docent?label=release&color=32d287)](https://github.com/benelser/docent/releases)
+[![corpus](https://img.shields.io/badge/corpus-5%2F5%20PASS-32d287)](#what-it-can-actually-do)
+[![distribution](https://img.shields.io/badge/install-APM%20%2F%20Codex-6ea8fe)](#install)
 [![license](https://img.shields.io/badge/license-MIT-c0c5cf)](LICENSE)
-
-A closed **grammar of explanation** a coding agent renders any idea
-into, with a deterministic engine that owns every pixel and a quality
-cycle that grades every film before it ships.
 
 ---
 
-## Install
+## Why "docent"?
 
-Pick the path that matches your coding agent. Both validated end-to-end.
+A **docent** is the guide at a museum or gallery who walks you through the
+exhibits. They don't just *describe* what's on the wall — they pick what's
+worth your attention, explain the *why* behind each piece, name the
+trade-off the artist made, and leave you with one idea to carry out the
+door. They're authored. They argue. They commit.
 
-**Claude Code** (via APM):
+That's the role the tool plays. A coding agent reads the subject end to
+end, finds the load-bearing 5%, picks the angle, commits to a takeaway,
+and walks you through it. Not a tour. A docent.
+
+## The idea in 60 seconds
+
+Most "explainer" tools either record a screen or arrange slides. docent does
+neither. It treats explanation itself as a **closed grammar** — fifteen
+scene types (`frame`, `structure`, `tension`, `big-idea`, `recap`, …), eight
+intent knobs, three motion primitives — and gives a coding agent the brief
+to render any idea into that grammar.
+
+You hand it a subject. The agent surveys it, names what's load-bearing,
+commits to a single takeaway, gets graded by an adversarial sub-agent
+before it ships, and renders an HD MP4 that *argues* — not narrates.
+
+The engine is deterministic and owns every pixel. The agent is the author.
+The grammar is the contract between them.
+
+## Try it — three commands
 
 ```bash
+# 1. Install the agent layer into your coding host
 apm install -t claude benelser/docent/packages/agent#v2.0.2
-```
-
-**Codex** (via Codex's plugin marketplace):
-
-```bash
+# OR for Codex:
 codex plugin marketplace add github.com/benelser/docent
 codex plugin add docent-agent@docent
 ```
 
-> Drop the `#v2.0.2` if you want to track `main` instead of the pinned
-> release — APM will warn you on every install that the version is
-> unpinned (acceptable for development, not for production).
-
-Then, inside your coding agent:
-
 ```
+# 2. Inside Claude Code (or Codex), first-run bootstrap:
 /docent-doctor
+
+# 3. Make a film about anything:
+/docent-explain https://arxiv.org/abs/1706.03762
 ```
 
-The first invocation is the bootstrap: it clones the engine into
-`~/.local/share/docent/engine`, installs every cascade dependency
-(uv, ffmpeg, Python env, Kokoro voice weights, Remotion), and puts
-the `docent` CLI on your PATH. Subsequent invocations just re-verify
-and repair.
+`/docent-doctor` clones the engine into `~/.local/share/docent/engine`,
+installs the cascade (uv, ffmpeg, Python env, Kokoro voice weights,
+Remotion), and puts the `docent` CLI on your PATH. You only run it once.
 
-> docent needs `bun` (the runtime that runs the bootstrap itself).
-> If you don't have it: `curl -fsSL https://bun.sh/install | bash`,
-> then `exec $SHELL -l`. Everything else `/docent-doctor` handles.
+> **Only prerequisite is `bun`.** Don't have it? `curl -fsSL https://bun.sh/install | bash`, then `exec $SHELL -l`. docent's doctor handles the rest.
 
-## Use
+## The four skills
 
-Inside Claude Code, Codex, or Cursor:
+The slash commands match how you think about a subject:
 
-```
-/docent-doctor                   verify the environment is green
-/docent-explain  <subject>       any subject, any mode, end to end
-```
+| Command | What it does | Killer case |
+|---|---|---|
+| `/docent-doctor` | Verifies and installs the cascade. | First setup; whenever something feels broken. |
+| `/docent-pr <repo> <pr#>` | PR-review film — load-bearing 5%, the trade-off, a verdict. | The 800-file AI-agent PR no human reads. |
+| `/docent-ar <repo> [--subsystem X]` | Architecture review — components, flow, failure modes. | "How does X actually work?" — a system or one subsystem. |
+| `/docent-explain <subject>` | The one-shot. Any subject, any mode, end-to-end. | When you just want a film. |
 
-`<subject>` is anything: a repo path, a GitHub PR URL, an essay file,
-a wiki section, a blog post. The skill picks the mode automatically;
-override with `--mode pr|ar|ex`.
+Each skill walks survey → treatment → spec → judge → render. The pause
+points are where the **framing** forks, not where the engine does. The
+engine never asks. It explains.
 
-| Slash command | What it does |
-|---|---|
-| `/docent-doctor` | Verifies (and installs) the environment. |
-| `/docent-pr <repo> <pr#>` | PR-review film — load-bearing 5%, the trade-off, a verdict. |
-| `/docent-ar <repo> [--subsystem X]` | Architecture-review film — components, flow, failure modes. |
-| `/docent-explain <subject>` | The one-shot — any subject, any mode, end to end. |
+## What makes it different
 
-## How
+**Closed grammar, not freeform animation.** A film is a JSON spec
+against a 15-scene-type schema. The engine renders the spec
+deterministically. Nothing the agent writes can produce a "weird CSS
+moment" — the pixels are owned by Remotion code, not the agent.
 
-A film is a JSON spec. The engine renders a closed grammar of
-**fifteen scene types** (`frame`, `structure`, `walkthrough`,
-`compare`, `tension`, `recap`, …), **eight intent knobs**
-(`register`, `pace`, `weight`, `shot`, `cut`, `cadence`, `palette`,
-`treatment`), and three motion primitives (`tween`, `chart`, `morph`).
+**Mandatory adversarial judge on the happy path.** Every spec runs
+through a seven-dimension grader (`triage`, `where-wrong`,
+`tests-prove-it`, `the-numbers`, `the-trade-off`, `verdict-adjudicates`,
+`takeaway-earned`) before render. A film the judge rejects does not
+ship. The loop reliably lifts first-draft specs by ~7 points on a
+30-point scale.
+
+**The Big Idea is built into the grammar.** Every explainer film must
+end on one held sentence the viewer should leave with — earned by the
+scenes that came before, not asserted. The validator hard-fails any
+explainer spec that lacks it.
+
+**Self-healing install.** `/docent-doctor` knows how to install uv,
+ffmpeg, Kokoro voice weights, and Remotion; pre-emptively flags Codex's
+quirky plugin behaviors; retries transient agent failures so a flaky
+network doesn't burn a 25-minute survey.
+
+## What it can actually do
+
+Five films across five domains. Every one passes the seven-dimension
+depth contract. All authored by an agent driving the same closed grammar:
+
+| Film | Subject | Domain | Verdict |
+|---|---|---|---|
+| `linear-algebra` | The dot product as the keystone operation | Math | 26 / 30 PASS |
+| `kubernetes-pr` | The Kubernetes scheduler heap refactor | Software | 26 / 30 PASS |
+| `euclid-primes` | Euclid's proof of infinitely many primes | Math proof | 23 / 30 PASS |
+| `stopping-by-woods` | A close reading of Robert Frost | Literature | 27 / 30 PASS, first try |
+| `grammar-check` | Kitchen-sink scene grammar test | Engineering | (test fixture) |
+
+Specs live in `films/*.json`. Render any of them: `/docent-build <id>`,
+or `docent build <id>` directly.
+
+## How it works
 
 The cascade runs in four cached stages:
 
@@ -88,14 +129,60 @@ clips    →  public/clips/<id>/*   optional Manim inserts
 render   →  out/<id>.mp4          Remotion, frame-parallel
 ```
 
-Every spec is judged by an adversarial sub-agent along six
-dimensions — **triage**, **where it could be wrong**, **do the tests
-prove it**, **the numbers**, **the trade-off**, **the verdict
-adjudicates** — and the `judge → revise → re-judge` loop is mandatory
-on every render. A film the judge rejects does not ship.
+Every stage is cached on the beat. A beat whose narration text hasn't
+changed isn't re-rendered or re-synthesised. The engine binary owns
+every pixel; the agent only ever writes JSON.
+
+## Updating
+
+**Claude Code (APM):**
+
+```bash
+# pinned: bump the tag in apm.yml, then:
+apm install
+
+# unpinned (tracks main):
+apm install --update benelser/docent/packages/agent
+```
+
+**Codex:**
+
+```bash
+# Git-source marketplace:
+codex plugin marketplace upgrade docent
+
+# Local-path marketplace (development):
+codex plugin add docent-agent@docent
+```
+
+After the engine layer updates, re-run `/docent-doctor` to pick up any
+new dependencies. The engine `git pull`s itself the next time the
+cascade runs.
+
+## Status
+
+Engineering: **feature-complete**. Quality cycle: **operational**, with
+a 5 / 5 PASS corpus across five domains, two validated install paths
+(Claude Code + Codex), and an end-to-end test gate (`docent hermetic
+--explain <url>`) that catches transient failures in both authoring
+hosts.
+
+Three patch releases shipped this week: [v2.0.0](https://github.com/benelser/docent/releases/tag/v2.0.0)
+(first pinnable agent layer), [v2.0.1](https://github.com/benelser/docent/releases/tag/v2.0.1)
+(resilience patches), [v2.0.2](https://github.com/benelser/docent/releases/tag/v2.0.2)
+(manifest version sync). The README's install line tracks latest.
 
 ## License
 
-MIT (see [`LICENSE`](LICENSE)). Distribution:
-[APM](https://github.com/microsoft/apm) only — the agent layer
-installs into your coding agent; the engine runs locally.
+MIT (see [`LICENSE`](LICENSE)). Distribution: APM
+([benelser/docent/packages/agent](https://github.com/benelser/docent/tree/main/packages/agent))
+for Claude Code, and the Codex plugin marketplace for Codex. The
+engine itself is `private: true` — everything users need ships through
+the agent layer.
+
+---
+
+> *"docent gets better as it runs."* The judge grades every film. The
+> revise loop closes the gap. The outer flywheel distills recurring
+> weaknesses back into the brief. Each generation raises the floor for
+> the next.
