@@ -21,7 +21,7 @@ Pick the path that matches your coding agent. Both validated end-to-end.
 **Claude Code** (via APM):
 
 ```bash
-apm install -t claude benelser/docent/packages/agent
+apm install -t claude benelser/docent/packages/agent#v2.0.0
 ```
 
 **Codex** (via Codex's plugin marketplace):
@@ -30,6 +30,10 @@ apm install -t claude benelser/docent/packages/agent
 codex plugin marketplace add github.com/benelser/docent
 codex plugin add docent-agent@docent
 ```
+
+> Drop the `#v2.0.0` if you want to track `main` instead of the pinned
+> release — APM will warn you on every install that the version is
+> unpinned (acceptable for development, not for production).
 
 Then, inside your coding agent:
 
