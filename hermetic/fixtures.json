@@ -1,5 +1,5 @@
 {
-  "description": "Pinned fixtures for the docent hermetic harness. Each entry is a film spec committed under films/. The harness runs the engine cascade end-to-end and asserts the output is a valid video of the expected shape. The five entries are the gallery — every film docent ships with — across the five proven domains (math wiki, software PR, history, math proof, literature). `docent preflight` runs the harness on the smallest fixture as the end-to-end gate; `docent hermetic` (no fixture id) runs the full gallery.",
+  "description": "Pinned fixtures for the docent hermetic harness. Each entry is a film spec committed under films/. The harness runs the engine cascade end-to-end and asserts the output is a valid video of the expected shape. The fixtures cover the proven domains — math wiki, software PR, math proof, literature. `docent preflight` runs the harness on the smallest fixture as the end-to-end gate; `docent hermetic` (no fixture id) runs the full gallery.",
   "fixtures": [
     {
       "id": "kubernetes-pr",
@@ -12,12 +12,6 @@
       "mode": "ex",
       "subject": "Linear algebra — the dot product as the keystone operation",
       "expect": {"minScenes": 5, "minSeconds": 60}
-    },
-    {
-      "id": "wwi-causes",
-      "mode": "ex",
-      "subject": "Causes of World War I — a July crisis inside a preloaded system",
-      "expect": {"minScenes": 6, "minSeconds": 60}
     },
     {
       "id": "euclid-primes",

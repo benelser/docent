@@ -18,16 +18,29 @@ treatments/
 manim/
 *.log
 
-# survey scratch — gallery surveys are tracked; experiments stay local
-analysis/bun*.md
-analysis/codex.md
-analysis/kubernetes.md
-analysis/nono*.md
-analysis/rig*.md
-analysis/vector*.md
-analysis/extenddb*.md
-analysis/lethal-trifecta*.md
-analysis/depth-review-*.md
+# films/ and analysis/ are dual-purpose:
+#
+#   - The four gallery specs + the grammar-check test fixture are tracked.
+#     The hermetic harness, the fresh-user gate, and the README all depend
+#     on these existing under films/.
+#   - Every OTHER film a user renders is a runtime artifact and stays local.
+#
+# Same shape for analysis/ — the gallery surveys are tracked as examples;
+# every other survey is a runtime artifact.
+films/*
+!films/linear-algebra.json
+!films/kubernetes-pr.json
+!films/euclid-primes.json
+!films/stopping-by-woods.json
+!films/grammar-check.json
+analysis/*
+!analysis/linear-algebra.md
+!analysis/linear-algebra.source.md
+!analysis/kubernetes-pr.md
+!analysis/euclid-primes.md
+!analysis/euclid-primes.source.md
+!analysis/stopping-by-woods.md
+!analysis/stopping-by-woods.source.md
 
 # python
 __pycache__/

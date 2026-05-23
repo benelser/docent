@@ -103,14 +103,13 @@ difference between a film that ships and one that does not:
 | Film | First draft | After `review` | Lift |
 |---|---|---|---|
 | `kubernetes-pr` | 18 | 26 / 30 PASS | +8 |
-| `wwi-causes` | 18 | 27 / 30 PASS | +9 |
 | `euclid-primes` | 20 | 23 / 30 PASS | +3 |
 
-**Mean lift: +6.7 points / 30** on the films that needed the loop.
-That's a 22 % absolute climb. Two films in the bench passed on the
-first draft (`linear-algebra`, `stopping-by-woods`) — the loop costs
-~30 s for them and confirms they ship. For the others, the loop is
-why they ship at all.
+**Mean lift: +5.5 points / 30** on the films that needed the loop.
+Two films in the bench passed on the first draft
+(`linear-algebra`, `stopping-by-woods`) — the loop costs ~30 s for
+them and confirms they ship. For the others, the loop is why they
+ship at all.
 
 ```
 docent judge     <id>   grade one film along six dimensions

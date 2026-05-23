@@ -13,7 +13,6 @@ import kubernetesPr from '../../../../films/kubernetes-pr.json';
 import lethalTrifecta from '../../../../films/lethal-trifecta.json';
 import linearAlgebra from '../../../../films/linear-algebra.json';
 import stoppingByWoods from '../../../../films/stopping-by-woods.json';
-import wwiCauses from '../../../../films/wwi-causes.json';
 
 export const FILMS: Record<string, FilmSpec> = {
   'euclid-primes': euclidPrimes as FilmSpec,
@@ -23,5 +22,4 @@ export const FILMS: Record<string, FilmSpec> = {
   'lethal-trifecta': lethalTrifecta as FilmSpec,
   'linear-algebra': linearAlgebra as FilmSpec,
   'stopping-by-woods': stoppingByWoods as FilmSpec,
-  'wwi-causes': wwiCauses as FilmSpec,
 };
