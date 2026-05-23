@@ -22,6 +22,7 @@ import {survey} from './survey';
 import {authorTreatment, treatmentToSpec} from './treatment';
 import {judge, reviseLoop} from './judge';
 import {flywheel} from './flywheel';
+import {preflight} from './preflight';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -195,6 +196,9 @@ const main = async (): Promise<number> => {
       return hermetic({fixtureId: positionals[0], scale, json: flag('json')});
     }
 
+    case 'preflight':
+      return preflight();
+
     default:
       console.log('docent — narrated, animated explainers for code\n');
       console.log('  docent doctor [--json]            validate the environment');
@@ -209,6 +213,7 @@ const main = async (): Promise<number> => {
       console.log('  docent flywheel                   the outer loop — recurring failures');
       console.log('  docent depthcheck <film>          the depth contract over a spec');
       console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
+      console.log('  docent preflight                  · Go Live readiness — environment, contracts, cycle surface, hygiene');
       console.log('  docent env                        resolved paths and versions');
       return cmd ? 1 : 0;
   }
