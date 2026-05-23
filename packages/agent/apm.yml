@@ -2,9 +2,10 @@
 #
 # docent is, at its core, a method for a coding agent to author a film spec;
 # the engine (@docent/engine) renders it. This package IS that method — the
-# review instructions, the structured survey prompt, and the depth-review
-# sub-agent — packaged so it installs into any APM-supported coding agent
-# (Claude Code, Codex, Cursor, ...) via `apm install` + `apm compile`.
+# four skills the coding agent invokes (/docent-doctor, /docent-survey,
+# /docent-build, /docent-explain), the review brief, the structured survey
+# prompts, and the depth-review sub-agent — packaged so it installs into any
+# APM-supported coding agent (Claude Code, Codex, …) via `apm install`.
 #
 # The decoupling boundary is the film spec JSON Schema
 # (../engine/schema/film.schema.json). The agent's only job is to produce a
@@ -13,11 +14,12 @@
 name: docent-agent
 version: 2.0.0
 description: >-
-  docent review skills, the structured survey prompt, and the depth-review
-  sub-agent — so docent rides inside any coding agent and authors film specs
-  the docent engine renders.
+  docent skills (/docent-doctor, /docent-survey, /docent-build, /docent-explain),
+  the structured survey prompts, and the depth-review sub-agent — so docent
+  rides inside any coding agent and authors film specs the docent engine renders.
 author: benelser
 license: MIT
+type: hybrid
 repository: https://github.com/benelser/docent
 homepage: https://github.com/benelser/docent
 keywords:
@@ -29,6 +31,18 @@ keywords:
   - apm
   - claude-code
   - codex
+
+# APM discovers primitives under .apm/ at the package root. Layout:
+#   .apm/skills/<name>/SKILL.md          — the four slash-command entry points
+#   .apm/instructions/docent.instructions.md
+#                                        — the review method and depth bar
+#   .apm/agents/depth-review.agent.md    — the adversarial depth gate (Layer 3)
+#   .apm/prompts/{survey-template,survey-explainer,treatment}.prompt.md
+#                                        — the survey & treatment briefs
+# The .apm/* paths are symlinks to the canonical sources under packages/agent/
+# so the engine's runtime CLI (which reads packages/agent/instructions/docent.md
+# etc.) and APM both see one source of truth.
+
 dependencies:
   apm: []
   mcp: []

@@ -5,8 +5,7 @@ node_modules/
 
 # build artifacts
 out/
-public/audio/*
-!public/audio/manifest.json
+public/audio/
 public/clips/
 .remotion/
 .manim-cache/
