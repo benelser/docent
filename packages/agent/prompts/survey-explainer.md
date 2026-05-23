@@ -25,6 +25,20 @@ A book, a wiki, or a long essay contains far more than one film. Resolve the
 subject to **one explainable unit** before surveying — that unit is the film's
 scope, and everything else is a named neighbour or out of scope.
 
+- **First — verify the source surface is rich enough.** Open the fetched
+  source file you were given (`analysis/<id>.source.md`) and check its
+  character count. If it is below ~5 000 characters, the fetcher hit a
+  stub, abstract, or landing page — not the actual content. Stop and ask
+  for a better URL **before** writing any survey. Common patterns to try:
+  - `arxiv.org/abs/<id>` → the full paper lives at `/html/<id>` or
+    `/pdf/<id>`.
+  - A paper's homepage → look for a "Full text" or "PDF" link in the
+    page body.
+  - A wiki article's category/landing page → follow into the canonical
+    article URL.
+  - A blog index → follow into the specific post.
+  If the page itself is the canonical surface and is genuinely short,
+  say so explicitly and narrow the film's claim accordingly.
 - **Pick one load-bearing idea.** One chapter, one essay, or one connected
   cluster of concepts that stands on its own. A film explains *one thing* well.
 - **If the source is a wiki or knowledge base** (a directory of pages, or a URL

@@ -261,11 +261,13 @@ const main = async (): Promise<number> => {
       console.log('  docent review <id> [--max-rounds] the inner loop: judge → revise → repeat');
       console.log('  docent flywheel                   the outer loop — recurring failures');
       console.log('  docent depthcheck <film>          the depth contract over a spec');
-      console.log('  docent hermetic [id] [--full]     end-to-end cascade validation');
-      console.log('  docent hermetic --fresh-user [--target claude|codex|all]  simulate install → first film in a tmpdir');
-      console.log('  docent hermetic --explain <url> [--target all]            full /docent-explain cascade per agent host (~30-50 min)');
-      console.log('  docent preflight                  · Go Live readiness — environment, contracts, cycle surface, hygiene');
       console.log('  docent env                        resolved paths and versions');
+      console.log('');
+      console.log('  internal-test commands (not part of the user-facing surface):');
+      console.log('    docent hermetic [id]            cascade harness against pinned gallery fixtures');
+      console.log('    docent hermetic --fresh-user    simulate install path in a tmpdir [--target claude|codex|all]');
+      console.log('    docent hermetic --explain <url> full skill cascade per agent host [--target all]');
+      console.log('    docent preflight                aggregate Go Live readiness check');
       return cmd ? 1 : 0;
   }
 };
