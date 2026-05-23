@@ -2094,5 +2094,129 @@
   "euclid-primes/euclid-recap-5": {
     "file": "audio/euclid-primes/euclid-recap-5.mp3",
     "seconds": 10.625
+  },
+  "stopping-by-woods/sbw-frame-1": {
+    "file": "audio/stopping-by-woods/sbw-frame-1.mp3",
+    "seconds": 13.675
+  },
+  "stopping-by-woods/sbw-frame-2": {
+    "file": "audio/stopping-by-woods/sbw-frame-2.mp3",
+    "seconds": 16.05
+  },
+  "stopping-by-woods/sbw-frame-3": {
+    "file": "audio/stopping-by-woods/sbw-frame-3.mp3",
+    "seconds": 11.925
+  },
+  "stopping-by-woods/sbw-pressures-1": {
+    "file": "audio/stopping-by-woods/sbw-pressures-1.mp3",
+    "seconds": 8.7
+  },
+  "stopping-by-woods/sbw-pressures-2": {
+    "file": "audio/stopping-by-woods/sbw-pressures-2.mp3",
+    "seconds": 9.0
+  },
+  "stopping-by-woods/sbw-pressures-3": {
+    "file": "audio/stopping-by-woods/sbw-pressures-3.mp3",
+    "seconds": 10.975
+  },
+  "stopping-by-woods/sbw-pressures-4": {
+    "file": "audio/stopping-by-woods/sbw-pressures-4.mp3",
+    "seconds": 9.1
+  },
+  "stopping-by-woods/sbw-stanzas-1": {
+    "file": "audio/stopping-by-woods/sbw-stanzas-1.mp3",
+    "seconds": 7.65
+  },
+  "stopping-by-woods/sbw-stanzas-2": {
+    "file": "audio/stopping-by-woods/sbw-stanzas-2.mp3",
+    "seconds": 9.275
+  },
+  "stopping-by-woods/sbw-stanzas-3": {
+    "file": "audio/stopping-by-woods/sbw-stanzas-3.mp3",
+    "seconds": 7.925
+  },
+  "stopping-by-woods/sbw-stanzas-4": {
+    "file": "audio/stopping-by-woods/sbw-stanzas-4.mp3",
+    "seconds": 10.1
+  },
+  "stopping-by-woods/sbw-passage-1": {
+    "file": "audio/stopping-by-woods/sbw-passage-1.mp3",
+    "seconds": 8.875
+  },
+  "stopping-by-woods/sbw-passage-2": {
+    "file": "audio/stopping-by-woods/sbw-passage-2.mp3",
+    "seconds": 10.15
+  },
+  "stopping-by-woods/sbw-passage-3": {
+    "file": "audio/stopping-by-woods/sbw-passage-3.mp3",
+    "seconds": 6.4
+  },
+  "stopping-by-woods/sbw-passage-4": {
+    "file": "audio/stopping-by-woods/sbw-passage-4.mp3",
+    "seconds": 6.325
+  },
+  "stopping-by-woods/sbw-passage-5": {
+    "file": "audio/stopping-by-woods/sbw-passage-5.mp3",
+    "seconds": 9.225
+  },
+  "stopping-by-woods/sbw-form-1": {
+    "file": "audio/stopping-by-woods/sbw-form-1.mp3",
+    "seconds": 9.775
+  },
+  "stopping-by-woods/sbw-form-2": {
+    "file": "audio/stopping-by-woods/sbw-form-2.mp3",
+    "seconds": 7.75
+  },
+  "stopping-by-woods/sbw-form-3": {
+    "file": "audio/stopping-by-woods/sbw-form-3.mp3",
+    "seconds": 13.95
+  },
+  "stopping-by-woods/sbw-form-4": {
+    "file": "audio/stopping-by-woods/sbw-form-4.mp3",
+    "seconds": 9.2
+  },
+  "stopping-by-woods/sbw-probe-1": {
+    "file": "audio/stopping-by-woods/sbw-probe-1.mp3",
+    "seconds": 10.225
+  },
+  "stopping-by-woods/sbw-probe-2": {
+    "file": "audio/stopping-by-woods/sbw-probe-2.mp3",
+    "seconds": 11.3
+  },
+  "stopping-by-woods/sbw-probe-3": {
+    "file": "audio/stopping-by-woods/sbw-probe-3.mp3",
+    "seconds": 8.175
+  },
+  "stopping-by-woods/sbw-tension-1": {
+    "file": "audio/stopping-by-woods/sbw-tension-1.mp3",
+    "seconds": 11.25
+  },
+  "stopping-by-woods/sbw-tension-2": {
+    "file": "audio/stopping-by-woods/sbw-tension-2.mp3",
+    "seconds": 15.075
+  },
+  "stopping-by-woods/sbw-tension-3": {
+    "file": "audio/stopping-by-woods/sbw-tension-3.mp3",
+    "seconds": 20.1
+  },
+  "stopping-by-woods/sbw-recap-1": {
+    "file": "audio/stopping-by-woods/sbw-recap-1.mp3",
+    "seconds": 8.35
+  },
+  "stopping-by-woods/sbw-recap-2": {
+    "file": "audio/stopping-by-woods/sbw-recap-2.mp3",
+    "seconds": 7.65
+  },
+  "stopping-by-woods/sbw-recap-3": {
+    "file": "audio/stopping-by-woods/sbw-recap-3.mp3",
+    "seconds": 8.45
+  },
+  "stopping-by-woods/sbw-recap-4": {
+    "file": "audio/stopping-by-woods/sbw-recap-4.mp3",
+    "seconds": 6.925
+  },
+  "stopping-by-woods/sbw-recap-5": {
+    "file": "audio/stopping-by-woods/sbw-recap-5.mp3",
+    "seconds": 13.55
   }
 }
