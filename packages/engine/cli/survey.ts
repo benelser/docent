@@ -298,19 +298,38 @@ export const survey = async (o: SurveyOpts): Promise<number> => {
       : ['codex', 'exec', prompt,
          '-C', REPO_ROOT,
          '--dangerously-bypass-approvals-and-sandbox'];
-  const proc = Bun.spawn(cmd, {
-    cwd: REPO_ROOT,
-    stdout: 'inherit',
-    stderr: 'inherit',
-    env: process.env,
-  });
+
   const timeoutMin = o.timeoutMin ?? 30;
-  const killer = setTimeout(() => {
-    console.error(`\n\x1b[31m✗\x1b[0m survey exceeded ${timeoutMin}m — killing the agent`);
-    proc.kill();
-  }, timeoutMin * 60_000);
-  const code = await proc.exited;
-  clearTimeout(killer);
+
+  // Retry the agent on transient failures (non-zero exit AND no artefact
+  // written). A flaky network drop should not burn a 25-minute cycle. We
+  // do NOT retry when the artefact exists — a non-zero exit with a spec
+  // on disk means the agent finished and chose to signal an issue
+  // (depth, schema, or our own post-hoc check); replaying would discard
+  // its work and waste tokens.
+  const MAX_TRIES = 2;
+  let code = -1;
+  for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
+    const proc = Bun.spawn(cmd, {
+      cwd: REPO_ROOT,
+      stdout: 'inherit',
+      stderr: 'inherit',
+      env: process.env,
+    });
+    const killer = setTimeout(() => {
+      console.error(`\n\x1b[31m✗\x1b[0m survey exceeded ${timeoutMin}m — killing the agent`);
+      proc.kill();
+    }, timeoutMin * 60_000);
+    code = await proc.exited;
+    clearTimeout(killer);
+    if (code === 0 || existsSync(specPath)) break;
+    if (attempt < MAX_TRIES) {
+      console.log(
+        `\n\x1b[33m⚠\x1b[0m agent exit ${code} with no artefact — likely transient ` +
+          `(socket drop, model 5xx, rate limit). Retrying (${attempt + 1}/${MAX_TRIES})…\x1b[0m\n`,
+      );
+    }
+  }
   const wall = (performance.now() - t0) / 1000;
   console.log(`\n  agent exited ${code} · ${wall.toFixed(0)}s wall`);
 
@@ -325,15 +344,29 @@ export const survey = async (o: SurveyOpts): Promise<number> => {
     console.error(`\x1b[31m✗\x1b[0m films/${o.id}.json is not valid JSON: ${e}`);
     return 1;
   }
+  // Mirror cascade.ts / hermetic.ts / treatment.ts: severity:'warning'
+  // issues (layout overlap, wide-at-last-col) surface but do NOT block.
+  // Without the split, the survey would lock the authoring agent in a
+  // loop "fixing" what was never a hard fail.
   const issues = validateSpec(spec);
+  const hardFails = issues.filter((i) => i.severity !== 'warning');
+  const softWarns = issues.filter((i) => i.severity === 'warning');
   const ds = depthSummary(runDepthCheck(spec as Parameters<typeof runDepthCheck>[0]));
   console.log(
-    `  schema:  ${issues.length === 0 ? '\x1b[32mvalid\x1b[0m' : `\x1b[31m${issues.length} issue(s)\x1b[0m`}`,
+    `  schema:  ${
+      hardFails.length === 0
+        ? softWarns.length === 0
+          ? '\x1b[32mvalid\x1b[0m'
+          : `\x1b[33mvalid (${softWarns.length} warning${softWarns.length === 1 ? '' : 's'})\x1b[0m`
+        : `\x1b[31m${hardFails.length} issue(s)\x1b[0m`
+    }`,
   );
+  for (const i of hardFails) console.log(`    \x1b[31m✗\x1b[0m ${i.path || '(root)'}: ${i.message}`);
+  for (const w of softWarns) console.log(`    \x1b[33m⚠\x1b[0m ${w.path || '(root)'}: ${w.message}`);
   console.log(
     `  depth:   ${ds.fail === 0 ? `\x1b[32mcontract met ${ds.ok}/${ds.total}\x1b[0m` : `\x1b[31m${ds.fail} fail\x1b[0m`}`,
   );
-  const ok = issues.length === 0 && ds.fail === 0;
+  const ok = hardFails.length === 0 && ds.fail === 0;
   console.log(ok ? `\x1b[32m✔ survey produced a valid, depth-clean spec\x1b[0m` : `\x1b[31m✗ spec needs work\x1b[0m`);
   return ok ? 0 : 1;
 };
