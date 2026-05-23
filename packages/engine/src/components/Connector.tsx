@@ -171,20 +171,42 @@ export const Connector: React.FC<{
           ∴
         </text>
       ) : null}
-      {label ? (
-        <text
-          x={mid.x - 18}
-          y={mid.y + 5}
-          textAnchor="end"
-          fontFamily={monoFamily}
-          fontSize={17}
-          letterSpacing={0.3}
-          fill={accentHex}
-          opacity={draw}
-        >
-          {label}
-        </text>
-      ) : null}
+      {label ? (() => {
+        // Offset the label perpendicular to the line so it never sits inside a
+        // card. On a straight edge, push it off the chord by 18px; on a curved
+        // (feedback) edge, the control point is already off-axis, so just nudge
+        // below it.
+        let lx = mid.x;
+        let ly = mid.y;
+        if (curved) {
+          ly = mid.y + 22;
+        } else {
+          const s = straight!.start;
+          const dxL = end.x - s.x;
+          const dyL = end.y - s.y;
+          const lenL = Math.hypot(dxL, dyL) || 1;
+          lx += (-dyL / lenL) * 18;
+          ly += (dxL / lenL) * 18;
+        }
+        // A subtle outer-stroke gives the label air against the card glow.
+        return (
+          <text
+            x={lx}
+            y={ly}
+            textAnchor="middle"
+            fontFamily={monoFamily}
+            fontSize={17}
+            letterSpacing={0.3}
+            fill={accentHex}
+            opacity={draw}
+            stroke="#0e1116"
+            strokeWidth={3}
+            paintOrder="stroke"
+          >
+            {label}
+          </text>
+        );
+      })() : null}
     </svg>
   );
 };
