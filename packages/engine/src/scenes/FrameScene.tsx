@@ -30,6 +30,17 @@ export const FrameScene: React.FC<SceneProps> = ({
   const footA = rise(enterOf('footnote'));
   const blink = Math.floor(frame / 18) % 2 === 0;
 
+  // Auto-fit the title — long titles (a poem name, a multi-clause subject)
+  // would otherwise blow through the safe band at the static 158px size and
+  // run flush to the frame edges. Shrink in steps; clamp the box.
+  const titleText = scene.title ?? '';
+  const titleFont =
+    titleText.length <= 15 ? 158 :
+    titleText.length <= 22 ? 132 :
+    titleText.length <= 30 ? 108 :
+    titleText.length <= 40 ? 88 :
+    72;
+
   return (
     <SceneFrame
       accentHex={accentHex}
@@ -70,16 +81,20 @@ export const FrameScene: React.FC<SceneProps> = ({
           />
         </div>
 
-        {/* title */}
+        {/* title — auto-fit for long titles; maxWidth keeps the box inside the safe band */}
         <div
           style={{
-            fontSize: 158,
+            fontSize: titleFont,
             fontWeight: 700,
             color: theme.ink.hi,
-            letterSpacing: -3,
+            letterSpacing: -titleFont * 0.019,
             opacity: titleA,
             transform: `scale(${interpolate(titleA, [0, 1], [0.92, 1])})`,
             textShadow: `0 30px 90px ${accentHex}30`,
+            maxWidth: 1680,
+            textAlign: 'center',
+            lineHeight: 1.05,
+            padding: '0 16px',
           }}
         >
           {scene.title}
