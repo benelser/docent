@@ -108,7 +108,14 @@ export const PassageScene: React.FC<SceneProps> = ({
   const lineCount = text.split('\n').length;
   const fontSize = lineCount > 22 ? 24 : lineCount > 12 ? 28 : 33;
   const lineH = Math.round(fontSize * 1.62);
-  const panelW = 1180;
+  // Size the panel to the longest line — hug short verse, breathe for long
+  // prose. The 1180 ceiling holds the safe band on a wide document; the 720
+  // floor stops a single-word mark from collapsing the box.
+  const longestLine = text
+    .split('\n')
+    .reduce((a, b) => (b.length > a.length ? b : a), '');
+  const estTextWidth = longestLine.length * fontSize * 0.55;
+  const panelW = Math.round(Math.max(720, Math.min(estTextWidth + 132, 1180)));
 
   const winScale = spring({frame, fps, config: {damping: 200, mass: 0.6}});
   const winOpacity = interpolate(frame, [0, 9], [0, 1], {
