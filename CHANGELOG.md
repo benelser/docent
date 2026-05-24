@@ -5,6 +5,53 @@ All notable changes to docent.
 The engine version reflects what the grammar covers — minor bumps add or
 remove primitives or contracts, patch bumps fix renderers or tooling.
 
+
+## v2.2.0 — renderer migration: styling pipeline reaches the pixels
+
+> The styling pipeline shipped as inert infrastructure in v2.1.0. v2.2.0
+> plumbs it through every scene renderer and threads it from a film
+> spec's `style: {preset, intent, rationale}` commitment all the way to
+> a token read in a `<text>` element. The four README hero films now
+> commit to presets — and finally render visibly different.
+
+### Changed — renderer migration end-to-end
+
+- Every scene renderer and every chrome component (`Card`, `SceneFrame`,
+  `Connector`, `Pulse`, `Narration`, `NodeRepr`) now accepts
+  `style: ResolvedStyle` as a prop. `Film.tsx` calls `resolveStyle(film.style)`
+  once per render and threads the result through the `common` props.
+- All direct `theme.ts` reads inside renderers (`theme.bg.*`, `theme.ink.*`)
+  replaced with token reads off `style.tokens.{bg,ink,typography,accent}`.
+  `theme.ts` stays as the resolver's default — the renderer surface no
+  longer talks to it directly.
+- 30 scene-renderer files (24 scenes + 6 chrome components) touched
+  by the three parallel migration agents (M1 chrome, M2 diagrammatic,
+  M3 narrative+motion).
+
+### Added — preset commitments on the four README films
+
+- `films/docent-self.json` — `{preset: "engineering", intent: ..., rationale: ...}`
+- `films/openclaw-ar.json` — engineering
+- `films/lethal-trifecta-blog.json` — editorial
+- `films/arxiv-2512-14806.json` — paper
+
+The films are now tracked in archcast (previously ephemeral in the
+engine clone). The render artifacts on v2.2.0's release page reflect
+the preset selections.
+
+### Verified
+
+- `bunx tsc --noEmit` clean across `packages/engine`.
+- Hermetic gallery 4/4 GREEN (linear-algebra, kubernetes-pr,
+  euclid-primes, stopping-by-woods).
+- Every existing demo depthchecks at v2.1.1 baseline.
+
+### Coming in v2.2.1
+
+- Text quality audit (FittedText helper + per-scene long-text strategies)
+  — already complete on branch `text-quality-pass`, lands next as a
+  focused merge.
+
 ## v2.1.1 — mechanism + venn + landscape, discriminator cleanup
 
 > The three primitives held out of v2.1.0 land. The grammar grows from

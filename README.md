@@ -21,10 +21,10 @@ Hover for motion, click for the full HD mp4.
 
 |  |  |
 |---|---|
-| [![docent reviewing its own architecture](docs/stills/docent-self-preview.gif)](https://github.com/benelser/docent/releases/download/v2.1.1/docent-self.mp4) | [![OpenClaw — one local daemon, twenty-two channels](docs/stills/openclaw-ar-preview.gif)](https://github.com/benelser/docent/releases/download/v2.1.1/openclaw-ar.mp4) |
-| **▶ docent** *— reviewing its own architecture* — 11 min · 52 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.1.1/docent-self.mp4)<br/>`frame · prior-art · structure · progression · compare · tension · quantities · recap` | **▶ OpenClaw** *— one local daemon, twenty-two channels* — 13 min · 83 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.1.1/openclaw-ar.mp4)<br/>`frame · prior-art · structure · walkthrough · structure · tension · quantities · recap` |
-| [![The Lethal Trifecta](docs/stills/lethal-trifecta-blog-preview.gif)](https://github.com/benelser/docent/releases/download/v2.1.1/lethal-trifecta-blog.mp4) | [![Let the Barbarians In](docs/stills/arxiv-2512-14806-preview.gif)](https://github.com/benelser/docent/releases/download/v2.1.1/arxiv-2512-14806.mp4) |
-| **▶ The Lethal Trifecta** *— Simon Willison's essay on agent security* — 13 min · 68 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.1.1/lethal-trifecta-blog.mp4)<br/>`frame · structure · passage · walkthrough · quantities · compare · tension · big-idea · recap` | **▶ Let the Barbarians In** *— a recent arXiv paper, fetched as PDF* — 11 min · 52 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.1.1/arxiv-2512-14806.mp4)<br/>`frame · compare · structure · quantities · tension · probe · big-idea · recap` |
+| [![docent reviewing its own architecture](docs/stills/docent-self-preview.gif)](https://github.com/benelser/docent/releases/download/v2.2.0/docent-self.mp4) | [![OpenClaw — one local daemon, twenty-two channels](docs/stills/openclaw-ar-preview.gif)](https://github.com/benelser/docent/releases/download/v2.2.0/openclaw-ar.mp4) |
+| **▶ docent** *— reviewing its own architecture* — 11 min · 52 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.2.0/docent-self.mp4)<br/>`frame · prior-art · structure · progression · compare · tension · quantities · recap` | **▶ OpenClaw** *— one local daemon, twenty-two channels* — 13 min · 83 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.2.0/openclaw-ar.mp4)<br/>`frame · prior-art · structure · walkthrough · structure · tension · quantities · recap` |
+| [![The Lethal Trifecta](docs/stills/lethal-trifecta-blog-preview.gif)](https://github.com/benelser/docent/releases/download/v2.2.0/lethal-trifecta-blog.mp4) | [![Let the Barbarians In](docs/stills/arxiv-2512-14806-preview.gif)](https://github.com/benelser/docent/releases/download/v2.2.0/arxiv-2512-14806.mp4) |
+| **▶ The Lethal Trifecta** *— Simon Willison's essay on agent security* — 13 min · 68 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.2.0/lethal-trifecta-blog.mp4)<br/>`frame · structure · passage · walkthrough · quantities · compare · tension · big-idea · recap` | **▶ Let the Barbarians In** *— a recent arXiv paper, fetched as PDF* — 11 min · 52 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.2.0/arxiv-2512-14806.mp4)<br/>`frame · compare · structure · quantities · tension · probe · big-idea · recap` |
 
 Each film went **survey → treatment → spec → judge → render** through
 the same engine. The grammar is what's shared. The argument is what
@@ -63,7 +63,7 @@ The grammar is the contract between them.
 
 ```bash
 # 1. Install the agent layer into your coding host
-apm install -t claude benelser/docent/packages/agent#v2.1.1
+apm install -t claude benelser/docent/packages/agent#v2.2.0
 # OR for Codex:
 codex plugin marketplace add github.com/benelser/docent
 codex plugin add docent-agent@docent
