@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "timeline"]},
+        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "timeline", "tree"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -135,6 +135,14 @@
           "type": "array",
           "description": "timeline scenes — horizontal bars between two dates (wars, eras, regimes)",
           "items": {"$ref": "#/$defs/timeline-span"}
+        },
+        "root": {
+          "$ref": "#/$defs/tree-node",
+          "description": "tree scenes — the top of the rooted hierarchy; every node may carry its own recursive `children`"
+        },
+        "orientation": {
+          "enum": ["vertical", "horizontal"],
+          "description": "tree scenes — layout axis: vertical (root at top, the org-chart shape) or horizontal (root at left, the taxonomy shape). Defaults to vertical."
         },
         "beats": {
           "type": "array",
@@ -467,6 +475,26 @@
         "to": {"type": "string", "minLength": 1, "description": "the span's right edge — a parseable date string, must be >= `from`"},
         "label": {"type": "string", "minLength": 1, "description": "the span's short label, drawn inside the bar"},
         "lane": {"type": "integer", "minimum": 0, "description": "vertical lane for stacking overlapping spans"}
+      }
+    },
+    "tree-node": {
+      "type": "object",
+      "description": "tree scenes — one node in a rooted hierarchy. Recursive: `children` references the same $def. Up to 5 levels deep and ~30 visible nodes total; the validator HARD FAILS on max depth, total count, or non-unique ids. Depth must encode an actual classification axis — kingdom→phylum→class, parent→child reporting, type→instance.",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique across the whole tree; beats reveal/focus this id"},
+        "label": {"type": "string", "description": "the node's name"},
+        "sub": {"type": "string", "description": "a short one-line gloss"},
+        "accent": {
+          "enum": ["blue", "cyan", "green", "amber", "rose", "violet"],
+          "description": "per-node accent override — highlights one branch of the tree against the scene's default"
+        },
+        "children": {
+          "type": "array",
+          "description": "the recursive structure — a node's children are themselves tree-nodes",
+          "items": {"$ref": "#/$defs/tree-node"}
+        }
       }
     }
   }

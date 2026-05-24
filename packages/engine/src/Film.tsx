@@ -21,6 +21,7 @@ import {FigureScene} from './scenes/FigureScene';
 import {BigIdeaScene} from './scenes/BigIdeaScene';
 import {PriorArtScene} from './scenes/PriorArtScene';
 import {TimelineScene} from './scenes/TimelineScene';
+import {TreeScene} from './scenes/TreeScene';
 
 // `treatment` (a scene knob) — the visual *skin*, decoupled from scene type.
 // Today the hand-drawn chalkboard skin is welded to the `tension` type and the
@@ -104,6 +105,12 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
               <PriorArtScene {...common} />
             ) : t === 'timeline' ? (
               <TimelineScene {...common} />
+            ) : t === 'tree' ? (
+              // tree — a rooted hierarchy / classification. The renderer reads
+              // depth off the recursion rather than off a (col, row) grid, so
+              // levels carry meaning (kingdom→phylum→class, model→toolset→
+              // orchestrator→application).
+              <TreeScene {...common} />
             ) : t === 'tension' || t === 'structure' ? (
               // Skin chosen by `treatment`: sketch → chalkboard, whiteboard →
               // marker-on-paper (same rough.js renderer, light palette picked

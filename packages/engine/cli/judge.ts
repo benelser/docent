@@ -73,6 +73,11 @@ const DEPTH_DIMENSIONS = [
   {id: 'style-honest', label: 'Style is honest — the preset matches the film\'s register; an analytical paper does not ship in playful, an executive deck is not editorial'},
   // Timeline scene: time as load-bearing axis.
   {id: 'time-is-load-bearing', label: 'Time is load-bearing — the gaps between events are part of the argument, not decoration'},
+  // tree-scene: when the film uses a `tree`, the levels must carry information.
+  // A tree whose depth is decorative — only one node per level, or levels that
+  // restate the level above — fails this dimension. Films with no tree scene
+  // mark this n/a.
+  {id: 'hierarchy-meaningful', label: 'Hierarchy meaningful — the levels carry information; depth is not decorative'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per
