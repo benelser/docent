@@ -11,7 +11,7 @@
 // docent-agent APM package) is the second, judgement-based gate that catches
 // the subtle ones ("this verdict restates, it does not rule").
 
-import {existsSync} from 'node:fs';
+import {existsSync, readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {paths} from './paths';
 import {parseTimelineDate} from '../src/engine/time';
@@ -427,6 +427,53 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
           ? `"${statement}" — ${words} words`
           : `the big-idea sentence fails the contract: ${reasons.join('; ')}`,
       });
+    }
+  }
+
+  // narration-rhythm — informational rule that fires when the audio
+  // manifest exists AND median trailing silence exceeds 400 ms across
+  // more than 30 % of beats. Surfaces a TTS-pipeline regression to the
+  // depth-review surface without HARD-FAILing the spec — the spec author
+  // cannot directly control narration silence; the pipeline can.
+  //
+  // Healthy rhythm is *silent*: the rule contributes a finding only when
+  // the rhythm budget is violated. This keeps the depth contract count
+  // stable for films that pass — adding the rule does not change the
+  // "n/n met" headline on a healthy pipeline.
+  const filmId = spec.meta.id;
+  if (filmId) {
+    const audioManifest = join(paths.publicDir, 'audio', filmId, 'manifest.json');
+    if (existsSync(audioManifest)) {
+      try {
+        const m = JSON.parse(readFileSync(audioManifest, 'utf8')) as {
+          beats?: Record<string, {trailingSilenceMs?: number | null}>;
+        };
+        const tails = Object.values(m.beats ?? {})
+          .map((b) => b.trailingSilenceMs)
+          .filter((v): v is number => typeof v === 'number');
+        if (tails.length > 0) {
+          const NOISY_MS = 400;
+          const noisyShare = tails.filter((t) => t > NOISY_MS).length / tails.length;
+          const sorted = [...tails].sort((a, b) => a - b);
+          const median =
+            sorted.length % 2
+              ? sorted[(sorted.length - 1) / 2]
+              : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
+          const noisy = median > NOISY_MS && noisyShare > 0.3;
+          if (noisy) {
+            findings.push({
+              id: 'narration-rhythm',
+              label:
+                'Narration rhythm — per-beat trailing silence is bounded (≤ 400 ms median, < 30 % of beats noisy)',
+              status: 'warn',
+              detail: `median trailing silence ${median.toFixed(0)} ms across ${tails.length} beats; ${(noisyShare * 100).toFixed(0)} % exceed ${NOISY_MS} ms — TTS pipeline may have regressed (see pipeline/tts.py)`,
+            });
+          }
+        }
+      } catch {
+        // A malformed audio manifest is not a depth concern — let the
+        // pipeline surface it on the next run.
+      }
     }
   }
 
