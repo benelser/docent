@@ -107,7 +107,7 @@ export const CausalLoopScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const {bg, ink, accent: accentTokens} = style.tokens;
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
-  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
   const variables: CausalVariable[] = scene.variables ?? [];
   const edges: CausalEdge[] = scene.causalEdges ?? [];
   const loops: CausalLoop[] = scene.loops ?? [];

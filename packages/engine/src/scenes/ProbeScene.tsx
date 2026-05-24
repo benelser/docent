@@ -30,7 +30,7 @@ export const ProbeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const scene = ts.scene;
   // `palette` (a scene knob) re-selects the chrome accent over its family;
   // without a palette this is exactly `accent(scene.accent)`.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
   const baseline = scene.baseline;
   const variations = scene.variations ?? [];
 

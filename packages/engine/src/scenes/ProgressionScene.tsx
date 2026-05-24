@@ -38,7 +38,7 @@ export const ProgressionScene: React.FC<SceneProps & {style: ResolvedStyle}> = (
   // without a palette this is exactly `accent(scene.accent)`. paletteSceneHex
   // still resolves through theme.ts ACCENTS (owned by engine/knobs) — a
   // follow-on sprint will route palettes through the token accent map too.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
   const stages = scene.stages ?? [];
   const flow = scene.flow ?? 'linear';
   const cycle = flow === 'cycle';

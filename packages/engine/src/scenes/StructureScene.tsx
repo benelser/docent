@@ -50,7 +50,7 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // The scene's chrome accent. `palette` (a scene knob), when set, re-selects
   // it over the palette family; without a palette this is exactly
   // `accent(scene.accent)` — byte-identical to before the knob existed.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
   const cols = scene.grid?.cols ?? 3;
   const rows = scene.grid?.rows ?? 3;
   // Resolve any wide-flag collisions before computing boxes — the layout-level

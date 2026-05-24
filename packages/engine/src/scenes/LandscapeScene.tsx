@@ -48,7 +48,7 @@ export const LandscapeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const viz = style.visualization;
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
-  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
   // Narrow `Scene.xAxis`/`yAxis` (the widened `Axis | LandscapeAxis` union)
   // via the `kind` discriminator. The validator pins `kind === 'landscape'`
   // on every landscape scene's axes; this read is safe on any spec that

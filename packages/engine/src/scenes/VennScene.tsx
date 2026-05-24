@@ -93,7 +93,7 @@ export const VennScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const {fps} = useVideoConfig();
   const scene = ts.scene;
   const {ink} = style.tokens;
-  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
   const sets = scene.sets ?? [];
   // VennScene reads its OWN regions variant — VennRegion (with `in`). The
   // spec union (MapRegion[] | VennRegion[]) is widened on Scene so the same
