@@ -8,30 +8,42 @@ import type {FilmSpec} from './spec';
 
 import aiAgentStack from '../../../../films/ai-agent-stack.json';
 import aiLabRace from '../../../../films/ai-lab-race.json';
+import arxiv251214806 from '../../../../films/arxiv-2512-14806.json';
 import authOverlap from '../../../../films/auth-overlap.json';
 import causalLoopPrimer from '../../../../films/causal-loop-primer.json';
 import docentLandscape from '../../../../films/docent-landscape.json';
+import docentSelf from '../../../../films/docent-self.json';
 import euclidPrimes from '../../../../films/euclid-primes.json';
 import grammarCheck from '../../../../films/grammar-check.json';
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
+import lethalTrifectaBlog from '../../../../films/lethal-trifecta-blog.json';
 import linearAlgebra from '../../../../films/linear-algebra.json';
 import multiRegionDb from '../../../../films/multi-region-db.json';
 import onboardingFirst30Minutes from '../../../../films/onboarding-first-30-minutes.json';
+import openclawAr from '../../../../films/openclaw-ar.json';
 import stoppingByWoods from '../../../../films/stopping-by-woods.json';
+import textStressDiagrammatic from '../../../../films/text-stress-diagrammatic.json';
+import textStressNarrative from '../../../../films/text-stress-narrative.json';
 import thermostat from '../../../../films/thermostat.json';
 
 export const FILMS: Record<string, FilmSpec> = {
   'ai-agent-stack': aiAgentStack as FilmSpec,
   'ai-lab-race': aiLabRace as FilmSpec,
+  'arxiv-2512-14806': arxiv251214806 as FilmSpec,
   'auth-overlap': authOverlap as FilmSpec,
   'causal-loop-primer': causalLoopPrimer as FilmSpec,
   'docent-landscape': docentLandscape as FilmSpec,
+  'docent-self': docentSelf as FilmSpec,
   'euclid-primes': euclidPrimes as FilmSpec,
   'grammar-check': grammarCheck as FilmSpec,
   'kubernetes-pr': kubernetesPr as FilmSpec,
+  'lethal-trifecta-blog': lethalTrifectaBlog as FilmSpec,
   'linear-algebra': linearAlgebra as FilmSpec,
   'multi-region-db': multiRegionDb as FilmSpec,
   'onboarding-first-30-minutes': onboardingFirst30Minutes as FilmSpec,
+  'openclaw-ar': openclawAr as FilmSpec,
   'stopping-by-woods': stoppingByWoods as FilmSpec,
+  'text-stress-diagrammatic': textStressDiagrammatic as FilmSpec,
+  'text-stress-narrative': textStressNarrative as FilmSpec,
   'thermostat': thermostat as FilmSpec,
 };

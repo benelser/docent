@@ -1,0 +1,361 @@
+{
+  "meta": {
+    "id": "text-stress-diagrammatic",
+    "title": "Diagrammatic Text Stress — Every Diagram Slot, Filled With Prose The Slot Did Not Expect",
+    "subject": "the engine's text-fitting contract under adversarial input",
+    "repo": "docent",
+    "prompt": "architecture review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "neutral"
+  },
+  "scenes": [
+    {
+      "id": "s-frame",
+      "type": "frame",
+      "accent": "blue",
+      "kicker": "TEXT STRESS // DIAGRAMMATIC // FIXTURE FOR THE FITTED TEXT RENDERING PASS — A SLOT-BY-SLOT TORTURE TEST OF EVERY DIAGRAM PRIMITIVE",
+      "title": "A Torture Test of Every Diagrammatic Text Slot in the docent Engine — Long Labels, Long Subs, Long Cells, Long Captions",
+      "tagline": "Every label, every cell, every axis tick, every callout — each filled with a sentence two hundred and fifty characters long, so the renderer's text-fitting contract has to do real work and the depth-review eye can confirm no slot truncates ugly or overruns its container.",
+      "footnote": "This fixture exists so a human or a regression sweep can verify the long-text strategy works end-to-end: auto-shrink kicks in where the slot is small; multi-line wrap holds the line count where prose lives; the ellipsis fallback uses the real U+2026 glyph; and never, anywhere, does a mid-word clip or an off-frame overrun escape into the rendered video.",
+      "beats": [
+        {
+          "id": "frame-1",
+          "narration": "This fixture is the torture test — every diagram slot in the docent engine, filled with prose two hundred and fifty characters long, so the text-fitting strategy has to make a visible choice on every primitive.",
+          "show": "title"
+        },
+        {
+          "id": "frame-2",
+          "narration": "Compared with the gallery films, this fixture trades narrative coherence for a clean diagnostic: each scene exercises one renderer at the edge.",
+          "show": "tagline"
+        }
+      ]
+    },
+    {
+      "id": "s-structure",
+      "type": "structure",
+      "accent": "cyan",
+      "kicker": "TEXT STRESS // STRUCTURE — NODE LABELS, EDGE LABELS, AND SUB-LINES PUSHED PAST THEIR EXPECTED LENGTH",
+      "heading": "structure scene — node labels, node sub-lines, and edge labels each carry prose long enough to force the renderer's fit logic to step down through every tier",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "A Distributed Coordination Service That Maintains Quorum Across Three Availability Zones With Eventually-Consistent Read Replicas In Two Additional Regions",
+          "sub": "The control plane lives here; every write goes through a Raft leader and every read can be served from any quorum member, which makes the latency profile asymmetric and the failure modes interesting to draw on a single edge.",
+          "col": 0, "row": 0, "accent": "blue"
+        },
+        {
+          "id": "n2",
+          "label": "Edge Cache With An LRU Eviction Policy Tuned For The Long Tail Of Cold-Object Reads — Survives A Hot Origin Outage For Roughly Forty Minutes",
+          "sub": "Reads it can serve cold from the LRU never reach the origin; reads it cannot serve are queued, dedup'd by request signature, and forwarded to the origin in a single batched fan-out per second.",
+          "col": 2, "row": 0, "accent": "green"
+        },
+        {
+          "id": "n3",
+          "label": "The Aggregator That Joins Per-Tenant Activity Streams With The Region-Level Billing Ledger Inside A Single Logical Window Of Five Wall-Clock Seconds",
+          "sub": "When a tenant straddles two windows the aggregator double-counts at most once; when it straddles three the aggregator drops the late event silently — the very corner the risk node calls out below.",
+          "col": 1, "row": 1, "accent": "amber",
+          "weight": "hero"
+        }
+      ],
+      "edges": [
+        {
+          "id": "e12",
+          "from": "n1",
+          "to": "n2",
+          "label": "writes-through-after-quorum-commit ▸ replicated to edge cache asynchronously over the cross-region bus with at-least-once delivery and idempotent application"
+        },
+        {
+          "id": "e13",
+          "from": "n1",
+          "to": "n3",
+          "label": "ships every committed tenant activity event downstream to the aggregator with a per-tenant watermark, sequenced by Raft log index, never reordered across that boundary",
+          "kind": "causes",
+          "strength": "necessary"
+        }
+      ],
+      "beats": [
+        {
+          "id": "structure-1",
+          "narration": "Three node labels and two edge labels are each over a hundred and twenty characters — long enough that the card's fitFont and the connector's fitFontSize both have to drop the font size while keeping the labels legible. We chose the auto-shrink strategy over truncation here so the reader can still read the whole label.",
+          "reveal": ["n1", "n2", "e12"]
+        },
+        {
+          "id": "structure-2",
+          "narration": "The aggregator is the hero — and the failure mode it owns is a load-bearing trade-off; we accepted late-event loss instead of holding writes open indefinitely.",
+          "reveal": ["n3", "e13"],
+          "focus": ["n3"],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "s-walkthrough",
+      "type": "walkthrough",
+      "accent": "green",
+      "kicker": "TEXT STRESS // WALKTHROUGH — ACTOR LABELS WITH FULL DESCRIPTIVE NAMES AND MESSAGE LABELS THE LENGTH OF A COMMENT",
+      "heading": "walkthrough scene — actor headers and message labels that stretch past their pill widths so the renderer has to wrap actors and shrink messages on the line",
+      "actors": [
+        {
+          "id": "u",
+          "label": "Authenticated Developer With An Active Workspace Pinned To us-east-2c",
+          "sub": "the user the trace starts from — a real persona, not a stick figure"
+        },
+        {
+          "id": "g",
+          "label": "Edge Gateway With TLS Termination, Rate Limiting, And A Per-IP Bucket",
+          "sub": "the choke point every external request crosses on its way into the platform"
+        },
+        {
+          "id": "a",
+          "label": "Application Service That Owns The Tenant-Activity Domain And Streams Events Outward",
+          "sub": "the workhorse — every business-logic decision passes through here at least once per request"
+        }
+      ],
+      "beats": [
+        {
+          "id": "walk-1",
+          "narration": "Each actor pill carries a long descriptive label and an even longer sub; the renderer wraps both inside the pill rather than letting them spill past the edge.",
+          "message": {
+            "from": "u",
+            "to": "g",
+            "label": "POST /v1/workspaces/{wid}/activity?include=billing&dedup=true&projection=full — issue a tenant-activity event with the full payload projection and idempotency hint",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "walk-2",
+          "narration": "The forwarded request carries a deduplication hint and a projection hint; the gateway forwards it after rate-limit and auth, no transformation in between.",
+          "message": {
+            "from": "g",
+            "to": "a",
+            "label": "forward → activity-svc::ingest with the original idempotency key and the trace context attached; expect a synchronous 200 if the event was novel, 204 if it was a duplicate inside the dedup window",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "walk-3",
+          "narration": "The application replies once it has committed the event to the Raft log; the response is short, but the request label was long, and that is the point of this case.",
+          "message": {
+            "from": "a",
+            "to": "g",
+            "label": "200 OK — Raft log index 1839472; event accepted, will be aggregated within the next five-second window unless the watermark advances first",
+            "kind": "reply"
+          }
+        }
+      ]
+    },
+    {
+      "id": "s-compare",
+      "type": "compare",
+      "accent": "amber",
+      "kicker": "TEXT STRESS // COMPARE — COLUMN HEADERS WITH FULL VENDOR NAMES AND CELLS WITH THE FULL PROSE OF A DESIGN-DOC TRADE-OFF",
+      "heading": "compare scene — long column headers, long criterion rows, and cells filled with multi-clause sentences instead of one-word verdicts",
+      "columns": [
+        {
+          "id": "c1",
+          "label": "Distributed Event-Sourced Commit Log With Per-Tenant Partitions",
+          "sub": "vendor option A — fully managed by the team that ships the runtime"
+        },
+        {
+          "id": "c2",
+          "label": "Single-Tenant Append-Only File With Synchronous Cross-Region Replication",
+          "sub": "vendor option B — the conservative choice; everyone's used it before"
+        },
+        {
+          "id": "c3",
+          "label": "Hybrid Tiered Storage With Per-Region Hot Tier And Global Cold Tier",
+          "sub": "vendor option C — newer; the operational story is less proven"
+        }
+      ],
+      "rows": [
+        {
+          "id": "r1",
+          "label": "Operational complexity per consensus event measured during a typical week",
+          "cells": [
+            {"text": "Five operators on call across three regions; one playbook per failure class; a typical week sees two playbook executions, mostly benign."},
+            {"text": "Two operators on call; the failure modes are well understood and well drilled; a typical week sees zero playbook executions and most months see fewer than five.", "verdict": "win"},
+            {"text": "Unknown; this is a new system and the operational story is still being written, so the first six months would carry a real ops tax we cannot estimate.", "verdict": "lose"}
+          ]
+        },
+        {
+          "id": "r2",
+          "label": "Time-to-first-meaningful-response under a regional partition that lasts thirty minutes",
+          "cells": [
+            {"text": "Sub-second from the read replicas in the surviving region, but writes degrade to read-only until quorum is restored; a measured trade-off the team has lived with.", "verdict": "win"},
+            {"text": "Reads continue but writes block until the synchronous replication catches up — the worst case is the full duration of the partition.", "verdict": "lose"},
+            {"text": "Hot tier serves reads from the local region; writes can be served from the cold tier but the latency triples and the user-visible effect is unhappy.", "verdict": "lose"}
+          ]
+        },
+        {
+          "id": "r3",
+          "label": "Eventual consistency window across regional read replicas",
+          "cells": [
+            {"text": "Bounded by the cross-region commit lag; ninety-ninth percentile around two seconds."},
+            {"text": "Synchronous replication guarantees zero drift; the cost is the write-latency picture above.", "verdict": "win"},
+            {"text": "Eventual; the cold tier can lag the hot tier by minutes during a sustained cross-region traffic spike."}
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "id": "compare-1",
+          "narration": "The cells in this scene are deliberately full sentences — most compare scenes use four-word verdicts. We chose this density over a clean two-word reading because the trade-off itself lives in the prose, not in the gloss.",
+          "reveal": 1
+        },
+        {
+          "id": "compare-2",
+          "narration": "The fit logic wraps to three lines and shrinks within the cell; nothing escapes the column. Without the controlled wrap the renderer would have dropped sentences off the side of the table.",
+          "reveal": 3
+        }
+      ]
+    },
+    {
+      "id": "s-quantities",
+      "type": "quantities",
+      "accent": "cyan",
+      "kicker": "TEXT STRESS // QUANTITIES — FIGURE CARDS WITH LONG LABELS AND VALUES THAT ARE NOT JUST INTEGERS",
+      "heading": "quantities scene — figures with long uppercase captions, exponential-notation values, and full-sentence notes beneath the number",
+      "figures": [
+        {
+          "id": "q1",
+          "label": "Estimated maximum sustained throughput at the ninety-ninth percentile across all three regions",
+          "value": "4.7 × 10²³",
+          "unit": "events/yr",
+          "note": "Derived from a year of production traces; the headline number is an upper bound during peak black-friday-style traffic, not a typical week."
+        },
+        {
+          "id": "q2",
+          "label": "Storage amortized per tenant per month under the current dedup-and-tier policy",
+          "value": "1,247.93",
+          "unit": "GB·mo",
+          "note": "This is the median across the long tail; the heaviest tenant is over an order of magnitude larger and skews the mean without changing the median much."
+        },
+        {
+          "id": "q3",
+          "label": "Operator pages per quarter under the current alert-routing rules",
+          "value": "42",
+          "unit": "pages/Q",
+          "note": "Down from one hundred and seventy in the equivalent quarter last year; the on-call cost dropped roughly seventy-five percent."
+        }
+      ],
+      "beats": [
+        {
+          "id": "q-1",
+          "narration": "Each figure carries a label two lines long, a value that is not a single digit, and a note that is a full sentence — none of the 250 slots are running at the size the original spec designed for, and the operator pages dropped 75 percent quarter-over-quarter.",
+          "reveal": 3
+        }
+      ]
+    },
+    {
+      "id": "s-chart",
+      "type": "chart",
+      "accent": "violet",
+      "kicker": "TEXT STRESS // CHART — AXIS TITLES AND BAR LABELS THAT NEVER FIT AT THE BASE FONT SIZE",
+      "heading": "chart scene — long axis titles and long bar-category labels exercising the SVG-text shrink-or-truncate path",
+      "xAxis": {
+        "kind": "chart",
+        "label": "Quarter under measurement during the rolling year-long observation window across the production fleet",
+        "min": 0,
+        "max": 4,
+        "ticks": 5
+      },
+      "yAxis": {
+        "kind": "chart",
+        "label": "Operator pages per quarter (events that woke a human up during off-hours)",
+        "min": 0,
+        "max": 200,
+        "ticks": 5
+      },
+      "series": [
+        {
+          "id": "bars",
+          "kind": "bars",
+          "accent": "violet",
+          "data": [
+            {"label": "Quarter one — before the alert-routing rewrite", "value": 170},
+            {"label": "Quarter two — during the rewrite rollout phase", "value": 120},
+            {"label": "Quarter three — first full post-rewrite quarter", "value": 60},
+            {"label": "Quarter four — stable steady-state post-rewrite", "value": 42}
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "id": "chart-1",
+          "narration": "Each bar's category label is a full descriptive sentence about that quarter — far longer than a single word. The shrink-and-truncate path keeps each label inside its slot rather than letting two adjacent labels overlap.",
+          "reveal": ["bars"]
+        }
+      ]
+    },
+    {
+      "id": "s-tension",
+      "type": "tension",
+      "accent": "amber",
+      "kicker": "TEXT STRESS // TENSION — LEDGER CARDS WITH LONG LABELS AND LONGER SUB-LINES",
+      "heading": "tension scene — chosen, rejected, and risk cards each filled with prose long enough to force the LedgerCard's fitFont to step down toward the floor",
+      "cut": "hold",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {
+          "id": "chosen",
+          "label": "Centralizing the commit log inside a single Raft group across all regions",
+          "sub": "default_max_turns.unwrap_or_default() — the commit log lives in one consensus group; every region defers to the leader for ordering, accepting the cross-region round-trip on every write.",
+          "col": 0, "row": 0, "accent": "green"
+        },
+        {
+          "id": "rejected",
+          "label": "Per-region commit logs reconciled by an eventually-consistent merge layer",
+          "sub": "We rejected this in favour of strong global ordering — instead of a merge layer we pay the latency tax of cross-region consensus, which costs us a round trip per write at the worst geography.",
+          "col": 2, "row": 0,
+          "kind": "rejected"
+        },
+        {
+          "id": "risk",
+          "label": "A regional partition lasting longer than the consensus timeout permanently demotes the partitioned region",
+          "sub": "The partitioned region serves stale reads until the partition heals and the operator runs the manual rebalance procedure — a non-trivial cost that the runbook does not yet automate.",
+          "col": 1, "row": 1,
+          "kind": "risk"
+        }
+      ],
+      "edges": [],
+      "beats": [
+        {
+          "id": "tension-1",
+          "narration": "We chose strong global ordering over per-region eventual consistency; the trade-off is the cross-region round trip on every write. That is the bill we pay for the consistency story above.",
+          "reveal": ["chosen", "rejected"]
+        },
+        {
+          "id": "tension-2",
+          "narration": "The residual risk is the partitioned-region case — the runbook covers it but does not automate it, and the on-call cost is real. We held this rather than fixing it because the failure rate is low.",
+          "reveal": ["risk"],
+          "focus": ["risk"],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "s-recap",
+      "type": "recap",
+      "accent": "green",
+      "kicker": "TEXT STRESS // RECAP — BULLETS LONGER THAN ANY SLIDE-WARE EXPECTS",
+      "heading": "recap scene — points that wrap to several lines, exercising the multi-line wrap and shrink-past-the-floor fallback",
+      "points": [
+        "Every diagram slot in the docent engine has now been exercised at the upper end of its plausible character count — long labels, long subs, long cells, long captions — and the fit-then-wrap-then-ellipsis-with-U-plus-2026 strategy holds without any mid-word clip or off-frame overrun.",
+        "The trade-off the engine makes is uniform: it shrinks to a documented floor first, wraps to a bounded line count next, and only falls back to ellipsis when the floor cannot hold the text. This keeps the failure mode predictable so a depth-review eye can confirm it at a glance.",
+        "What still cannot be argued from this fixture alone is whether the readability floor is set correctly for every register — the playful register may want a higher floor than the grave one. That is the residual fragility we expect to revisit, not a regression."
+      ],
+      "beats": [
+        {
+          "id": "recap-1",
+          "narration": "Three long bullets — each wraps to several lines, then auto-shrinks if the line cap would be exceeded; never a mid-word cut. The renderer honours its contract here, but the readability floor is a limit we have not yet measured at scale.",
+          "reveal": 3,
+          "pace": "hold"
+        }
+      ]
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {BoundValue} from '../components/BoundValue';
+import {FittedText} from '../components/FittedText';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
 import {
   cadenceOffset,
@@ -151,18 +152,26 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                     textAlign: 'center',
                   }}
                 >
-                  <div
+                  {/* metric label — uppercase mono caption above the value.
+                      Card is 392px wide with 60px horizontal pad
+                      (~332px content). Shrink-single keeps the
+                      uppercase track legible at small sizes. */}
+                  <FittedText
+                    text={m.label}
+                    maxWidth={332}
+                    basePx={16}
+                    floorPx={10}
+                    charAdvance={0.66}
+                    mode="shrink-single"
                     style={{
                       fontFamily: monoFamily,
-                      fontSize: 16,
                       letterSpacing: 1,
                       color: ink.low,
                       textTransform: 'uppercase',
+                      textAlign: 'center',
                     }}
-                  >
-                    {m.label}
-                  </div>
-                  <div style={{display: 'flex', alignItems: 'baseline', gap: 8}}>
+                  />
+                  <div style={{display: 'flex', alignItems: 'baseline', gap: 8, maxWidth: '100%'}}>
                     <BoundValue
                       beats={ts.beats}
                       bind={m.bind}
@@ -177,16 +186,19 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                       }}
                     />
                     {m.unit ? (
-                      <div
+                      <FittedText
+                        text={m.unit}
+                        maxWidth={120}
+                        basePx={26}
+                        floorPx={13}
+                        charAdvance={0.62}
+                        mode="shrink-single"
                         style={{
                           fontFamily: monoFamily,
-                          fontSize: 26,
                           fontWeight: 500,
                           color: mAccent,
                         }}
-                      >
-                        {m.unit}
-                      </div>
+                      />
                     ) : null}
                   </div>
                 </div>
@@ -263,53 +275,74 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                     textAlign: 'center',
                   }}
                 >
-                  <div
+                  {/* figure label / value / unit / note — the card is
+                      392px wide with 60px horizontal pad. The numeric
+                      value auto-shrinks if a string ("4.7 × 10²³") is
+                      passed instead of a short literal; floor at 36 so
+                      the digit still reads at thumbnail size. */}
+                  <FittedText
+                    text={f.label}
+                    maxWidth={332}
+                    basePx={16}
+                    floorPx={10}
+                    charAdvance={0.66}
+                    mode="shrink-single"
                     style={{
                       fontFamily: monoFamily,
-                      fontSize: 16,
                       letterSpacing: 1,
                       color: ink.low,
                       textTransform: 'uppercase',
+                      textAlign: 'center',
                     }}
-                  >
-                    {f.label}
-                  </div>
-                  <div style={{display: 'flex', alignItems: 'baseline', gap: 8}}>
-                    <div
+                  />
+                  <div style={{display: 'flex', alignItems: 'baseline', gap: 8, maxWidth: '100%'}}>
+                    <FittedText
+                      text={String(f.value)}
+                      maxWidth={f.unit ? 252 : 332}
+                      basePx={76}
+                      floorPx={36}
+                      charAdvance={0.58}
+                      mode="shrink-single"
                       style={{
                         fontFamily: monoFamily,
-                        fontSize: 76,
                         fontWeight: 600,
                         color: ink.hi,
                         lineHeight: 1,
                         letterSpacing: -1,
                       }}
-                    >
-                      {f.value}
-                    </div>
+                    />
                     {f.unit ? (
-                      <div
+                      <FittedText
+                        text={f.unit}
+                        maxWidth={120}
+                        basePx={26}
+                        floorPx={13}
+                        charAdvance={0.62}
+                        mode="shrink-single"
                         style={{
                           fontFamily: monoFamily,
-                          fontSize: 26,
                           fontWeight: 500,
                           color: accentHex,
                         }}
-                      >
-                        {f.unit}
-                      </div>
+                      />
                     ) : null}
                   </div>
                   {f.note ? (
-                    <div
+                    <FittedText
+                      text={f.note}
+                      maxWidth={332}
+                      basePx={16}
+                      floorPx={11}
+                      charAdvance={0.58}
+                      mode="shrink-wrap"
+                      maxLines={2}
+                      lineHeight={1.3}
                       style={{
                         fontFamily: interFamily,
-                        fontSize: 16,
                         color: ink.mid,
+                        textAlign: 'center',
                       }}
-                    >
-                      {f.note}
-                    </div>
+                    />
                   ) : null}
                 </div>
               );
@@ -354,7 +387,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       glowScale={glowScale}
     >
       <AbsoluteFill>
-        {/* column labels */}
+        {/* column labels — single line, auto-shrink. */}
         {colLabels.map((cl, ci) => (
           <div
             key={`col-${ci}`}
@@ -368,21 +401,31 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontFamily: monoFamily,
-              fontSize: 18,
-              fontWeight: 500,
-              color: accentHex,
-              letterSpacing: 0.4,
+              padding: '0 8px',
             }}
           >
-            {cl}
+            <FittedText
+              text={cl}
+              maxWidth={colW - 16}
+              basePx={18}
+              floorPx={11}
+              charAdvance={0.62}
+              mode="shrink-single"
+              style={{
+                fontFamily: monoFamily,
+                fontWeight: 500,
+                color: accentHex,
+                letterSpacing: 0.4,
+                textAlign: 'center',
+              }}
+            />
           </div>
         ))}
 
         {/* rows */}
         {rowLabels.map((rl, ri) => (
           <React.Fragment key={`row-${ri}`}>
-            {/* row label */}
+            {/* row label — right-aligned in the gutter; wrap to 2 lines. */}
             <div
               style={{
                 position: 'absolute',
@@ -395,14 +438,24 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                 alignItems: 'center',
                 paddingRight: 22,
                 justifyContent: 'flex-end',
-                textAlign: 'right',
-                fontFamily: interFamily,
-                fontSize: 20,
-                fontWeight: 500,
-                color: ink.mid,
               }}
             >
-              {rl}
+              <FittedText
+                text={rl}
+                maxWidth={rowHeadW - 30}
+                basePx={20}
+                floorPx={12}
+                charAdvance={0.58}
+                mode="shrink-wrap"
+                maxLines={2}
+                lineHeight={1.18}
+                style={{
+                  fontFamily: interFamily,
+                  fontWeight: 500,
+                  color: ink.mid,
+                  textAlign: 'right',
+                }}
+              />
             </div>
 
             {/* cells */}
@@ -437,13 +490,25 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontFamily: monoFamily,
-                    fontSize: 26,
-                    fontWeight: 500,
-                    color: focused ? accentHex : ink.hi,
+                    padding: '0 10px',
                   }}
                 >
-                  {cells[ri]?.[ci] ?? '—'}
+                  {/* matrix cell — usually a short numeric or 1-word
+                      string; auto-shrink the rare long entry. */}
+                  <FittedText
+                    text={String(cells[ri]?.[ci] ?? '—')}
+                    maxWidth={colW - 14 - 20}
+                    basePx={26}
+                    floorPx={12}
+                    charAdvance={0.62}
+                    mode="shrink-single"
+                    style={{
+                      fontFamily: monoFamily,
+                      fontWeight: 500,
+                      color: focused ? accentHex : ink.hi,
+                      textAlign: 'center',
+                    }}
+                  />
                 </div>
               );
             })}

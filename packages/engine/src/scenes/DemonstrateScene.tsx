@@ -11,6 +11,7 @@ import {
 import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import type {SceneProps} from '../engine/spec';
 import type {ResolvedStyle} from '../style';
 
@@ -77,17 +78,23 @@ export const DemonstrateScene: React.FC<SceneProps & {style: ResolvedStyle}> = (
       {['#ff5f57', '#febc2e', '#28c840'].map((c) => (
         <div key={c} style={{width: 12, height: 12, borderRadius: '50%', background: c, opacity: 0.85}} />
       ))}
-      <div
+      {/* clip caption — sits in the title bar. The panel is 1340px wide
+          with ~76px reserved for the traffic-light dots; cap the caption
+          at the remaining width and let it shrink rather than overflow. */}
+      <FittedText
+        text={scene.clip ? scene.clip : `${meta.subject} · demonstration`}
+        maxWidth={1340 - 76 - 36}
+        basePx={14}
+        floorPx={10}
+        charAdvance={0.62}
+        mode="shrink-single"
         style={{
           marginLeft: 14,
           fontFamily: monoFamily,
-          fontSize: 14,
           letterSpacing: 0.6,
           color: ink.low,
         }}
-      >
-        {scene.clip ? scene.clip : `${meta.subject} · demonstration`}
-      </div>
+      />
     </div>
   );
 

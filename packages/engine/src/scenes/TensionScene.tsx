@@ -10,6 +10,7 @@ import {glow} from '../theme';
 import type {DesignTokens, ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {STAGE, resolveLayout} from '../engine/layout';
 import {activeBeatIndex, type Node, type SceneProps} from '../engine/spec';
 
@@ -672,20 +673,30 @@ const Chrome: React.FC<{
           </div>
         </div>
         {heading ? (
-          <div
+          // Mirrors SceneFrame's heading treatment — step the base size
+          // by length, wrap to 2 lines, ellipsis-then-shrink past that.
+          <FittedText
+            text={heading}
+            maxWidth={1480}
+            basePx={
+              heading.length <= 38 ? 54
+              : heading.length <= 50 ? 46
+              : heading.length <= 64 ? 40
+              : 34
+            }
+            floorPx={26}
+            charAdvance={0.55}
+            mode="shrink-wrap"
+            maxLines={2}
+            lineHeight={1.04}
             style={{
               fontFamily: reg.headingFamily,
-              fontSize: 54,
               fontWeight: 700,
               color: reg.inkHi,
               marginTop: 14,
               letterSpacing: -0.5,
-              maxWidth: 1480,
-              lineHeight: 1.04,
             }}
-          >
-            {heading}
-          </div>
+          />
         ) : null}
       </div>
 

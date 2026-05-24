@@ -5,6 +5,7 @@ import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText, fitFontSize, truncateForSlot} from '../components/FittedText';
 import {STAGE} from '../engine/layout';
 import {
   activeBeatIndex,
@@ -184,31 +185,43 @@ export const MapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
           textAlign: 'center',
         }}
       >
-        <div
+        {/* region label / sub — sized to the region's rectangle. The
+            region rectangle has 32px of horizontal padding (16 each
+            side); subtract that for the content box. */}
+        <FittedText
+          text={r.label}
+          maxWidth={rect.w - 32}
+          basePx={rect.h > 120 ? 24 : 19}
+          floorPx={12}
+          charAdvance={0.58}
+          mode="shrink-wrap"
+          maxLines={2}
+          lineHeight={1.15}
           style={{
             fontFamily: interFamily,
-            fontSize: rect.h > 120 ? 24 : 19,
             fontWeight: 600,
             color: lit ? ink.hi : ink.mid,
             letterSpacing: -0.2,
-            lineHeight: 1.15,
+            textAlign: 'center',
           }}
-        >
-          {r.label}
-        </div>
+        />
         {r.sub ? (
-          <div
+          <FittedText
+            text={r.sub}
+            maxWidth={rect.w - 32}
+            basePx={rect.h > 120 ? 15 : 13}
+            floorPx={10}
+            charAdvance={0.58}
+            mode="shrink-wrap"
+            maxLines={3}
+            lineHeight={1.32}
             style={{
               fontFamily: interFamily,
-              fontSize: rect.h > 120 ? 15 : 13,
               color: lit ? ink.low : ink.faint,
               marginTop: 5,
-              lineHeight: 1.32,
-              maxWidth: rect.w - 24,
+              textAlign: 'center',
             }}
-          >
-            {r.sub}
-          </div>
+          />
         ) : null}
       </div>
     );
@@ -296,20 +309,25 @@ export const MapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
             );
           })()
         ) : null}
-        {c.label && a > 0.5 ? (
-          <text
-            x={mx}
-            y={my - 8}
-            textAnchor="middle"
-            fontFamily={monoFamily}
-            fontSize={15}
-            letterSpacing={1}
-            fill={lit ? ink.mid : ink.faint}
-            opacity={a}
-          >
-            {c.label}
-          </text>
-        ) : null}
+        {c.label && a > 0.5 ? (() => {
+          const budget = Math.max(160, Math.min(420, len * 0.55));
+          const fs = fitFontSize(c.label, {maxWidth: budget, basePx: 15, floorPx: 10, charAdvance: 0.62});
+          const txt = truncateForSlot(c.label, {maxWidth: budget, fontSize: fs, charAdvance: 0.62});
+          return (
+            <text
+              x={mx}
+              y={my - 8}
+              textAnchor="middle"
+              fontFamily={monoFamily}
+              fontSize={fs}
+              letterSpacing={1}
+              fill={lit ? ink.mid : ink.faint}
+              opacity={a}
+            >
+              {txt}
+            </text>
+          );
+        })() : null}
       </g>
     );
   };
@@ -421,24 +439,34 @@ export const MapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
             }}
           />
         )}
-        {/* label */}
+        {/* marker label — pinned beside the glyph. Single-line shrink
+            so a marker name like "Edge node, us-east-2c" fits inside
+            a reasonable width before ellipsis. */}
         <div
           style={{
             position: 'absolute',
             left: labelOffset,
             top: -2,
-            fontFamily: interFamily,
-            fontSize: 16,
-            fontWeight: 600,
-            color: lit ? ink.hi : ink.low,
             background: `${bg.panel}d8`,
             padding: '2px 8px',
             borderRadius: 6,
-            whiteSpace: 'nowrap',
             border: `1px solid ${lit ? glow(accentHex, 0.5) : bg.line}`,
+            maxWidth: 320,
           }}
         >
-          {m.label}
+          <FittedText
+            text={m.label}
+            maxWidth={304}
+            basePx={16}
+            floorPx={11}
+            charAdvance={0.6}
+            mode="shrink-single"
+            style={{
+              fontFamily: interFamily,
+              fontWeight: 600,
+              color: lit ? ink.hi : ink.low,
+            }}
+          />
         </div>
       </div>
     );

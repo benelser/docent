@@ -45,6 +45,8 @@ films/*
 !films/openclaw-ar.json
 !films/lethal-trifecta-blog.json
 !films/arxiv-2512-14806.json
+!films/text-stress-diagrammatic.json
+!films/text-stress-narrative.json
 analysis/*
 !analysis/linear-algebra.md
 !analysis/linear-algebra.source.md

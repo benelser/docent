@@ -6,6 +6,7 @@ import {monoFamily} from '../fonts';
 import type {Beat} from '../engine/spec';
 import {connectorPath, curvedPath, type Box} from '../engine/layout';
 import type {ResolvedStyle} from '../style';
+import {fitFontSize, truncateForSlot} from './FittedText';
 
 export type EdgeState = 'hidden' | 'normal' | 'dim' | 'focus';
 
@@ -195,6 +196,16 @@ export const Connector: React.FC<{
           lx += (-dyL / lenL) * 18;
           ly += (dxL / lenL) * 18;
         }
+        // The label gets up to ~60% of the chord length as a budget — past
+        // that the edge label crowds the cards it connects. fitFontSize
+        // steps the size down toward 11px; truncateForSlot ellipses if the
+        // floor still can't hold the text on one line. SVG `<text>` can't
+        // carry CSS line-clamp, so single-line shrink-then-ellipsis is the
+        // right strategy here.
+        const chord = Math.hypot(end.x - (straight?.start.x ?? mid.x), end.y - (straight?.start.y ?? mid.y));
+        const maxW = Math.max(160, Math.min(520, chord * 0.6));
+        const fs = fitFontSize(label, {maxWidth: maxW, basePx: 17, floorPx: 12, charAdvance: 0.6});
+        const visible = truncateForSlot(label, {maxWidth: maxW, fontSize: fs, charAdvance: 0.6});
         // A subtle outer-stroke gives the label air against the card glow.
         return (
           <text
@@ -202,7 +213,7 @@ export const Connector: React.FC<{
             y={ly}
             textAnchor="middle"
             fontFamily={monoFamily}
-            fontSize={17}
+            fontSize={fs}
             letterSpacing={0.3}
             fill={accentHex}
             opacity={draw}
@@ -210,7 +221,7 @@ export const Connector: React.FC<{
             strokeWidth={3}
             paintOrder="stroke"
           >
-            {label}
+            {visible}
           </text>
         );
       })() : null}
