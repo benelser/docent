@@ -17,9 +17,9 @@ treatment → spec → judge → render — the full cascade, produced from
 nothing but `https://github.com/benelser/docent` and the command
 `/docent-ar`. Eight scenes, eleven minutes, full HD.
 
-[![docent walks you through docent — click to play](docs/stills/docent-self-poster.png)](https://github.com/benelser/docent/releases/download/v2.0.2/docent-self.mp4)
+[![docent walks you through docent — click for full HD film](docs/stills/docent-self-preview.gif)](https://github.com/benelser/docent/releases/download/v2.0.2/docent-self.mp4)
 
-> ▶ [Play the docent-on-docent film](https://github.com/benelser/docent/releases/download/v2.0.2/docent-self.mp4) (54 MB · 11 min · 1920×1080) ·
+> ▶ [Play the full docent-on-docent film](https://github.com/benelser/docent/releases/download/v2.0.2/docent-self.mp4) (54 MB · 11 min · 1920×1080) ·
 > scene grammar: `frame · prior-art · structure · progression · compare · tension · quantities · recap` ·
 > judge-graded before it shipped
 
