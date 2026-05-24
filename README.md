@@ -10,18 +10,25 @@
 [![distribution](https://img.shields.io/badge/install-APM%20%2F%20Codex-6ea8fe)](#install)
 [![license](https://img.shields.io/badge/license-MIT-c0c5cf)](LICENSE)
 
-## See docent walk you through itself
+## Watch docent on four real subjects
 
-The film below was authored by docent **about docent**. Survey →
-treatment → spec → judge → render — the full cascade, produced from
-nothing but `https://github.com/benelser/docent` and the command
-`/docent-ar`. Eight scenes, eleven minutes, full HD.
+Four films, four domains, four agent-authored cascades through the same
+closed grammar. **No film below shares a template with any other** —
+the agent picked the scenes, named the trade-off, committed to the
+takeaway. The engine just rendered.
 
-[![docent walks you through docent — click for full HD film](docs/stills/docent-self-preview.gif)](https://github.com/benelser/docent/releases/download/v2.0.2/docent-self.mp4)
+Hover for motion, click for the full HD mp4.
 
-> ▶ [Play the full docent-on-docent film](https://github.com/benelser/docent/releases/download/v2.0.2/docent-self.mp4) (54 MB · 11 min · 1920×1080) ·
-> scene grammar: `frame · prior-art · structure · progression · compare · tension · quantities · recap` ·
-> judge-graded before it shipped
+|  |  |
+|---|---|
+| [![docent reviewing its own architecture](docs/stills/docent-self-preview.gif)](https://github.com/benelser/docent/releases/download/v2.0.3/docent-self.mp4) | [![OpenClaw — one local daemon, twenty-two channels](docs/stills/openclaw-ar-preview.gif)](https://github.com/benelser/docent/releases/download/v2.0.3/openclaw-ar.mp4) |
+| **▶ docent** *on docent itself* — 11 min, 54 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.0.3/docent-self.mp4)<br/>`frame · prior-art · structure · progression · compare · tension · quantities · recap` | **▶ OpenClaw** *— one local daemon, twenty-two channels* — 11 min, 83 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.0.3/openclaw-ar.mp4)<br/>`frame · prior-art · structure · walkthrough · structure · tension · quantities · recap` |
+| [![The Lethal Trifecta](docs/stills/lethal-trifecta-blog-preview.gif)](https://github.com/benelser/docent/releases/download/v2.0.3/lethal-trifecta-blog.mp4) | [![Let the Barbarians In](docs/stills/arxiv-2512-14806-preview.gif)](https://github.com/benelser/docent/releases/download/v2.0.3/arxiv-2512-14806.mp4) |
+| **▶ The Lethal Trifecta** *— Simon Willison's essay on agent security* — 68 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.0.3/lethal-trifecta-blog.mp4)<br/>`frame · structure · passage · walkthrough · quantities · compare · tension · big-idea · recap` | **▶ Let the Barbarians In** *— a recent arXiv paper, fetched as PDF* — 11 min, 52 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.0.3/arxiv-2512-14806.mp4)<br/>`frame · compare · structure · quantities · tension · probe · big-idea · recap` |
+
+Each film went **survey → treatment → spec → judge → render** through
+the same engine. The grammar is what's shared. The argument is what
+each film commits to.
 
 ---
 
