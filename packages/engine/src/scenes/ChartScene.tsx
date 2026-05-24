@@ -34,7 +34,7 @@ const FN: Record<ChartFn, (x: number) => number> = {
 };
 
 // Sane fallback domains when a scene omits an axis.
-const fallbackAxis = (label: string): Axis => ({label, min: 0, max: 10, ticks: 5});
+const fallbackAxis = (label: string): Axis => ({kind: 'chart', label, min: 0, max: 10, ticks: 5});
 
 // Round-ish tick labels — integers when the span is whole, else one decimal.
 const fmtTick = (v: number, span: number): string => {
@@ -53,12 +53,13 @@ export const ChartScene: React.FC<SceneProps> = ({
   const {fps} = useVideoConfig();
   const scene = ts.scene;
   const accentHex = accent(scene.accent);
-  // ChartScene reads its OWN axis variant — the numeric domain. The spec
-  // union (Axis | LandscapeAxis) is widened on Scene so the same field name
-  // can carry either; the validator pins each variant to its scene type, so
-  // this cast is safe on a valid chart scene.
-  const xAxis = (scene.xAxis as Axis | undefined) ?? fallbackAxis('x');
-  const yAxis = (scene.yAxis as Axis | undefined) ?? fallbackAxis('y');
+  // ChartScene reads its OWN axis variant — the numeric domain. Narrow the
+  // widened `Axis | LandscapeAxis` via the `kind` discriminator; the
+  // validator pins `kind === 'chart'` on every chart scene's axes.
+  const xAxis: Axis =
+    scene.xAxis?.kind === 'chart' ? scene.xAxis : fallbackAxis('x');
+  const yAxis: Axis =
+    scene.yAxis?.kind === 'chart' ? scene.yAxis : fallbackAxis('y');
   const series = scene.series ?? [];
 
   // ----- reveal timing ---------------------------------------------------

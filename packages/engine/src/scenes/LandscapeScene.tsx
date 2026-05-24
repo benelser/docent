@@ -42,8 +42,14 @@ export const LandscapeScene: React.FC<SceneProps> = ({
   const {fps} = useVideoConfig();
   const scene = ts.scene;
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
-  const xAxis = (scene.xAxis as LandscapeAxis | undefined);
-  const yAxis = (scene.yAxis as LandscapeAxis | undefined);
+  // Narrow `Scene.xAxis`/`yAxis` (the widened `Axis | LandscapeAxis` union)
+  // via the `kind` discriminator. The validator pins `kind === 'landscape'`
+  // on every landscape scene's axes; this read is safe on any spec that
+  // passes the contract.
+  const xAxis: LandscapeAxis | undefined =
+    scene.xAxis?.kind === 'landscape' ? scene.xAxis : undefined;
+  const yAxis: LandscapeAxis | undefined =
+    scene.yAxis?.kind === 'landscape' ? scene.yAxis : undefined;
   const subjects = scene.subjects ?? [];
   const quadrants = scene.quadrants;
   const isSketch = sketchTreatment(scene.treatment);

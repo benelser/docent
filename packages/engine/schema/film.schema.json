@@ -413,10 +413,11 @@
     },
     "axis": {
       "type": "object",
-      "description": "a chart axis — a labelled domain the engine maps onto STAGE pixels",
-      "required": ["label", "min", "max"],
+      "description": "a chart axis — a labelled domain the engine maps onto STAGE pixels. `kind: 'chart'` is the discriminator that narrows the widened `axis | landscape-axis` union at the renderer.",
+      "required": ["kind", "label", "min", "max"],
       "additionalProperties": false,
       "properties": {
+        "kind": {"const": "chart", "description": "the discriminator that narrows Scene.xAxis/yAxis from axis | landscape-axis"},
         "label": {"type": "string"},
         "min": {"type": "number"},
         "max": {"type": "number", "description": "must be greater than min"},
@@ -530,10 +531,11 @@
     },
     "prior-art-novelty": {
       "type": "object",
-      "description": "prior-art scenes — the named novelty: which of this scene's dimensions the film argues from, and the one-line statement of what is new. The statement must be dimensional ('X is a runtime decision, Y was admission-time'), never evaluative ('X is better than Y').",
-      "required": ["dimension", "statement"],
+      "description": "prior-art scenes — the named novelty: which of this scene's dimensions the film argues from, and the one-line statement of what is new. The statement must be dimensional ('X is a runtime decision, Y was admission-time'), never evaluative ('X is better than Y'). `kind: 'prior-art'` is the discriminator that narrows the widened `prior-art-novelty | venn-novelty` union at the renderer.",
+      "required": ["kind", "dimension", "statement"],
       "additionalProperties": false,
       "properties": {
+        "kind": {"const": "prior-art", "description": "the discriminator that narrows Scene.novelty from prior-art-novelty | venn-novelty"},
         "dimension": {"type": "string", "description": "a dimension id from this scene's `dimensions` — the row the film lights up"},
         "statement": {"type": "string", "minLength": 1, "description": "the one-line novelty: what is new, dimensionally"}
       }
@@ -854,20 +856,22 @@
     },
     "venn-novelty": {
       "type": "object",
-      "description": "venn scenes — the intersection the film argues from. `regionId` names a region in this scene's `regions`; `claim` is the one-line statement of what the overlap PROVES. The claim must say what lives ONLY in the intersection (the mechanism), not that the intersection is dangerous.",
-      "required": ["regionId", "claim"],
+      "description": "venn scenes — the intersection the film argues from. `regionId` names a region in this scene's `regions`; `claim` is the one-line statement of what the overlap PROVES. The claim must say what lives ONLY in the intersection (the mechanism), not that the intersection is dangerous. `kind: 'venn'` is the discriminator that narrows the widened `prior-art-novelty | venn-novelty` union at the renderer.",
+      "required": ["kind", "regionId", "claim"],
       "additionalProperties": false,
       "properties": {
+        "kind": {"const": "venn", "description": "the discriminator that narrows Scene.novelty from prior-art-novelty | venn-novelty"},
         "regionId": {"type": "string", "description": "a region id from this scene's `regions` — the dangerous intersection the film hinges on"},
         "claim": {"type": "string", "minLength": 1, "description": "what the overlap PROVES — the mechanism, not the verdict"}
       }
     },
     "landscape-axis": {
       "type": "object",
-      "description": "landscape scenes — one trade-off axis. NOT a numeric domain: the axis names a trade-off (`label`) with a phrase at each end (`lowLabel` at min, `highLabel` at max). Subjects are placed in normalized [0..1] space along it.",
-      "required": ["label", "lowLabel", "highLabel"],
+      "description": "landscape scenes — one trade-off axis. NOT a numeric domain: the axis names a trade-off (`label`) with a phrase at each end (`lowLabel` at min, `highLabel` at max). Subjects are placed in normalized [0..1] space along it. `kind: 'landscape'` is the discriminator that narrows the widened `axis | landscape-axis` union at the renderer.",
+      "required": ["kind", "label", "lowLabel", "highLabel"],
       "additionalProperties": false,
       "properties": {
+        "kind": {"const": "landscape", "description": "the discriminator that narrows Scene.xAxis/yAxis from axis | landscape-axis"},
         "label": {"type": "string", "minLength": 1, "description": "the trade-off the axis names (e.g. 'freedom of expression')"},
         "lowLabel": {"type": "string", "minLength": 1, "description": "the phrase at the axis's low end (the 0 end)"},
         "highLabel": {"type": "string", "minLength": 1, "description": "the phrase at the axis's high end (the 1 end)"}

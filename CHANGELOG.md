@@ -5,6 +5,73 @@ All notable changes to docent.
 The engine version reflects what the grammar covers — minor bumps add or
 remove primitives or contracts, patch bumps fix renderers or tooling.
 
+## v2.1.1 — mechanism + venn + landscape, discriminator cleanup
+
+> The three primitives held out of v2.1.0 land. The grammar grows from
+> 22 → 25 scene types. The `Novelty` and `Axis` unions widened by venn
+> and landscape get cleaned up with `kind` discriminators at the same
+> time, so renderers narrow off the field instead of `as` casts.
+
+### Added — scene types
+
+- **`mechanism`** — a working diagram in continuous motion. The author
+  names `parts` at normalized positions and one `motion` primitive
+  (`cycle` / `oscillate` / `descend` / `iterate`); the engine renders
+  the loop procedurally. Per-beat `freezes` pause the motion at a named
+  phase so narration can call out what is happening before the motion
+  resumes. Depthcheck enforces `mechanism-shown-not-told` (at least one
+  beat lets the motion carry the argument — freezes, short narration,
+  or visual-state lexical handles like "watch the loop"). Judge adds
+  `motion-load-bearing`. Demo film: `films/thermostat.json`.
+- **`venn`** — overlap analysis. 2 or 3 named sets rendered as
+  overlapping circles; every region (each in/out combination of the
+  sets, except the implicit "outside all") is addressable by id so
+  beats can reveal/focus regions one at a time. The film argues from
+  the INTERSECTION: what lives ONLY in the overlap is the claim.
+  Depthcheck enforces `intersection-honest` (the novelty claim must
+  name a mechanism, not an evaluation like "dangerous"). Judge adds
+  `intersection-named`. Demo film: `films/auth-overlap.json`.
+- **`landscape`** — N options plotted on M dimensions in 2-D, the
+  quadrant-analysis primitive. Axes are NOT a numeric domain; they are
+  trade-offs with a `lowLabel`/`highLabel` phrase at each end. 2-8
+  subjects sit at normalized `{x, y} ∈ [0..1]²`. Optional quadrant
+  labels pin a phrase to each corner. Depthcheck enforces
+  `axis-asymmetric` (the two trade-offs must be different — no
+  "simplicity vs simplicity") and `landscape-spread` (at least one
+  pair of subjects must be visually distant — max pairwise distance
+  ≥ 0.4). Judge adds `quadrant-honest`. Demo film:
+  `films/docent-landscape.json`.
+
+### Changed — discriminator cleanup
+
+- `PriorArtNovelty` gains `kind: 'prior-art'` and `VennNovelty` gains
+  `kind: 'venn'`. `Scene.novelty` stays the widened
+  `PriorArtNovelty | VennNovelty` union; renderers narrow via the
+  `kind` switch instead of `as` casts.
+- `Axis` (the chart-axis type) gains `kind: 'chart'` and
+  `LandscapeAxis` gains `kind: 'landscape'`. `Scene.xAxis`/`yAxis`
+  stays the widened `Axis | LandscapeAxis` union; renderers narrow
+  via `kind`.
+- Validator enforces the discriminator on every prior-art/venn novelty
+  and every chart/landscape axis; the schema enforces it as a `const`.
+- Scene type union, SCENE_TYPES, and schema enum re-alphabetized —
+  22 → 25 entries.
+- `Scene.regions` widened to `MapRegion[] | VennRegion[]`; MapScene
+  and VennScene each narrow via a typed cast on read. (The
+  validator's `regions has no meaning for type X — only map`
+  rejection now exempts the venn type.)
+
+### Not in this release
+
+The following items remain deferred to v2.2.0:
+
+- **Renderer migration to `ResolvedStyle`** — scenes still read
+  `theme.ts` directly; the resolver lands as parallel infrastructure.
+- **Legacy knob removal** (`Scene.palette`, `Scene.treatment`,
+  `Scene.register`, `Scene.accent`) — still present in `spec.ts`.
+- **README film re-render** — `scripts/rerender-demos.sh v2.1.1` has
+  not been run; release-asset mp4s are unchanged.
+
 ## v2.1.0 — Sprint A: visualization-primitive coverage
 
 > The grammar grows from 17 → 22 scene types. Five new primitives close
@@ -75,10 +142,8 @@ Demo films land for each: `ai-lab-race` (timeline), `ai-agent-stack`
 The following items appeared in earlier draft notes but did NOT land in
 v2.1.0; they are deferred to subsequent releases:
 
-- **`mechanism` / `venn` / `landscape` scene types** — built but not
-  merged this pass; remain on their feature branches.
-- **Discriminator cleanup** for `Novelty` / `Axis` unions — depends on
-  the venn/landscape merges above.
+- **`mechanism` / `venn` / `landscape` scene types** + their
+  discriminator cleanup — landed in v2.1.1 (the next entry above).
 - **Renderer migration to `ResolvedStyle`** — scenes still read
   `theme.ts` directly; the resolver lands as parallel infrastructure.
 - **Legacy knob removal** (`Scene.palette`, `Scene.treatment`,

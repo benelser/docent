@@ -92,7 +92,12 @@ export const VennScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
   // field name can carry either; the validator pins each variant to its
   // scene type, so this cast is safe on a valid venn scene.
   const regions = (scene.regions as VennRegion[] | undefined) ?? [];
-  const novelty = scene.novelty as VennNovelty | undefined;
+  // Narrow `Scene.novelty` (the widened `PriorArtNovelty | VennNovelty`
+  // union) via the `kind` discriminator. The validator pins
+  // `novelty.kind === 'venn'` on every venn scene; this read is safe on any
+  // spec that passes the contract.
+  const novelty: VennNovelty | undefined =
+    scene.novelty?.kind === 'venn' ? scene.novelty : undefined;
   const treatment = scene.treatment;
   const isLight = treatment === 'whiteboard';
   const isSketch = treatment === 'sketch';

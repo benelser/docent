@@ -341,8 +341,16 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
     const checkAxis = (axis: any, axisAt: string): void => {
       if (axis === undefined) return;
       if (!axis || typeof axis !== 'object') {
-        issues.push({path: axisAt, message: 'axis must be an object {label, min, max, ticks?}'});
+        issues.push({path: axisAt, message: 'axis must be an object {kind: "chart", label, min, max, ticks?}'});
         return;
+      }
+      // `kind: 'chart'` is the discriminator that narrows `Scene.xAxis`/`yAxis`
+      // from the widened `Axis | LandscapeAxis` union at the renderer.
+      if (sc.type === 'chart' && axis.kind !== 'chart') {
+        issues.push({
+          path: `${axisAt}.kind`,
+          message: 'chart scene requires `axis.kind: "chart"` (the discriminator that narrows the union)',
+        });
       }
       if (typeof axis.label !== 'string' || !axis.label.trim()) {
         issues.push({path: `${axisAt}.label`, message: 'missing or empty string'});
@@ -483,9 +491,18 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         if (!axis || typeof axis !== 'object' || Array.isArray(axis)) {
           issues.push({
             path: axisAt,
-            message: 'landscape requires this axis as an object {label, lowLabel, highLabel}',
+            message: 'landscape requires this axis as an object {kind: "landscape", label, lowLabel, highLabel}',
           });
           return;
+        }
+        // `kind: 'landscape'` is the discriminator that narrows
+        // `Scene.xAxis`/`yAxis` from the widened `Axis | LandscapeAxis` union
+        // at the renderer.
+        if (axis.kind !== 'landscape') {
+          issues.push({
+            path: `${axisAt}.kind`,
+            message: 'landscape scene requires `axis.kind: "landscape"` (the discriminator that narrows the union)',
+          });
         }
         for (const f of ['label', 'lowLabel', 'highLabel']) {
           if (typeof axis[f] !== 'string' || !axis[f].trim()) {
@@ -764,10 +781,18 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
           });
         }
       }
-      // novelty
+      // novelty — the prior-art variant. `kind: 'prior-art'` is the
+      // discriminator that narrows `Scene.novelty` from the widened
+      // `PriorArtNovelty | VennNovelty` union at the renderer.
       if (!sc.novelty || typeof sc.novelty !== 'object') {
-        issues.push({path: `${at}.novelty`, message: 'prior-art requires a novelty {dimension, statement}'});
+        issues.push({path: `${at}.novelty`, message: 'prior-art requires a novelty {kind: "prior-art", dimension, statement}'});
       } else {
+        if (sc.novelty.kind !== 'prior-art') {
+          issues.push({
+            path: `${at}.novelty.kind`,
+            message: 'prior-art scene requires `novelty.kind: "prior-art"` (the discriminator that narrows the union)',
+          });
+        }
         if (typeof sc.novelty.dimension !== 'string' || !sc.novelty.dimension.trim()) {
           issues.push({path: `${at}.novelty.dimension`, message: 'missing or empty dimension id'});
         } else if (!dimensionIds.has(sc.novelty.dimension)) {
@@ -868,10 +893,18 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         });
       }
       // novelty — the dangerous intersection. Must reference a real region.
+      // `kind: 'venn'` is the discriminator that narrows `Scene.novelty` from
+      // the widened `PriorArtNovelty | VennNovelty` union at the renderer.
       if (!sc.novelty || typeof sc.novelty !== 'object') {
-        issues.push({path: `${at}.novelty`, message: 'venn requires a novelty {regionId, claim} — the intersection the film argues from'});
+        issues.push({path: `${at}.novelty`, message: 'venn requires a novelty {kind: "venn", regionId, claim} — the intersection the film argues from'});
       } else {
         const nv = sc.novelty as Record<string, any>;
+        if (nv.kind !== 'venn') {
+          issues.push({
+            path: `${at}.novelty.kind`,
+            message: 'venn scene requires `novelty.kind: "venn"` (the discriminator that narrows the union)',
+          });
+        }
         if (typeof nv.regionId !== 'string' || !nv.regionId.trim()) {
           issues.push({path: `${at}.novelty.regionId`, message: 'missing or empty region id'});
         } else if (!regionIds.has(nv.regionId)) {

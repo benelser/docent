@@ -62,6 +62,7 @@
         {"id": "r-hmac", "in": ["auth", "integrity", "replay"], "label": "HMAC with nonce + timestamp", "note": "the full move"}
       ],
       "novelty": {
+        "kind": "venn",
         "regionId": "r-hmac",
         "claim": "HMAC over body plus timestamp plus nonce is the only construction where the same bytes prove identity, prove the body, and expire in one verify step."
       },

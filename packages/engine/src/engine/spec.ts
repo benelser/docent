@@ -151,6 +151,7 @@ export type PriorArtCell = {
   note: string;       // one short claim (≤ 10 words editorial bar)
 };
 export type PriorArtNovelty = {
+  kind: 'prior-art';  // the discriminator that narrows `Scene.novelty`
   dimension: string;  // the dimension id this scene's novelty rides on
   statement: string;  // the one-liner — what's new, dimensionally
 };
@@ -197,8 +198,9 @@ export type VennRegion = {
 // the one-line statement of what the overlap PROVES (not "X is dangerous",
 // but "X plus Y plus Z together exfiltrate because no token has provenance").
 export type VennNovelty = {
+  kind: 'venn';     // the discriminator that narrows `Scene.novelty`
   regionId: string; // a region id from `regions`
-  claim: string; // the one-liner the film argues from
+  claim: string;    // the one-liner the film argues from
 };
 
 // landscape scenes — N options plotted on M dimensions in 2-D, the quadrant-
@@ -210,6 +212,7 @@ export type VennNovelty = {
 // pin a phrase to each corner (TL/TR/BL/BR) so the four cells of the
 // quadrant analysis can be named.
 export type LandscapeAxis = {
+  kind: 'landscape';  // the discriminator that narrows `Scene.xAxis`/`yAxis`
   label: string;
   lowLabel: string;  // text at min
   highLabel: string; // text at max
@@ -284,7 +287,10 @@ export type Callout = {
 
 // chart scenes — a plotted coordinate graph. An axis is a labelled domain:
 // the engine maps [min, max] onto STAGE pixels (the analogue of `cellCenter`).
+// `kind: 'chart'` is the discriminator that narrows `Scene.xAxis`/`yAxis` from
+// the widened `Axis | LandscapeAxis` union to this variant at the renderer.
 export type Axis = {
+  kind: 'chart';  // the discriminator that narrows `Scene.xAxis`/`yAxis`
   label: string;
   min: number;
   max: number;

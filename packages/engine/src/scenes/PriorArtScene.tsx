@@ -33,7 +33,12 @@ export const PriorArtScene: React.FC<SceneProps> = ({
   const systems = scene.systems ?? [];
   const dimensions = scene.dimensions ?? [];
   const cells = scene.cells ?? [];
-  const novelty = scene.novelty as PriorArtNovelty | undefined;
+  // Narrow `Scene.novelty` (the widened `PriorArtNovelty | VennNovelty`
+  // union) via the `kind` discriminator. The validator pins
+  // `novelty.kind === 'prior-art'` on every prior-art scene; this read is
+  // safe on any spec that passes the contract.
+  const novelty: PriorArtNovelty | undefined =
+    scene.novelty?.kind === 'prior-art' ? scene.novelty : undefined;
 
   // Cell lookup — keyed by `${systemId}|${dimensionId}`.
   const cellMap = new Map<string, {mark: 'same' | 'diverges'; note: string}>();

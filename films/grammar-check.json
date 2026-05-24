@@ -542,11 +542,13 @@
       "kicker": "GRAMMAR // 13",
       "heading": "chart — plot the data",
       "xAxis": {
+        "kind": "chart",
         "label": "scene type",
         "min": 0,
         "max": 4
       },
       "yAxis": {
+        "kind": "chart",
         "label": "beats",
         "min": 0,
         "max": 3

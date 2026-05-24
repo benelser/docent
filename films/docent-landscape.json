@@ -61,6 +61,7 @@
         {"system": "p-screen", "dimension": "d-shape", "mark": "diverges", "note": "linear narration, no structure"}
       ],
       "novelty": {
+        "kind": "prior-art",
         "dimension": "d-author",
         "statement": "docent's author is an LLM constrained by a closed scene grammar; the human reviews placements, not pixels."
       },
@@ -79,11 +80,13 @@
       "heading": "The trade-off plane — five tools, two axes",
       "palette": "warm",
       "xAxis": {
+        "kind": "landscape",
         "label": "Freedom of expression",
         "lowLabel": "constrained grammar",
         "highLabel": "anything goes"
       },
       "yAxis": {
+        "kind": "landscape",
         "label": "Deterministic engine",
         "lowLabel": "every render is a fresh program",
         "highLabel": "same input, same output"
