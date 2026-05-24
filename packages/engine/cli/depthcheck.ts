@@ -27,6 +27,10 @@ type Spec = {
     dimensions?: {id: string; label: string}[];
     cells?: {system: string; dimension: string; mark: 'same' | 'diverges'; note: string}[];
     novelty?: {dimension: string; statement: string};
+    // causal-loop scene fields — only present on `type: 'causal-loop'`.
+    variables?: {id: string}[];
+    causalEdges?: {id: string; from: string; to: string; polarity: '+' | '-'}[];
+    loops?: {id: string; path: string[]; kind: 'reinforcing' | 'balancing'; label?: string}[];
   }[];
 };
 
@@ -180,6 +184,44 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
         });
       }
     }
+  }
+
+  // causal-loop contract — the "loop" must actually CLOSE. A causal-loop
+  // scene that ships loops whose `path` is a straight line (last variable
+  // doesn't reach back to the first) has labelled a non-loop with R/B —
+  // a failure of the scene's whole argument. We check, per loop, that an
+  // edge exists from path[last] → path[0]. The structural validator
+  // (cli/validate.ts) already enforced that every consecutive pair has
+  // an edge; this is the wrap-around dimension. A scene with no loops
+  // skips this entirely (the structural validator demands at least 1).
+  const causalLoopScenes = spec.scenes.filter((sc) => sc.type === 'causal-loop');
+  if (causalLoopScenes.length > 0) {
+    const openLoops: {scene: string; loop: string}[] = [];
+    for (const sc of causalLoopScenes) {
+      const edgeKeys = new Set(
+        (sc.causalEdges ?? []).map((e) => `${e.from}->${e.to}`),
+      );
+      for (const loop of sc.loops ?? []) {
+        if (!Array.isArray(loop.path) || loop.path.length < 2) {
+          openLoops.push({scene: sc.type, loop: loop.id});
+          continue;
+        }
+        const first = loop.path[0];
+        const last = loop.path[loop.path.length - 1];
+        if (!edgeKeys.has(`${last}->${first}`)) {
+          openLoops.push({scene: sc.type, loop: loop.id});
+        }
+      }
+    }
+    const allClosed = openLoops.length === 0;
+    findings.push({
+      id: 'loop-actually-loops',
+      label: 'Loops actually close — a causal-loop scene argues a cycle, not a line',
+      status: allClosed ? 'ok' : 'fail',
+      detail: allClosed
+        ? `${causalLoopScenes.length} causal-loop scene(s); every loop closes`
+        : `${openLoops.length} loop(s) do not close — path[last] has no edge back to path[0]: ${openLoops.map((o) => o.loop).join(', ')}`,
+    });
   }
 
   // big-idea contract — the takeaway sentence the viewer should leave with.

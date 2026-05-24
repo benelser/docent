@@ -262,6 +262,32 @@ export type Series = {
   along?: string; // the line series id whose curve gives the marker's y
 };
 
+// causal-loop scenes — the system-dynamics primitive. Variables drawn as
+// labelled nodes arranged in a ring; edges between them carry a *polarity*
+// glyph ('+' or '-') stating whether an increase in A drives an increase or
+// a decrease in B. A `CausalLoop` is a closed cycle of variables; its `kind`
+// is `reinforcing` (R — even number of '-' edges) or `balancing` (B — odd
+// number). The argument the scene makes is the cycle: a feedback structure
+// the viewer must see, not a list of relationships.
+export type CausalVariable = {
+  id: string;
+  label: string;
+  sub?: string;
+};
+export type CausalEdge = {
+  id: string;
+  from: string;
+  to: string;
+  polarity: '+' | '-';  // + reinforcing influence; - opposing influence
+  label?: string;       // optional one-liner describing the influence
+};
+export type CausalLoop = {
+  id: string;
+  label?: string;       // optional name ('vicious cycle of debt')
+  path: string[];       // variable ids in order
+  kind: 'reinforcing' | 'balancing';  // R or B
+};
+
 export type Scene = {
   id: string;
   type:
@@ -281,7 +307,8 @@ export type Scene = {
     | 'diff'
     | 'chart'
     | 'big-idea'
-    | 'prior-art';
+    | 'prior-art'
+    | 'causal-loop';
   accent: string;
   kicker: string;
   heading?: string;
@@ -353,6 +380,13 @@ export type Scene = {
   clip?: string;
   // recap
   points?: string[];
+  // causal-loop — variables drawn around a ring, edges between them carrying a
+  // polarity glyph, and one or more closed loops labelled reinforcing (R) /
+  // balancing (B). The polarity-product math (even #'-' edges → R, odd → B)
+  // is the labelling contract validator enforces.
+  variables?: CausalVariable[];
+  causalEdges?: CausalEdge[];
+  loops?: CausalLoop[];
   beats: Beat[];
 };
 
