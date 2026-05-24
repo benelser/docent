@@ -59,9 +59,18 @@ for row in "${DEMOS[@]}"; do
     continue
   fi
 
-  cyan "  rendering at scale 1…"
-  (cd "$ENGINE" && docent build "$slug" --scale 1) > "/tmp/rerender-$slug.log" 2>&1
+  # Delete any pre-existing mp4 so we can tell a successful re-render from
+  # a silent failure (where a stale mp4 from a prior run would otherwise be
+  # picked up downstream and uploaded as if it were fresh).
   mp4="$ENGINE/out/$slug.mp4"
+  rm -f "$mp4"
+
+  cyan "  rendering at scale 1…"
+  if ! (cd "$ENGINE" && docent build "$slug" --scale 1) > "/tmp/rerender-$slug.log" 2>&1; then
+    yellow "docent build FAILED for $slug — see /tmp/rerender-$slug.log"
+    tail -5 "/tmp/rerender-$slug.log" | sed 's/^/    /'
+    continue
+  fi
   if [[ ! -f "$mp4" ]]; then
     yellow "render did NOT produce $mp4 — see /tmp/rerender-$slug.log"
     continue

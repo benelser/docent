@@ -198,6 +198,7 @@
         }
       ],
       "novelty": {
+        "kind": "prior-art",
         "dimension": "brain-location",
         "statement": "OpenClaw runs a local agent that fans out across 22+ messaging surfaces from one daemon. Claude Code and Cursor stay local but single-surface; Errbot is multi-surface but not L-L-M-native; ChatGPT is multi-app but cloud-hosted."
       },

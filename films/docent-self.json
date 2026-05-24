@@ -197,6 +197,7 @@
         }
       ],
       "novelty": {
+        "kind": "prior-art",
         "dimension": "authors",
         "statement": "In docent the L-L-M writes a J-S-O-N spec against 17 typed scene types -- never an animation primitive. The other systems ask either a human or a model for animation code, or cede motion entirely."
       },
