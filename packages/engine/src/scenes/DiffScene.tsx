@@ -1,21 +1,38 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {Highlight} from 'prism-react-renderer';
-import {accent, theme, glow, ACCENTS} from '../theme';
-import {monoFamily} from '../fonts';
+import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {codeTheme} from '../components/code-theme';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
+import type {ResolvedStyle} from '../style';
+
+const accentOf = (style: ResolvedStyle, key?: string): string => {
+  const map = style.tokens.accent as unknown as Record<string, string>;
+  return (key && map[key]) || map.blue;
+};
 
 // A PR-review scene: a unified diff. Each line of `code` begins with a marker
 // — '+' added, '-' removed, ' ' context — which the engine strips, tints, and
 // renders. Beats spotlight a hunk.
-export const DiffScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) => {
+export const DiffScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
+  ts,
+  sceneIndex,
+  sceneCount,
+  style,
+}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const accentHex = accentOf(style, scene.accent);
+  const ink = style.tokens.ink;
+  const bg = style.tokens.bg;
+  const monoFamily = style.tokens.typography.family.mono;
+  // add/remove tints are token-driven semantic colours; preset swaps (e.g.
+  // paper's marker-green) flow through naturally.
+  const GREEN = style.tokens.accent.green;
+  const ROSE = style.tokens.accent.rose;
 
   const rawLines = (scene.code ?? '').replace(/\s+$/, '').split('\n');
   const markers = rawLines.map((l) =>
@@ -46,9 +63,6 @@ export const DiffScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
     extrapolateRight: 'clamp',
   });
 
-  const GREEN = ACCENTS.green;
-  const ROSE = ACCENTS.rose;
-
   return (
     <SceneFrame
       accentHex={accentHex}
@@ -67,8 +81,8 @@ export const DiffScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
           opacity: winOpacity,
           borderRadius: 16,
           overflow: 'hidden',
-          background: theme.bg.panel,
-          border: `1.5px solid ${theme.bg.line}`,
+          background: bg.panel,
+          border: `1.5px solid ${bg.line}`,
           boxShadow: `0 44px 110px -34px #000000, 0 0 0 1px ${glow(accentHex, 0.12)}`,
         }}
       >
@@ -79,8 +93,8 @@ export const DiffScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
             gap: 14,
             padding: '0 22px',
             height: headerH,
-            background: theme.bg.panelHi,
-            borderBottom: `1px solid ${theme.bg.line}`,
+            background: bg.panelHi,
+            borderBottom: `1px solid ${bg.line}`,
           }}
         >
           <div style={{display: 'flex', gap: 8}}>
@@ -88,12 +102,12 @@ export const DiffScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
               <div key={c} style={{width: 12, height: 12, borderRadius: 6, background: c, opacity: 0.9}} />
             ))}
           </div>
-          <div style={{fontFamily: monoFamily, fontSize: 16, color: theme.ink.mid, letterSpacing: 0.3}}>
+          <div style={{fontFamily: monoFamily, fontSize: 16, color: ink.mid, letterSpacing: 0.3}}>
             {scene.file}
           </div>
           <div style={{marginLeft: 'auto', fontFamily: monoFamily, fontSize: 15, letterSpacing: 0.5}}>
             <span style={{color: GREEN}}>+{adds}</span>
-            <span style={{color: theme.ink.faint}}> / </span>
+            <span style={{color: ink.faint}}> / </span>
             <span style={{color: ROSE}}>&minus;{dels}</span>
           </div>
         </div>
@@ -128,7 +142,7 @@ export const DiffScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
                           width: 38,
                           textAlign: 'center',
                           flexShrink: 0,
-                          color: isAdd ? GREEN : isDel ? ROSE : theme.ink.faint,
+                          color: isAdd ? GREEN : isDel ? ROSE : ink.faint,
                           fontWeight: 600,
                         }}
                       >
