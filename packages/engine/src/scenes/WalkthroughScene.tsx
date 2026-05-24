@@ -1,6 +1,7 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -10,15 +11,19 @@ import {activeBeatIndex, type SceneProps} from '../engine/spec';
 // A sequence diagram: actors with lifelines, and messages that arrive one beat
 // at a time — the way to show a request, or a unit of data, moving through a
 // system over time.
-export const WalkthroughScene: React.FC<SceneProps> = ({
+export const WalkthroughScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const {bg, ink, accent: accentTokens} = style.tokens;
+  const accentOf = (k?: string): string =>
+    (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
+  const accentHex = accentOf(scene.accent);
   const actors = scene.actors ?? [];
 
   const lifeTop = 366;
@@ -67,7 +72,7 @@ export const WalkthroughScene: React.FC<SceneProps> = ({
               y1={lifeTop}
               x2={x}
               y2={lifeTop + (lifeBottom - lifeTop) * intro}
-              stroke={lit ? accentHex : theme.bg.lineHi}
+              stroke={lit ? accentHex : bg.lineHi}
               strokeWidth={lit ? 2 : 1.5}
               strokeDasharray="2 10"
               strokeDashoffset={-((frame * 1.1) % 24)}
@@ -172,8 +177,8 @@ export const WalkthroughScene: React.FC<SceneProps> = ({
               height: 80,
               opacity: intro,
               borderRadius: 13,
-              background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-              border: `1.5px solid ${lit ? accentHex : theme.bg.line}`,
+              background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+              border: `1.5px solid ${lit ? accentHex : bg.line}`,
               boxShadow: lit
                 ? `0 0 26px -6px ${glow(accentHex, 0.6)}`
                 : '0 14px 34px -22px #000000cc',
@@ -193,7 +198,7 @@ export const WalkthroughScene: React.FC<SceneProps> = ({
                 fontSize:
                   a.label.length <= 14 ? 22 : a.label.length <= 20 ? 18 : 15,
                 fontWeight: 600,
-                color: theme.ink.hi,
+                color: ink.hi,
                 textAlign: 'center',
                 lineHeight: 1.1,
                 maxWidth: '100%',
@@ -207,7 +212,7 @@ export const WalkthroughScene: React.FC<SceneProps> = ({
                   fontFamily: monoFamily,
                   fontSize:
                     a.sub.length <= 24 ? 13 : a.sub.length <= 34 ? 11 : 10,
-                  color: theme.ink.low,
+                  color: ink.low,
                   textAlign: 'center',
                   lineHeight: 1.2,
                   maxWidth: '100%',
@@ -248,14 +253,14 @@ export const WalkthroughScene: React.FC<SceneProps> = ({
               fontFamily: monoFamily,
               fontSize: 16.5,
               letterSpacing: 0.3,
-              color: isCurrent ? theme.ink.hi : theme.ink.mid,
+              color: isCurrent ? ink.hi : ink.mid,
               whiteSpace: 'nowrap',
-              background: theme.bg.base,
+              background: bg.base,
               padding: '2px 12px',
               borderRadius: 6,
             }}
           >
-            <span style={{color: m.kind === 'reply' ? theme.ink.low : accentHex}}>
+            <span style={{color: m.kind === 'reply' ? ink.low : accentHex}}>
               {m.kind === 'reply' ? '◁ ' : '▶ '}
             </span>
             {m.label}

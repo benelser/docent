@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {SceneFrame} from '../components/SceneFrame';
 import {Card, type CardState} from '../components/Card';
 import {Connector, type EdgeState} from '../components/Connector';
@@ -33,14 +33,20 @@ import {
 // representations cross-fade). Nodes that are *not* transform targets stay on
 // the existing, unchanged code path, so every transform-free film renders
 // byte-identically.
-export const StructureScene: React.FC<SceneProps> = ({
+export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  // Resolve an accent key against the active token bundle. Mirrors the
+  // historical `accent(k)` fallback in theme.ts: unknown / undefined → blue.
+  const accentOf = (k?: string): string =>
+    (k && ((style.tokens.accent as unknown) as Record<string, string>)[k]) ||
+    style.tokens.accent.blue;
   // The scene's chrome accent. `palette` (a scene knob), when set, re-selects
   // it over the palette family; without a palette this is exactly
   // `accent(scene.accent)` — byte-identical to before the knob existed.
@@ -132,7 +138,7 @@ export const StructureScene: React.FC<SceneProps> = ({
           label={n.label}
           sub={n.sub}
           tag={n.tag}
-          accentHex={accent(nodeAccentKey(n, order))}
+          accentHex={accentOf(nodeAccentKey(n, order))}
           emphasis={n.emphasis}
           weight={n.weight}
           state={nodeState(n.id)}
@@ -171,7 +177,7 @@ export const StructureScene: React.FC<SceneProps> = ({
     // Accent resolution mirrors the original `def.accent ?? scene.accent`,
     // with `palette` (when set) re-selecting an unset accent over the family.
     const reprAccentOf = (def: Node): string =>
-      accent(paletteAccentKey(scene.palette, scene.accent, def.accent, order));
+      accentOf(paletteAccentKey(scene.palette, scene.accent, def.accent, order));
     const repr = (def: Node, opacity: number): React.ReactNode => {
       if (opacity <= 0) return null;
       const as = def.as ?? 'box';

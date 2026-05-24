@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -16,16 +17,19 @@ import {
 // A judgement table: options across the top (columns), criteria down the left
 // gutter (rows), cells in the grid. A `win` cell is accent-tinted, a `lose`
 // cell is dimmed. Rows reveal top-to-bottom, one beat at a time.
-export const CompareScene: React.FC<SceneProps> = ({
+export const CompareScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  const {bg, ink} = style.tokens;
   // `palette` (a scene knob) re-selects the chrome accent over its family;
-  // without a palette this is exactly `accent(scene.accent)`.
+  // without a palette this is exactly `accent(scene.accent)`. paletteSceneHex
+  // remains the resolver — it owns palette-family selection logic.
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const columns = scene.columns ?? [];
   const rows = scene.rows ?? [];
@@ -76,8 +80,8 @@ export const CompareScene: React.FC<SceneProps> = ({
               height: headerH,
               opacity: intro,
               borderRadius: 12,
-              background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-              border: `1.5px solid ${theme.bg.line}`,
+              background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+              border: `1.5px solid ${bg.line}`,
               borderBottom: `2.5px solid ${accentHex}`,
               display: 'flex',
               flexDirection: 'column',
@@ -91,14 +95,14 @@ export const CompareScene: React.FC<SceneProps> = ({
                 fontFamily: interFamily,
                 fontSize: 24,
                 fontWeight: 600,
-                color: theme.ink.hi,
+                color: ink.hi,
                 letterSpacing: -0.2,
               }}
             >
               {c.label}
             </div>
             {c.sub ? (
-              <div style={{fontFamily: monoFamily, fontSize: 14, color: theme.ink.low}}>
+              <div style={{fontFamily: monoFamily, fontSize: 14, color: ink.low}}>
                 {c.sub}
               </div>
             ) : null}
@@ -142,7 +146,7 @@ export const CompareScene: React.FC<SceneProps> = ({
                   fontFamily: interFamily,
                   fontSize: 21,
                   fontWeight: 500,
-                  color: focused ? theme.ink.hi : theme.ink.mid,
+                  color: focused ? ink.hi : ink.mid,
                   letterSpacing: -0.2,
                 }}
               >
@@ -152,7 +156,7 @@ export const CompareScene: React.FC<SceneProps> = ({
                     height: 28,
                     borderRadius: 2,
                     marginRight: 16,
-                    background: focused ? accentHex : theme.bg.lineHi,
+                    background: focused ? accentHex : bg.lineHi,
                   }}
                 />
                 {r.label}
@@ -183,8 +187,8 @@ export const CompareScene: React.FC<SceneProps> = ({
                         padding: '0 18px',
                         background: win
                           ? `linear-gradient(158deg, ${glow(accentHex, 0.16)}, ${glow(accentHex, 0.06)})`
-                          : theme.bg.panel,
-                        border: `1.5px solid ${win ? accentHex : theme.bg.line}`,
+                          : bg.panel,
+                        border: `1.5px solid ${win ? accentHex : bg.line}`,
                         boxShadow: win
                           ? `0 0 22px -8px ${glow(accentHex, 0.6)}`
                           : 'none',
@@ -199,8 +203,8 @@ export const CompareScene: React.FC<SceneProps> = ({
                           color: win
                             ? accentHex
                             : lose
-                              ? theme.ink.low
-                              : theme.ink.mid,
+                              ? ink.low
+                              : ink.mid,
                         }}
                       >
                         {win ? '✓ ' : null}

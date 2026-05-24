@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {theme, glow, ACCENTS} from '../theme';
+import {glow} from '../theme';
+import type {DesignTokens, ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -27,22 +28,25 @@ import {
 // label for the chip. The two ends (delight, pain) borrow the existing rose/
 // green/amber accents so they sit inside docent's palette; intermediate
 // states ramp through neutral grey to those poles. The author writes the
-// emotion; the engine owns the chip's pixels.
-const EMOTION_PALETTE: Record<JourneyEmotion, {hex: string; label: string}> = {
-  delight: {hex: ACCENTS.green, label: 'delight'},
-  curiosity: {hex: ACCENTS.cyan, label: 'curiosity'},
-  satisfaction: {hex: ACCENTS.blue, label: 'satisfaction'},
-  neutral: {hex: theme.ink.low, label: 'neutral'},
-  fatigue: {hex: ACCENTS.amber, label: 'fatigue'},
-  frustration: {hex: ACCENTS.rose, label: 'frustration'},
+// emotion; the engine owns the chip's pixels. Built from the active token
+// bundle so a preset can re-tune the chip palette through `tokens.accent`.
+const buildEmotionPalette = (
+  tokens: DesignTokens,
+): Record<JourneyEmotion, {hex: string; label: string}> => ({
+  delight: {hex: tokens.accent.green, label: 'delight'},
+  curiosity: {hex: tokens.accent.cyan, label: 'curiosity'},
+  satisfaction: {hex: tokens.accent.blue, label: 'satisfaction'},
+  neutral: {hex: tokens.ink.low, label: 'neutral'},
+  fatigue: {hex: tokens.accent.amber, label: 'fatigue'},
+  frustration: {hex: tokens.accent.rose, label: 'frustration'},
   // pain — the deepest negative; rose-forward with darker mix at the chip.
   pain: {hex: '#d04060', label: 'pain'},
-};
+});
 
-const emotionHex = (e: JourneyEmotion): string =>
-  EMOTION_PALETTE[e]?.hex ?? theme.ink.low;
-const emotionLabel = (e: JourneyEmotion): string =>
-  EMOTION_PALETTE[e]?.label ?? 'neutral';
+const emotionLabel = (
+  palette: ReturnType<typeof buildEmotionPalette>,
+  e: JourneyEmotion,
+): string => palette[e]?.label ?? 'neutral';
 
 // The emotion-curve geometry: a Catmull-Rom-ish smooth path through the
 // (stageX, curveY) points, drawn at the top of the stage band. We work in
@@ -69,14 +73,19 @@ const buildCurvePath = (pts: [number, number][]): string => {
   return d;
 };
 
-export const JourneyMapScene: React.FC<SceneProps> = ({
+export const JourneyMapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  const {bg, ink} = style.tokens;
+  const emotionPalette = buildEmotionPalette(style.tokens);
+  const emotionHex = (e: JourneyEmotion): string =>
+    emotionPalette[e]?.hex ?? ink.low;
   // `palette` (a scene knob) re-selects the chrome accent; without a palette
   // this is exactly `accent(scene.accent)`.
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
@@ -159,7 +168,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
             y1={curveTop}
             x2={right}
             y2={curveTop}
-            stroke={theme.bg.line}
+            stroke={bg.line}
             strokeWidth={1}
             strokeDasharray="3 7"
             opacity={0.5}
@@ -169,7 +178,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
             y1={curveBot}
             x2={right}
             y2={curveBot}
-            stroke={theme.bg.line}
+            stroke={bg.line}
             strokeWidth={1}
             strokeDasharray="3 7"
             opacity={0.5}
@@ -195,7 +204,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
               cy={curveY(s.curveValue)}
               r={6}
               fill={emotionHex(s.emotion)}
-              stroke={theme.bg.base}
+              stroke={bg.base}
               strokeWidth={2}
               style={{filter: `drop-shadow(0 0 8px ${glow(emotionHex(s.emotion), 0.7)})`}}
             />
@@ -207,7 +216,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
             y1={axisY}
             x2={right}
             y2={axisY}
-            stroke={theme.bg.line}
+            stroke={bg.line}
             strokeWidth={3}
             strokeLinecap="round"
           />
@@ -231,7 +240,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
             fontFamily={monoFamily}
             fontSize={12}
             letterSpacing={1}
-            fill={theme.ink.low}
+            fill={ink.low}
           >
             GOOD
           </text>
@@ -242,7 +251,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
             fontFamily={monoFamily}
             fontSize={12}
             letterSpacing={1}
-            fill={theme.ink.low}
+            fill={ink.low}
           >
             BAD
           </text>
@@ -263,7 +272,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
           const scale = interpolate(a, [0, 1], [0.86, 1]);
           const breathe = focused ? 0.5 + 0.5 * Math.sin((frame / fps) * 3.2) : 0;
           const eHex = emotionHex(s.emotion);
-          const eLabel = emotionLabel(s.emotion);
+          const eLabel = emotionLabel(emotionPalette, s.emotion);
           const touchpoints = s.touchpoints ?? [];
           const painPoints = s.painPoints ?? [];
 
@@ -279,7 +288,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
                   height: 22,
                   borderRadius: '50%',
                   opacity,
-                  background: focused || !hasFocus ? accentHex : theme.bg.panelHi,
+                  background: focused || !hasFocus ? accentHex : bg.panelHi,
                   border: `2.5px solid ${accentHex}`,
                   boxShadow: `0 0 ${12 + breathe * 14}px ${glow(accentHex, 0.7)}`,
                 }}
@@ -296,8 +305,8 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
                   opacity,
                   transform: `scale(${scale})`,
                   borderRadius: 14,
-                  background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-                  border: `1.5px solid ${focused ? accentHex : theme.bg.line}`,
+                  background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+                  border: `1.5px solid ${focused ? accentHex : bg.line}`,
                   boxShadow: focused
                     ? `0 0 0 1px ${glow(accentHex, 0.35)}, 0 22px 54px -22px ${glow(accentHex, 0.5)}`
                     : '0 16px 40px -24px #000000cc',
@@ -346,7 +355,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
                       : s.label.length <= 30 ? 15
                       : 13,
                     fontWeight: 600,
-                    color: theme.ink.hi,
+                    color: ink.hi,
                     letterSpacing: -0.2,
                     lineHeight: 1.12,
                     whiteSpace: 'nowrap',
@@ -364,7 +373,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
                         s.sub.length <= 28 ? 13.5
                         : s.sub.length <= 40 ? 11.5
                         : 10.5,
-                      color: focused ? theme.ink.mid : theme.ink.low,
+                      color: focused ? ink.mid : ink.low,
                       lineHeight: 1.2,
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
@@ -382,7 +391,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
                         fontFamily: monoFamily,
                         fontSize: 10,
                         letterSpacing: 1.2,
-                        color: theme.ink.low,
+                        color: ink.low,
                       }}
                     >
                       TOUCHPOINTS
@@ -393,7 +402,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
                         style={{
                           fontFamily: interFamily,
                           fontSize: 12,
-                          color: theme.ink.mid,
+                          color: ink.mid,
                           lineHeight: 1.25,
                           paddingLeft: 9,
                           position: 'relative',
@@ -423,7 +432,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
                         fontFamily: monoFamily,
                         fontSize: 10,
                         letterSpacing: 1.2,
-                        color: ACCENTS.rose,
+                        color: style.tokens.accent.rose,
                       }}
                     >
                       PAIN POINTS
@@ -434,7 +443,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
                         style={{
                           fontFamily: interFamily,
                           fontSize: 12,
-                          color: theme.ink.mid,
+                          color: ink.mid,
                           lineHeight: 1.25,
                           paddingLeft: 9,
                           position: 'relative',
@@ -448,7 +457,7 @@ export const JourneyMapScene: React.FC<SceneProps> = ({
                             width: 4,
                             height: 4,
                             borderRadius: '50%',
-                            background: ACCENTS.rose,
+                            background: style.tokens.accent.rose,
                           }}
                         />
                         {t}

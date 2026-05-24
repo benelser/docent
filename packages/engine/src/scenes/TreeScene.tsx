@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -234,14 +235,18 @@ const edgePath = (
 
 // ----- the component --------------------------------------------------------
 
-export const TreeScene: React.FC<SceneProps> = ({
+export const TreeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  const {bg, ink, accent: accentTokens} = style.tokens;
+  const accentOf = (k?: string): string =>
+    (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const orientation = scene.orientation ?? 'vertical';
 
@@ -313,7 +318,7 @@ export const TreeScene: React.FC<SceneProps> = ({
   // Per-node accent: explicit per-node `accent` wins, else palette-spread
   // (cycle the family across declared order), else the scene accent.
   const nodeAccentHex = (ln: LayoutNode): string =>
-    accent(paletteAccentKey(scene.palette, scene.accent, ln.accent, ln.order));
+    accentOf(paletteAccentKey(scene.palette, scene.accent, ln.accent, ln.order));
 
   const cam = undefined; // tree has no follow-camera; the layout is self-framing
 
@@ -365,7 +370,7 @@ export const TreeScene: React.FC<SceneProps> = ({
               <path
                 key={e.id}
                 d={d}
-                stroke={focused ? accentHex : theme.bg.lineHi}
+                stroke={focused ? accentHex : bg.lineHi}
                 strokeWidth={focused ? 2.2 : 1.6}
                 fill="none"
                 strokeDasharray={len}
@@ -419,9 +424,9 @@ export const TreeScene: React.FC<SceneProps> = ({
                 transform: `scale(${scale})`,
                 borderRadius: 14,
                 background: focused || isRoot
-                  ? `radial-gradient(120% 140% at 0% 0%, ${glow(aHex, 0.18)} 0%, ${theme.bg.panelHi} 42%, ${theme.bg.panel} 100%)`
-                  : `linear-gradient(158deg, ${theme.bg.panelHi} 0%, ${theme.bg.panel} 100%)`,
-                border: `1.5px solid ${focused || isRoot ? aHex : theme.bg.line}`,
+                  ? `radial-gradient(120% 140% at 0% 0%, ${glow(aHex, 0.18)} 0%, ${bg.panelHi} 42%, ${bg.panel} 100%)`
+                  : `linear-gradient(158deg, ${bg.panelHi} 0%, ${bg.panel} 100%)`,
+                border: `1.5px solid ${focused || isRoot ? aHex : bg.line}`,
                 boxShadow:
                   focused || isRoot
                     ? `0 0 0 1px ${glow(aHex, 0.32)}, 0 20px 50px -22px ${glow(aHex, 0.45 + breathe * 0.22)}, inset 0 1px 0 ${glow('#ffffff', 0.05)}`
@@ -456,7 +461,7 @@ export const TreeScene: React.FC<SceneProps> = ({
                     fontFamily: interFamily,
                     fontSize: labelFs,
                     fontWeight: isRoot ? 700 : 600,
-                    color: theme.ink.hi,
+                    color: ink.hi,
                     letterSpacing: -0.2,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -470,7 +475,7 @@ export const TreeScene: React.FC<SceneProps> = ({
                     style={{
                       fontFamily: monoFamily,
                       fontSize: subFs,
-                      color: focused || isRoot ? theme.ink.mid : theme.ink.low,
+                      color: focused || isRoot ? ink.mid : ink.low,
                       letterSpacing: 0.2,
                       display: '-webkit-box',
                       WebkitBoxOrient: 'vertical',

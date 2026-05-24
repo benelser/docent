@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -81,10 +82,16 @@ const regionKey = (
   return `${setCount}:${indices.join(',')}`;
 };
 
-export const VennScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) => {
+export const VennScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
+  ts,
+  sceneIndex,
+  sceneCount,
+  style,
+}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  const {ink} = style.tokens;
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const sets = scene.sets ?? [];
   // VennScene reads its OWN regions variant — VennRegion (with `in`). The
@@ -163,8 +170,8 @@ export const VennScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
 
   // Circle color tuning — light treatments need darker ink; crisp uses the accent.
   const strokeColor = isLight ? '#3b2a0d' : accentHex;
-  const labelColor = isLight ? '#15161a' : theme.ink.hi;
-  const subLabelColor = isLight ? '#5a4419' : theme.ink.mid;
+  const labelColor = isLight ? '#15161a' : ink.hi;
+  const subLabelColor = isLight ? '#5a4419' : ink.mid;
 
   // Per-circle accent tints — give each set a slightly different hue so the
   // overlaps read as overlaps (mix-blend-mode multiplies them).
@@ -448,7 +455,7 @@ export const VennScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
               style={{
                 fontFamily: interFamily,
                 fontSize: 22,
-                color: isLight ? '#15161a' : theme.ink.hi,
+                color: isLight ? '#15161a' : ink.hi,
                 fontWeight: 500,
                 letterSpacing: -0.1,
                 lineHeight: 1.3,

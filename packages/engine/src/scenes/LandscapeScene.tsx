@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -33,14 +34,19 @@ const PLOT = {x: 280, y: 308, w: 1360, h: 608};
 const sketchTreatment = (t?: string): boolean =>
   t === 'sketch' || t === 'whiteboard';
 
-export const LandscapeScene: React.FC<SceneProps> = ({
+export const LandscapeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  const {bg, ink, accent: accentTokens} = style.tokens;
+  const viz = style.visualization;
+  const accentOf = (k?: string): string =>
+    (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   // Narrow `Scene.xAxis`/`yAxis` (the widened `Axis | LandscapeAxis` union)
   // via the `kind` discriminator. The validator pins `kind === 'landscape'`
@@ -88,7 +94,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
   // Per-subject color: an explicit override on the subject wins, else the
   // scene accent.
   const subjectColor = (s: LandscapeSubject): string =>
-    s.accent ? accent(s.accent) : accentHex;
+    s.accent ? accentOf(s.accent) : accentHex;
 
   // Quadrant centers — used for the optional faded-ink quadrant labels.
   const qPos = {
@@ -98,9 +104,9 @@ export const LandscapeScene: React.FC<SceneProps> = ({
     br: toScreen(0.82, 0.15),
   };
 
-  const axisStroke = isSketch ? theme.ink.mid : theme.ink.low;
+  const axisStroke = isSketch ? ink.mid : ink.low;
   const axisWidth = isSketch ? 2.0 : 2.2;
-  const gridStroke = theme.bg.line;
+  const gridStroke = bg.line;
 
   return (
     <SceneFrame
@@ -116,8 +122,10 @@ export const LandscapeScene: React.FC<SceneProps> = ({
           style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
           viewBox="0 0 1920 1080"
         >
-          {/* the soft gridlines — quartering the plot, faintly */}
-          {[0.25, 0.5, 0.75].map((t, i) => {
+          {/* the soft gridlines — quartering the plot, faintly. `visualization.
+              gridLines` (a style knob) gates them: an executive deck can drop
+              them to keep the eye on the markers. Default is true. */}
+          {viz.gridLines ? [0.25, 0.5, 0.75].map((t, i) => {
             const a = toScreen(0, t);
             const b = toScreen(1, t);
             const c = toScreen(t, 0);
@@ -147,7 +155,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
                 />
               </g>
             );
-          })}
+          }) : null}
 
           {/* x-axis (bottom) */}
           <line
@@ -181,7 +189,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
               fontFamily={interFamily}
               fontSize={22}
               fontWeight={600}
-              fill={theme.ink.hi}
+              fill={ink.hi}
               opacity={intro}
             >
               {xAxis.label}
@@ -195,7 +203,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
               textAnchor="start"
               fontFamily={monoFamily}
               fontSize={16}
-              fill={theme.ink.mid}
+              fill={ink.mid}
               opacity={intro}
             >
               ← {xAxis.lowLabel}
@@ -208,7 +216,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
               textAnchor="end"
               fontFamily={monoFamily}
               fontSize={16}
-              fill={theme.ink.mid}
+              fill={ink.mid}
               opacity={intro}
             >
               {xAxis.highLabel} →
@@ -224,7 +232,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
               fontFamily={interFamily}
               fontSize={22}
               fontWeight={600}
-              fill={theme.ink.hi}
+              fill={ink.hi}
               opacity={intro}
               transform={`rotate(-90 ${PLOT.x - 86} ${PLOT.y + PLOT.h / 2})`}
             >
@@ -239,7 +247,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
               textAnchor="end"
               fontFamily={monoFamily}
               fontSize={16}
-              fill={theme.ink.mid}
+              fill={ink.mid}
               opacity={intro}
             >
               ↑ {yAxis.highLabel}
@@ -252,7 +260,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
               textAnchor="end"
               fontFamily={monoFamily}
               fontSize={16}
-              fill={theme.ink.mid}
+              fill={ink.mid}
               opacity={intro}
             >
               {yAxis.lowLabel} ↓
@@ -268,7 +276,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
               fontFamily={interFamily}
               fontSize={17}
               fontStyle="italic"
-              fill={theme.ink.faint}
+              fill={ink.faint}
               opacity={intro * 0.85}
             >
               {quadrants.tl}
@@ -282,7 +290,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
               fontFamily={interFamily}
               fontSize={17}
               fontStyle="italic"
-              fill={theme.ink.faint}
+              fill={ink.faint}
               opacity={intro * 0.85}
             >
               {quadrants.tr}
@@ -296,7 +304,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
               fontFamily={interFamily}
               fontSize={17}
               fontStyle="italic"
-              fill={theme.ink.faint}
+              fill={ink.faint}
               opacity={intro * 0.85}
             >
               {quadrants.bl}
@@ -310,7 +318,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
               fontFamily={interFamily}
               fontSize={17}
               fontStyle="italic"
-              fill={theme.ink.faint}
+              fill={ink.faint}
               opacity={intro * 0.85}
             >
               {quadrants.br}
@@ -361,7 +369,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
                   cy={p.y}
                   r={dotR}
                   fill={col}
-                  stroke={theme.bg.base}
+                  stroke={bg.base}
                   strokeWidth={3}
                   style={{
                     filter: `drop-shadow(0 0 ${focused ? 18 : 10}px ${glow(col, 0.7)})`,
@@ -375,7 +383,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
                   fontFamily={interFamily}
                   fontSize={focused ? 22 : 20}
                   fontWeight={600}
-                  fill={focused ? theme.ink.hi : theme.ink.hi}
+                  fill={focused ? ink.hi : ink.hi}
                   letterSpacing={-0.2}
                 >
                   {s.label}
@@ -387,7 +395,7 @@ export const LandscapeScene: React.FC<SceneProps> = ({
                     textAnchor={flipLeft ? 'end' : 'start'}
                     fontFamily={monoFamily}
                     fontSize={14}
-                    fill={theme.ink.low}
+                    fill={ink.low}
                   >
                     {s.sub}
                   </text>

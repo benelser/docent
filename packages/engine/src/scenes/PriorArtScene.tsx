@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -21,14 +22,16 @@ import {paletteGlowScale, paletteSceneHex} from '../engine/knobs';
 // Pace is `walk`: the narration walks one column at a time, then the novelty
 // row that names the new line. Beats reveal columns by id (the system id) and
 // the novelty row by the dimension id; `focus` narrows the eye to a column.
-export const PriorArtScene: React.FC<SceneProps> = ({
+export const PriorArtScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  const {bg, ink} = style.tokens;
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const systems = scene.systems ?? [];
   const dimensions = scene.dimensions ?? [];
@@ -124,8 +127,8 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                 opacity,
                 transform: `translateY(${interpolate(a, [0, 1], [-14, 0])}px)`,
                 borderRadius: 12,
-                background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-                border: `1.5px solid ${theme.bg.line}`,
+                background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+                border: `1.5px solid ${bg.line}`,
                 borderBottom: `2.5px solid ${accentHex}`,
                 display: 'flex',
                 flexDirection: 'column',
@@ -139,7 +142,7 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                   fontFamily: interFamily,
                   fontSize: 26,
                   fontWeight: 600,
-                  color: theme.ink.hi,
+                  color: ink.hi,
                   letterSpacing: -0.2,
                 }}
               >
@@ -150,7 +153,7 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                   style={{
                     fontFamily: monoFamily,
                     fontSize: 14,
-                    color: theme.ink.low,
+                    color: ink.low,
                   }}
                 >
                   {[s.sub, s.year].filter(Boolean).join(' · ')}
@@ -211,10 +214,10 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                   fontSize: 21,
                   fontWeight: isNovelty ? 600 : 500,
                   color: focused
-                    ? theme.ink.hi
+                    ? ink.hi
                     : isNovelty
-                      ? theme.ink.hi
-                      : theme.ink.mid,
+                      ? ink.hi
+                      : ink.mid,
                   letterSpacing: -0.2,
                 }}
               >
@@ -228,7 +231,7 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                       ? accentHex
                       : focused
                         ? accentHex
-                        : theme.bg.lineHi,
+                        : bg.lineHi,
                   }}
                 />
                 {d.label}
@@ -257,8 +260,8 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                         gap: 10,
                         background: lit
                           ? `linear-gradient(158deg, ${glow(accentHex, 0.18)}, ${glow(accentHex, 0.05)})`
-                          : theme.bg.panel,
-                        border: `1.5px solid ${lit ? accentHex : theme.bg.line}`,
+                          : bg.panel,
+                        border: `1.5px solid ${lit ? accentHex : bg.line}`,
                         boxShadow: lit
                           ? `0 0 22px -8px ${glow(accentHex, 0.6)}`
                           : 'none',
@@ -272,8 +275,8 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                           color: diverges
                             ? accentHex
                             : same
-                              ? theme.ink.mid
-                              : theme.ink.low,
+                              ? ink.mid
+                              : ink.low,
                           flexShrink: 0,
                           width: 18,
                           textAlign: 'center',
@@ -289,10 +292,10 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                           color: lit
                             ? accentHex
                             : diverges
-                              ? theme.ink.hi
+                              ? ink.hi
                               : same
-                                ? theme.ink.mid
-                                : theme.ink.low,
+                                ? ink.mid
+                                : ink.low,
                           lineHeight: 1.25,
                         }}
                       >
@@ -353,7 +356,7 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                   style={{
                     fontFamily: interFamily,
                     fontSize: 20,
-                    color: theme.ink.hi,
+                    color: ink.hi,
                     fontWeight: 500,
                     letterSpacing: -0.1,
                   }}

@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -20,14 +21,18 @@ import {
 // small label above, a note below), a worked numeric matrix (row and column
 // labels around a filled grid), or `metrics` — figure cards whose number is a
 // *tweened* value that counts up across beats. Items reveal progressively.
-export const QuantitiesScene: React.FC<SceneProps> = ({
+export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  const {bg, ink, accent: accentTokens} = style.tokens;
+  const accentOf = (k?: string): string =>
+    (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
   // `palette` (a scene knob) re-selects the chrome accent over its family;
   // without a palette this is exactly `accent(scene.accent)`.
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
@@ -115,7 +120,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
               // `palette` re-selects an unset metric accent over the family,
               // spread across metrics by index. Identity when no palette:
               // the metric's own accent, else the scene's.
-              const mAccent = accent(
+              const mAccent = accentOf(
                 paletteAccentKey(scene.palette, scene.accent, m.accent, mi),
               );
 
@@ -131,9 +136,9 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
                     transform: `scale(${cardScale})`,
                     borderRadius: 18,
                     background: focused
-                      ? `radial-gradient(120% 140% at 0% 0%, ${glow(mAccent, 0.14)} 0%, ${theme.bg.panelHi} 44%, ${theme.bg.panel} 100%)`
-                      : `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-                    border: `1.5px solid ${focused ? mAccent : theme.bg.line}`,
+                      ? `radial-gradient(120% 140% at 0% 0%, ${glow(mAccent, 0.14)} 0%, ${bg.panelHi} 44%, ${bg.panel} 100%)`
+                      : `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+                    border: `1.5px solid ${focused ? mAccent : bg.line}`,
                     boxShadow: focused
                       ? `0 0 0 1px ${glow(mAccent, 0.35)}, 0 24px 60px -22px ${glow(mAccent, 0.5 + breathe * 0.2)}`
                       : '0 18px 44px -24px #000000cc',
@@ -151,7 +156,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
                       fontFamily: monoFamily,
                       fontSize: 16,
                       letterSpacing: 1,
-                      color: theme.ink.low,
+                      color: ink.low,
                       textTransform: 'uppercase',
                     }}
                   >
@@ -166,7 +171,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
                         fontFamily: monoFamily,
                         fontSize: 76,
                         fontWeight: 600,
-                        color: theme.ink.hi,
+                        color: ink.hi,
                         lineHeight: 1,
                         letterSpacing: -1,
                       }}
@@ -243,9 +248,9 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
                     transform: `scale(${scale})`,
                     borderRadius: 18,
                     background: focused
-                      ? `radial-gradient(120% 140% at 0% 0%, ${glow(accentHex, 0.14)} 0%, ${theme.bg.panelHi} 44%, ${theme.bg.panel} 100%)`
-                      : `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-                    border: `1.5px solid ${focused ? accentHex : theme.bg.line}`,
+                      ? `radial-gradient(120% 140% at 0% 0%, ${glow(accentHex, 0.14)} 0%, ${bg.panelHi} 44%, ${bg.panel} 100%)`
+                      : `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+                    border: `1.5px solid ${focused ? accentHex : bg.line}`,
                     boxShadow: focused
                       ? `0 0 0 1px ${glow(accentHex, 0.35)}, 0 24px 60px -22px ${glow(accentHex, 0.5 + breathe * 0.2)}`
                       : '0 18px 44px -24px #000000cc',
@@ -263,7 +268,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
                       fontFamily: monoFamily,
                       fontSize: 16,
                       letterSpacing: 1,
-                      color: theme.ink.low,
+                      color: ink.low,
                       textTransform: 'uppercase',
                     }}
                   >
@@ -275,7 +280,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
                         fontFamily: monoFamily,
                         fontSize: 76,
                         fontWeight: 600,
-                        color: theme.ink.hi,
+                        color: ink.hi,
                         lineHeight: 1,
                         letterSpacing: -1,
                       }}
@@ -300,7 +305,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
                       style={{
                         fontFamily: interFamily,
                         fontSize: 16,
-                        color: theme.ink.mid,
+                        color: ink.mid,
                       }}
                     >
                       {f.note}
@@ -394,7 +399,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
                 fontFamily: interFamily,
                 fontSize: 20,
                 fontWeight: 500,
-                color: theme.ink.mid,
+                color: ink.mid,
               }}
             >
               {rl}
@@ -424,8 +429,8 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
                     borderRadius: 11,
                     background: focused
                       ? `linear-gradient(158deg, ${glow(accentHex, 0.15)}, ${glow(accentHex, 0.05)})`
-                      : `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-                    border: `1.5px solid ${focused ? accentHex : theme.bg.line}`,
+                      : `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+                    border: `1.5px solid ${focused ? accentHex : bg.line}`,
                     boxShadow: focused
                       ? `0 0 22px -8px ${glow(accentHex, 0.6)}`
                       : '0 14px 34px -24px #000000cc',
@@ -435,7 +440,7 @@ export const QuantitiesScene: React.FC<SceneProps> = ({
                     fontFamily: monoFamily,
                     fontSize: 26,
                     fontWeight: 500,
-                    color: focused ? accentHex : theme.ink.hi,
+                    color: focused ? accentHex : ink.hi,
                   }}
                 >
                   {cells[ri]?.[ci] ?? '—'}
