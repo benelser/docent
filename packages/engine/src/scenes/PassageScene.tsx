@@ -1,10 +1,10 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
-import {interFamily, monoFamily} from '../fonts';
+import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {activeBeatIndex, type Beat, type Mark, type SceneProps} from '../engine/spec';
+import type {ResolvedStyle} from '../style';
 
 // A passage scene — annotates a plain-text artifact (a poem, prose, a
 // primary-source document). NOT code: no syntax highlighter, no gutter, no
@@ -15,9 +15,10 @@ import {activeBeatIndex, type Beat, type Mark, type SceneProps} from '../engine/
 // reveal/focus model: `reveal` brings marks in, `focus` narrows to a subset.
 // Several marks can be live at once. The author writes *what to mark*.
 
-// A serif face for the artifact body — legibility, and a register distinct
-// from the code/mono of CloseupScene. Georgia is universally bundled.
-const serifFamily = 'Georgia, "Times New Roman", serif';
+const accentOf = (style: ResolvedStyle, key?: string): string => {
+  const map = style.tokens.accent as unknown as Record<string, string>;
+  return (key && map[key]) || map.blue;
+};
 
 // One run of the typeset text — either plain prose or a span owned by a mark.
 type Run = {text: string; markId: string | null};
@@ -59,17 +60,28 @@ const sliceRuns = (text: string, marks: Mark[]): Run[] => {
   return runs;
 };
 
-export const PassageScene: React.FC<SceneProps> = ({
+export const PassageScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const accentHex = accentOf(style, scene.accent);
   const text = (scene.text ?? '').replace(/\s+$/, '');
   const marks = scene.marks ?? [];
+
+  const ink = style.tokens.ink;
+  const bg = style.tokens.bg;
+  // The serif face for the artifact body is sourced from the resolved tokens:
+  // presets like `editorial` and `paper` swap in their own serif, while the
+  // default `neutral` keeps a Georgia-family fallback. The register is
+  // intentionally distinct from CloseupScene's mono.
+  const serifFamily = style.tokens.typography.family.serif;
+  const sansFamily = style.tokens.typography.family.sans;
+  const monoFamily = style.tokens.typography.family.mono;
 
   // First frame at which each mark id becomes live. A beat's `reveal` array
   // names the marks it brings on; once revealed a mark stays revealed. This is
@@ -151,8 +163,8 @@ export const PassageScene: React.FC<SceneProps> = ({
         <div
           style={{
             borderRadius: 16,
-            background: theme.bg.panel,
-            border: `1.5px solid ${theme.bg.line}`,
+            background: bg.panel,
+            border: `1.5px solid ${bg.line}`,
             boxShadow: `0 44px 110px -34px #000000, 0 0 0 1px ${glow(accentHex, 0.12)}`,
             padding: '46px 64px',
           }}
@@ -162,7 +174,7 @@ export const PassageScene: React.FC<SceneProps> = ({
               fontFamily: serifFamily,
               fontSize,
               lineHeight: `${lineH}px`,
-              color: theme.ink.hi,
+              color: ink.hi,
               whiteSpace: 'pre-wrap',
             }}
           >
@@ -181,7 +193,7 @@ export const PassageScene: React.FC<SceneProps> = ({
                     background: lit
                       ? glow(accentHex, st === 'focus' ? 0.26 : 0.16)
                       : glow(accentHex, 0.06),
-                    color: lit ? theme.ink.hi : theme.ink.mid,
+                    color: lit ? ink.hi : ink.mid,
                     borderBottom: `2.5px solid ${
                       lit ? accentHex : glow(accentHex, 0.3)
                     }`,
@@ -257,9 +269,9 @@ export const PassageScene: React.FC<SceneProps> = ({
                   </div>
                   <div
                     style={{
-                      fontFamily: interFamily,
+                      fontFamily: sansFamily,
                       fontSize: 21,
-                      color: theme.ink.mid,
+                      color: ink.mid,
                       lineHeight: 1.4,
                     }}
                   >
@@ -279,7 +291,7 @@ export const PassageScene: React.FC<SceneProps> = ({
               fontFamily: monoFamily,
               fontSize: 16,
               letterSpacing: 1.4,
-              color: theme.ink.faint,
+              color: ink.faint,
               textAlign: 'center',
             }}
           >

@@ -8,11 +8,11 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import {accent, theme, glow} from '../theme';
-import {interFamily, monoFamily} from '../fonts';
+import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import type {BigIdeaAnchor, SceneProps} from '../engine/spec';
+import type {ResolvedStyle} from '../style';
 
 // BigIdeaScene — the takeaway.
 //
@@ -29,20 +29,26 @@ import type {BigIdeaAnchor, SceneProps} from '../engine/spec';
 // rebuild a paper-like backdrop locally. The kicker, heading, and progress
 // chrome stay consistent with the rest of the film.
 
+const accentOf = (style: ResolvedStyle, key?: string): string => {
+  const map = style.tokens.accent as unknown as Record<string, string>;
+  return (key && map[key]) || map.blue;
+};
+
 // ----- anchor renderers ----------------------------------------------------
 //
 // Each anchor kind is a small, self-contained renderer. The author picks the
 // kind through the spec; the engine owns the pixels. All anchors share the
 // same enter spring so they read as one family.
 
-const GlyphAnchor: React.FC<{value: string; accentHex: string; isLight: boolean}> = ({
-  value,
-  accentHex,
-  isLight,
-}) => (
+const GlyphAnchor: React.FC<{
+  value: string;
+  accentHex: string;
+  isLight: boolean;
+  sansFamily: string;
+}> = ({value, accentHex, isLight, sansFamily}) => (
   <div
     style={{
-      fontFamily: interFamily,
+      fontFamily: sansFamily,
       fontSize: 220,
       fontWeight: 600,
       color: accentHex,
@@ -55,24 +61,28 @@ const GlyphAnchor: React.FC<{value: string; accentHex: string; isLight: boolean}
   </div>
 );
 
-const EquationAnchor: React.FC<{value: string; accentHex: string; isLight: boolean}> = ({
-  value,
-  accentHex,
-  isLight,
-}) => (
+const EquationAnchor: React.FC<{
+  value: string;
+  accentHex: string;
+  isLight: boolean;
+  monoFamily: string;
+  inkHi: string;
+  bgPanel: string;
+  bgPanelHi: string;
+}> = ({value, accentHex, isLight, monoFamily, inkHi, bgPanel, bgPanelHi}) => (
   <div
     style={{
       fontFamily: monoFamily,
       fontSize: 88,
       fontWeight: 500,
-      color: isLight ? '#15161a' : theme.ink.hi,
+      color: isLight ? '#15161a' : inkHi,
       letterSpacing: 1,
       padding: '22px 56px',
       border: `1.5px solid ${isLight ? '#cbb98f' : glow(accentHex, 0.45)}`,
       borderRadius: 18,
       background: isLight
         ? '#fffdf6'
-        : `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
+        : `linear-gradient(158deg, ${bgPanelHi}, ${bgPanel})`,
       boxShadow: isLight
         ? '0 10px 24px -16px #0000003a'
         : `0 24px 64px -20px ${glow(accentHex, 0.4)}`,
@@ -82,11 +92,12 @@ const EquationAnchor: React.FC<{value: string; accentHex: string; isLight: boole
   </div>
 );
 
-const ImageAnchor: React.FC<{value: string; accentHex: string; isLight: boolean}> = ({
-  value,
-  accentHex,
-  isLight,
-}) => {
+const ImageAnchor: React.FC<{
+  value: string;
+  accentHex: string;
+  isLight: boolean;
+  bgPanel: string;
+}> = ({value, accentHex, isLight, bgPanel}) => {
   // staticFile resolves under public/ — author can pass either a bare
   // filename (lives under public/figures/) or a full sub-path.
   const src = value.startsWith('figures/') || value.startsWith('/')
@@ -97,7 +108,7 @@ const ImageAnchor: React.FC<{value: string; accentHex: string; isLight: boolean}
       style={{
         padding: 12,
         borderRadius: 18,
-        background: isLight ? '#fffdf6' : `${theme.bg.panel}`,
+        background: isLight ? '#fffdf6' : `${bgPanel}`,
         border: `1.5px solid ${isLight ? '#cbb98f' : glow(accentHex, 0.4)}`,
         boxShadow: isLight
           ? '0 10px 24px -16px #0000003a'
@@ -123,11 +134,12 @@ const ImageAnchor: React.FC<{value: string; accentHex: string; isLight: boolean}
 // engine maps those into a small SVG and strokes them in the accent ink. This
 // is not a chart scene — it carries no axes; it is the *fragment* a viewer
 // remembers, the shape of a curve, no more.
-const ChartFragmentAnchor: React.FC<{value: string; accentHex: string; isLight: boolean}> = ({
-  value,
-  accentHex,
-  isLight,
-}) => {
+const ChartFragmentAnchor: React.FC<{
+  value: string;
+  accentHex: string;
+  isLight: boolean;
+  bgPanel: string;
+}> = ({value, accentHex, isLight, bgPanel}) => {
   const points: [number, number][] = value
     .split(';')
     .map((pair) => pair.trim())
@@ -160,7 +172,7 @@ const ChartFragmentAnchor: React.FC<{value: string; accentHex: string; isLight: 
       style={{
         padding: 18,
         borderRadius: 18,
-        background: isLight ? '#fffdf6' : `${theme.bg.panel}`,
+        background: isLight ? '#fffdf6' : `${bgPanel}`,
         border: `1.5px solid ${isLight ? '#cbb98f' : glow(accentHex, 0.4)}`,
         boxShadow: isLight
           ? '0 10px 24px -16px #0000003a'
@@ -192,17 +204,52 @@ const Anchor: React.FC<{
   anchor: BigIdeaAnchor;
   accentHex: string;
   isLight: boolean;
-}> = ({anchor, accentHex, isLight}) => {
+  style: ResolvedStyle;
+}> = ({anchor, accentHex, isLight, style}) => {
+  const sansFamily = style.tokens.typography.family.sans;
+  const monoFamily = style.tokens.typography.family.mono;
+  const inkHi = style.tokens.ink.hi;
+  const bgPanel = style.tokens.bg.panel;
+  const bgPanelHi = style.tokens.bg.panelHi;
   switch (anchor.kind) {
     case 'glyph':
-      return <GlyphAnchor value={anchor.value} accentHex={accentHex} isLight={isLight} />;
+      return (
+        <GlyphAnchor
+          value={anchor.value}
+          accentHex={accentHex}
+          isLight={isLight}
+          sansFamily={sansFamily}
+        />
+      );
     case 'equation':
-      return <EquationAnchor value={anchor.value} accentHex={accentHex} isLight={isLight} />;
+      return (
+        <EquationAnchor
+          value={anchor.value}
+          accentHex={accentHex}
+          isLight={isLight}
+          monoFamily={monoFamily}
+          inkHi={inkHi}
+          bgPanel={bgPanel}
+          bgPanelHi={bgPanelHi}
+        />
+      );
     case 'image':
-      return <ImageAnchor value={anchor.value} accentHex={accentHex} isLight={isLight} />;
+      return (
+        <ImageAnchor
+          value={anchor.value}
+          accentHex={accentHex}
+          isLight={isLight}
+          bgPanel={bgPanel}
+        />
+      );
     case 'chart-fragment':
       return (
-        <ChartFragmentAnchor value={anchor.value} accentHex={accentHex} isLight={isLight} />
+        <ChartFragmentAnchor
+          value={anchor.value}
+          accentHex={accentHex}
+          isLight={isLight}
+          bgPanel={bgPanel}
+        />
       );
     default:
       return null;
@@ -241,12 +288,17 @@ const WhiteboardBackdrop: React.FC = () => (
   </>
 );
 
-const SketchBackdrop: React.FC<{accentHex: string}> = ({accentHex}) => (
+const SketchBackdrop: React.FC<{
+  accentHex: string;
+  bgBase: string;
+  bgLine: string;
+  bgVoid: string;
+}> = ({accentHex, bgBase, bgLine, bgVoid}) => (
   <>
-    <AbsoluteFill style={{backgroundColor: theme.bg.base}} />
+    <AbsoluteFill style={{backgroundColor: bgBase}} />
     <AbsoluteFill
       style={{
-        backgroundImage: `radial-gradient(${theme.bg.line} 1.15px, transparent 1.15px)`,
+        backgroundImage: `radial-gradient(${bgLine} 1.15px, transparent 1.15px)`,
         backgroundSize: '46px 46px',
         opacity: 0.18,
       }}
@@ -263,7 +315,7 @@ const SketchBackdrop: React.FC<{accentHex: string}> = ({accentHex}) => (
     />
     <AbsoluteFill
       style={{
-        background: `radial-gradient(ellipse 74% 66% at 50% 44%, transparent 38%, ${theme.bg.void}e0 100%)`,
+        background: `radial-gradient(ellipse 74% 66% at 50% 44%, transparent 38%, ${bgVoid}e0 100%)`,
       }}
     />
   </>
@@ -271,14 +323,23 @@ const SketchBackdrop: React.FC<{accentHex: string}> = ({accentHex}) => (
 
 // ----- the scene ------------------------------------------------------------
 
-export const BigIdeaScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) => {
+export const BigIdeaScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
+  ts,
+  sceneIndex,
+  sceneCount,
+  style,
+}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const accentHex = accentOf(style, scene.accent);
   const treatment = scene.treatment;
   const isLight = treatment === 'whiteboard';
   const isSketch = treatment === 'sketch';
+
+  const inkHi = style.tokens.ink.hi;
+  const bg = style.tokens.bg;
+  const sansFamily = style.tokens.typography.family.sans;
 
   // The statement and anchor are the load-bearing fields. validate.ts forbids
   // a big-idea scene without a statement; the anchor is optional in the type
@@ -327,7 +388,7 @@ export const BigIdeaScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount})
             )})`,
           }}
         >
-          <Anchor anchor={anchor} accentHex={accentHex} isLight={isLight} />
+          <Anchor anchor={anchor} accentHex={accentHex} isLight={isLight} style={style} />
         </div>
       ) : null}
 
@@ -342,10 +403,10 @@ export const BigIdeaScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount})
       >
         <div
           style={{
-            fontFamily: interFamily,
+            fontFamily: sansFamily,
             fontSize,
             fontWeight: 600,
-            color: isLight ? '#15161a' : theme.ink.hi,
+            color: isLight ? '#15161a' : inkHi,
             letterSpacing: -0.6,
             lineHeight: 1.18,
             textShadow: isLight ? 'none' : `0 12px 60px ${glow(accentHex, 0.25)}`,
@@ -381,7 +442,16 @@ export const BigIdeaScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount})
     // overpainting its background with the treatment's wash.
     return (
       <AbsoluteFill>
-        {isLight ? <WhiteboardBackdrop /> : <SketchBackdrop accentHex={accentHex} />}
+        {isLight ? (
+          <WhiteboardBackdrop />
+        ) : (
+          <SketchBackdrop
+            accentHex={accentHex}
+            bgBase={bg.base}
+            bgLine={bg.line}
+            bgVoid={bg.void}
+          />
+        )}
         <SceneFrame
           accentHex={accentHex}
           kicker={scene.kicker}

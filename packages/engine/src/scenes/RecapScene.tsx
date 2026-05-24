@@ -1,21 +1,31 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
-import {interFamily, monoFamily} from '../fonts';
+import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
+import type {ResolvedStyle} from '../style';
 
-export const RecapScene: React.FC<SceneProps> = ({
+const accentOf = (style: ResolvedStyle, key?: string): string => {
+  const map = style.tokens.accent as unknown as Record<string, string>;
+  return (key && map[key]) || map.blue;
+};
+
+export const RecapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const accentHex = accentOf(style, scene.accent);
   const points = scene.points ?? [];
+  const ink = style.tokens.ink;
+  const bg = style.tokens.bg;
+  const sansFamily = style.tokens.typography.family.sans;
+  const monoFamily = style.tokens.typography.family.mono;
 
   // The reveal frame for point i is the `from` of the first beat whose numeric
   // `reveal` reaches i+1.
@@ -76,7 +86,7 @@ export const RecapScene: React.FC<SceneProps> = ({
                   height: 54,
                   borderRadius: 12,
                   flexShrink: 0,
-                  background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
+                  background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
                   border: `1.5px solid ${accentHex}`,
                   boxShadow: `0 0 22px -6px ${glow(accentHex, 0.6)}`,
                   display: 'flex',
@@ -93,10 +103,10 @@ export const RecapScene: React.FC<SceneProps> = ({
               </div>
               <div
                 style={{
-                  fontFamily: interFamily,
+                  fontFamily: sansFamily,
                   fontSize: fs,
                   fontWeight: 500,
-                  color: theme.ink.hi,
+                  color: ink.hi,
                   letterSpacing: -0.3,
                   lineHeight: 1.28,
                   flex: 1,
@@ -118,7 +128,7 @@ export const RecapScene: React.FC<SceneProps> = ({
           fontFamily: monoFamily,
           fontSize: 22,
           letterSpacing: 2,
-          color: theme.ink.low,
+          color: ink.low,
           opacity: closing ? 1 : 0,
         }}
       >

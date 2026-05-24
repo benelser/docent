@@ -1,7 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
-import {interFamily, monoFamily} from '../fonts';
+import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {STAGE} from '../engine/layout';
@@ -13,6 +12,7 @@ import {
 } from '../engine/spec';
 import {parseTimelineDate, yearOf} from '../engine/time';
 import {paletteGlowScale, paletteSceneHex} from '../engine/knobs';
+import type {ResolvedStyle} from '../style';
 
 // A timeline: events plotted on a real date axis. Progression renders ordinal
 // stages — "first, then, then" — and cannot say *how far apart* two things
@@ -39,20 +39,27 @@ const AXIS_FROM_BOTTOM = 220;
 // sits just above the axis; lane 1 sits higher, lane 2 higher still.
 const LANE_H = 130;
 
-export const TimelineScene: React.FC<SceneProps> = ({
+export const TimelineScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  // paletteSceneHex still reads ACCENTS from theme.ts (owned by knobs.ts);
+  // tokens-driven palette migration is a follow-on sprint.
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const events: TimelineEvent[] = scene.events ?? [];
   const spans: TimelineSpan[] = scene.spans ?? [];
   const axis = scene.axis;
   const treatment = scene.treatment;
   const sketch = treatment === 'sketch' || treatment === 'whiteboard';
+  const ink = style.tokens.ink;
+  const bg = style.tokens.bg;
+  const sansFamily = style.tokens.typography.family.sans;
+  const monoFamily = style.tokens.typography.family.mono;
 
   // The axis bounds. If `axis` is missing or unparseable the scene degrades
   // gracefully — the validator should have caught this, but the renderer
@@ -161,7 +168,7 @@ export const TimelineScene: React.FC<SceneProps> = ({
             y1={axisY}
             x2={plotR}
             y2={axisY}
-            stroke={theme.ink.low}
+            stroke={ink.low}
             strokeWidth={sketch ? 2.4 : 2.5}
             strokeLinecap="round"
             strokeDasharray={sketch ? '7 6' : undefined}
@@ -179,7 +186,7 @@ export const TimelineScene: React.FC<SceneProps> = ({
                     y1={axisY - 8}
                     x2={x}
                     y2={axisY + 8}
-                    stroke={theme.ink.low}
+                    stroke={ink.low}
                     strokeWidth={2}
                     strokeLinecap="round"
                   />
@@ -189,7 +196,7 @@ export const TimelineScene: React.FC<SceneProps> = ({
                     textAnchor="middle"
                     fontFamily={monoFamily}
                     fontSize={18}
-                    fill={theme.ink.mid}
+                    fill={ink.mid}
                     letterSpacing={0.6}
                   >
                     {t.label}
@@ -246,7 +253,7 @@ export const TimelineScene: React.FC<SceneProps> = ({
                     textAnchor="middle"
                     fontFamily={monoFamily}
                     fontSize={14}
-                    fill={theme.ink.hi}
+                    fill={ink.hi}
                     letterSpacing={0.5}
                   >
                     {sp.label}
@@ -300,7 +307,7 @@ export const TimelineScene: React.FC<SceneProps> = ({
                     y1={y + 32}
                     x2={x}
                     y2={axisY - 4}
-                    stroke={focused ? accentHex : theme.bg.lineHi}
+                    stroke={focused ? accentHex : bg.lineHi}
                     strokeWidth={focused ? 2.2 : 1.4}
                     strokeDasharray={sketch ? '5 5' : '4 6'}
                     opacity={opacity * 0.85}
@@ -310,7 +317,7 @@ export const TimelineScene: React.FC<SceneProps> = ({
                     cx={x}
                     cy={axisY}
                     r={focused ? 8 : 6}
-                    fill={focused || !hasFocus ? accentHex : theme.bg.panelHi}
+                    fill={focused || !hasFocus ? accentHex : bg.panelHi}
                     stroke={accentHex}
                     strokeWidth={2}
                     opacity={opacity}
@@ -335,9 +342,9 @@ export const TimelineScene: React.FC<SceneProps> = ({
                     transform: `scale(${scale})`,
                     borderRadius: 12,
                     background: sketch
-                      ? `linear-gradient(160deg, ${theme.bg.panel}, ${theme.bg.base})`
-                      : `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-                    border: `1.5px solid ${focused ? accentHex : theme.bg.line}`,
+                      ? `linear-gradient(160deg, ${bg.panel}, ${bg.base})`
+                      : `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+                    border: `1.5px solid ${focused ? accentHex : bg.line}`,
                     boxShadow: focused
                       ? `0 0 0 1px ${glow(accentHex, 0.35)}, 0 22px 54px -22px ${glow(accentHex, 0.6)}`
                       : '0 16px 40px -24px #000000cc',
@@ -359,14 +366,14 @@ export const TimelineScene: React.FC<SceneProps> = ({
                   </div>
                   <div
                     style={{
-                      fontFamily: interFamily,
+                      fontFamily: sansFamily,
                       fontSize:
                         e.label.length <= 18 ? 21
                         : e.label.length <= 28 ? 18
                         : e.label.length <= 38 ? 15
                         : 13,
                       fontWeight: 600,
-                      color: theme.ink.hi,
+                      color: ink.hi,
                       lineHeight: 1.14,
                       letterSpacing: -0.2,
                       whiteSpace: 'nowrap',
@@ -385,7 +392,7 @@ export const TimelineScene: React.FC<SceneProps> = ({
                           e.sub.length <= 32 ? 13
                           : e.sub.length <= 48 ? 11.5
                           : 10.5,
-                        color: focused ? theme.ink.mid : theme.ink.low,
+                        color: focused ? ink.mid : ink.low,
                         lineHeight: 1.22,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
@@ -416,7 +423,7 @@ export const TimelineScene: React.FC<SceneProps> = ({
               fontFamily: monoFamily,
               fontSize: 14,
               letterSpacing: 2,
-              color: theme.ink.low,
+              color: ink.low,
             }}
           >
             {axis.start} → {axis.end}

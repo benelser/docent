@@ -1,26 +1,39 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {Highlight} from 'prism-react-renderer';
-import {accent, theme, glow} from '../theme';
-import {monoFamily} from '../fonts';
+import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {codeTheme} from '../components/code-theme';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
+import type {ResolvedStyle} from '../style';
+
+const accentOf = (style: ResolvedStyle, key?: string): string => {
+  const map = style.tokens.accent as unknown as Record<string, string>;
+  return (key && map[key]) || map.blue;
+};
 
 // A deep-dive on real source: a code window whose lines reveal, then highlight
 // range by range as the narration walks through them.
-export const CloseupScene: React.FC<SceneProps> = ({
+export const CloseupScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const accentHex = accentOf(style, scene.accent);
   const code = (scene.code ?? '').replace(/\s+$/, '');
   const lineCount = code.split('\n').length;
+
+  const ink = style.tokens.ink;
+  const bg = style.tokens.bg;
+  // The mono face for source listings is sourced from the resolved tokens.
+  // The `engineering` preset selects JetBrains Mono (and so does `neutral`);
+  // any preset that swaps the mono stack will be honoured here.
+  const monoFamily = style.tokens.typography.family.mono;
 
   const active = activeBeatIndex(ts.beats, frame);
   const beat = ts.beats[active];
@@ -61,8 +74,8 @@ export const CloseupScene: React.FC<SceneProps> = ({
           opacity: winOpacity,
           borderRadius: 16,
           overflow: 'hidden',
-          background: theme.bg.panel,
-          border: `1.5px solid ${theme.bg.line}`,
+          background: bg.panel,
+          border: `1.5px solid ${bg.line}`,
           boxShadow: `0 44px 110px -34px #000000, 0 0 0 1px ${glow(accentHex, 0.12)}`,
         }}
       >
@@ -74,8 +87,8 @@ export const CloseupScene: React.FC<SceneProps> = ({
             gap: 14,
             padding: '0 22px',
             height: headerH,
-            background: theme.bg.panelHi,
-            borderBottom: `1px solid ${theme.bg.line}`,
+            background: bg.panelHi,
+            borderBottom: `1px solid ${bg.line}`,
           }}
         >
           <div style={{display: 'flex', gap: 8}}>
@@ -83,7 +96,7 @@ export const CloseupScene: React.FC<SceneProps> = ({
               <div key={c} style={{width: 12, height: 12, borderRadius: 6, background: c, opacity: 0.9}} />
             ))}
           </div>
-          <div style={{fontFamily: monoFamily, fontSize: 16, color: theme.ink.mid, letterSpacing: 0.3}}>
+          <div style={{fontFamily: monoFamily, fontSize: 16, color: ink.mid, letterSpacing: 0.3}}>
             {scene.file}
           </div>
         </div>
@@ -112,7 +125,7 @@ export const CloseupScene: React.FC<SceneProps> = ({
                           width: 66,
                           textAlign: 'right',
                           paddingRight: 22,
-                          color: theme.ink.faint,
+                          color: ink.faint,
                           flexShrink: 0,
                         }}
                       >

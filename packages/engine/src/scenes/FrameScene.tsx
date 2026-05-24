@@ -1,21 +1,32 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme} from '../theme';
-import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import type {SceneProps} from '../engine/spec';
+import type {ResolvedStyle} from '../style';
 
-export const FrameScene: React.FC<SceneProps> = ({
+// Style-driven accent resolution — reads the closed accent palette off the
+// resolved tokens. Mirrors theme.ts `accent()` but sourced from tokens, so
+// presets that redefine a hue (e.g. paper's blue is marker-ink) take effect.
+const accentOf = (style: ResolvedStyle, key?: string): string => {
+  const map = style.tokens.accent as unknown as Record<string, string>;
+  return (key && map[key]) || map.blue;
+};
+
+export const FrameScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
   meta,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const accentHex = accentOf(style, scene.accent);
+  const ink = style.tokens.ink;
+  const sansFamily = style.tokens.typography.family.sans;
+  const monoFamily = style.tokens.typography.family.mono;
 
   const enterOf = (name: string): number =>
     ts.beats.find((b) => b.show === name)?.from ?? 0;
@@ -66,7 +77,7 @@ export const FrameScene: React.FC<SceneProps> = ({
             letterSpacing: 1,
           }}
         >
-          <span style={{color: theme.ink.low}}>~ </span>
+          <span style={{color: ink.low}}>~ </span>
           <span style={{color: accentHex}}>❯</span> docent {meta.id}
           <span
             style={{
@@ -86,7 +97,7 @@ export const FrameScene: React.FC<SceneProps> = ({
           style={{
             fontSize: titleFont,
             fontWeight: 700,
-            color: theme.ink.hi,
+            color: ink.hi,
             letterSpacing: -titleFont * 0.019,
             opacity: titleA,
             transform: `scale(${interpolate(titleA, [0, 1], [0.92, 1])})`,
@@ -129,10 +140,10 @@ export const FrameScene: React.FC<SceneProps> = ({
               style={{
                 fontSize: fs,
                 fontWeight: 400,
-                color: theme.ink.mid,
+                color: ink.mid,
                 opacity: taglineA,
                 transform: `translateY(${(1 - taglineA) * 14}px)`,
-                fontFamily: interFamily,
+                fontFamily: sansFamily,
                 maxWidth: 1500,
                 textAlign: 'center',
                 lineHeight: 1.32,
@@ -159,7 +170,7 @@ export const FrameScene: React.FC<SceneProps> = ({
               style={{
                 fontFamily: monoFamily,
                 fontSize: fs,
-                color: theme.ink.low,
+                color: ink.low,
                 opacity: footA,
                 transform: `translateY(${(1 - footA) * 12}px)`,
                 marginTop: 70,

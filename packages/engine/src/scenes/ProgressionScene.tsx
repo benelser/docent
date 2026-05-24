@@ -1,7 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
-import {interFamily, monoFamily} from '../fonts';
+import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
@@ -12,6 +11,7 @@ import {
   paletteGlowScale,
   paletteSceneHex,
 } from '../engine/knobs';
+import type {ResolvedStyle} from '../style';
 
 // An ordered timeline track: stages laid left-to-right along a path, each a
 // marker with a label, sub, and the duration of its segment. A `gate` stage is
@@ -24,22 +24,30 @@ import {
 //                `track` (0 or 1) puts it on a lane. Non-linear narrative.
 //  - `iterate` — a cycle drawn so it visibly *repeats and converges*: nested
 //                return arcs of shrinking radius, settling toward equilibrium.
-export const ProgressionScene: React.FC<SceneProps> = ({
+export const ProgressionScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
   // `palette` (a scene knob) re-selects the chrome accent over its family;
-  // without a palette this is exactly `accent(scene.accent)`.
+  // without a palette this is exactly `accent(scene.accent)`. paletteSceneHex
+  // still resolves through theme.ts ACCENTS (owned by engine/knobs) — a
+  // follow-on sprint will route palettes through the token accent map too.
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const stages = scene.stages ?? [];
   const flow = scene.flow ?? 'linear';
   const cycle = flow === 'cycle';
   const iterate = flow === 'iterate';
   const braided = flow === 'braided';
+
+  const ink = style.tokens.ink;
+  const bg = style.tokens.bg;
+  const sansFamily = style.tokens.typography.family.sans;
+  const monoFamily = style.tokens.typography.family.mono;
 
   // `cadence` (a beat knob) shapes how the set of stages a beat reveals
   // enters. The numeric-reveal map gives, per stage index, the revealing
@@ -161,7 +169,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                       y1={y}
                       x2={right}
                       y2={y}
-                      stroke={theme.bg.line}
+                      stroke={bg.line}
                       strokeWidth={3}
                       strokeLinecap="round"
                     />
@@ -210,7 +218,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                 y1={trackY}
                 x2={right}
                 y2={trackY}
-                stroke={theme.bg.line}
+                stroke={bg.line}
                 strokeWidth={3}
                 strokeLinecap="round"
               />
@@ -230,7 +238,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                 <path
                   d={`M ${right} ${trackY} C ${right + 90} ${trackY + 180}, ${left - 90} ${trackY + 180}, ${left} ${trackY}`}
                   fill="none"
-                  stroke={fullyRevealed ? accentHex : theme.bg.line}
+                  stroke={fullyRevealed ? accentHex : bg.line}
                   strokeWidth={3}
                   strokeLinecap="round"
                   strokeDasharray="10 9"
@@ -256,7 +264,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                         key={`iter-${k}`}
                         d={`M ${r} ${trackY} C ${r + 70 * shrink} ${trackY + bulge}, ${l - 70 * shrink} ${trackY + bulge}, ${l} ${trackY}`}
                         fill="none"
-                        stroke={live ? accentHex : theme.bg.line}
+                        stroke={live ? accentHex : bg.line}
                         strokeWidth={3 - k * 0.5}
                         strokeLinecap="round"
                         strokeDasharray="10 9"
@@ -285,7 +293,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                     fontFamily={monoFamily}
                     fontSize={15}
                     letterSpacing={0.6}
-                    fill={theme.ink.low}
+                    fill={ink.low}
                   >
                     converges
                   </text>
@@ -356,7 +364,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                     height: 26,
                     opacity,
                     transform: 'rotate(45deg)',
-                    background: theme.bg.panelHi,
+                    background: bg.panelHi,
                     border: `2px solid ${accentHex}`,
                     boxShadow: `0 0 18px -2px ${glow(accentHex, 0.7)}`,
                   }}
@@ -375,8 +383,8 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                     fontFamily: monoFamily,
                     fontSize: 15,
                     letterSpacing: 0.4,
-                    color: theme.ink.low,
-                    background: theme.bg.base,
+                    color: ink.low,
+                    background: bg.base,
                     padding: '2px 9px',
                     borderRadius: 6,
                     whiteSpace: 'nowrap',
@@ -396,7 +404,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                   height: 24,
                   borderRadius: '50%',
                   opacity,
-                  background: focused || !hasFocus ? accentHex : theme.bg.panelHi,
+                  background: focused || !hasFocus ? accentHex : bg.panelHi,
                   border: `2.5px solid ${accentHex}`,
                   boxShadow: `0 0 ${14 + breathe * 14}px ${glow(accentHex, 0.75)}`,
                 }}
@@ -412,8 +420,8 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                   opacity,
                   transform: `scale(${scale})`,
                   borderRadius: 14,
-                  background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-                  border: `1.5px solid ${focused ? accentHex : theme.bg.line}`,
+                  background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+                  border: `1.5px solid ${focused ? accentHex : bg.line}`,
                   boxShadow: focused
                     ? `0 0 0 1px ${glow(accentHex, 0.35)}, 0 22px 54px -22px ${glow(accentHex, 0.5)}`
                     : '0 16px 40px -24px #000000cc',
@@ -435,7 +443,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                 </div>
                 <div
                   style={{
-                    fontFamily: interFamily,
+                    fontFamily: sansFamily,
                     // Auto-shrink to keep the label on one line. The stage
                     // card is ~360 px wide; at 24 px Inter Bold we get
                     // about 14 chars on a line. Step down for longer ones
@@ -446,7 +454,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                       : s.label.length <= 30 ? 16
                       : 14,
                     fontWeight: 600,
-                    color: theme.ink.hi,
+                    color: ink.hi,
                     letterSpacing: -0.2,
                     lineHeight: 1.12,
                     whiteSpace: 'nowrap',
@@ -466,7 +474,7 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                         s.sub.length <= 28 ? 14.5
                         : s.sub.length <= 40 ? 12.5
                         : 11,
-                      color: focused ? theme.ink.mid : theme.ink.low,
+                      color: focused ? ink.mid : ink.low,
                       lineHeight: 1.2,
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',

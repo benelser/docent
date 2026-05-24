@@ -8,26 +8,36 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import {accent, theme, glow} from '../theme';
-import {interFamily, monoFamily} from '../fonts';
+import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import type {SceneProps} from '../engine/spec';
+import type {ResolvedStyle} from '../style';
+
+const accentOf = (style: ResolvedStyle, key?: string): string => {
+  const map = style.tokens.accent as unknown as Record<string, string>;
+  return (key && map[key]) || map.blue;
+};
 
 // Shows the phenomenon itself: an embedded screen-capture clip, framed in a
 // device-style panel, with the narration playing over it. When no clip is
 // supplied the scene degrades gracefully to a centred placeholder panel — it
 // must never crash on a missing file.
-export const DemonstrateScene: React.FC<SceneProps> = ({
+export const DemonstrateScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
   meta,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const accentHex = accentOf(style, scene.accent);
+  const ink = style.tokens.ink;
+  const bg = style.tokens.bg;
+  const sansFamily = style.tokens.typography.family.sans;
+  const monoFamily = style.tokens.typography.family.mono;
 
   const intro = spring({frame, fps, config: {damping: 200}});
   const scale = interpolate(intro, [0, 1], [0.94, 1]);
@@ -43,7 +53,7 @@ export const DemonstrateScene: React.FC<SceneProps> = ({
     transform: `scale(${scale})`,
     borderRadius: 18,
     overflow: 'hidden',
-    background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
+    background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
     border: `1.5px solid ${accentHex}`,
     boxShadow: `0 0 0 1px ${glow(accentHex, 0.3)}, 0 40px 90px -36px #000000ee`,
     display: 'flex',
@@ -60,8 +70,8 @@ export const DemonstrateScene: React.FC<SceneProps> = ({
         alignItems: 'center',
         gap: 9,
         padding: '0 18px',
-        background: theme.bg.void,
-        borderBottom: `1px solid ${theme.bg.line}`,
+        background: bg.void,
+        borderBottom: `1px solid ${bg.line}`,
       }}
     >
       {['#ff5f57', '#febc2e', '#28c840'].map((c) => (
@@ -73,7 +83,7 @@ export const DemonstrateScene: React.FC<SceneProps> = ({
           fontFamily: monoFamily,
           fontSize: 14,
           letterSpacing: 0.6,
-          color: theme.ink.low,
+          color: ink.low,
         }}
       >
         {scene.clip ? scene.clip : `${meta.subject} · demonstration`}
@@ -95,7 +105,7 @@ export const DemonstrateScene: React.FC<SceneProps> = ({
           {scene.clip ? (
             <OffthreadVideo
               src={staticFile(`clips/${meta.id}/${scene.clip}`)}
-              style={{width: '100%', height: '100%', objectFit: 'contain', background: theme.bg.void}}
+              style={{width: '100%', height: '100%', objectFit: 'contain', background: bg.void}}
             />
           ) : (
             // graceful placeholder — no clip, no crash
@@ -135,10 +145,10 @@ export const DemonstrateScene: React.FC<SceneProps> = ({
               </div>
               <div
                 style={{
-                  fontFamily: interFamily,
+                  fontFamily: sansFamily,
                   fontSize: 28,
                   fontWeight: 600,
-                  color: theme.ink.hi,
+                  color: ink.hi,
                 }}
               >
                 {scene.heading ?? 'Demonstration'}
@@ -148,7 +158,7 @@ export const DemonstrateScene: React.FC<SceneProps> = ({
                   fontFamily: monoFamily,
                   fontSize: 16,
                   letterSpacing: 1,
-                  color: theme.ink.low,
+                  color: ink.low,
                 }}
               >
                 clip unavailable · narrated walkthrough

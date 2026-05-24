@@ -1,7 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
-import {interFamily, monoFamily} from '../fonts';
+import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {STAGE} from '../engine/layout';
@@ -12,6 +11,7 @@ import {
   type SceneProps,
 } from '../engine/spec';
 import {paletteAccentKey, paletteSceneHex} from '../engine/knobs';
+import type {ResolvedStyle} from '../style';
 
 // A mechanism scene — a working diagram in continuous motion that lets the
 // viewer SEE how a thing operates. The motion is generated procedurally from
@@ -80,19 +80,27 @@ const motionPhase = (
 // marker between two named parts.
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 
-export const MechanismScene: React.FC<SceneProps> = ({
+export const MechanismScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
   // `palette` (a scene knob) re-selects chrome over a family; without a
-  // palette this is exactly `accent(scene.accent)`.
+  // palette this is exactly `accent(scene.accent)`. paletteSceneHex still
+  // reads the closed ACCENTS map from theme.ts (owned by engine/knobs); the
+  // tokens-driven swap of palette colours is left for a follow-on sprint.
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const parts: MechanismPart[] = scene.parts ?? [];
   const motion = scene.motion;
+  const ink = style.tokens.ink;
+  const bg = style.tokens.bg;
+  const sansFamily = style.tokens.typography.family.sans;
+  const monoFamily = style.tokens.typography.family.mono;
+  const accentMap = style.tokens.accent as unknown as Record<string, string>;
 
   // Look up part by id once for cheap lookups inside the motion math.
   const partById = new Map<string, MechanismPart>();
@@ -208,9 +216,12 @@ export const MechanismScene: React.FC<SceneProps> = ({
 
   // The colour resolution per part: a part's id can pick a slot in the
   // palette (so multi-accent palettes spread across parts visibly), defaulting
-  // to the scene accent.
-  const partAccentHex = (p: MechanismPart, order: number): string =>
-    accent(paletteAccentKey(scene.palette, scene.accent, undefined, order));
+  // to the scene accent. Resolved against the style tokens' accent map so a
+  // preset that redefines a hue is honoured.
+  const partAccentHex = (p: MechanismPart, order: number): string => {
+    const key = paletteAccentKey(scene.palette, scene.accent, undefined, order);
+    return accentMap[key] ?? accentMap.blue;
+  };
 
   // ----- the active-phase label -------------------------------------------
   // For `iterate`, the current phase carries a `label` the engine pins at the
@@ -338,7 +349,7 @@ export const MechanismScene: React.FC<SceneProps> = ({
                     fontFamily: monoFamily,
                     fontSize: 44,
                     fontWeight: 700,
-                    color: isActive ? theme.ink.hi : theme.ink.mid,
+                    color: isActive ? ink.hi : ink.mid,
                     letterSpacing: -1,
                     textShadow: isActive
                       ? `0 0 ${18 + breathe * 14}px ${glow(col, 0.75)}`
@@ -349,9 +360,9 @@ export const MechanismScene: React.FC<SceneProps> = ({
                 </div>
                 <div
                   style={{
-                    fontFamily: interFamily,
+                    fontFamily: sansFamily,
                     fontSize: 16,
-                    color: theme.ink.low,
+                    color: ink.low,
                     marginTop: 4,
                     textTransform: 'uppercase',
                     letterSpacing: 1.4,
@@ -373,8 +384,8 @@ export const MechanismScene: React.FC<SceneProps> = ({
                 width: 240,
                 padding: '12px 16px',
                 borderRadius: 12,
-                background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-                border: `1.5px solid ${isActive ? col : theme.bg.line}`,
+                background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+                border: `1.5px solid ${isActive ? col : bg.line}`,
                 boxShadow: isActive
                   ? `0 0 ${20 + breathe * 18}px -2px ${glow(col, 0.7)}`
                   : '0 14px 30px -16px #000000cc',
@@ -384,10 +395,10 @@ export const MechanismScene: React.FC<SceneProps> = ({
             >
               <div
                 style={{
-                  fontFamily: interFamily,
+                  fontFamily: sansFamily,
                   fontSize: 20,
                   fontWeight: 600,
-                  color: isActive ? theme.ink.hi : theme.ink.mid,
+                  color: isActive ? ink.hi : ink.mid,
                   letterSpacing: -0.2,
                 }}
               >
@@ -396,9 +407,9 @@ export const MechanismScene: React.FC<SceneProps> = ({
               {p.sub ? (
                 <div
                   style={{
-                    fontFamily: interFamily,
+                    fontFamily: sansFamily,
                     fontSize: 14,
-                    color: theme.ink.low,
+                    color: ink.low,
                     marginTop: 2,
                     lineHeight: 1.35,
                   }}
@@ -421,7 +432,7 @@ export const MechanismScene: React.FC<SceneProps> = ({
               height: 36,
               borderRadius: '50%',
               background: accentHex,
-              border: `3px solid ${theme.bg.base}`,
+              border: `3px solid ${bg.base}`,
               boxShadow: `0 0 ${24 + breathe * 14}px ${glow(accentHex, 0.85)}`,
               opacity: intro,
             }}
@@ -477,13 +488,13 @@ export const MechanismScene: React.FC<SceneProps> = ({
                 display: 'inline-block',
                 fontFamily: monoFamily,
                 fontSize: 13,
-                color: theme.ink.low,
+                color: ink.low,
                 letterSpacing: 2,
                 textTransform: 'uppercase',
                 padding: '4px 12px',
                 borderRadius: 6,
-                background: theme.bg.panel,
-                border: `1px solid ${theme.bg.line}`,
+                background: bg.panel,
+                border: `1px solid ${bg.line}`,
               }}
             >
               ◼ paused · phase {activeFreeze.phase}

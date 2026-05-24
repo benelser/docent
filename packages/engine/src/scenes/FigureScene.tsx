@@ -7,8 +7,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import {accent, theme, glow} from '../theme';
-import {interFamily, monoFamily} from '../fonts';
+import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {
@@ -17,6 +16,7 @@ import {
   type Callout,
   type SceneProps,
 } from '../engine/spec';
+import type {ResolvedStyle} from '../style';
 
 // A figure scene — annotates a still image (a painting, a map, a photograph,
 // an experimental stimulus). The scene references an image resolved via
@@ -27,21 +27,31 @@ import {
 // labelled panel (mirroring DemonstrateScene's missing-clip fallback) so the
 // type is always renderable. The author pins regions; the engine owns pixels.
 
+const accentOf = (style: ResolvedStyle, key?: string): string => {
+  const map = style.tokens.accent as unknown as Record<string, string>;
+  return (key && map[key]) || map.blue;
+};
+
 // The framed stage the image (or fallback) sits inside.
 const STAGE_W = 1340;
 const STAGE_H = 716;
 
-export const FigureScene: React.FC<SceneProps> = ({
+export const FigureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
   meta,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const accentHex = accentOf(style, scene.accent);
   const callouts = scene.callouts ?? [];
+  const ink = style.tokens.ink;
+  const bg = style.tokens.bg;
+  const sansFamily = style.tokens.typography.family.sans;
+  const monoFamily = style.tokens.typography.family.mono;
 
   // Resolve the image path. `scene.image` may be a bare filename (resolved
   // under public/figures/) or an explicit path; either way it goes through
@@ -166,17 +176,17 @@ export const FigureScene: React.FC<SceneProps> = ({
             maxWidth: 320,
             padding: '9px 15px',
             borderRadius: 10,
-            background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-            border: `1.5px solid ${lit ? accentHex : theme.bg.line}`,
+            background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+            border: `1.5px solid ${lit ? accentHex : bg.line}`,
             boxShadow: `0 18px 40px -16px #000000ee`,
           }}
         >
           <div
             style={{
-              fontFamily: interFamily,
+              fontFamily: sansFamily,
               fontSize: 21,
               fontWeight: 600,
-              color: lit ? theme.ink.hi : theme.ink.mid,
+              color: lit ? ink.hi : ink.mid,
               letterSpacing: -0.2,
             }}
           >
@@ -185,9 +195,9 @@ export const FigureScene: React.FC<SceneProps> = ({
           {c.note ? (
             <div
               style={{
-                fontFamily: interFamily,
+                fontFamily: sansFamily,
                 fontSize: 16,
-                color: theme.ink.low,
+                color: ink.low,
                 marginTop: 3,
                 lineHeight: 1.4,
               }}
@@ -219,7 +229,7 @@ export const FigureScene: React.FC<SceneProps> = ({
           opacity: intro,
           borderRadius: 18,
           overflow: 'visible',
-          background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
+          background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
           border: `1.5px solid ${accentHex}`,
           boxShadow: `0 0 0 1px ${glow(accentHex, 0.3)}, 0 40px 90px -36px #000000ee`,
         }}
@@ -240,7 +250,7 @@ export const FigureScene: React.FC<SceneProps> = ({
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
-                background: theme.bg.void,
+                background: bg.void,
               }}
             />
           ) : (
@@ -280,10 +290,10 @@ export const FigureScene: React.FC<SceneProps> = ({
               </svg>
               <div
                 style={{
-                  fontFamily: interFamily,
+                  fontFamily: sansFamily,
                   fontSize: 28,
                   fontWeight: 600,
-                  color: theme.ink.hi,
+                  color: ink.hi,
                 }}
               >
                 {scene.heading ?? 'Figure'}
@@ -293,7 +303,7 @@ export const FigureScene: React.FC<SceneProps> = ({
                   fontFamily: monoFamily,
                   fontSize: 16,
                   letterSpacing: 1,
-                  color: theme.ink.low,
+                  color: ink.low,
                 }}
               >
                 {scene.image
