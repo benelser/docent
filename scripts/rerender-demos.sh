@@ -69,7 +69,7 @@ for row in "${DEMOS[@]}"; do
   size=$(ls -l "$mp4" | awk '{print $5}')
   green "rendered $(($size / 1024 / 1024)) MB → $mp4"
 
-  cyan "  extracting 6-sec preview at $ts…"
+  cyan "  extracting 6-sec preview at ${ts}…"
   ffmpeg -y -ss "$ts" -t 6 -i "$mp4" \
     -vf "fps=15,scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5" \
     -loop 0 "$REPO_ROOT/docs/stills/$slug-preview.gif" 2>&1 | tail -1 || true
