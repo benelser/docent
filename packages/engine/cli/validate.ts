@@ -5,7 +5,7 @@
 
 import {parseTimelineDate} from '../src/engine/time';
 
-const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art', 'journey-map', 'map', 'timeline', 'tree'];
+const SCENE_TYPES = ['big-idea', 'causal-loop', 'chart', 'closeup', 'compare', 'demonstrate', 'diff', 'figure', 'frame', 'journey-map', 'map', 'passage', 'prior-art', 'probe', 'progression', 'quantities', 'recap', 'structure', 'tension', 'timeline', 'tree', 'walkthrough'];
 // journey-map — the closed allowlist of emotion chips. An emotion outside
 // this list is rejected: the author names a feeling, the engine owns the chip.
 const JOURNEY_EMOTIONS = ['delight', 'curiosity', 'satisfaction', 'neutral', 'fatigue', 'frustration', 'pain'];

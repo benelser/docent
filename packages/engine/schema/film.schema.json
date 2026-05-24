@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "causal-loop", "journey-map", "map", "timeline", "tree"]},
+        "type": {"enum": ["big-idea", "causal-loop", "chart", "closeup", "compare", "demonstrate", "diff", "figure", "frame", "journey-map", "map", "passage", "prior-art", "probe", "progression", "quantities", "recap", "structure", "tension", "timeline", "tree", "walkthrough"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},

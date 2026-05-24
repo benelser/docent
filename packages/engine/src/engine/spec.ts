@@ -309,28 +309,28 @@ export type CausalLoop = {
 export type Scene = {
   id: string;
   type:
-    | 'frame'
-    | 'structure'
-    | 'progression'
-    | 'walkthrough'
-    | 'compare'
-    | 'quantities'
-    | 'probe'
-    | 'tension'
-    | 'closeup'
-    | 'passage'
-    | 'figure'
-    | 'demonstrate'
-    | 'recap'
-    | 'diff'
-    | 'chart'
     | 'big-idea'
-    | 'prior-art'
     | 'causal-loop'
+    | 'chart'
+    | 'closeup'
+    | 'compare'
+    | 'demonstrate'
+    | 'diff'
+    | 'figure'
+    | 'frame'
     | 'journey-map'
     | 'map'
+    | 'passage'
+    | 'prior-art'
+    | 'probe'
+    | 'progression'
+    | 'quantities'
+    | 'recap'
+    | 'structure'
+    | 'tension'
     | 'timeline'
-    | 'tree';
+    | 'tree'
+    | 'walkthrough';
   accent: string;
   kicker: string;
   heading?: string;
