@@ -25,6 +25,9 @@ import {TreeScene} from './scenes/TreeScene';
 import {MapScene} from './scenes/MapScene';
 import {JourneyMapScene} from './scenes/JourneyMapScene';
 import {CausalLoopScene} from './scenes/CausalLoopScene';
+import {LandscapeScene} from './scenes/LandscapeScene';
+import {MechanismScene} from './scenes/MechanismScene';
+import {VennScene} from './scenes/VennScene';
 
 // `treatment` (a scene knob) — the visual *skin*, decoupled from scene type.
 // Today the hand-drawn chalkboard skin is welded to the `tension` type and the
@@ -120,6 +123,12 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
               <JourneyMapScene {...common} />
             ) : t === 'causal-loop' ? (
               <CausalLoopScene {...common} />
+            ) : t === 'landscape' ? (
+              <LandscapeScene {...common} />
+            ) : t === 'mechanism' ? (
+              <MechanismScene {...common} />
+            ) : t === 'venn' ? (
+              <VennScene {...common} />
             ) : t === 'tension' || t === 'structure' ? (
               // Skin chosen by `treatment`: sketch → chalkboard, whiteboard →
               // marker-on-paper (same rough.js renderer, light palette picked

@@ -4,7 +4,7 @@ import {theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
-import {activeBeatIndex, type SceneProps} from '../engine/spec';
+import {activeBeatIndex, type PriorArtNovelty, type SceneProps} from '../engine/spec';
 import {paletteGlowScale, paletteSceneHex} from '../engine/knobs';
 
 // Prior Art — the AR-mode scene that places the subject against 2-4 systems
@@ -33,7 +33,7 @@ export const PriorArtScene: React.FC<SceneProps> = ({
   const systems = scene.systems ?? [];
   const dimensions = scene.dimensions ?? [];
   const cells = scene.cells ?? [];
-  const novelty = scene.novelty;
+  const novelty = scene.novelty as PriorArtNovelty | undefined;
 
   // Cell lookup — keyed by `${systemId}|${dimensionId}`.
   const cellMap = new Map<string, {mark: 'same' | 'diverges'; note: string}>();

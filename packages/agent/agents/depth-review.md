@@ -222,6 +222,85 @@ When the film carries a `journey-map` scene, score this dimension:
 
    For films without a causal-loop scene, mark this dimension n/a.
 
+### For mechanism scenes — motion as argument
+
+9. **Motion is load-bearing.** When a film carries a `mechanism` scene, the
+   motion is supposed to *be* the explanation — what the viewer learns must
+   come from watching the thing operate, not from words describing it. Score
+   whether the motion does real work or is decoration sprinkled on a static
+   diagram. A mechanism scene whose narration over-explains every step of
+   the loop has failed the form: the words could have carried the scene
+   alone, and the motion is wasted.
+
+   **Strong** — the motion carries the explanation:
+   - A feedback-loop `cycle` scene whose beats let the token travel a full
+     pass with minimal narration, and a single freeze beat says "watch
+     what happens when the signal returns" — the compensation IS visible
+     because the motion shows it.
+   - A thermostat `oscillate` scene where the value visibly overshoots,
+     corrects, and settles — the narration names the *behaviour* the
+     motion reveals, not the names of the parts.
+
+   **Weak** — motion sprinkled on a static diagram:
+   - "First A passes to B, then B to C, then C back to A" — every step
+     of the loop is described in words; the animation is decoration. The
+     film would read identically as a static slide.
+   - A mechanism scene with no `freezes` set, every beat dense with
+     narration that names what the next motion frame will show.
+
+   For films with no mechanism scene, mark this dimension n/a (omit it
+   from the scores array; the judge prompt accepts that).
+
+### For films that use a venn scene — the intersection dimension
+
+10. **Intersection named.** When the film argues from a `venn` scene, does it
+    argue from what the OVERLAP PROVES, or does it just narrate that the
+    overlap exists? A venn that ends at "these three things share an overlap"
+    is a tour of set membership, not a review. The strong version names the
+    mechanism that lives ONLY in the intersection and not in any single set
+    alone — the reason the overlap is load-bearing.
+
+    **Strong** — what the overlap proves, mechanistically:
+    - "Private data plus untrusted input plus outbound tools exfiltrate
+      because the model has no provenance per token." (the mechanism the
+      trifecta forces; not in any pair alone)
+    - "Only HMAC with a published verification key is both authenticated AND
+      publicly verifiable AND replay-protected; remove any single property
+      and the scheme collapses to one already named." (the move only the
+      triple intersection makes)
+
+    **Weak** — evaluative, asserts overlap-as-character not overlap-as-proof:
+    - "This combination is dangerous." (an evaluation, not a mechanism)
+    - "The overlap is the risky region." (says the overlap exists; says
+      nothing about why)
+    - "These three things together create critical risk." (compliment-shaped;
+      would fit any 3-set Venn by changing nouns)
+
+    For films with no venn scene, mark this dimension n/a (omit it from the
+    scores array).
+
+### For films that use a `landscape` scene
+
+11. **Quadrant honest.** When the film places N alternatives on a 2-D trade-off
+    plane, score whether the **positions are argued, not asserted** and whether
+    the trade-off the axes name is real. A landscape is the strongest form a
+    tool/option survey can take — and the easiest to fake: anyone can drop
+    five dots in a square. The strong version makes each placement follow from
+    a property the film *already established*; the weak version reads as if
+    the dots could swap positions without changing the argument.
+
+    - Strong: "Manim sits high-freedom / low-determinism — every render is a
+      fresh Python program; Reveal.js sits low-freedom / high-determinism —
+      the deck IS the artifact." Two placements that follow from properties
+      the prior scenes named (programmability, render reproducibility).
+    - Weak: "Tool X lives in the upper-right." A position with no reason
+      attached; could be moved anywhere without changing the narration.
+    - Fail: axes that name the same trade-off twice ("simplicity vs
+      simplicity"), or subjects that cluster in one cell. The plane has
+      collapsed to a line, or the survey has no spread to argue from.
+
+    For films that don't use a `landscape` scene, mark this dimension n/a.
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the

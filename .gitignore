@@ -38,6 +38,9 @@ films/*
 !films/multi-region-db.json
 !films/onboarding-first-30-minutes.json
 !films/causal-loop-primer.json
+!films/thermostat.json
+!films/auth-overlap.json
+!films/docent-landscape.json
 analysis/*
 !analysis/linear-algebra.md
 !analysis/linear-algebra.source.md

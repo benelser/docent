@@ -53,8 +53,12 @@ export const ChartScene: React.FC<SceneProps> = ({
   const {fps} = useVideoConfig();
   const scene = ts.scene;
   const accentHex = accent(scene.accent);
-  const xAxis = scene.xAxis ?? fallbackAxis('x');
-  const yAxis = scene.yAxis ?? fallbackAxis('y');
+  // ChartScene reads its OWN axis variant — the numeric domain. The spec
+  // union (Axis | LandscapeAxis) is widened on Scene so the same field name
+  // can carry either; the validator pins each variant to its scene type, so
+  // this cast is safe on a valid chart scene.
+  const xAxis = (scene.xAxis as Axis | undefined) ?? fallbackAxis('x');
+  const yAxis = (scene.yAxis as Axis | undefined) ?? fallbackAxis('y');
   const series = scene.series ?? [];
 
   // ----- reveal timing ---------------------------------------------------

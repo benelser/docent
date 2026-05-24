@@ -8,7 +8,9 @@ import type {FilmSpec} from './spec';
 
 import aiAgentStack from '../../../../films/ai-agent-stack.json';
 import aiLabRace from '../../../../films/ai-lab-race.json';
+import authOverlap from '../../../../films/auth-overlap.json';
 import causalLoopPrimer from '../../../../films/causal-loop-primer.json';
+import docentLandscape from '../../../../films/docent-landscape.json';
 import euclidPrimes from '../../../../films/euclid-primes.json';
 import grammarCheck from '../../../../films/grammar-check.json';
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
@@ -16,11 +18,14 @@ import linearAlgebra from '../../../../films/linear-algebra.json';
 import multiRegionDb from '../../../../films/multi-region-db.json';
 import onboardingFirst30Minutes from '../../../../films/onboarding-first-30-minutes.json';
 import stoppingByWoods from '../../../../films/stopping-by-woods.json';
+import thermostat from '../../../../films/thermostat.json';
 
 export const FILMS: Record<string, FilmSpec> = {
   'ai-agent-stack': aiAgentStack as FilmSpec,
   'ai-lab-race': aiLabRace as FilmSpec,
+  'auth-overlap': authOverlap as FilmSpec,
   'causal-loop-primer': causalLoopPrimer as FilmSpec,
+  'docent-landscape': docentLandscape as FilmSpec,
   'euclid-primes': euclidPrimes as FilmSpec,
   'grammar-check': grammarCheck as FilmSpec,
   'kubernetes-pr': kubernetesPr as FilmSpec,
@@ -28,4 +33,5 @@ export const FILMS: Record<string, FilmSpec> = {
   'multi-region-db': multiRegionDb as FilmSpec,
   'onboarding-first-30-minutes': onboardingFirst30Minutes as FilmSpec,
   'stopping-by-woods': stoppingByWoods as FilmSpec,
+  'thermostat': thermostat as FilmSpec,
 };

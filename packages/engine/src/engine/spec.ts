@@ -170,6 +170,67 @@ export type BigIdeaAnchor = {
   value: string;
 };
 
+// venn scenes — overlap analysis. 2 or 3 named sets, rendered as overlapping
+// circles; every region (each "petal" plus the central intersection) is
+// addressable by an id so beats can reveal/focus regions one at a time. The
+// film argues from the INTERSECTION: what lives ONLY in the overlap is the
+// claim that earns the scene. `novelty.regionId` names the region the
+// argument hinges on — its glow ring + one-line claim render when revealed.
+export type VennSet = {
+  id: string; // 'A', 'B', 'C' or named like 'data', 'tools', 'untrusted'
+  label: string; // 'private data', 'outbound tools', 'untrusted content'
+  sub?: string; // optional one-liner
+};
+
+// A region is defined by which sets it's IN. For 3 sets {A,B,C} the seven
+// addressable regions are {A}, {B}, {C}, {A,B}, {A,C}, {B,C}, {A,B,C}. The
+// implicit "outside all" region {} is not addressable: a film does not argue
+// about what lies outside every set.
+export type VennRegion = {
+  id: string; // a stable id beats reveal/focus
+  in: string[]; // ids from `sets`
+  label?: string; // what lives in this region (a one-liner)
+  note?: string; // an annotation that surfaces when focused
+};
+
+// The intersection the film argues from — the dangerous region. `claim` is
+// the one-line statement of what the overlap PROVES (not "X is dangerous",
+// but "X plus Y plus Z together exfiltrate because no token has provenance").
+export type VennNovelty = {
+  regionId: string; // a region id from `regions`
+  claim: string; // the one-liner the film argues from
+};
+
+// landscape scenes — N options plotted on M dimensions in 2-D, the quadrant-
+// analysis primitive: cost vs value, simplicity vs power, latency vs
+// throughput. Axes are not a domain (no min/max); they are *trade-offs* with
+// a `lowLabel` at the min end and a `highLabel` at the max end. Subject
+// markers live in normalized [0..1] × [0..1] space — the spec carries
+// position-on-the-axes, the engine maps to pixels. Optional quadrant labels
+// pin a phrase to each corner (TL/TR/BL/BR) so the four cells of the
+// quadrant analysis can be named.
+export type LandscapeAxis = {
+  label: string;
+  lowLabel: string;  // text at min
+  highLabel: string; // text at max
+};
+
+export type LandscapeSubject = {
+  id: string;
+  label: string;
+  sub?: string;
+  x: number;  // 0..1 normalized
+  y: number;  // 0..1 normalized
+  accent?: string;  // optional override of scene accent
+};
+
+export type LandscapeQuadrants = {
+  tl?: string;
+  tr?: string;
+  bl?: string;
+  br?: string;
+};
+
 // quantities scenes — magnitudes as figures, or a worked numeric grid.
 export type Figure = {id: string; label: string; value: string; unit?: string; note?: string};
 export type Matrix = {rowLabels: string[]; colLabels: string[]; cells: string[][]};
@@ -263,6 +324,55 @@ export type Series = {
   along?: string; // the line series id whose curve gives the marker's y
 };
 
+// mechanism scenes — a working diagram in continuous motion. The motion is
+// generated procedurally from spec primitives; the author names the *kind* of
+// motion (a closed loop, an oscillation, a descent, a phase iteration), the
+// engine owns the animation. The viewer learns by *watching the thing
+// operate*, not by reading a description of it. The named-parts-plus-motion
+// shape is closed by design: a mechanism scene cannot ingest a user-supplied
+// animation, only one of the enumerated motion kinds.
+//
+// `kind` picks how a part is drawn at its position. `node` is the default
+// (the labelled card); `value` renders a numeric readout (used by oscillate
+// to show what is being compensated); `token` is the small accent puck that
+// rides a `cycle` motion's path. Position is normalized 0..1 on the stage.
+export type MechanismPart = {
+  id: string;
+  label: string;
+  sub?: string;
+  // Normalized [0..1] position on the stage
+  pos: {x: number; y: number};
+  // Optional visual hint — 'node' renders a card, 'value' renders a numeric
+  // readout, 'token' renders a small accent puck (used by motion paths)
+  kind?: 'node' | 'value' | 'token';
+};
+
+// A motion primitive. Each variant is closed: the author names `kind` and the
+// parts the motion visits; the engine generates the loop procedurally over
+// `period` frames. The brief's four motions:
+//   cycle     — a token travels around a closed loop visiting parts in order
+//               (the canonical feedback loop)
+//   oscillate — value bounces between two parts (e.g. a thermostat compensating)
+//   descend   — a marker walks down a gradient toward a low point (gradient
+//               descent metaphor)
+//   iterate   — a counter ticks through named phases that highlight different
+//               parts each phase (a state machine)
+export type MechanismMotion =
+  | {kind: 'cycle'; path: string[]; period: number}
+  | {kind: 'oscillate'; between: [string, string]; period: number}
+  | {kind: 'descend'; from: string; to: string; period: number}
+  | {kind: 'iterate'; phases: {label: string; show: string[]}[]; period: number};
+
+// A freeze directive — a beat can pause the motion at a specific phase to
+// narrate over it. `beatId` names the beat; `phase` is the integer step in
+// [0, length-of-loop): for `cycle` it indexes `path`, for `iterate` it
+// indexes `phases`, for `oscillate`/`descend` it is the half-step (0 = at
+// start, 1 = at end). Resuming on the next beat lets the motion continue.
+export type MechanismPhaseFreeze = {
+  beatId: string;
+  phase: number;
+};
+
 // tree scenes — a rooted hierarchy / classification. `root` is the top of the
 // tree; every node may carry its own `children`, recursively, up to 5 levels
 // deep with ~30 visible nodes. Each node `reveal`s on its beat; focused nodes
@@ -319,7 +429,9 @@ export type Scene = {
     | 'figure'
     | 'frame'
     | 'journey-map'
+    | 'landscape'
     | 'map'
+    | 'mechanism'
     | 'passage'
     | 'prior-art'
     | 'probe'
@@ -330,6 +442,7 @@ export type Scene = {
     | 'tension'
     | 'timeline'
     | 'tree'
+    | 'venn'
     | 'walkthrough';
   accent: string;
   kicker: string;
@@ -366,13 +479,22 @@ export type Scene = {
   systems?: PriorArtSystem[];
   dimensions?: PriorArtDimension[];
   cells?: PriorArtCell[];
-  novelty?: PriorArtNovelty;
+  // `novelty` is shared by prior-art (PriorArtNovelty: dimension+statement)
+  // and venn (VennNovelty: regionId+claim). The validator dispatches on
+  // scene.type to enforce the correct shape; either is structurally valid here.
+  novelty?: PriorArtNovelty | VennNovelty;
   // big-idea (explainer mode) — the single-sentence takeaway. `statement` is
   // the sentence; `anchor` is the visual that lands it. Validator forbids
   // more than one big-idea per explainer and pins position to immediately
   // before the recap.
   statement?: string;
   anchor?: BigIdeaAnchor;
+  // venn — 2 or 3 overlapping sets and each addressable region.
+  // `sets` are the circles; `regions` (declared once below — shared with map
+  // scenes, narrowed by scene.type) are the (in-set, out-set) zones beats
+  // can reveal/focus by id; `novelty` (above, typed as VennNovelty) names the
+  // intersection the film argues from.
+  sets?: VennSet[];
   // quantities
   figures?: Figure[];
   matrix?: Matrix;
@@ -380,10 +502,18 @@ export type Scene = {
   // probe
   baseline?: {label: string; outcome: string};
   variations?: Variation[];
-  // chart
-  xAxis?: Axis;
-  yAxis?: Axis;
+  // chart / landscape — both scenes carry an xAxis and yAxis, but the shape
+  // differs by scene type: chart axes are numeric domains (`min`/`max`/`ticks`)
+  // and landscape axes are trade-off labels (`lowLabel`/`highLabel`). The
+  // validator pins each to its scene type; a renderer reads the variant it
+  // needs.
+  xAxis?: Axis | LandscapeAxis;
+  yAxis?: Axis | LandscapeAxis;
   series?: Series[];
+  // landscape — the subject markers placed at normalized {x, y} ∈ [0..1]², and
+  // the optional quadrant labels pinned to the four corners.
+  subjects?: LandscapeSubject[];
+  quadrants?: LandscapeQuadrants;
   // closeup
   file?: string;
   lang?: string;
@@ -398,6 +528,13 @@ export type Scene = {
   // labelled markers, activated by beats' reveal/focus.
   image?: string;
   callouts?: Callout[];
+  // mechanism — a working diagram in continuous motion. `parts` are the
+  // named positions on the stage; `motion` is the procedural loop that
+  // animates between them; `freezes` (optional) pin the motion to a phase
+  // on specific beats so narration can call out what is happening.
+  parts?: MechanismPart[];
+  motion?: MechanismMotion;
+  freezes?: MechanismPhaseFreeze[];
   // demonstrate
   clip?: string;
   // recap
@@ -426,7 +563,9 @@ export type Scene = {
   // arcs/lines between regions (routes, transmission paths, supply chains).
   layout?: 'topology' | 'grid';
   gridSize?: {cols: number; rows: number};
-  regions?: MapRegion[];
+  // `regions` is shared by map (MapRegion[]) and venn (VennRegion[]) scenes;
+  // the validator dispatches on scene.type and the renderers narrow off it.
+  regions?: MapRegion[] | VennRegion[];
   markers?: MapMarker[];
   connections?: MapConnection[];
   // journey-map — a person's experience across stages, with emotion and

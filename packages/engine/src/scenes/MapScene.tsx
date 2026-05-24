@@ -46,7 +46,11 @@ export const MapScene: React.FC<SceneProps> = ({
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const glowScale = paletteGlowScale(scene.palette);
   const layout: 'topology' | 'grid' = scene.layout ?? 'topology';
-  const regions = scene.regions ?? [];
+  // MapScene reads its OWN regions variant — MapRegion (with `pos`). The
+  // spec union (MapRegion[] | VennRegion[]) is widened on Scene so the same
+  // field name can carry either; the validator pins each variant to its
+  // scene type, so this cast is safe on a valid map scene.
+  const regions = (scene.regions as MapRegion[] | undefined) ?? [];
   const markers = scene.markers ?? [];
   const connections = scene.connections ?? [];
 

@@ -1,0 +1,148 @@
+{
+  "meta": {
+    "id": "docent-landscape",
+    "title": "Where docent lives",
+    "subject": "docent — placement on the explainer-tooling landscape",
+    "repo": "docent",
+    "prompt": "architecture review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "s-frame",
+      "type": "frame",
+      "accent": "blue",
+      "kicker": "DOCENT // PLACEMENT",
+      "title": "Where docent lives",
+      "tagline": "On the explainer-tooling landscape",
+      "footnote": "freedom of expression × deterministic engine — and the trade we made",
+      "beats": [
+        {
+          "id": "frame-1",
+          "narration": "Every explainer tool sits somewhere on a two-dimensional plane. The horizontal axis is freedom of expression -- how much an author can shape the output. The vertical axis is engine determinism -- how reliably the same input produces the same output. This film places docent on that plane.",
+          "show": "title"
+        },
+        {
+          "id": "frame-2",
+          "narration": "These two axes are not equivalent, and the bargain a tool strikes between them is the most load-bearing thing about it.",
+          "show": "tagline"
+        }
+      ]
+    },
+    {
+      "id": "s-prior-art",
+      "type": "prior-art",
+      "accent": "violet",
+      "kicker": "PRIOR ART // 02",
+      "heading": "The systems that already occupy this plane",
+      "palette": "cool",
+      "systems": [
+        {"id": "p-reveal", "label": "Reveal.js", "sub": "slide deck framework", "year": "2011"},
+        {"id": "p-manim", "label": "Manim", "sub": "math animation library", "year": "2015"},
+        {"id": "p-screen", "label": "Screen recording", "sub": "Loom, QuickTime, OBS", "year": "2010+"}
+      ],
+      "dimensions": [
+        {"id": "d-author", "label": "Who authors the artifact"},
+        {"id": "d-output", "label": "Output reproducibility"},
+        {"id": "d-shape", "label": "Argument shape"}
+      ],
+      "cells": [
+        {"system": "p-reveal", "dimension": "d-author", "mark": "diverges", "note": "human writes slides by hand"},
+        {"system": "p-reveal", "dimension": "d-output", "mark": "same", "note": "the deck IS the artifact"},
+        {"system": "p-reveal", "dimension": "d-shape", "mark": "diverges", "note": "free-form, mostly bullets"},
+        {"system": "p-manim", "dimension": "d-author", "mark": "diverges", "note": "human writes Python code"},
+        {"system": "p-manim", "dimension": "d-output", "mark": "diverges", "note": "every render re-executes a program"},
+        {"system": "p-manim", "dimension": "d-shape", "mark": "diverges", "note": "imperative animation scenes"},
+        {"system": "p-screen", "dimension": "d-author", "mark": "diverges", "note": "human acts out, on camera"},
+        {"system": "p-screen", "dimension": "d-output", "mark": "diverges", "note": "the take is unique, ephemeral"},
+        {"system": "p-screen", "dimension": "d-shape", "mark": "diverges", "note": "linear narration, no structure"}
+      ],
+      "novelty": {
+        "dimension": "d-author",
+        "statement": "docent's author is an LLM constrained by a closed scene grammar; the human reviews placements, not pixels."
+      },
+      "beats": [
+        {"id": "pa-1", "narration": "Three systems already occupy this terrain. Reveal.js, since two-thousand-eleven, is the slide deck as a web page -- a human writes every slide by hand. The deck is the artifact.", "reveal": ["p-reveal"]},
+        {"id": "pa-2", "narration": "Manim, since two-thousand-fifteen, is a Python library for math animation. A human writes code; every render re-executes the program. Output is fragile across versions.", "reveal": ["p-manim"]},
+        {"id": "pa-3", "narration": "Screen recording is the floor: a human acts out the explanation on camera, and the take is whatever it was. No structure, no replay.", "reveal": ["p-screen"]},
+        {"id": "pa-4", "narration": "The line docent draws is on the authoring axis. The author is not a human; it is an LLM constrained by a closed scene grammar. The human reviews placements, not pixels. That is the new line.", "reveal": ["d-author"], "focus": ["d-author"]}
+      ]
+    },
+    {
+      "id": "s-landscape",
+      "type": "landscape",
+      "accent": "amber",
+      "kicker": "LANDSCAPE // 03",
+      "heading": "The trade-off plane — five tools, two axes",
+      "palette": "warm",
+      "xAxis": {
+        "label": "Freedom of expression",
+        "lowLabel": "constrained grammar",
+        "highLabel": "anything goes"
+      },
+      "yAxis": {
+        "label": "Deterministic engine",
+        "lowLabel": "every render is a fresh program",
+        "highLabel": "same input, same output"
+      },
+      "quadrants": {
+        "tl": "constrained & reproducible",
+        "tr": "free & reproducible",
+        "bl": "constrained & ephemeral",
+        "br": "free & ephemeral"
+      },
+      "subjects": [
+        {"id": "m-reveal", "label": "Reveal.js", "sub": "slide-deck DSL", "x": 0.45, "y": 0.85, "accent": "blue"},
+        {"id": "m-manim", "label": "Manim", "sub": "Python animation", "x": 0.92, "y": 0.20, "accent": "violet"},
+        {"id": "m-excali", "label": "Excalidraw", "sub": "hand-drawn whiteboard", "x": 0.70, "y": 0.55, "accent": "cyan"},
+        {"id": "m-screen", "label": "Screen recording", "sub": "Loom · QuickTime", "x": 0.95, "y": 0.05, "accent": "rose"},
+        {"id": "m-docent", "label": "docent", "sub": "constrained explainer", "x": 0.25, "y": 0.72, "accent": "amber"}
+      ],
+      "beats": [
+        {"id": "ls-1", "narration": "Reveal.js sits center-bottom-right -- moderate freedom, very high reproducibility: the deck file plays the same way every time, but every slide is hand-written.", "reveal": ["m-reveal"], "focus": ["m-reveal"]},
+        {"id": "ls-2", "narration": "Manim sits in the bottom-right corner: maximum expressive freedom -- it is Python -- but minimum reproducibility, because every render re-executes a program against a moving library.", "reveal": ["m-manim"], "focus": ["m-manim"]},
+        {"id": "ls-3", "narration": "Excalidraw and screen recording both live on the right: high freedom, low determinism. A whiteboard sketch is whatever you drew that day; a screen recording is whatever the take was.", "reveal": ["m-excali", "m-screen"], "focus": ["m-excali", "m-screen"]},
+        {"id": "ls-4", "narration": "docent lives in the top-left, alone in its quadrant. A closed grammar of seventeen scene types -- so freedom is low; a deterministic Remotion engine -- so the same spec renders the same frames every time. That is the bargain.", "reveal": ["m-docent"], "focus": ["m-docent"]}
+      ]
+    },
+    {
+      "id": "s-tension",
+      "type": "tension",
+      "accent": "rose",
+      "kicker": "THE TRADE // 04",
+      "heading": "What we pay for the top-left corner",
+      "treatment": "sketch",
+      "grid": {"cols": 2, "rows": 2},
+      "nodes": [
+        {"id": "t-gain", "label": "Reproducibility", "sub": "the same spec, the same film, on every machine", "col": 0, "row": 0, "accent": "green", "weight": "hero"},
+        {"id": "t-cost", "label": "Lost expressivity", "sub": "no escape hatch — a film that wants free-form has nowhere to go", "col": 1, "row": 0, "accent": "rose", "kind": "rejected"},
+        {"id": "t-risk", "label": "Grammar drift", "sub": "every new explanatory shape is a new scene type; the grammar grows", "col": 0, "row": 1, "accent": "amber", "kind": "risk"},
+        {"id": "t-mit", "label": "Closed allowlist", "sub": "every scene type ships its own validator; no free-form leaks in", "col": 1, "row": 1, "accent": "cyan"}
+      ],
+      "beats": [
+        {"id": "tn-1", "narration": "The top-left corner is not free. We chose reproducibility over expressive freedom -- the same spec renders the same frames on every machine, but a film that wants a free-form shape has nowhere to go.", "reveal": ["t-gain", "t-cost"], "focus": ["t-cost"]},
+        {"id": "tn-2", "narration": "The risk we live with is grammar drift: every new explanatory shape is a new scene type, and the grammar grows. Today it is seventeen types; in a year it could be thirty. We rejected the alternative of a free-form scene type because once expressivity leaks in, reproducibility leaks out.", "reveal": ["t-risk", "t-mit"], "focus": ["t-risk"]}
+      ]
+    },
+    {
+      "id": "s-recap",
+      "type": "recap",
+      "accent": "blue",
+      "kicker": "DOCENT // RECAP",
+      "heading": "Disposition — sound, with one watch-item",
+      "points": [
+        "Disposition: sound. Reproducibility is worth the lost expressivity for the explainer mode.",
+        "Biggest residual risk: grammar drift — seventeen scene types today, more tomorrow.",
+        "Watch: how often a new film requires a new scene type. If the rate stays under one per quarter, the bargain holds."
+      ],
+      "beats": [
+        {"id": "rc-1", "narration": "Disposition: docent's placement is sound. Trading expressive freedom for engine determinism is the right bargain for an LLM-authored explainer.", "reveal": 1},
+        {"id": "rc-2", "narration": "The single biggest residual risk is grammar drift: every genuinely new explanatory shape currently requires a new scene type, and the grammar can balloon.", "reveal": 2},
+        {"id": "rc-3", "narration": "What to watch: the rate of new scene types per quarter. Under one is healthy; above two is the bargain quietly inverting -- the top-left corner becoming the top-right by accretion.", "reveal": 3}
+      ]
+    }
+  ]
+}

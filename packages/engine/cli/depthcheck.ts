@@ -23,6 +23,7 @@ type DepthTreeNode = {id?: string; label?: string; children?: DepthTreeNode[]};
 type Spec = {
   meta: {prompt?: string; id?: string};
   scenes: {
+    id?: string;
     type: string;
     statement?: string;
     nodes?: {kind?: string}[];
@@ -31,15 +32,22 @@ type Spec = {
     systems?: {id: string; label: string; year?: string}[];
     dimensions?: {id: string; label: string}[];
     cells?: {system: string; dimension: string; mark: 'same' | 'diverges'; note: string}[];
-    novelty?: {dimension: string; statement: string};
+    // novelty — shared by prior-art (dimension+statement) and venn (regionId+claim).
+    novelty?: {
+      dimension?: string;
+      statement?: string;
+      regionId?: string;
+      claim?: string;
+    };
     // timeline scene fields — only present on `type: 'timeline'`.
     axis?: {start: string; end: string; ticks?: string[]};
     events?: {id: string; date: string; label: string}[];
     spans?: {id: string; from: string; to: string; label: string}[];
     // tree scene fields — only present on `type: 'tree'`.
     root?: DepthTreeNode;
-    // map scene fields — only present on `type: 'map'`.
-    regions?: {id: string; label: string; sub?: string}[];
+    // map scene fields (label + sub) or venn scene fields (in + label + note).
+    // Each scene type uses its own shape; this type allows either.
+    regions?: {id: string; label?: string; sub?: string; in?: string[]; note?: string}[];
     // journey-map scene fields — only present on `type: 'journey-map'`.
     journeyStages?: {
       id: string;
@@ -53,6 +61,14 @@ type Spec = {
     variables?: {id: string}[];
     causalEdges?: {id: string; from: string; to: string; polarity: '+' | '-'}[];
     loops?: {id: string; path: string[]; kind: 'reinforcing' | 'balancing'; label?: string}[];
+    // mechanism scene fields — only present on `type: 'mechanism'`.
+    freezes?: {beatId: string; phase: number}[];
+    // venn scene fields — only present on `type: 'venn'`.
+    sets?: {id: string; label: string; sub?: string}[];
+    // landscape scene fields — only present on `type: 'landscape'`.
+    xAxis?: {label?: string; lowLabel?: string; highLabel?: string};
+    yAxis?: {label?: string; lowLabel?: string; highLabel?: string};
+    subjects?: {id: string; label: string; x: number; y: number}[];
   }[];
 };
 
@@ -97,6 +113,15 @@ const isAr = (s: Spec): boolean => /^architecture[- ]review$/i.test((s.meta.prom
 // vocabulary that betrays an evaluation, not a dimensional difference.
 const EVALUATIVE_NOVELTY =
   /\b(better|worse|best|worst|inferior|superior|stronger|weaker|faster than|slower than|wins?\b|beats?\b|outperforms?|defeats?|the right (choice|answer)|the wrong (choice|answer))\b/i;
+
+// Reject evaluative venn-intersection claims — the trap parallel to
+// EVALUATIVE_NOVELTY. "the overlap is dangerous" / "this combination is
+// risky" is a FAIL (an evaluation of the overlap); "data plus tools plus
+// untrusted input exfiltrate because no token carries provenance" is a PASS
+// (the mechanism the intersection PROVES). The claim must name what lives in
+// the overlap and why, not deliver a verdict about its character.
+const EVALUATIVE_INTERSECTION =
+  /\b(dangerous|risky|unsafe|safe|bad|good|catastrophic|harmful|terrible|important|crucial|critical|fascinating|interesting)\b/i;
 const narrationOf = (scenes: Spec['scenes']): string =>
   scenes.flatMap((sc) => sc.beats).map((b) => b.narration).join('  ');
 
@@ -390,6 +415,131 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
       detail: allClosed
         ? `${causalLoopScenes.length} causal-loop scene(s); every loop closes`
         : `${openLoops.length} loop(s) do not close — path[last] has no edge back to path[0]: ${openLoops.map((o) => o.loop).join(', ')}`,
+    });
+  }
+
+  // mechanism — motion-is-the-argument. A mechanism scene EXISTS to let the
+  // viewer watch a thing operate, not to be narrated over. If every beat of
+  // the scene over-narrates the mechanism (i.e. spells out in words what is
+  // happening on screen, with no beat that lets the motion play / pauses on
+  // a phase / references the visual state), the scene is failing the form:
+  // it would be readable as plain text and the motion is decoration.
+  //
+  // A beat clears the bar if EITHER:
+  //   - it carries a `freezes` entry (the motion pauses; narration is now
+  //     ABOUT the frozen visual state), OR
+  //   - it has no narration / vanishingly short narration (the motion plays
+  //     unaccompanied), OR
+  //   - its narration references the visual state with one of the lexical
+  //     handles the mechanism vocabulary uses (watch / see / now / here /
+  //     this / the loop / the cycle / the cursor / the phase / pause / hold).
+  //
+  // If a mechanism scene contains zero such beats, fail.
+  const VISUAL_HANDLE =
+    /\b(watch|see|now|here|this|the loop|the cycle|the cursor|the marker|the token|the phase|pause|paused|hold|holds|frozen|the motion|the step)\b/i;
+  const mechanismScenes = spec.scenes.filter((sc) => sc.type === 'mechanism');
+  if (mechanismScenes.length > 0) {
+    const freezeBeatIds = new Set(
+      mechanismScenes.flatMap((sc) => (sc.freezes ?? []).map((f) => f.beatId)),
+    );
+    let anyShowsNotTells = false;
+    let weakSceneId: string | null = null;
+    for (const sc of mechanismScenes) {
+      let sceneShowsNotTells = false;
+      for (const b of sc.beats) {
+        const narr = (b.narration ?? '').trim();
+        const short = narr.split(/\s+/).filter(Boolean).length < 5;
+        const frozen = freezeBeatIds.has(b.id);
+        const handle = VISUAL_HANDLE.test(narr);
+        if (frozen || short || handle) {
+          sceneShowsNotTells = true;
+          break;
+        }
+      }
+      if (sceneShowsNotTells) {
+        anyShowsNotTells = true;
+      } else if (!weakSceneId) {
+        weakSceneId = sc.id ?? '(unnamed)';
+      }
+    }
+    findings.push({
+      id: 'mechanism-shown-not-told',
+      label: 'Motion is shown, not told — at least one mechanism beat lets the motion carry the argument',
+      status: anyShowsNotTells ? 'ok' : 'fail',
+      detail: anyShowsNotTells
+        ? 'a mechanism beat freezes the motion, lets it play unaccompanied, or references the visual state'
+        : `every beat in mechanism scene "${weakSceneId}" over-narrates — no beat uses freezes, no beat is short, and none references the visual state (watch/see/now/the loop/etc.)`,
+    });
+  }
+
+  // venn contract — `intersection-honest`. Any venn scene's novelty claim
+  // must NOT be evaluative ("the overlap is dangerous" is FAIL; "X + Y + Z
+  // exfiltrate because no token has provenance" is PASS). Like
+  // EVALUATIVE_NOVELTY for prior-art, this is a regex floor: it catches the
+  // verdict-shaped vocabulary that betrays an evaluation about the
+  // intersection instead of a mechanism inside it. The judge (Layer 3)
+  // catches the subtle cases this regex cannot.
+  const venns = spec.scenes.filter((sc) => sc.type === 'venn');
+  for (const v of venns) {
+    const claim = (v.novelty?.claim ?? '').trim();
+    const evaluative = EVALUATIVE_INTERSECTION.test(claim);
+    findings.push({
+      id: 'intersection-honest',
+      label:
+        'Intersection honest — the venn claim names what the overlap PROVES, not that the overlap is "dangerous"/"risky"',
+      status: claim && !evaluative ? 'ok' : 'fail',
+      detail: !claim
+        ? 'venn scene has an empty novelty claim'
+        : evaluative
+          ? `claim reads as evaluative ("dangerous"/"risky"/etc.) — restate as a mechanism: what lives ONLY in the intersection and WHY`
+          : 'the claim names the mechanism inside the overlap',
+    });
+  }
+
+  // landscape contract — every landscape scene must:
+  //   (1) name TWO DIFFERENT axes. A landscape on "simplicity vs simplicity"
+  //       is a category error — the plane has collapsed to a line.
+  //   (2) have at least one pair of subjects visually distant (max pairwise
+  //       Euclidean distance ≥ 0.4 in [0..1] space). Otherwise it's a
+  //       cluster, not a landscape: the argument the axes name doesn't land.
+  const landscapes = spec.scenes.filter((sc) => sc.type === 'landscape');
+  for (const ls of landscapes) {
+    const xLabel = (ls.xAxis?.label ?? '').trim().toLowerCase();
+    const yLabel = (ls.yAxis?.label ?? '').trim().toLowerCase();
+    const xLow = (ls.xAxis?.lowLabel ?? '').trim().toLowerCase();
+    const xHigh = (ls.xAxis?.highLabel ?? '').trim().toLowerCase();
+    const yLow = (ls.yAxis?.lowLabel ?? '').trim().toLowerCase();
+    const yHigh = (ls.yAxis?.highLabel ?? '').trim().toLowerCase();
+    const sameAxis =
+      (xLabel && yLabel && xLabel === yLabel) ||
+      (xLow && yLow && xLow === yLow && xHigh && yHigh && xHigh === yHigh);
+    findings.push({
+      id: 'axis-asymmetric',
+      label: 'Landscape axes are asymmetric — the two trade-offs the plane names are different',
+      status: sameAxis ? 'fail' : 'ok',
+      detail: sameAxis
+        ? `landscape "${xLabel}" vs "${yLabel}" — same axis on both — the plane has collapsed to a line, not a quadrant`
+        : `axes name two distinct trade-offs ("${xLabel}" × "${yLabel}")`,
+    });
+
+    const subs = ls.subjects ?? [];
+    let maxDist = 0;
+    for (let i = 0; i < subs.length; i++) {
+      for (let j = i + 1; j < subs.length; j++) {
+        const dx = (subs[i].x ?? 0) - (subs[j].x ?? 0);
+        const dy = (subs[i].y ?? 0) - (subs[j].y ?? 0);
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d > maxDist) maxDist = d;
+      }
+    }
+    findings.push({
+      id: 'landscape-spread',
+      label: 'Landscape is a landscape, not a cluster — at least one subject is visually distant',
+      status: maxDist >= 0.4 ? 'ok' : 'fail',
+      detail:
+        maxDist >= 0.4
+          ? `max pairwise distance ${maxDist.toFixed(2)} ≥ 0.4 — the markers actually argue`
+          : `max pairwise distance ${maxDist.toFixed(2)} < 0.4 — the subjects cluster; the axes' argument doesn't land`,
     });
   }
 

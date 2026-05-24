@@ -5,7 +5,7 @@
 
 import {parseTimelineDate} from '../src/engine/time';
 
-const SCENE_TYPES = ['big-idea', 'causal-loop', 'chart', 'closeup', 'compare', 'demonstrate', 'diff', 'figure', 'frame', 'journey-map', 'map', 'passage', 'prior-art', 'probe', 'progression', 'quantities', 'recap', 'structure', 'tension', 'timeline', 'tree', 'walkthrough'];
+const SCENE_TYPES = ['big-idea', 'causal-loop', 'chart', 'closeup', 'compare', 'demonstrate', 'diff', 'figure', 'frame', 'journey-map', 'landscape', 'map', 'mechanism', 'passage', 'prior-art', 'probe', 'progression', 'quantities', 'recap', 'structure', 'tension', 'timeline', 'tree', 'venn', 'walkthrough'];
 // journey-map — the closed allowlist of emotion chips. An emotion outside
 // this list is rejected: the author names a feeling, the engine owns the chip.
 const JOURNEY_EMOTIONS = ['delight', 'curiosity', 'satisfaction', 'neutral', 'fatigue', 'frustration', 'pain'];
@@ -371,8 +371,14 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         }
       }
     };
-    checkAxis(sc.xAxis, `${at}.xAxis`);
-    checkAxis(sc.yAxis, `${at}.yAxis`);
+    // `xAxis`/`yAxis` on a landscape scene are a different shape — the
+    // trade-off (lowLabel/highLabel), not a numeric domain (min/max). The
+    // landscape per-scene block below checks them; skip the chart-axis check
+    // when the scene is a landscape.
+    if (sc.type !== 'landscape') {
+      checkAxis(sc.xAxis, `${at}.xAxis`);
+      checkAxis(sc.yAxis, `${at}.yAxis`);
+    }
 
     if (sc.series !== undefined && !Array.isArray(sc.series)) {
       issues.push({path: `${at}.series`, message: 'series must be an array'});
@@ -462,6 +468,91 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
           }
         }
       });
+    }
+
+    // landscape — N options plotted on M dimensions in 2-D. Axes are NOT a
+    // numeric domain; they are trade-offs with a `lowLabel`/`highLabel` phrase
+    // at each end. Subjects sit at normalized {x, y} ∈ [0..1]² — the engine
+    // maps them to pixels. HARD FAILs:
+    //   - xAxis/yAxis both required with non-empty label, lowLabel, highLabel
+    //   - 2-8 subjects
+    //   - each subject's x/y in [0..1]
+    //   - subject ids unique
+    if (sc.type === 'landscape') {
+      const checkLandscapeAxis = (axis: any, axisAt: string): void => {
+        if (!axis || typeof axis !== 'object' || Array.isArray(axis)) {
+          issues.push({
+            path: axisAt,
+            message: 'landscape requires this axis as an object {label, lowLabel, highLabel}',
+          });
+          return;
+        }
+        for (const f of ['label', 'lowLabel', 'highLabel']) {
+          if (typeof axis[f] !== 'string' || !axis[f].trim()) {
+            issues.push({
+              path: `${axisAt}.${f}`,
+              message: `landscape ${axisAt.split('.').pop()} requires a non-empty ${f}`,
+            });
+          }
+        }
+      };
+      checkLandscapeAxis(sc.xAxis, `${at}.xAxis`);
+      checkLandscapeAxis(sc.yAxis, `${at}.yAxis`);
+
+      if (!Array.isArray(sc.subjects) || sc.subjects.length < 2 || sc.subjects.length > 8) {
+        issues.push({
+          path: `${at}.subjects`,
+          message: 'landscape requires 2-8 subjects (the markers plotted on the plane)',
+        });
+      } else {
+        const subjectIds = new Set<string>();
+        sc.subjects.forEach((sub: Record<string, any>, k: number) => {
+          const subAt = `${at}.subjects[${k}]`;
+          if (!sub || typeof sub !== 'object') {
+            issues.push({path: subAt, message: 'subject must be an object {id, label, x, y, sub?, accent?}'});
+            return;
+          }
+          if (typeof sub.id !== 'string' || !sub.id.trim()) {
+            issues.push({path: `${subAt}.id`, message: 'missing or empty string'});
+          } else if (subjectIds.has(sub.id)) {
+            issues.push({path: `${subAt}.id`, message: `duplicate subject id "${sub.id}"`});
+          } else {
+            subjectIds.add(sub.id);
+          }
+          if (typeof sub.label !== 'string' || !sub.label.trim()) {
+            issues.push({path: `${subAt}.label`, message: 'missing or empty string'});
+          }
+          if (sub.sub !== undefined && (typeof sub.sub !== 'string' || !sub.sub.trim())) {
+            issues.push({path: `${subAt}.sub`, message: 'sub must be a non-empty string when present'});
+          }
+          for (const f of ['x', 'y']) {
+            if (typeof sub[f] !== 'number' || !Number.isFinite(sub[f])) {
+              issues.push({path: `${subAt}.${f}`, message: 'must be a finite number in [0..1]'});
+            } else if (sub[f] < 0 || sub[f] > 1) {
+              issues.push({
+                path: `${subAt}.${f}`,
+                message: `must be in [0..1] (got ${sub[f]}) — landscape positions are normalized`,
+              });
+            }
+          }
+          if (sub.accent !== undefined && !ACCENTS.includes(sub.accent)) {
+            issues.push({path: `${subAt}.accent`, message: `unknown accent "${sub.accent}"`});
+          }
+        });
+      }
+
+      if (sc.quadrants !== undefined) {
+        if (!sc.quadrants || typeof sc.quadrants !== 'object' || Array.isArray(sc.quadrants)) {
+          issues.push({path: `${at}.quadrants`, message: 'quadrants must be an object {tl?, tr?, bl?, br?}'});
+        } else {
+          for (const f of ['tl', 'tr', 'bl', 'br']) {
+            const v = (sc.quadrants as Record<string, any>)[f];
+            if (v !== undefined && (typeof v !== 'string' || !v.trim())) {
+              issues.push({path: `${at}.quadrants.${f}`, message: 'must be a non-empty string when present'});
+            }
+          }
+        }
+      }
     }
 
     // passage — a plain-text artifact and the spans (`marks`) to annotate on
@@ -687,6 +778,110 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         }
         if (typeof sc.novelty.statement !== 'string' || !sc.novelty.statement.trim()) {
           issues.push({path: `${at}.novelty.statement`, message: 'missing or empty statement'});
+        }
+      }
+    }
+
+    // venn — overlap analysis. 2 or 3 named sets, every region (each (in, out)
+    // combination of the sets, except the implicit "outside all") is
+    // addressable by a stable id beats reveal/focus, and exactly one named
+    // novelty whose `regionId` references the dangerous intersection. The
+    // HARD-FAIL contracts are:
+    //   - `sets` must have 2 or 3 entries (a 1-circle Venn is not a Venn; a
+    //     4+ Venn does not have a clean planar layout).
+    //   - every region's `in` must reference real set ids in `sets`.
+    //   - every region's `in` must be NON-EMPTY (the outside-all region is
+    //     not addressable: a film does not argue about what lies outside
+    //     every set).
+    //   - `novelty.regionId` must reference a real region in `regions`.
+    if (sc.type === 'venn') {
+      const setIds = new Set<string>();
+      if (!Array.isArray(sc.sets) || sc.sets.length < 2 || sc.sets.length > 3) {
+        issues.push({
+          path: `${at}.sets`,
+          message: 'venn requires 2 or 3 sets (the circles of the diagram)',
+        });
+      } else {
+        sc.sets.forEach((p: Record<string, any>, k: number) => {
+          const pAt = `${at}.sets[${k}]`;
+          if (!p || typeof p !== 'object') {
+            issues.push({path: pAt, message: 'set must be an object {id, label, sub?}'});
+            return;
+          }
+          if (typeof p.id !== 'string' || !p.id.trim()) {
+            issues.push({path: `${pAt}.id`, message: 'missing or empty string'});
+          } else if (setIds.has(p.id)) {
+            issues.push({path: `${pAt}.id`, message: `duplicate set id "${p.id}"`});
+          } else {
+            setIds.add(p.id);
+          }
+          if (typeof p.label !== 'string' || !p.label.trim()) {
+            issues.push({path: `${pAt}.label`, message: 'missing or empty string'});
+          }
+          if (p.sub !== undefined && (typeof p.sub !== 'string' || !p.sub.trim())) {
+            issues.push({path: `${pAt}.sub`, message: 'sub must be a non-empty string when present'});
+          }
+        });
+      }
+      // regions — each must reference real set ids in `in`, and `in` must be
+      // non-empty (the outside-all region is not addressable).
+      const regionIds = new Set<string>();
+      if (sc.regions === undefined || !Array.isArray(sc.regions)) {
+        issues.push({path: `${at}.regions`, message: 'venn requires a regions array (the addressable zones)'});
+      } else {
+        sc.regions.forEach((r: Record<string, any>, k: number) => {
+          const rAt = `${at}.regions[${k}]`;
+          if (!r || typeof r !== 'object') {
+            issues.push({path: rAt, message: 'region must be an object {id, in, label?, note?}'});
+            return;
+          }
+          if (typeof r.id !== 'string' || !r.id.trim()) {
+            issues.push({path: `${rAt}.id`, message: 'missing or empty string'});
+          } else if (regionIds.has(r.id)) {
+            issues.push({path: `${rAt}.id`, message: `duplicate region id "${r.id}"`});
+          } else {
+            regionIds.add(r.id);
+          }
+          if (!Array.isArray(r.in) || r.in.length === 0) {
+            issues.push({
+              path: `${rAt}.in`,
+              message: 'in must be a non-empty array of set ids — the implicit "outside all" region is not addressable',
+            });
+          } else {
+            r.in.forEach((sid: any, ii: number) => {
+              if (typeof sid !== 'string' || !sid.trim()) {
+                issues.push({path: `${rAt}.in[${ii}]`, message: 'must be a set id'});
+              } else if (!setIds.has(sid)) {
+                issues.push({
+                  path: `${rAt}.in[${ii}]`,
+                  message: `region references set "${sid}", which is not a set in this scene`,
+                });
+              }
+            });
+          }
+          if (r.label !== undefined && (typeof r.label !== 'string' || !r.label.trim())) {
+            issues.push({path: `${rAt}.label`, message: 'label must be a non-empty string when present'});
+          }
+          if (r.note !== undefined && (typeof r.note !== 'string' || !r.note.trim())) {
+            issues.push({path: `${rAt}.note`, message: 'note must be a non-empty string when present'});
+          }
+        });
+      }
+      // novelty — the dangerous intersection. Must reference a real region.
+      if (!sc.novelty || typeof sc.novelty !== 'object') {
+        issues.push({path: `${at}.novelty`, message: 'venn requires a novelty {regionId, claim} — the intersection the film argues from'});
+      } else {
+        const nv = sc.novelty as Record<string, any>;
+        if (typeof nv.regionId !== 'string' || !nv.regionId.trim()) {
+          issues.push({path: `${at}.novelty.regionId`, message: 'missing or empty region id'});
+        } else if (!regionIds.has(nv.regionId)) {
+          issues.push({
+            path: `${at}.novelty.regionId`,
+            message: `novelty references region "${nv.regionId}", which is not a region in this scene`,
+          });
+        }
+        if (typeof nv.claim !== 'string' || !nv.claim.trim()) {
+          issues.push({path: `${at}.novelty.claim`, message: 'missing or empty claim'});
         }
       }
     }
@@ -1205,15 +1400,17 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         });
       }
     } else {
-      // map-specific fields have no meaning on other scene types.
+      // map-specific fields have no meaning on other scene types. `regions`
+      // is shared with venn scenes (validated by the venn block above), so
+      // it is exempted from this rejection when the scene is a venn.
       if (sc.layout !== undefined) {
         issues.push({path: `${at}.layout`, message: `layout has no meaning for type "${sc.type}" — only map`});
       }
       if (sc.gridSize !== undefined) {
         issues.push({path: `${at}.gridSize`, message: `gridSize has no meaning for type "${sc.type}" — only map`});
       }
-      if (sc.regions !== undefined) {
-        issues.push({path: `${at}.regions`, message: `regions has no meaning for type "${sc.type}" — only map`});
+      if (sc.regions !== undefined && sc.type !== 'venn') {
+        issues.push({path: `${at}.regions`, message: `regions has no meaning for type "${sc.type}" — only map or venn`});
       }
       if (sc.markers !== undefined) {
         issues.push({path: `${at}.markers`, message: `markers has no meaning for type "${sc.type}" — only map`});
@@ -1481,6 +1678,219 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       }
     }
 
+    // mechanism — a working diagram in continuous motion. The author names a
+    // fixed set of `parts` at normalized positions and one `motion` primitive
+    // (cycle / oscillate / descend / iterate). Every part id the motion
+    // references must exist; every freeze must address a phase in range; the
+    // motion's `period` must loop within a reasonable view time. HARD FAILs:
+    //   - parts: 2-10 entries, unique ids, pos in [0..1]
+    //   - motion.kind: one of the four enumerated kinds
+    //   - motion.period: > 0 and < 600 frames
+    //   - cycle.path / oscillate.between / descend.from/to / iterate.show:
+    //     every id references a real part
+    //   - freezes[].phase: in [0, length-of-loop)
+    if (sc.type === 'mechanism') {
+      // parts — 2-10 entries with unique ids and normalized positions.
+      const partIds = new Set<string>();
+      if (!Array.isArray(sc.parts) || sc.parts.length < 2 || sc.parts.length > 10) {
+        issues.push({
+          path: `${at}.parts`,
+          message: 'mechanism requires 2-10 parts (the named positions the motion visits)',
+        });
+      } else {
+        sc.parts.forEach((p: Record<string, any>, k: number) => {
+          const pAt = `${at}.parts[${k}]`;
+          if (!p || typeof p !== 'object') {
+            issues.push({path: pAt, message: 'part must be an object {id, label, pos}'});
+            return;
+          }
+          if (typeof p.id !== 'string' || !p.id.trim()) {
+            issues.push({path: `${pAt}.id`, message: 'missing or empty string'});
+          } else if (partIds.has(p.id)) {
+            issues.push({path: `${pAt}.id`, message: `duplicate part id "${p.id}"`});
+          } else {
+            partIds.add(p.id);
+          }
+          if (typeof p.label !== 'string' || !p.label.trim()) {
+            issues.push({path: `${pAt}.label`, message: 'missing or empty string'});
+          }
+          if (!p.pos || typeof p.pos !== 'object' || Array.isArray(p.pos)) {
+            issues.push({path: `${pAt}.pos`, message: 'pos must be an object {x, y}, each in 0..1'});
+          } else {
+            for (const ax of ['x', 'y']) {
+              const v = (p.pos as Record<string, unknown>)[ax];
+              if (
+                typeof v !== 'number' ||
+                !Number.isFinite(v) ||
+                v < 0 ||
+                v > 1
+              ) {
+                issues.push({path: `${pAt}.pos.${ax}`, message: 'must be a number in 0..1'});
+              }
+            }
+          }
+          if (p.kind !== undefined && !['node', 'value', 'token'].includes(p.kind)) {
+            issues.push({
+              path: `${pAt}.kind`,
+              message: 'kind must be one of: node, value, token',
+            });
+          }
+        });
+      }
+
+      // motion — one of the four enumerated kinds, every referenced id real,
+      // period bounded so the loop closes within a reasonable view time.
+      const motion = sc.motion;
+      const MOTION_KINDS = ['cycle', 'oscillate', 'descend', 'iterate'];
+      let motionLen = 0;
+      if (!motion || typeof motion !== 'object') {
+        issues.push({path: `${at}.motion`, message: 'mechanism requires a motion primitive'});
+      } else if (!MOTION_KINDS.includes(motion.kind)) {
+        issues.push({
+          path: `${at}.motion.kind`,
+          message: `not a valid motion kind — one of: ${MOTION_KINDS.join(', ')}`,
+        });
+      } else {
+        // period: > 0 and < 600 frames (so the motion loops within view time)
+        if (
+          typeof motion.period !== 'number' ||
+          !Number.isFinite(motion.period) ||
+          motion.period <= 0 ||
+          motion.period >= 600
+        ) {
+          issues.push({
+            path: `${at}.motion.period`,
+            message: 'period must be a number > 0 and < 600 frames (the loop must close within view time)',
+          });
+        }
+        const refOk = (id: unknown, where: string): void => {
+          if (typeof id !== 'string' || !id.trim()) {
+            issues.push({path: where, message: 'missing part id'});
+          } else if (!partIds.has(id)) {
+            issues.push({path: where, message: `part "${id}" is not a part in this scene`});
+          }
+        };
+        if (motion.kind === 'cycle') {
+          if (!Array.isArray(motion.path) || motion.path.length < 2) {
+            issues.push({
+              path: `${at}.motion.path`,
+              message: 'cycle motion requires a path of ≥ 2 part ids',
+            });
+          } else {
+            motion.path.forEach((id: unknown, k: number) =>
+              refOk(id, `${at}.motion.path[${k}]`),
+            );
+            motionLen = motion.path.length;
+          }
+        } else if (motion.kind === 'oscillate') {
+          if (!Array.isArray(motion.between) || motion.between.length !== 2) {
+            issues.push({
+              path: `${at}.motion.between`,
+              message: 'oscillate motion requires `between` as a [partA, partB] pair',
+            });
+          } else {
+            refOk(motion.between[0], `${at}.motion.between[0]`);
+            refOk(motion.between[1], `${at}.motion.between[1]`);
+            motionLen = 2;
+          }
+        } else if (motion.kind === 'descend') {
+          refOk(motion.from, `${at}.motion.from`);
+          refOk(motion.to, `${at}.motion.to`);
+          motionLen = 2;
+        } else if (motion.kind === 'iterate') {
+          if (!Array.isArray(motion.phases) || motion.phases.length < 2) {
+            issues.push({
+              path: `${at}.motion.phases`,
+              message: 'iterate motion requires ≥ 2 phases',
+            });
+          } else {
+            motion.phases.forEach((ph: Record<string, any>, k: number) => {
+              const phAt = `${at}.motion.phases[${k}]`;
+              if (!ph || typeof ph !== 'object') {
+                issues.push({path: phAt, message: 'phase must be an object {label, show}'});
+                return;
+              }
+              if (typeof ph.label !== 'string' || !ph.label.trim()) {
+                issues.push({path: `${phAt}.label`, message: 'missing or empty string'});
+              }
+              if (!Array.isArray(ph.show) || ph.show.length < 1) {
+                issues.push({
+                  path: `${phAt}.show`,
+                  message: 'phase requires a non-empty `show` array of part ids',
+                });
+              } else {
+                ph.show.forEach((id: unknown, j: number) =>
+                  refOk(id, `${phAt}.show[${j}]`),
+                );
+              }
+            });
+            motionLen = motion.phases.length;
+          }
+        }
+      }
+
+      // freezes — each names a beat and a phase in [0, length-of-loop).
+      const beatIdSet = new Set<string>();
+      if (Array.isArray(sc.beats)) {
+        sc.beats.forEach((b: Record<string, any>) => {
+          if (typeof b?.id === 'string') beatIdSet.add(b.id);
+        });
+      }
+      if (sc.freezes !== undefined && !Array.isArray(sc.freezes)) {
+        issues.push({path: `${at}.freezes`, message: 'freezes must be an array'});
+      } else if (Array.isArray(sc.freezes)) {
+        sc.freezes.forEach((f: Record<string, any>, k: number) => {
+          const fAt = `${at}.freezes[${k}]`;
+          if (!f || typeof f !== 'object') {
+            issues.push({path: fAt, message: 'freeze must be an object {beatId, phase}'});
+            return;
+          }
+          if (typeof f.beatId !== 'string' || !f.beatId.trim()) {
+            issues.push({path: `${fAt}.beatId`, message: 'missing or empty string'});
+          } else if (beatIdSet.size > 0 && !beatIdSet.has(f.beatId)) {
+            issues.push({
+              path: `${fAt}.beatId`,
+              message: `freeze references beat "${f.beatId}" which is not a beat in this scene`,
+            });
+          }
+          if (
+            typeof f.phase !== 'number' ||
+            !Number.isInteger(f.phase) ||
+            f.phase < 0 ||
+            (motionLen > 0 && f.phase >= motionLen)
+          ) {
+            issues.push({
+              path: `${fAt}.phase`,
+              message:
+                motionLen > 0
+                  ? `phase must be an integer in [0, ${motionLen})`
+                  : 'phase must be a non-negative integer',
+            });
+          }
+        });
+      }
+    } else {
+      // The mechanism-only fields have no meaning on other scene types.
+      if (sc.parts !== undefined) {
+        issues.push({
+          path: `${at}.parts`,
+          message: `parts has no meaning for type "${sc.type}" — only mechanism`,
+        });
+      }
+      if (sc.motion !== undefined) {
+        issues.push({
+          path: `${at}.motion`,
+          message: `motion has no meaning for type "${sc.type}" — only mechanism`,
+        });
+      }
+      if (sc.freezes !== undefined) {
+        issues.push({
+          path: `${at}.freezes`,
+          message: `freezes has no meaning for type "${sc.type}" — only mechanism`,
+        });
+      }
+    }
+
     // Every scene type carries narration via beats; every scene type must
     // also carry SOMETHING visible for that narration to land on. A scene
     // that ships narration with no body renders a void with audio playing
@@ -1519,6 +1929,15 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       ),
       // chart — at least one series.
       chart: () => (arrLen(sc.series) < 1 ? 'chart requires at least 1 series' : null),
+      // landscape — at least 2 subjects (a single dot isn't a landscape).
+      landscape: () => (arrLen(sc.subjects) < 2 ? 'landscape requires at least 2 subjects (the markers plotted on the plane)' : null),
+      // mechanism — at least one part AND a motion primitive (the working
+      // diagram body). The detailed shape contract is enforced above.
+      mechanism: () => (
+        arrLen(sc.parts) < 1 || !sc.motion
+          ? 'mechanism requires at least 1 part and a motion primitive (the body the motion animates over)'
+          : null
+      ),
       // tension — at least one node (the ledger items).
       tension: () => (arrLen(sc.nodes) < 1 ? 'tension requires at least 1 node (chosen/rejected/risk)' : null),
       // demonstrate — non-empty clip reference.
@@ -1527,8 +1946,9 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       frame: () => (typeof sc.title !== 'string' || !sc.title.trim() ? 'frame requires a title' : null),
       // big-idea — statement is the load-bearing visual. Anchor optional.
       'big-idea': () => null, // already enforced above (statement required)
-      // prior-art / diff — already enforced by their dedicated checks above.
+      // prior-art / venn / diff — already enforced by their dedicated checks above.
       'prior-art': () => null,
+      venn: () => null,
       diff: () => null,
       // timeline — at least one event OR one span (an empty axis is not a
       // story; the axis exists to carry markers).
@@ -1600,7 +2020,7 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       // their body from frame 1 — passage text, figure image, closeup code,
       // frame title, diff (before/after code), demonstrate (clip playing) —
       // don't need a per-beat trigger and are exempt.
-      const ALWAYS_ON = new Set(['passage', 'figure', 'closeup', 'frame', 'diff', 'demonstrate']);
+      const ALWAYS_ON = new Set(['passage', 'figure', 'closeup', 'frame', 'diff', 'demonstrate', 'mechanism']);
       if (j === 0 && !ALWAYS_ON.has(sc.type)) {
         const hasReveal =
           (Array.isArray(b.reveal) && b.reveal.length > 0) ||

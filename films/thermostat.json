@@ -1,0 +1,143 @@
+{
+  "meta": {
+    "id": "thermostat",
+    "title": "The Thermostat",
+    "subject": "A thermostat — the smallest worked feedback loop",
+    "repo": "(none — concept film)",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "accent": "amber",
+      "kicker": "DOCENT // EXPLAINER",
+      "title": "The Thermostat",
+      "tagline": "The smallest mechanism that knows it is wrong",
+      "footnote": "A working diagram. Watch the compensation, do not be told it.",
+      "beats": [
+        {"id": "th-1", "narration": "A thermostat is the smallest worked feedback loop -- a mechanism, not a recipe. We will not describe it. We will let it run.", "show": "title"},
+        {"id": "th-2", "narration": "Here is the claim we are going to put under the lamp: the thermostat works because it always knows it is wrong, and corrects by exactly that amount.", "show": "tagline"},
+        {"id": "th-3", "narration": "We will watch a setpoint, a room, and the controller that stands between them. The motion you will see IS the explanation. Words will get out of the way.", "show": "footnote"}
+      ]
+    },
+    {
+      "id": "mech",
+      "type": "mechanism",
+      "accent": "amber",
+      "palette": "warm",
+      "kicker": "01 // THE MECHANISM",
+      "heading": "Setpoint, room, controller — the loop running",
+      "parts": [
+        {"id": "setpoint", "label": "Setpoint", "sub": "68 F", "pos": {"x": 0.12, "y": 0.5}, "kind": "value"},
+        {"id": "controller", "label": "Controller", "sub": "compare · decide", "pos": {"x": 0.5, "y": 0.22}, "kind": "node"},
+        {"id": "room", "label": "Room", "sub": "72 F", "pos": {"x": 0.88, "y": 0.5}, "kind": "value"},
+        {"id": "actuator", "label": "Heater / Cooler", "sub": "drives the room", "pos": {"x": 0.5, "y": 0.82}, "kind": "node"}
+      ],
+      "motion": {
+        "kind": "oscillate",
+        "between": ["setpoint", "room"],
+        "period": 90
+      },
+      "freezes": [
+        {"beatId": "tm-2", "phase": 0},
+        {"beatId": "tm-4", "phase": 1}
+      ],
+      "beats": [
+        {"id": "tm-1", "narration": "Watch the marker travel.", "pace": "settle"},
+        {"id": "tm-2", "narration": "Hold it here. At this instant the controller is reading the setpoint -- the temperature the room is supposed to be. Sixty-eight degrees.", "pace": "hold"},
+        {"id": "tm-3", "narration": "Now let it run again. The signal carries to the other side -- the room itself, at seventy-two. Four degrees too warm.", "pace": "settle"},
+        {"id": "tm-4", "narration": "Pause. The error -- setpoint minus reading -- is what the controller sees. The cooler turns on by exactly that error. The motion you just watched IS the comparison.", "pace": "hold"},
+        {"id": "tm-5", "narration": "And then the loop continues. The room temperature changes; the controller re-reads; the error shrinks; the actuator eases off. It never stops checking, because it never trusts that it is right.", "pace": "settle"}
+      ]
+    },
+    {
+      "id": "anatomy",
+      "type": "structure",
+      "accent": "blue",
+      "palette": "cool",
+      "kicker": "02 // ANATOMY",
+      "heading": "Four parts. Three signals. One loop.",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {"id": "set", "label": "Setpoint", "sub": "the target", "tag": "input", "col": 0, "row": 0, "weight": "primary"},
+        {"id": "sensor", "label": "Sensor", "sub": "the room reading", "tag": "input", "col": 2, "row": 0, "weight": "primary"},
+        {"id": "ctrl", "label": "Controller", "sub": "computes error = target − reading", "tag": "compare", "col": 1, "row": 0, "weight": "hero"},
+        {"id": "act", "label": "Actuator", "sub": "drives the room by the error", "tag": "output", "col": 1, "row": 1, "weight": "primary"}
+      ],
+      "edges": [
+        {"id": "e1", "from": "set", "to": "ctrl", "kind": "relation", "label": "want"},
+        {"id": "e2", "from": "sensor", "to": "ctrl", "kind": "relation", "label": "have"},
+        {"id": "e3", "from": "ctrl", "to": "act", "kind": "causes", "strength": "necessary", "label": "drive"},
+        {"id": "e4", "from": "act", "to": "sensor", "kind": "feedback", "label": "the world responds"}
+      ],
+      "beats": [
+        {"id": "an-1", "narration": "Now the parts, stripped. The setpoint is the target -- a number you set. The sensor is the room -- a number the world keeps changing. Two facts the controller must reconcile.", "reveal": ["set", "sensor"], "cadence": "cascade"},
+        {"id": "an-2", "narration": "Between them: the controller. Its only job is the subtraction. Want minus have. The result is the error -- a quantity with both a magnitude and a sign.", "reveal": ["ctrl", "e1", "e2"], "focus": ["ctrl"]},
+        {"id": "an-3", "narration": "The actuator is the muscle. It does not decide. It takes the error and pushes the room in the direction that shrinks it. Positive error, more heat. Negative error, more cooling.", "reveal": ["act", "e3"], "focus": ["act"]},
+        {"id": "an-4", "narration": "And the closing line -- the feedback edge. The actuator changes the room; the sensor reads the new room; the controller re-computes. This edge is what makes it a loop, not a one-shot. About one hundred percent of useful control systems carry an edge shaped like this one.", "reveal": ["e4"], "focus": ["e4"], "pulse": [["act", "sensor"]]}
+      ]
+    },
+    {
+      "id": "fail",
+      "type": "tension",
+      "accent": "rose",
+      "palette": "signal",
+      "treatment": "sketch",
+      "kicker": "03 // WHERE IT BREAKS",
+      "heading": "The loop has a temperament. It can overshoot.",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {"id": "lag", "label": "Sensor lag", "sub": "the reading trails the truth", "kind": "risk", "col": 0, "row": 0},
+        {"id": "gain", "label": "Too much gain", "sub": "the controller over-corrects", "kind": "risk", "col": 1, "row": 0},
+        {"id": "dead", "label": "Dead band", "sub": "the controller ignores small errors", "kind": "rejected", "col": 2, "row": 0},
+        {"id": "result", "label": "Oscillation", "sub": "the room hunts past the setpoint, forever", "col": 1, "row": 1, "weight": "hero"}
+      ],
+      "edges": [
+        {"id": "f1", "from": "lag", "to": "result", "kind": "causes", "strength": "contributing"},
+        {"id": "f2", "from": "gain", "to": "result", "kind": "causes", "strength": "necessary"},
+        {"id": "f3", "from": "dead", "to": "result", "kind": "causes", "strength": "contributing"}
+      ],
+      "beats": [
+        {"id": "fl-1", "narration": "The mechanism has a personality, and it can go wrong. The most common failure is the most boring one: the sensor takes a moment to catch up. The controller is comparing the setpoint to a reading that is already stale.", "reveal": ["lag"]},
+        {"id": "fl-2", "narration": "Compound that with a controller that is too eager -- too much gain -- and the system over-corrects. It cools past the setpoint, then heats past it, then cools past it again.", "reveal": ["gain", "f2"], "focus": ["gain"]},
+        {"id": "fl-3", "narration": "The textbook answer is a dead band -- ignore errors below some threshold. It works, but you have rejected a sharper instrument: a controller that listens to the rate of change, not only the level. The honest trade-off is that a thermostat with a dead band saves wear at the cost of a wobbly target.", "reveal": ["dead", "f3"], "focus": ["dead"]},
+        {"id": "fl-4", "narration": "When the loop goes wrong, it does not go silent. It oscillates. The room hunts past the setpoint forever. The mechanism still runs -- it just stopped converging. The fragility is not in the parts; it is in the timing between them.", "reveal": ["result", "f1"], "focus": ["result"]}
+      ]
+    },
+    {
+      "id": "bigidea",
+      "type": "big-idea",
+      "accent": "amber",
+      "kicker": "04 // THE BIG IDEA",
+      "heading": "What the motion taught",
+      "statement": "A controller works only because it never trusts that it is right.",
+      "anchor": {"kind": "equation", "value": "u = K · (r − y)"},
+      "beats": [
+        {"id": "bi-1", "narration": "The line the film earns: a controller works only because it never trusts that it is right. The mechanism keeps measuring its own error because that error is the only thing it can act on.", "show": "statement", "pace": "hold"},
+        {"id": "bi-2", "narration": "u equals K times r minus y. Drive equals a gain, times the gap between want and have. Three letters carry every loop you saw.", "show": "anchor", "pace": "hold"}
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "amber",
+      "kicker": "05 // VERDICT",
+      "heading": "Sound. With one watch-it.",
+      "points": [
+        "Disposition: sound. The thermostat is one of the rare mechanisms where the motion really IS the explanation.",
+        "Biggest weak point: the loop is only as honest as its sensor. A delayed reading is a controller acting on yesterday's room.",
+        "Carry forward: every feedback loop is the same shape -- want, have, error, drive. When you see the shape, expect overshoot."
+      ],
+      "beats": [
+        {"id": "rc-1", "narration": "Disposition. Sound. The thermostat is one of the rare mechanisms where the motion really is the explanation. We watched, we did not relay.", "reveal": 1, "pace": "settle"},
+        {"id": "rc-2", "narration": "The single biggest weak point is not the controller and not the actuator. It is the sensor. A delayed reading is a controller acting on yesterday's room. Real systems compensate with derivative terms; we did not show those, and you should know that they exist.", "reveal": 2, "pace": "settle"},
+        {"id": "rc-3", "narration": "And the precise skepticism to carry forward: every feedback loop is the same shape -- want, have, error, drive. When you see the shape, expect overshoot. Trust the system only when you have seen its timing.", "reveal": 3, "pace": "hold"}
+      ]
+    }
+  ]
+}

@@ -85,6 +85,12 @@ const DEPTH_DIMENSIONS = [
   {id: 'experience-is-load-bearing', label: 'Experience is load-bearing — the emotional arc is the argument; pain and delight are specific, not vague'},
   // causal-loop: when the film carries one, the R/B structure must reason.
   {id: 'loops-explain-not-decorate', label: 'Loops explain — the reinforcing or balancing structure is what the scene argues, not a pretty cycle'},
+  // mechanism: when the film carries one, motion must carry the argument.
+  {id: 'motion-load-bearing', label: 'Motion is load-bearing — what the viewer learns comes from watching the thing operate, not from words describing it'},
+  // venn: when the film carries one, the intersection must name a mechanism.
+  {id: 'intersection-named', label: 'Intersection named — the film argues from what the overlap PROVES, not that the overlap exists'},
+  // landscape: when the film carries one, positions must be argued.
+  {id: 'quadrant-honest', label: 'Quadrant honest — positions are argued, not asserted; the trade-off the axes name is real'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per
