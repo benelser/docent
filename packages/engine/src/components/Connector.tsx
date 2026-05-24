@@ -180,38 +180,60 @@ export const Connector: React.FC<{
         </text>
       ) : null}
       {label ? (() => {
-        // Offset the label perpendicular to the line so it never sits inside a
-        // card. On a straight edge, push it off the chord by 18px; on a curved
-        // (feedback) edge, the control point is already off-axis, so just nudge
-        // below it.
-        let lx = mid.x;
-        let ly = mid.y;
-        if (curved) {
-          ly = mid.y + 22;
+        // The OLD code budgeted 60% of chord length (center-to-center) and
+        // forced a 160px minimum — which made labels overflow into the
+        // endpoint cards on short or close-packed edges. The fix: budget
+        // against the GAP between the two boxes' EDGES, not the chord, and
+        // hide the label entirely if even one truncated word at the floor
+        // size wouldn't fit. A nonsense mid-word ellipsis is worse than no
+        // label.
+        const fromLeft = from.cx - from.w / 2;
+        const fromRight = from.cx + from.w / 2;
+        const fromTop = from.cy - from.h / 2;
+        const fromBottom = from.cy + from.h / 2;
+        const toLeft = to.cx - to.w / 2;
+        const toRight = to.cx + to.w / 2;
+        const toTop = to.cy - to.h / 2;
+        const toBottom = to.cy + to.h / 2;
+        const dxBoxes = to.cx - from.cx;
+        const dyBoxes = to.cy - from.cy;
+        const horizontalEdge = Math.abs(dxBoxes) >= Math.abs(dyBoxes);
+        let gapW: number;
+        let innerCenterX: number;
+        let innerCenterY: number;
+        if (horizontalEdge) {
+          // Boxes side-by-side. Available width is the horizontal gap minus a
+          // 16-px breathing margin on each side.
+          const innerLeft = Math.min(fromRight, toRight);
+          const innerRight = Math.max(fromLeft, toLeft);
+          gapW = Math.max(0, innerRight - innerLeft - 32);
+          innerCenterX = (innerLeft + innerRight) / 2;
+          innerCenterY = mid.y;
         } else {
-          const s = straight!.start;
-          const dxL = end.x - s.x;
-          const dyL = end.y - s.y;
-          const lenL = Math.hypot(dxL, dyL) || 1;
-          lx += (-dyL / lenL) * 18;
-          ly += (dxL / lenL) * 18;
+          // Boxes stacked vertically. The label still renders horizontally, so
+          // budget the narrower box's width (with a 90% cap) and center
+          // vertically in the gap.
+          const innerTop = Math.min(fromBottom, toBottom);
+          const innerBottom = Math.max(fromTop, toTop);
+          const verticalGap = Math.max(0, innerBottom - innerTop - 24);
+          gapW = Math.min(Math.min(from.w, to.w) * 0.9, verticalGap > 0 ? 520 : Math.min(from.w, to.w) * 0.9);
+          innerCenterX = mid.x;
+          innerCenterY = (innerTop + innerBottom) / 2;
         }
-        // The label gets up to ~60% of the chord length as a budget — past
-        // that the edge label crowds the cards it connects. fitFontSize
-        // steps the size down toward 11px; truncateForSlot ellipses if the
-        // floor still can't hold the text on one line. SVG `<text>` can't
-        // carry CSS line-clamp, so single-line shrink-then-ellipsis is the
-        // right strategy here.
-        const chord = Math.hypot(end.x - (straight?.start.x ?? mid.x), end.y - (straight?.start.y ?? mid.y));
-        const maxW = Math.max(160, Math.min(520, chord * 0.6));
-        const fs = fitFontSize(label, {maxWidth: maxW, basePx: 17, floorPx: 12, charAdvance: 0.6});
-        const visible = truncateForSlot(label, {maxWidth: maxW, fontSize: fs, charAdvance: 0.6});
-        // A subtle outer-stroke gives the label air against the card glow.
+        const maxW = Math.min(520, gapW);
+        // Floor of 11 px; require at least three chars + ellipsis worth of
+        // room before bothering to draw. Anything tighter would be unreadable.
+        const FLOOR = 11;
+        const charAdvance = 0.6;
+        if (maxW < FLOOR * charAdvance * 4) return null;
+        const fs = fitFontSize(label, {maxWidth: maxW, basePx: 17, floorPx: FLOOR, charAdvance});
+        const visible = truncateForSlot(label, {maxWidth: maxW, fontSize: fs, charAdvance});
         return (
           <text
-            x={lx}
-            y={ly}
+            x={innerCenterX}
+            y={innerCenterY}
             textAnchor="middle"
+            dominantBaseline="middle"
             fontFamily={monoFamily}
             fontSize={fs}
             letterSpacing={0.3}

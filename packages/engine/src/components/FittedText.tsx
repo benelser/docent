@@ -202,6 +202,15 @@ export const truncateForSlot = (
   if (charW <= 0) return text;
   const maxChars = Math.floor(opts.maxWidth / charW);
   if (text.length <= maxChars) return text;
+  // Prefer a word boundary — slice back to the last space (or hyphen) inside
+  // the budget so we never chop mid-word. Falls back to char-truncation only
+  // when there's no boundary inside ~half of the budget.
+  const keepRaw = Math.max(1, maxChars - 1);
+  const candidate = text.slice(0, keepRaw);
+  const boundary = Math.max(candidate.lastIndexOf(' '), candidate.lastIndexOf('-'));
+  if (boundary > Math.floor(keepRaw * 0.5)) {
+    return candidate.slice(0, boundary).trimEnd() + '…';
+  }
   // Keep room for the U+2026 glyph.
   const keep = Math.max(1, maxChars - 1);
   return text.slice(0, keep).trimEnd() + '…';
