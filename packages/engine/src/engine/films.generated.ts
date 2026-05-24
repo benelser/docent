@@ -11,6 +11,7 @@ import grammarCheck from '../../../../films/grammar-check.json';
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
 import linearAlgebra from '../../../../films/linear-algebra.json';
 import stoppingByWoods from '../../../../films/stopping-by-woods.json';
+import thermostat from '../../../../films/thermostat.json';
 
 export const FILMS: Record<string, FilmSpec> = {
   'euclid-primes': euclidPrimes as FilmSpec,
@@ -18,4 +19,5 @@ export const FILMS: Record<string, FilmSpec> = {
   'kubernetes-pr': kubernetesPr as FilmSpec,
   'linear-algebra': linearAlgebra as FilmSpec,
   'stopping-by-woods': stoppingByWoods as FilmSpec,
+  'thermostat': thermostat as FilmSpec,
 };

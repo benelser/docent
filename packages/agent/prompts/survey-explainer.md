@@ -167,6 +167,19 @@ Surface the sentence and the anchor here. The treatment writer turns this
 into the named beat in the outline; the spec author surfaces it before
 rendering.
 
+**If the subject's argument is HOW a thing works rather than WHAT it is,
+reach for `mechanism`.** A `mechanism` scene shows a working diagram in
+continuous motion — a feedback loop iterating, a thermostat compensating,
+gradient descent walking, a state machine cycling. The motion IS the
+argument; pick a motion kind that matches the actual mechanism, not a
+pretty animation. The four kinds are closed: `cycle` for a feedback loop
+visiting parts in order, `oscillate` for a value bouncing between two
+parts, `descend` for a marker walking down a gradient, `iterate` for a
+counter ticking through named phases. A beat can `freeze` the motion at a
+phase to call out what's happening — narration that says "watch the
+controller flip" while the motion holds. Mechanism is the right scene
+when a static diagram cannot carry the argument.
+
 ## 8. Verdict inputs — the recap must *rule*, not restate
 
 A non-code film still ends on a stated position, never "this is interesting"

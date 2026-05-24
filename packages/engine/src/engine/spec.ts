@@ -262,6 +262,55 @@ export type Series = {
   along?: string; // the line series id whose curve gives the marker's y
 };
 
+// mechanism scenes — a working diagram in continuous motion. The motion is
+// generated procedurally from spec primitives; the author names the *kind* of
+// motion (a closed loop, an oscillation, a descent, a phase iteration), the
+// engine owns the animation. The viewer learns by *watching the thing
+// operate*, not by reading a description of it. The named-parts-plus-motion
+// shape is closed by design: a mechanism scene cannot ingest a user-supplied
+// animation, only one of the enumerated motion kinds.
+//
+// `kind` picks how a part is drawn at its position. `node` is the default
+// (the labelled card); `value` renders a numeric readout (used by oscillate
+// to show what is being compensated); `token` is the small accent puck that
+// rides a `cycle` motion's path. Position is normalized 0..1 on the stage.
+export type MechanismPart = {
+  id: string;
+  label: string;
+  sub?: string;
+  // Normalized [0..1] position on the stage
+  pos: {x: number; y: number};
+  // Optional visual hint — 'node' renders a card, 'value' renders a numeric
+  // readout, 'token' renders a small accent puck (used by motion paths)
+  kind?: 'node' | 'value' | 'token';
+};
+
+// A motion primitive. Each variant is closed: the author names `kind` and the
+// parts the motion visits; the engine generates the loop procedurally over
+// `period` frames. The brief's four motions:
+//   cycle     — a token travels around a closed loop visiting parts in order
+//               (the canonical feedback loop)
+//   oscillate — value bounces between two parts (e.g. a thermostat compensating)
+//   descend   — a marker walks down a gradient toward a low point (gradient
+//               descent metaphor)
+//   iterate   — a counter ticks through named phases that highlight different
+//               parts each phase (a state machine)
+export type MechanismMotion =
+  | {kind: 'cycle'; path: string[]; period: number}
+  | {kind: 'oscillate'; between: [string, string]; period: number}
+  | {kind: 'descend'; from: string; to: string; period: number}
+  | {kind: 'iterate'; phases: {label: string; show: string[]}[]; period: number};
+
+// A freeze directive — a beat can pause the motion at a specific phase to
+// narrate over it. `beatId` names the beat; `phase` is the integer step in
+// [0, length-of-loop): for `cycle` it indexes `path`, for `iterate` it
+// indexes `phases`, for `oscillate`/`descend` it is the half-step (0 = at
+// start, 1 = at end). Resuming on the next beat lets the motion continue.
+export type MechanismPhaseFreeze = {
+  beatId: string;
+  phase: number;
+};
+
 export type Scene = {
   id: string;
   type:
@@ -276,6 +325,7 @@ export type Scene = {
     | 'closeup'
     | 'passage'
     | 'figure'
+    | 'mechanism'
     | 'demonstrate'
     | 'recap'
     | 'diff'
@@ -349,6 +399,13 @@ export type Scene = {
   // labelled markers, activated by beats' reveal/focus.
   image?: string;
   callouts?: Callout[];
+  // mechanism — a working diagram in continuous motion. `parts` are the
+  // named positions on the stage; `motion` is the procedural loop that
+  // animates between them; `freezes` (optional) pin the motion to a phase
+  // on specific beats so narration can call out what is happening.
+  parts?: MechanismPart[];
+  motion?: MechanismMotion;
+  freezes?: MechanismPhaseFreeze[];
   // demonstrate
   clip?: string;
   // recap

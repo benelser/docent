@@ -18,6 +18,7 @@ import {paths} from './paths';
 type Spec = {
   meta: {prompt?: string; id?: string};
   scenes: {
+    id?: string;
     type: string;
     statement?: string;
     nodes?: {kind?: string}[];
@@ -27,6 +28,8 @@ type Spec = {
     dimensions?: {id: string; label: string}[];
     cells?: {system: string; dimension: string; mark: 'same' | 'diverges'; note: string}[];
     novelty?: {dimension: string; statement: string};
+    // mechanism scene fields — only present on `type: 'mechanism'`.
+    freezes?: {beatId: string; phase: number}[];
   }[];
 };
 
@@ -180,6 +183,60 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
         });
       }
     }
+  }
+
+  // mechanism — motion-is-the-argument. A mechanism scene EXISTS to let the
+  // viewer watch a thing operate, not to be narrated over. If every beat of
+  // the scene over-narrates the mechanism (i.e. spells out in words what is
+  // happening on screen, with no beat that lets the motion play / pauses on
+  // a phase / references the visual state), the scene is failing the form:
+  // it would be readable as plain text and the motion is decoration.
+  //
+  // A beat clears the bar if EITHER:
+  //   - it carries a `freezes` entry (the motion pauses; narration is now
+  //     ABOUT the frozen visual state), OR
+  //   - it has no narration / vanishingly short narration (the motion plays
+  //     unaccompanied), OR
+  //   - its narration references the visual state with one of the lexical
+  //     handles the mechanism vocabulary uses (watch / see / now / here /
+  //     this / the loop / the cycle / the cursor / the phase / pause / hold).
+  //
+  // If a mechanism scene contains zero such beats, fail.
+  const VISUAL_HANDLE =
+    /\b(watch|see|now|here|this|the loop|the cycle|the cursor|the marker|the token|the phase|pause|paused|hold|holds|frozen|the motion|the step)\b/i;
+  const mechanismScenes = spec.scenes.filter((sc) => sc.type === 'mechanism');
+  if (mechanismScenes.length > 0) {
+    const freezeBeatIds = new Set(
+      mechanismScenes.flatMap((sc) => (sc.freezes ?? []).map((f) => f.beatId)),
+    );
+    let anyShowsNotTells = false;
+    let weakSceneId: string | null = null;
+    for (const sc of mechanismScenes) {
+      let sceneShowsNotTells = false;
+      for (const b of sc.beats) {
+        const narr = (b.narration ?? '').trim();
+        const short = narr.split(/\s+/).filter(Boolean).length < 5;
+        const frozen = freezeBeatIds.has(b.id);
+        const handle = VISUAL_HANDLE.test(narr);
+        if (frozen || short || handle) {
+          sceneShowsNotTells = true;
+          break;
+        }
+      }
+      if (sceneShowsNotTells) {
+        anyShowsNotTells = true;
+      } else if (!weakSceneId) {
+        weakSceneId = sc.id ?? '(unnamed)';
+      }
+    }
+    findings.push({
+      id: 'mechanism-shown-not-told',
+      label: 'Motion is shown, not told — at least one mechanism beat lets the motion carry the argument',
+      status: anyShowsNotTells ? 'ok' : 'fail',
+      detail: anyShowsNotTells
+        ? 'a mechanism beat freezes the motion, lets it play unaccompanied, or references the visual state'
+        : `every beat in mechanism scene "${weakSceneId}" over-narrates — no beat uses freezes, no beat is short, and none references the visual state (watch/see/now/the loop/etc.)`,
+    });
   }
 
   // big-idea contract — the takeaway sentence the viewer should leave with.

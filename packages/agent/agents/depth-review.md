@@ -97,6 +97,35 @@ makes this argument. Score these AR-only dimensions:
    - Weak: "Older replication strategies were more limited." Names no system,
      no trade-off, just praise of the subject by denying the field.
 
+### For mechanism scenes — motion as argument
+
+9. **Motion is load-bearing.** When a film carries a `mechanism` scene, the
+   motion is supposed to *be* the explanation — what the viewer learns must
+   come from watching the thing operate, not from words describing it. Score
+   whether the motion does real work or is decoration sprinkled on a static
+   diagram. A mechanism scene whose narration over-explains every step of
+   the loop has failed the form: the words could have carried the scene
+   alone, and the motion is wasted.
+
+   **Strong** — the motion carries the explanation:
+   - A feedback-loop `cycle` scene whose beats let the token travel a full
+     pass with minimal narration, and a single freeze beat says "watch
+     what happens when the signal returns" — the compensation IS visible
+     because the motion shows it.
+   - A thermostat `oscillate` scene where the value visibly overshoots,
+     corrects, and settles — the narration names the *behaviour* the
+     motion reveals, not the names of the parts.
+
+   **Weak** — motion sprinkled on a static diagram:
+   - "First A passes to B, then B to C, then C back to A" — every step
+     of the loop is described in words; the animation is decoration. The
+     film would read identically as a static slide.
+   - A mechanism scene with no `freezes` set, every beat dense with
+     narration that names what the next motion frame will show.
+
+   For films with no mechanism scene, mark this dimension n/a (omit it
+   from the scores array; the judge prompt accepts that).
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the
