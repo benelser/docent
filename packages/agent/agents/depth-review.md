@@ -97,6 +97,27 @@ makes this argument. Score these AR-only dimensions:
    - Weak: "Older replication strategies were more limited." Names no system,
      no trade-off, just praise of the subject by denying the field.
 
+### For films with a `tree` scene — the hierarchy dimension
+
+9. **Hierarchy meaningful.** When the film uses a `tree` scene, does depth
+   carry information — or is it decorative? A tree's claim is that the *levels*
+   encode a real classification axis (kingdom → phylum → class; model → toolset
+   → orchestrator → application; supervisor → manager → IC). A film whose tree
+   has every node as the only child of the one above, or whose level names
+   merely restate the level above, fails this dimension. The renderer
+   discriminates a chain from a hierarchy mechanically (depthcheck's
+   `tree-discriminates`); your job is the harder read — do the levels *mean*
+   different things, or do they just look like a tree because the author
+   wanted a tree shape?
+
+   - Strong: a "modern AI agent stack" tree where `model` → `toolset` →
+     `orchestrator` → `application` are visibly four different abstraction
+     layers, each constraining what the next can do.
+   - Weak: a tree whose only branching is at the root, with every subsequent
+     level a single chain — the depth is shape without claim.
+
+   For films without a `tree` scene, mark this dimension n/a.
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the

@@ -262,6 +262,23 @@ export type Series = {
   along?: string; // the line series id whose curve gives the marker's y
 };
 
+// tree scenes — a rooted hierarchy / classification. `root` is the top of the
+// tree; every node may carry its own `children`, recursively, up to 5 levels
+// deep with ~30 visible nodes. Each node `reveal`s on its beat; focused nodes
+// glow; edges to children animate in. `orientation` picks the layout axis:
+// `vertical` (root at top, children fanning down — the org-chart shape) or
+// `horizontal` (root at left, children fanning right — the taxonomy shape).
+// Unlike `structure`'s flat grid, a tree carries *levels* — depth encodes a
+// classification axis (kingdom→phylum→class, parent→child reporting, type →
+// instance), and the renderer reads that axis off the recursion.
+export type TreeNode = {
+  id: string;
+  label: string;
+  sub?: string;
+  children?: TreeNode[]; // recursive — the rooted hierarchy
+  accent?: string; // per-node accent override; highlights one branch
+};
+
 export type Scene = {
   id: string;
   type:
@@ -281,7 +298,8 @@ export type Scene = {
     | 'diff'
     | 'chart'
     | 'big-idea'
-    | 'prior-art';
+    | 'prior-art'
+    | 'tree';
   accent: string;
   kicker: string;
   heading?: string;
@@ -353,6 +371,12 @@ export type Scene = {
   clip?: string;
   // recap
   points?: string[];
+  // tree — a rooted hierarchy. `root` is the top of the recursion; every node
+  // carries its own optional `children`, up to 5 levels deep with ~30 visible
+  // nodes. `orientation` picks the layout axis: `vertical` (root at top, the
+  // org-chart shape) or `horizontal` (root at left, the taxonomy shape).
+  root?: TreeNode;
+  orientation?: 'vertical' | 'horizontal';
   beats: Beat[];
 };
 

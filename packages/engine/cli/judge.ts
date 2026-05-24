@@ -66,6 +66,11 @@ const DEPTH_DIMENSIONS = [
   // AR-mode: the film argues against a lineage. PR films mark these n/a.
   {id: 'novelty-named', label: 'Novelty named — the film says what is *new*, not what the components are'},
   {id: 'prior-art-honest', label: 'Prior art honest — prior systems named with version/year, divergence is dimensional'},
+  // tree-scene: when the film uses a `tree`, the levels must carry information.
+  // A tree whose depth is decorative — only one node per level, or levels that
+  // restate the level above — fails this dimension. Films with no tree scene
+  // mark this n/a.
+  {id: 'hierarchy-meaningful', label: 'Hierarchy meaningful — the levels carry information; depth is not decorative'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per

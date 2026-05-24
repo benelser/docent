@@ -15,6 +15,10 @@ import {existsSync} from 'node:fs';
 import {join} from 'node:path';
 import {paths} from './paths';
 
+// tree scenes — a recursive node carrying optional children. The depthcheck
+// only needs to know the shape; the engine's TreeNode owns the full type.
+type DepthTreeNode = {id?: string; label?: string; children?: DepthTreeNode[]};
+
 type Spec = {
   meta: {prompt?: string; id?: string};
   scenes: {
@@ -27,6 +31,8 @@ type Spec = {
     dimensions?: {id: string; label: string}[];
     cells?: {system: string; dimension: string; mark: 'same' | 'diverges'; note: string}[];
     novelty?: {dimension: string; statement: string};
+    // tree scene fields — only present on `type: 'tree'`.
+    root?: DepthTreeNode;
   }[];
 };
 
@@ -180,6 +186,33 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
         });
       }
     }
+  }
+
+  // tree-discriminates — a rooted tree carries meaning only when at least one
+  // level *branches*. A degenerate tree where every node has 0 or 1 child is a
+  // chain, which is a list (or a progression), not a hierarchy. The classifier
+  // claim of a tree scene is that depth encodes a real axis; a chain encodes
+  // nothing the line of stages couldn't carry.
+  const trees = spec.scenes.filter((sc) => sc.type === 'tree' && sc.root);
+  if (trees.length > 0) {
+    const hasSiblings = (n: DepthTreeNode | undefined): boolean => {
+      if (!n) return false;
+      const kids = n.children ?? [];
+      if (kids.length >= 2) return true;
+      for (const c of kids) if (hasSiblings(c)) return true;
+      return false;
+    };
+    const branching = trees.filter((sc) => hasSiblings(sc.root));
+    const degenerate = trees.length - branching.length;
+    findings.push({
+      id: 'tree-discriminates',
+      label: 'The tree branches — at least one node has siblings, so depth is hierarchical, not a chain',
+      status: degenerate === 0 ? 'ok' : 'fail',
+      detail:
+        degenerate === 0
+          ? `${trees.length} tree scene(s) carry real branching — depth encodes a classification axis`
+          : `${degenerate} tree scene(s) are degenerate (every node has 0 or 1 child) — a chain is a list, not a hierarchy`,
+    });
   }
 
   // big-idea contract — the takeaway sentence the viewer should leave with.

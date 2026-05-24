@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art"]},
+        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "tree"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -121,6 +121,14 @@
         "novelty": {
           "$ref": "#/$defs/prior-art-novelty",
           "description": "prior-art scenes — which dimension carries the novelty, and the one-liner the film argues from"
+        },
+        "root": {
+          "$ref": "#/$defs/tree-node",
+          "description": "tree scenes — the top of the rooted hierarchy; every node may carry its own recursive `children`"
+        },
+        "orientation": {
+          "enum": ["vertical", "horizontal"],
+          "description": "tree scenes — layout axis: vertical (root at top, the org-chart shape) or horizontal (root at left, the taxonomy shape). Defaults to vertical."
         },
         "beats": {
           "type": "array",
@@ -412,6 +420,26 @@
       "properties": {
         "dimension": {"type": "string", "description": "a dimension id from this scene's `dimensions` — the row the film lights up"},
         "statement": {"type": "string", "minLength": 1, "description": "the one-line novelty: what is new, dimensionally"}
+      }
+    },
+    "tree-node": {
+      "type": "object",
+      "description": "tree scenes — one node in a rooted hierarchy. Recursive: `children` references the same $def. Up to 5 levels deep and ~30 visible nodes total; the validator HARD FAILS on max depth, total count, or non-unique ids. Depth must encode an actual classification axis — kingdom→phylum→class, parent→child reporting, type→instance.",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique across the whole tree; beats reveal/focus this id"},
+        "label": {"type": "string", "description": "the node's name"},
+        "sub": {"type": "string", "description": "a short one-line gloss"},
+        "accent": {
+          "enum": ["blue", "cyan", "green", "amber", "rose", "violet"],
+          "description": "per-node accent override — highlights one branch of the tree against the scene's default"
+        },
+        "children": {
+          "type": "array",
+          "description": "the recursive structure — a node's children are themselves tree-nodes",
+          "items": {"$ref": "#/$defs/tree-node"}
+        }
       }
     }
   }

@@ -6,6 +6,7 @@
 
 import type {FilmSpec} from './spec';
 
+import aiAgentStack from '../../../../films/ai-agent-stack.json';
 import euclidPrimes from '../../../../films/euclid-primes.json';
 import grammarCheck from '../../../../films/grammar-check.json';
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
@@ -13,6 +14,7 @@ import linearAlgebra from '../../../../films/linear-algebra.json';
 import stoppingByWoods from '../../../../films/stopping-by-woods.json';
 
 export const FILMS: Record<string, FilmSpec> = {
+  'ai-agent-stack': aiAgentStack as FilmSpec,
   'euclid-primes': euclidPrimes as FilmSpec,
   'grammar-check': grammarCheck as FilmSpec,
   'kubernetes-pr': kubernetesPr as FilmSpec,

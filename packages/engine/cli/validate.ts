@@ -3,7 +3,7 @@
 // is a focused check of the shape the engine actually depends on.
 // schema/film.schema.json is the documented contract this mirrors.
 
-const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art'];
+const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art', 'tree'];
 const ACCENTS = ['blue', 'cyan', 'green', 'amber', 'rose', 'violet'];
 // big-idea — the closed allowlist of anchor kinds. An anchor outside this list
 // is rejected: the author picks the kind, the engine owns the pixels.
@@ -17,6 +17,12 @@ const CHART_FNS = ['linear', 'x^2', 'sqrt', 'sin', 'exp', 'log', 'reciprocal'];
 const SERIES_KINDS = ['line', 'bars', 'point'];
 const MAX_BARS = 8;
 const MAX_TICKS = 10;
+// tree scenes — hard ceilings the renderer can draw cleanly. Past 5 levels the
+// boxes shrink past legibility; past ~30 visible nodes the breadth axis goes
+// thinner than label width. The validator hard-fails so a bad tree never reaches
+// the cascade.
+const TREE_MAX_DEPTH = 5;
+const TREE_MAX_NODES = 30;
 
 // Intent knobs — semantic dials the author may set; the engine interprets
 // them. Each is a closed enum, and that is the point: a value outside the
@@ -713,6 +719,91 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       }
     }
 
+    // tree — a rooted hierarchy. HARD FAILS:
+    //   - `root.id` is not a string
+    //   - any two tree nodes share an id (walking the tree)
+    //   - the tree is deeper than TREE_MAX_DEPTH (renderer can't fit it)
+    //   - the tree carries more than TREE_MAX_NODES nodes total
+    //   - `orientation` is not a closed-enum value
+    // `root` itself being absent is caught by the requiredBody check below; this
+    // block runs only when `root` is present, and validates the shape.
+    if (sc.type === 'tree') {
+      if (sc.orientation !== undefined && sc.orientation !== 'vertical' && sc.orientation !== 'horizontal') {
+        issues.push({
+          path: `${at}.orientation`,
+          message: 'orientation must be "vertical" or "horizontal"',
+        });
+      }
+      if (sc.root !== undefined) {
+        if (!sc.root || typeof sc.root !== 'object' || Array.isArray(sc.root)) {
+          issues.push({path: `${at}.root`, message: 'root must be a tree-node object {id, label, children?}'});
+        } else {
+          const treeIds = new Set<string>();
+          let nodeCount = 0;
+          let depthOverflow = false;
+          let nodeOverflow = false;
+          const walk = (n: Record<string, any>, path: string, depth: number): void => {
+            nodeCount++;
+            if (nodeCount > TREE_MAX_NODES && !nodeOverflow) {
+              issues.push({
+                path: `${at}.root`,
+                message: `tree exceeds ${TREE_MAX_NODES} nodes — the breadth axis goes thinner than label width past that`,
+              });
+              nodeOverflow = true;
+            }
+            if (depth > TREE_MAX_DEPTH - 1) {
+              // depth is 0-based; TREE_MAX_DEPTH counts levels (root is level 1).
+              if (!depthOverflow) {
+                issues.push({
+                  path,
+                  message: `tree exceeds ${TREE_MAX_DEPTH} levels — the renderer's boxes shrink past legibility past that`,
+                });
+                depthOverflow = true;
+              }
+            }
+            if (typeof n.id !== 'string' || !n.id.trim()) {
+              issues.push({path: `${path}.id`, message: 'tree-node id must be a non-empty string'});
+            } else if (treeIds.has(n.id)) {
+              issues.push({path: `${path}.id`, message: `duplicate tree-node id "${n.id}" — every id must be unique across the tree`});
+            } else {
+              treeIds.add(n.id);
+            }
+            if (typeof n.label !== 'string' || !n.label.trim()) {
+              issues.push({path: `${path}.label`, message: 'tree-node label must be a non-empty string'});
+            }
+            if (n.sub !== undefined && (typeof n.sub !== 'string' || !n.sub.trim())) {
+              issues.push({path: `${path}.sub`, message: 'sub must be a non-empty string when present'});
+            }
+            if (n.accent !== undefined && !ACCENTS.includes(n.accent)) {
+              issues.push({path: `${path}.accent`, message: `unknown accent "${n.accent}"`});
+            }
+            if (n.children !== undefined) {
+              if (!Array.isArray(n.children)) {
+                issues.push({path: `${path}.children`, message: 'children must be an array of tree-nodes'});
+              } else {
+                n.children.forEach((c: any, k: number) => {
+                  if (!c || typeof c !== 'object' || Array.isArray(c)) {
+                    issues.push({path: `${path}.children[${k}]`, message: 'tree-node must be an object {id, label, children?}'});
+                    return;
+                  }
+                  walk(c, `${path}.children[${k}]`, depth + 1);
+                });
+              }
+            }
+          };
+          walk(sc.root as Record<string, any>, `${at}.root`, 0);
+        }
+      }
+    } else {
+      // tree-specific fields have no meaning on other scene types.
+      if (sc.root !== undefined) {
+        issues.push({path: `${at}.root`, message: `root has no meaning for type "${sc.type}" — only tree`});
+      }
+      if (sc.orientation !== undefined) {
+        issues.push({path: `${at}.orientation`, message: `orientation has no meaning for type "${sc.type}" — only tree`});
+      }
+    }
+
     // Every scene type carries narration via beats; every scene type must
     // also carry SOMETHING visible for that narration to land on. A scene
     // that ships narration with no body renders a void with audio playing
@@ -762,6 +853,19 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       // prior-art / diff — already enforced by their dedicated checks above.
       'prior-art': () => null,
       diff: () => null,
+      // tree — `root` is required, and the root must carry at least one child
+      // (a single node is not a hierarchy; it's a node). Depth / count / id
+      // uniqueness already enforced by the dedicated walk above.
+      tree: () => {
+        const root = sc.root as Record<string, any> | undefined;
+        if (!root || typeof root !== 'object' || Array.isArray(root)) {
+          return 'tree requires a root tree-node {id, label, children}';
+        }
+        if (!Array.isArray(root.children) || root.children.length < 1) {
+          return 'tree root must carry at least 1 child — a single node is not a hierarchy';
+        }
+        return null;
+      },
     };
     const bodyCheck = requiredBody[sc.type];
     if (bodyCheck) {

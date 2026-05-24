@@ -185,3 +185,18 @@ ruling. State the verdict by saying three concrete things:
 
 A recap that summarizes instead of adjudicating is rejected — the film is
 touring itself, not reviewing the idea.
+
+---
+
+## Appendix — scene-type cues
+
+If the subject's structure is **parent-child** (taxonomies, classifications,
+code namespaces, org reporting lines, dependency hierarchies, knowledge-graph
+ontologies), reach for `tree`. The levels must mean something — depth should
+encode an actual classification axis (kingdom → phylum → class; model → toolset
+→ orchestrator → application), not just shape. A `tree` carries a
+*classification* claim; a `structure` carries a *relation* claim. Pick the one
+whose shape the subject already has. A `tree` whose levels are decorative —
+every node a single child of the one above, or levels that restate the level
+above — fails the `hierarchy-meaningful` judge dimension; author it as a
+`progression` or a flat `structure` instead.

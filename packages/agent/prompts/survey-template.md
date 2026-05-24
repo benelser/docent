@@ -147,3 +147,18 @@ concrete things:
 
 A recap that does not produce all three is rejected — it is touring its own
 film, not reviewing the change.
+
+---
+
+## Appendix — scene-type cues
+
+If the subject's structure is **parent-child** (taxonomies, classifications,
+code namespaces, org reporting lines, dependency hierarchies), reach for
+`tree`. The levels must mean something — depth should encode an actual
+classification axis (kingdom → phylum → class; model → toolset → orchestrator
+→ application; supervisor → manager → IC), not just shape. A tree whose
+levels are decorative — every node a single child of the one above, or levels
+that restate the level above — fails the `hierarchy-meaningful` judge
+dimension and should be authored as a `progression` or `structure` instead.
+A `tree` carries a *classification* claim; a `structure` carries a *relation*
+claim. Pick the one whose shape the subject already has.
