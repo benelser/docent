@@ -92,7 +92,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
 
     return (
       <SceneFrame
-        accentHex={accentHex}
+        style={style}        accentHex={accentHex}
         kicker={scene.kicker}
         heading={scene.heading}
         sceneIndex={sceneIndex}
@@ -195,7 +195,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
           </div>
         </AbsoluteFill>
 
-        <Narration beats={ts.beats} />
+        <Narration style={style} beats={ts.beats} />
       </SceneFrame>
     );
   }
@@ -211,7 +211,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
 
     return (
       <SceneFrame
-        accentHex={accentHex}
+        style={style}        accentHex={accentHex}
         kicker={scene.kicker}
         heading={scene.heading}
         sceneIndex={sceneIndex}
@@ -317,7 +317,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
           </div>
         </AbsoluteFill>
 
-        <Narration beats={ts.beats} />
+        <Narration style={style} beats={ts.beats} />
       </SceneFrame>
     );
   }
@@ -346,7 +346,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
 
   return (
     <SceneFrame
-      accentHex={accentHex}
+      style={style}      accentHex={accentHex}
       kicker={scene.kicker}
       heading={scene.heading}
       sceneIndex={sceneIndex}
@@ -451,7 +451,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         ))}
       </AbsoluteFill>
 
-      <Narration beats={ts.beats} />
+      <Narration style={style} beats={ts.beats} />
     </SceneFrame>
   );
 };

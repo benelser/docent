@@ -134,13 +134,13 @@ export const MechanismScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   if (!motion || parts.length === 0) {
     return (
       <SceneFrame
-        accentHex={accentHex}
+        style={style}        accentHex={accentHex}
         kicker={scene.kicker}
         heading={scene.heading}
         sceneIndex={sceneIndex}
         sceneCount={sceneCount}
       >
-        <Narration beats={ts.beats} />
+        <Narration style={style} beats={ts.beats} />
       </SceneFrame>
     );
   }
@@ -238,7 +238,7 @@ export const MechanismScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
 
   return (
     <SceneFrame
-      accentHex={accentHex}
+      style={style}      accentHex={accentHex}
       kicker={scene.kicker}
       heading={scene.heading}
       sceneIndex={sceneIndex}
@@ -503,7 +503,7 @@ export const MechanismScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         )}
       </AbsoluteFill>
 
-      <Narration beats={ts.beats} />
+      <Narration style={style} beats={ts.beats} />
     </SceneFrame>
   );
 };

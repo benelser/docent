@@ -1090,7 +1090,7 @@ export const TensionScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         progressDim={isWhiteboard ? '#d6cdb6' : bg.line}
       />
 
-      <Narration beats={ts.beats} />
+      <Narration style={style} beats={ts.beats} />
     </AbsoluteFill>
   );
 };

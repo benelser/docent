@@ -5,6 +5,7 @@ import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
+import type {ResolvedStyle} from '../style';
 import {
   cadenceOffset,
   cadenceSpringConfig,
@@ -17,10 +18,11 @@ import {
 // then a row per variation — the perturbed input, an arrow, the resulting
 // outcome, and a flip indicator. `flips: true` is a bold rose "flipped"
 // marker; otherwise a muted "held". Variations reveal one beat at a time.
-export const ProbeScene: React.FC<SceneProps> = ({
+export const ProbeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
@@ -96,6 +98,7 @@ export const ProbeScene: React.FC<SceneProps> = ({
 
   return (
     <SceneFrame
+      style={style}
       accentHex={accentHex}
       kicker={scene.kicker}
       heading={scene.heading}
@@ -219,7 +222,7 @@ export const ProbeScene: React.FC<SceneProps> = ({
         </div>
       </AbsoluteFill>
 
-      <Narration beats={ts.beats} />
+      <Narration style={style} beats={ts.beats} />
     </SceneFrame>
   );
 };

@@ -446,7 +446,7 @@ export const MapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
 
   return (
     <SceneFrame
-      accentHex={accentHex}
+      style={style}      accentHex={accentHex}
       kicker={scene.kicker}
       heading={scene.heading}
       sceneIndex={sceneIndex}
@@ -529,7 +529,7 @@ export const MapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         {markers.map((m, i) => renderMarker(m, i))}
       </div>
 
-      <Narration beats={ts.beats} />
+      <Narration style={style} beats={ts.beats} />
     </SceneFrame>
   );
 };

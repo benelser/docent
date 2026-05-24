@@ -133,7 +133,7 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
     if (!morphTargets.has(n.id)) {
       return (
         <Card
-          key={n.id}
+          style={style}          key={n.id}
           box={boxes[n.id]}
           label={n.label}
           sub={n.sub}
@@ -184,7 +184,7 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       const inner =
         as === 'box' ? (
           <Card
-            box={box}
+            style={style}            box={box}
             label={def.label}
             sub={def.sub}
             tag={def.tag}
@@ -197,7 +197,7 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
           />
         ) : (
           <NodeRepresentation
-            box={box}
+            style={style}            box={box}
             node={def}
             accentHex={reprAccentOf(def)}
           />
@@ -217,7 +217,7 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
 
   return (
     <SceneFrame
-      accentHex={accentHex}
+      style={style}      accentHex={accentHex}
       kicker={scene.kicker}
       heading={scene.heading}
       sceneIndex={sceneIndex}
@@ -233,7 +233,7 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       >
       {edges.map((e) => (
         <Connector
-          key={e.id}
+          style={style}          key={e.id}
           from={boxes[e.from]}
           to={boxes[e.to]}
           // An entailment / causal claim takes the scene accent — the line is
@@ -259,12 +259,12 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         if (!boxes[f] || !boxes[t]) return null;
         const localT = (inBeat - i * each) / each;
         return (
-          <Pulse key={`${f}-${t}-${i}`} from={boxes[f]} to={boxes[t]} accentHex={accentHex} t={localT} />
+          <Pulse style={style} key={`${f}-${t}-${i}`} from={boxes[f]} to={boxes[t]} accentHex={accentHex} t={localT} />
         );
       })}
       </AbsoluteFill>
 
-      <Narration beats={ts.beats} />
+      <Narration style={style} beats={ts.beats} />
     </SceneFrame>
   );
 };

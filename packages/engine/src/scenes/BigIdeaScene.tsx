@@ -453,7 +453,7 @@ export const BigIdeaScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
           />
         )}
         <SceneFrame
-          accentHex={accentHex}
+          style={style}          accentHex={accentHex}
           kicker={scene.kicker}
           heading={scene.heading}
           sceneIndex={sceneIndex}
@@ -463,21 +463,21 @@ export const BigIdeaScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         >
           {body}
         </SceneFrame>
-        <Narration beats={ts.beats} />
+        <Narration style={style} beats={ts.beats} />
       </AbsoluteFill>
     );
   }
 
   return (
     <SceneFrame
-      accentHex={accentHex}
+      style={style}      accentHex={accentHex}
       kicker={scene.kicker}
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
     >
       {body}
-      <Narration beats={ts.beats} />
+      <Narration style={style} beats={ts.beats} />
     </SceneFrame>
   );
 };

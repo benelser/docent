@@ -140,7 +140,7 @@ export const PassageScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
 
   return (
     <SceneFrame
-      accentHex={accentHex}
+      style={style}      accentHex={accentHex}
       kicker={scene.kicker}
       heading={scene.heading}
       sceneIndex={sceneIndex}
@@ -300,7 +300,7 @@ export const PassageScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         ) : null}
       </div>
 
-      <Narration beats={ts.beats} />
+      <Narration style={style} beats={ts.beats} />
     </SceneFrame>
   );
 };

@@ -93,7 +93,7 @@ export const PriorArtScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
 
   return (
     <SceneFrame
-      accentHex={accentHex}
+      style={style}      accentHex={accentHex}
       kicker={scene.kicker}
       heading={scene.heading}
       sceneIndex={sceneIndex}
@@ -369,7 +369,7 @@ export const PriorArtScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         ) : null}
       </AbsoluteFill>
 
-      <Narration beats={ts.beats} />
+      <Narration style={style} beats={ts.beats} />
     </SceneFrame>
   );
 };
