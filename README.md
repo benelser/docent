@@ -10,6 +10,19 @@
 [![distribution](https://img.shields.io/badge/install-APM%20%2F%20Codex-6ea8fe)](#install)
 [![license](https://img.shields.io/badge/license-MIT-c0c5cf)](LICENSE)
 
+## See docent walk you through itself
+
+The film below was authored by docent **about docent**. Survey →
+treatment → spec → judge → render — the full cascade, produced from
+nothing but `https://github.com/benelser/docent` and the command
+`/docent-ar`. Eight scenes, eleven minutes, full HD.
+
+<video src="https://github.com/benelser/docent/releases/download/v2.0.2/docent-self.mp4" controls width="100%"></video>
+
+> [▶ Download the docent-on-docent film (54 MB)](https://github.com/benelser/docent/releases/download/v2.0.2/docent-self.mp4) ·
+> scene grammar: `frame · prior-art · structure · progression · compare · tension · quantities · recap` ·
+> judge-graded before it shipped
+
 ---
 
 ## Why "docent"?
