@@ -74,14 +74,29 @@ const neutral: PresetDefinition = {
 };
 
 // engineering — code-heavy, dark register. Kubernetes-PR / docent-self.
-// Same backdrop as neutral; tightened mono numerics; cyan reading slightly
-// crisper for diff/highlight roles.
+// Deeper bg than neutral (the "terminal-at-night" feel); punchier cyan/green
+// accents (the colors a console boots in); tighter mono numerics.
 const engineering: PresetDefinition = {
   tokens: extend({
+    bg: {
+      // A measurable shade deeper than neutral so the register reads at
+      // thumbnail size. Distinct from analytical's near-black.
+      void: '#030506',
+      base: '#070a0e',
+      panel: '#0d1219',
+      panelHi: '#141a25',
+      line: '#222a3a',
+      lineHi: '#36425b',
+    },
+    accent: {
+      // Terminal-flavored: punchier cyan/green/amber, cooler blue.
+      blue: '#4ea8ff',
+      cyan: '#36ecd6',
+      green: '#67ff95',
+      amber: '#ffb840',
+    },
     typography: {
       family: {
-        // Tighter, monospaced-first identity — the family is unchanged, but
-        // the mono face leads (used for code, terminals, signal numerics).
         mono: '"JetBrains Mono", "SF Mono", Menlo, monospace',
       },
       letterSpacing: -0.005, // a hair tighter for numerics
