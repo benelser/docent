@@ -56,7 +56,7 @@ The grammar is the contract between them.
 
 ```bash
 # 1. Install the agent layer into your coding host
-apm install -t claude benelser/docent/packages/agent#v2.0.2
+apm install -t claude benelser/docent/packages/agent#v2.0.3
 # OR for Codex:
 codex plugin marketplace add github.com/benelser/docent
 codex plugin add docent-agent@docent
