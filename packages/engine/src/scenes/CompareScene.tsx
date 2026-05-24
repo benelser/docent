@@ -4,6 +4,7 @@ import {accent, theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
 import {
   cadenceOffset,
@@ -86,21 +87,39 @@ export const CompareScene: React.FC<SceneProps> = ({
               gap: 4,
             }}
           >
-            <div
+            {/* column label / sub — auto-shrink so long option names
+                ("Distributed event-sourced commit log") still fit
+                centred without overrunning the header tile. The header
+                tile is colW-16 wide; reserve ~22px internal margin. */}
+            <FittedText
+              text={c.label}
+              maxWidth={colW - 16 - 22}
+              basePx={24}
+              floorPx={14}
+              charAdvance={0.58}
+              mode="shrink-single"
               style={{
                 fontFamily: interFamily,
-                fontSize: 24,
                 fontWeight: 600,
                 color: theme.ink.hi,
                 letterSpacing: -0.2,
+                textAlign: 'center',
               }}
-            >
-              {c.label}
-            </div>
+            />
             {c.sub ? (
-              <div style={{fontFamily: monoFamily, fontSize: 14, color: theme.ink.low}}>
-                {c.sub}
-              </div>
+              <FittedText
+                text={c.sub}
+                maxWidth={colW - 16 - 22}
+                basePx={14}
+                floorPx={10}
+                charAdvance={0.62}
+                mode="shrink-single"
+                style={{
+                  fontFamily: monoFamily,
+                  color: theme.ink.low,
+                  textAlign: 'center',
+                }}
+              />
             ) : null}
           </div>
         ))}
@@ -132,18 +151,17 @@ export const CompareScene: React.FC<SceneProps> = ({
                 display: 'flex',
               }}
             >
-              {/* criterion — left gutter */}
+              {/* criterion — left gutter. Allow up to 2 wrapped lines so
+                  a longer criterion ("Time-to-first-meaningful-response")
+                  still reads inside the gutter without truncating
+                  mid-thought. The gutter is 380px wide; subtract the
+                  rail+spacer (~36px) and the trailing 22px pad. */}
               <div
                 style={{
                   width: gutterW,
                   display: 'flex',
                   alignItems: 'center',
                   paddingRight: 22,
-                  fontFamily: interFamily,
-                  fontSize: 21,
-                  fontWeight: 500,
-                  color: focused ? theme.ink.hi : theme.ink.mid,
-                  letterSpacing: -0.2,
                 }}
               >
                 <div
@@ -153,9 +171,25 @@ export const CompareScene: React.FC<SceneProps> = ({
                     borderRadius: 2,
                     marginRight: 16,
                     background: focused ? accentHex : theme.bg.lineHi,
+                    flexShrink: 0,
                   }}
                 />
-                {r.label}
+                <FittedText
+                  text={r.label}
+                  maxWidth={gutterW - 4 - 16 - 22}
+                  basePx={21}
+                  floorPx={13}
+                  charAdvance={0.55}
+                  mode="shrink-wrap"
+                  maxLines={2}
+                  lineHeight={1.18}
+                  style={{
+                    fontFamily: interFamily,
+                    fontWeight: 500,
+                    color: focused ? theme.ink.hi : theme.ink.mid,
+                    letterSpacing: -0.2,
+                  }}
+                />
               </div>
 
               {/* cells */}
@@ -191,21 +225,48 @@ export const CompareScene: React.FC<SceneProps> = ({
                         opacity: lose ? 0.5 : 1,
                       }}
                     >
-                      <span
+                      {/* Cell text — previously a fixed-19px nowrap span,
+                          which let a long cell ("Eventually consistent
+                          across regional read replicas") run off the
+                          cell edge. Allow up to 3 wrapped lines and
+                          auto-shrink. Cell interior is colW-16 (col
+                          padding) - 36 (internal pad). The check
+                          glyph is a flex sibling so it doesn't eat the
+                          text's width. */}
+                      {win ? (
+                        <span
+                          style={{
+                            fontFamily: interFamily,
+                            fontSize: 19,
+                            fontWeight: 600,
+                            color: accentHex,
+                            marginRight: 6,
+                            flexShrink: 0,
+                          }}
+                        >
+                          ✓
+                        </span>
+                      ) : null}
+                      <FittedText
+                        text={cell?.text ?? '—'}
+                        maxWidth={colW - 16 - 36 - (win ? 26 : 0)}
+                        basePx={19}
+                        floorPx={12}
+                        charAdvance={0.56}
+                        mode="shrink-wrap"
+                        maxLines={3}
+                        lineHeight={1.22}
                         style={{
                           fontFamily: interFamily,
-                          fontSize: 19,
                           fontWeight: win ? 600 : 500,
                           color: win
                             ? accentHex
                             : lose
                               ? theme.ink.low
                               : theme.ink.mid,
+                          textAlign: 'center',
                         }}
-                      >
-                        {win ? '✓ ' : null}
-                        {cell?.text ?? '—'}
-                      </span>
+                      />
                     </div>
                   </div>
                 );

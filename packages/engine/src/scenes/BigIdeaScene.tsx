@@ -12,6 +12,7 @@ import {accent, theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import type {BigIdeaAnchor, SceneProps} from '../engine/spec';
 
 // BigIdeaScene — the takeaway.
@@ -340,19 +341,27 @@ export const BigIdeaScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount})
           transform: `translateY(${(1 - sentenceEnter) * 14}px)`,
         }}
       >
-        <div
+        {/* The takeaway sentence. The contract bounds it to ≤20 words,
+            but characters vary; controlled wrap (4 lines max) prevents
+            an extreme outlier from blowing the safe band. */}
+        <FittedText
+          text={statement}
+          maxWidth={1480}
+          basePx={fontSize}
+          floorPx={32}
+          charAdvance={0.55}
+          mode="shrink-wrap"
+          maxLines={4}
+          lineHeight={1.18}
           style={{
             fontFamily: interFamily,
-            fontSize,
             fontWeight: 600,
             color: isLight ? '#15161a' : theme.ink.hi,
             letterSpacing: -0.6,
-            lineHeight: 1.18,
             textShadow: isLight ? 'none' : `0 12px 60px ${glow(accentHex, 0.25)}`,
+            textAlign: 'center',
           }}
-        >
-          {statement}
-        </div>
+        />
 
         {/* divider — a thin accent rule, the breath under the sentence */}
         <div

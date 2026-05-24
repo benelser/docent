@@ -4,6 +4,7 @@ import {accent, theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText, fitFontSize, truncateForSlot} from '../components/FittedText';
 import {
   activeBeatIndex,
   type Beat,
@@ -256,24 +257,29 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
                     {isPositive ? '+' : '−'}
                   </text>
                 </g>
-                {/* optional one-liner — placed below the glyph */}
-                {e.label ? (
-                  <text
-                    x={glyphX}
-                    y={glyphY + 36}
-                    textAnchor="middle"
-                    fontFamily={monoFamily}
-                    fontSize={14}
-                    letterSpacing={0.2}
-                    fill={theme.ink.mid}
-                    opacity={draw}
-                    stroke={theme.bg.base}
-                    strokeWidth={3}
-                    paintOrder="stroke"
-                  >
-                    {e.label}
-                  </text>
-                ) : null}
+                {/* optional one-liner — placed below the glyph. SVG text;
+                  shrink-then-ellipsis through the helper. */}
+                {e.label ? (() => {
+                  const fs = fitFontSize(e.label, {maxWidth: 240, basePx: 14, floorPx: 10, charAdvance: 0.6});
+                  const txt = truncateForSlot(e.label, {maxWidth: 240, fontSize: fs, charAdvance: 0.6});
+                  return (
+                    <text
+                      x={glyphX}
+                      y={glyphY + 36}
+                      textAnchor="middle"
+                      fontFamily={monoFamily}
+                      fontSize={fs}
+                      letterSpacing={0.2}
+                      fill={theme.ink.mid}
+                      opacity={draw}
+                      stroke={theme.bg.base}
+                      strokeWidth={3}
+                      paintOrder="stroke"
+                    >
+                      {txt}
+                    </text>
+                  );
+                })() : null}
               </g>
             );
           })}
@@ -332,22 +338,26 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
                 >
                   {label}
                 </text>
-                {loop.label ? (
-                  <text
-                    x={cx}
-                    y={cy + 64 * scale}
-                    textAnchor="middle"
-                    fontFamily={monoFamily}
-                    fontSize={15}
-                    letterSpacing={0.8}
-                    fill={theme.ink.mid}
-                    stroke={theme.bg.base}
-                    strokeWidth={3}
-                    paintOrder="stroke"
-                  >
-                    {loop.label}
-                  </text>
-                ) : null}
+                {loop.label ? (() => {
+                  const fs = fitFontSize(loop.label, {maxWidth: 280, basePx: 15, floorPx: 10, charAdvance: 0.6});
+                  const txt = truncateForSlot(loop.label, {maxWidth: 280, fontSize: fs, charAdvance: 0.6});
+                  return (
+                    <text
+                      x={cx}
+                      y={cy + 64 * scale}
+                      textAnchor="middle"
+                      fontFamily={monoFamily}
+                      fontSize={fs}
+                      letterSpacing={0.8}
+                      fill={theme.ink.mid}
+                      stroke={theme.bg.base}
+                      strokeWidth={3}
+                      paintOrder="stroke"
+                    >
+                      {txt}
+                    </text>
+                  );
+                })() : null}
               </g>
             );
           })}
@@ -395,24 +405,32 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
                 gap: 4,
               }}
             >
-              <div
+              {/* variable label — disc is NODE_R*2=172px wide with
+                  10px interior pad. Wrap to 2 lines so a longer name
+                  ("backlog of unprocessed events") fits inside the
+                  disc without overrunning. */}
+              <FittedText
+                text={v.label}
+                maxWidth={NODE_R * 2 - 24}
+                basePx={
+                  v.label.length <= 8 ? 22
+                  : v.label.length <= 14 ? 17
+                  : v.label.length <= 20 ? 14
+                  : 12
+                }
+                floorPx={10}
+                charAdvance={0.56}
+                mode="shrink-wrap"
+                maxLines={2}
+                lineHeight={1.12}
                 style={{
                   fontFamily: interFamily,
-                  // Auto-shrink so the label always fits inside the disc.
-                  fontSize:
-                    v.label.length <= 8 ? 22
-                    : v.label.length <= 14 ? 17
-                    : v.label.length <= 20 ? 14
-                    : 12,
                   fontWeight: 600,
                   color: theme.ink.hi,
                   letterSpacing: -0.2,
-                  lineHeight: 1.1,
-                  maxWidth: NODE_R * 2 - 16,
+                  textAlign: 'center',
                 }}
-              >
-                {v.label}
-              </div>
+              />
               {v.sub ? (
                 <div
                   style={{

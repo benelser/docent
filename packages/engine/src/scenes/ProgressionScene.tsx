@@ -4,6 +4,7 @@ import {accent, theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
 import {
   cadenceOffset,
@@ -433,49 +434,50 @@ export const ProgressionScene: React.FC<SceneProps> = ({
                 >
                   {String(i + 1).padStart(2, '0')}
                 </div>
-                <div
+                {/* stage card label — the card is 260px wide with 22px
+                    horizontal padding (~216px content). Wrap to 2 lines so
+                    a longer step name still reads cleanly; auto-shrink
+                    inside the wrap budget. */}
+                <FittedText
+                  text={s.label}
+                  maxWidth={216}
+                  basePx={
+                    s.label.length <= 14 ? 24
+                    : s.label.length <= 22 ? 19
+                    : s.label.length <= 30 ? 16
+                    : 14
+                  }
+                  floorPx={11}
+                  charAdvance={0.58}
+                  mode="shrink-wrap"
+                  maxLines={2}
+                  lineHeight={1.14}
                   style={{
                     fontFamily: interFamily,
-                    // Auto-shrink to keep the label on one line. The stage
-                    // card is ~360 px wide; at 24 px Inter Bold we get
-                    // about 14 chars on a line. Step down for longer ones
-                    // (e.g. "If ToolCall — fan out").
-                    fontSize:
-                      s.label.length <= 14 ? 24
-                      : s.label.length <= 22 ? 19
-                      : s.label.length <= 30 ? 16
-                      : 14,
                     fontWeight: 600,
                     color: theme.ink.hi,
                     letterSpacing: -0.2,
-                    lineHeight: 1.12,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: '100%',
                   }}
-                >
-                  {s.label}
-                </div>
+                />
                 {s.sub ? (
-                  <div
+                  <FittedText
+                    text={s.sub}
+                    maxWidth={216}
+                    basePx={
+                      s.sub.length <= 28 ? 14.5
+                      : s.sub.length <= 40 ? 12.5
+                      : 11
+                    }
+                    floorPx={9}
+                    charAdvance={0.62}
+                    mode="shrink-wrap"
+                    maxLines={2}
+                    lineHeight={1.22}
                     style={{
                       fontFamily: monoFamily,
-                      // Same idea on the sub line — shrink before wrapping.
-                      fontSize:
-                        s.sub.length <= 28 ? 14.5
-                        : s.sub.length <= 40 ? 12.5
-                        : 11,
                       color: focused ? theme.ink.mid : theme.ink.low,
-                      lineHeight: 1.2,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: '100%',
                     }}
-                  >
-                    {s.sub}
-                  </div>
+                  />
                 ) : null}
               </div>
             </React.Fragment>

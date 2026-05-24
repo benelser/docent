@@ -4,6 +4,7 @@ import {accent, theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {STAGE} from '../engine/layout';
 import {
   activeBeatIndex,
@@ -333,32 +334,43 @@ export const MechanismScene: React.FC<SceneProps> = ({
                   opacity: intro,
                 }}
               >
-                <div
+                {/* value readout — large numeric; auto-shrink for
+                    longer values ("3.14159"). Width is 220 with a
+                    16-px interior pad on each side. */}
+                <FittedText
+                  text={String(p.sub ?? '—')}
+                  maxWidth={188}
+                  basePx={44}
+                  floorPx={22}
+                  charAdvance={0.62}
+                  mode="shrink-single"
                   style={{
                     fontFamily: monoFamily,
-                    fontSize: 44,
                     fontWeight: 700,
                     color: isActive ? theme.ink.hi : theme.ink.mid,
                     letterSpacing: -1,
+                    textAlign: 'center',
                     textShadow: isActive
                       ? `0 0 ${18 + breathe * 14}px ${glow(col, 0.75)}`
                       : 'none',
                   }}
-                >
-                  {p.sub ?? '—'}
-                </div>
-                <div
+                />
+                <FittedText
+                  text={p.label}
+                  maxWidth={188}
+                  basePx={16}
+                  floorPx={10}
+                  charAdvance={0.66}
+                  mode="shrink-single"
                   style={{
                     fontFamily: interFamily,
-                    fontSize: 16,
                     color: theme.ink.low,
                     marginTop: 4,
                     textTransform: 'uppercase',
                     letterSpacing: 1.4,
+                    textAlign: 'center',
                   }}
-                >
-                  {p.label}
-                </div>
+                />
               </div>
             );
           }
@@ -382,29 +394,41 @@ export const MechanismScene: React.FC<SceneProps> = ({
                 transform: `scale(${interpolate(intro, [0, 1], [0.96, 1])})`,
               }}
             >
-              <div
+              {/* Part card label / sub — the card is 240 with 32 horizontal
+                  pad (~208 content). Wrap to 2 lines for label, 2 for
+                  sub. */}
+              <FittedText
+                text={p.label}
+                maxWidth={208}
+                basePx={20}
+                floorPx={12}
+                charAdvance={0.58}
+                mode="shrink-wrap"
+                maxLines={2}
+                lineHeight={1.18}
                 style={{
                   fontFamily: interFamily,
-                  fontSize: 20,
                   fontWeight: 600,
                   color: isActive ? theme.ink.hi : theme.ink.mid,
                   letterSpacing: -0.2,
                 }}
-              >
-                {p.label}
-              </div>
+              />
               {p.sub ? (
-                <div
+                <FittedText
+                  text={p.sub}
+                  maxWidth={208}
+                  basePx={14}
+                  floorPx={10}
+                  charAdvance={0.6}
+                  mode="shrink-wrap"
+                  maxLines={2}
+                  lineHeight={1.35}
                   style={{
                     fontFamily: interFamily,
-                    fontSize: 14,
                     color: theme.ink.low,
                     marginTop: 2,
-                    lineHeight: 1.35,
                   }}
-                >
-                  {p.sub}
-                </div>
+                />
               ) : null}
             </div>
           );

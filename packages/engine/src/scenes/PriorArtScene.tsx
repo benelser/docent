@@ -4,6 +4,7 @@ import {theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {activeBeatIndex, type PriorArtNovelty, type SceneProps} from '../engine/spec';
 import {paletteGlowScale, paletteSceneHex} from '../engine/knobs';
 
@@ -134,27 +135,38 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                 gap: 4,
               }}
             >
-              <div
+              {/* system header — column tile is (colW-16) wide; reserve
+                  ~24px interior. shrink-single is right here: a system
+                  name reads as a single phrase. */}
+              <FittedText
+                text={s.label}
+                maxWidth={colW - 16 - 24}
+                basePx={26}
+                floorPx={14}
+                charAdvance={0.58}
+                mode="shrink-single"
                 style={{
                   fontFamily: interFamily,
-                  fontSize: 26,
                   fontWeight: 600,
                   color: theme.ink.hi,
                   letterSpacing: -0.2,
+                  textAlign: 'center',
                 }}
-              >
-                {s.label}
-              </div>
+              />
               {s.sub || s.year ? (
-                <div
+                <FittedText
+                  text={[s.sub, s.year].filter(Boolean).join(' · ')}
+                  maxWidth={colW - 16 - 24}
+                  basePx={14}
+                  floorPx={10}
+                  charAdvance={0.62}
+                  mode="shrink-single"
                   style={{
                     fontFamily: monoFamily,
-                    fontSize: 14,
                     color: theme.ink.low,
+                    textAlign: 'center',
                   }}
-                >
-                  {[s.sub, s.year].filter(Boolean).join(' · ')}
-                </div>
+                />
               ) : null}
             </div>
           );
@@ -200,22 +212,17 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                   : 'transparent',
               }}
             >
-              {/* dimension label — left gutter */}
+              {/* dimension label — left gutter. The gutter is 360px; the
+                  rail+spacer eat ~36px and the trailing pad ~22px. Wrap
+                  to 2 lines so a longer dimension phrase
+                  ("Operational complexity per consensus event") reads
+                  cleanly inside the gutter. */}
               <div
                 style={{
                   width: gutterW,
                   display: 'flex',
                   alignItems: 'center',
                   paddingRight: 22,
-                  fontFamily: interFamily,
-                  fontSize: 21,
-                  fontWeight: isNovelty ? 600 : 500,
-                  color: focused
-                    ? theme.ink.hi
-                    : isNovelty
-                      ? theme.ink.hi
-                      : theme.ink.mid,
-                  letterSpacing: -0.2,
                 }}
               >
                 <div
@@ -229,9 +236,29 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                       : focused
                         ? accentHex
                         : theme.bg.lineHi,
+                    flexShrink: 0,
                   }}
                 />
-                {d.label}
+                <FittedText
+                  text={d.label}
+                  maxWidth={gutterW - 4 - 16 - 22}
+                  basePx={21}
+                  floorPx={13}
+                  charAdvance={0.55}
+                  mode="shrink-wrap"
+                  maxLines={2}
+                  lineHeight={1.18}
+                  style={{
+                    fontFamily: interFamily,
+                    fontWeight: isNovelty ? 600 : 500,
+                    color: focused
+                      ? theme.ink.hi
+                      : isNovelty
+                        ? theme.ink.hi
+                        : theme.ink.mid,
+                    letterSpacing: -0.2,
+                  }}
+                />
               </div>
 
               {/* one cell per system */}
@@ -281,10 +308,23 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                       >
                         {diverges ? '✗' : same ? '✓' : '·'}
                       </span>
-                      <span
+                      {/* cell note — the per-cell short claim. The cell
+                          is (colW-16) wide, with 16px interior pad and
+                          the verdict glyph (18px) on its left. Wrap to
+                          3 lines and shrink past that — a longer note
+                          ("Co-located commit log; no quorum needed in the
+                          happy path") still reads inside the cell. */}
+                      <FittedText
+                        text={c?.note ?? '—'}
+                        maxWidth={colW - 16 - 32 - 18 - 10}
+                        basePx={17}
+                        floorPx={11}
+                        charAdvance={0.56}
+                        mode="shrink-wrap"
+                        maxLines={3}
+                        lineHeight={1.25}
                         style={{
                           fontFamily: interFamily,
-                          fontSize: 17,
                           fontWeight: lit ? 600 : 500,
                           color: lit
                             ? accentHex
@@ -293,11 +333,8 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                               : same
                                 ? theme.ink.mid
                                 : theme.ink.low,
-                          lineHeight: 1.25,
                         }}
-                      >
-                        {c?.note ?? '—'}
-                      </span>
+                      />
                     </div>
                   </div>
                 );
@@ -349,17 +386,32 @@ export const PriorArtScene: React.FC<SceneProps> = ({
                 >
                   the new line
                 </span>
-                <span
+                {/* novelty statement — the one-liner that names the
+                    new line. The dashed banner spans the table width
+                    (~1620px) with ~44px reserved for the kicker chip
+                    and 28px interior padding. Wrap to 2 lines so a
+                    longer statement
+                    ("Co-locating the commit log with consensus state
+                    in a single Raft group is the move") still fits
+                    without dropping below the safe band. */}
+                <FittedText
+                  text={novelty.statement}
+                  maxWidth={1620 - 44 - 28 - 60}
+                  basePx={20}
+                  floorPx={13}
+                  charAdvance={0.56}
+                  mode="shrink-wrap"
+                  maxLines={2}
+                  lineHeight={1.28}
                   style={{
                     fontFamily: interFamily,
-                    fontSize: 20,
                     color: theme.ink.hi,
                     fontWeight: 500,
                     letterSpacing: -0.1,
+                    flex: 1,
+                    minWidth: 0,
                   }}
-                >
-                  {novelty.statement}
-                </span>
+                />
               </div>
             );
           })()

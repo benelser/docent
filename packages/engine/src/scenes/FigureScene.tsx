@@ -11,6 +11,7 @@ import {accent, theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {
   activeBeatIndex,
   type Beat,
@@ -171,29 +172,41 @@ export const FigureScene: React.FC<SceneProps> = ({
             boxShadow: `0 18px 40px -16px #000000ee`,
           }}
         >
-          <div
+          {/* callout label / note — the card is maxWidth 320 with 15px
+              horizontal padding (~290px content). Wrap to 2 lines for
+              labels, 3 for notes. */}
+          <FittedText
+            text={c.label}
+            maxWidth={290}
+            basePx={21}
+            floorPx={13}
+            charAdvance={0.58}
+            mode="shrink-wrap"
+            maxLines={2}
+            lineHeight={1.18}
             style={{
               fontFamily: interFamily,
-              fontSize: 21,
               fontWeight: 600,
               color: lit ? theme.ink.hi : theme.ink.mid,
               letterSpacing: -0.2,
             }}
-          >
-            {c.label}
-          </div>
+          />
           {c.note ? (
-            <div
+            <FittedText
+              text={c.note}
+              maxWidth={290}
+              basePx={16}
+              floorPx={11}
+              charAdvance={0.58}
+              mode="shrink-wrap"
+              maxLines={3}
+              lineHeight={1.4}
               style={{
                 fontFamily: interFamily,
-                fontSize: 16,
                 color: theme.ink.low,
                 marginTop: 3,
-                lineHeight: 1.4,
               }}
-            >
-              {c.note}
-            </div>
+            />
           ) : null}
         </div>
       </div>

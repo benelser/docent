@@ -4,6 +4,7 @@ import {accent, theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
 
 export const RecapScene: React.FC<SceneProps> = ({
@@ -91,20 +92,29 @@ export const RecapScene: React.FC<SceneProps> = ({
               >
                 {String(i + 1).padStart(2, '0')}
               </div>
-              <div
+              {/* Bullet text. Available width inside the row is
+                  1680 - (54 + 26) = 1600px. Allow up to 4 wrapped lines
+                  per bullet, then auto-shrink past that — so a very
+                  long bullet stays inside the safe band without
+                  pushing later bullets off-screen. */}
+              <FittedText
+                text={p}
+                maxWidth={1600}
+                basePx={fs}
+                floorPx={16}
+                charAdvance={0.55}
+                mode="shrink-wrap"
+                maxLines={4}
+                lineHeight={1.32}
                 style={{
                   fontFamily: interFamily,
-                  fontSize: fs,
                   fontWeight: 500,
                   color: theme.ink.hi,
                   letterSpacing: -0.3,
-                  lineHeight: 1.28,
                   flex: 1,
                   minWidth: 0,
                 }}
-              >
-                {p}
-              </div>
+              />
             </div>
           );
         })}

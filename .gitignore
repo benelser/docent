@@ -41,6 +41,8 @@ films/*
 !films/thermostat.json
 !films/auth-overlap.json
 !films/docent-landscape.json
+!films/text-stress-diagrammatic.json
+!films/text-stress-narrative.json
 analysis/*
 !analysis/linear-algebra.md
 !analysis/linear-algebra.source.md

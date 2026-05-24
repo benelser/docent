@@ -4,6 +4,7 @@ import {theme, glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {activeBeatIndex, type SceneProps, type VennNovelty, type VennRegion} from '../engine/spec';
 import {paletteGlowScale, paletteSceneHex} from '../engine/knobs';
 
@@ -317,42 +318,58 @@ export const VennScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
               pointerEvents: 'none',
             }}
           >
-            <div
+            {/* set label / id / sub — the label tile is 400px wide
+                with internal pad for breathing room (~360 content). */}
+            <FittedText
+              text={s.id}
+              maxWidth={360}
+              basePx={14}
+              floorPx={10}
+              charAdvance={0.66}
+              mode="shrink-single"
               style={{
                 fontFamily: monoFamily,
-                fontSize: 14,
                 letterSpacing: 1.6,
                 textTransform: 'uppercase',
                 color: subLabelColor,
                 marginBottom: 4,
+                textAlign: 'center',
               }}
-            >
-              {s.id}
-            </div>
-            <div
+            />
+            <FittedText
+              text={s.label}
+              maxWidth={360}
+              basePx={26}
+              floorPx={14}
+              charAdvance={0.56}
+              mode="shrink-wrap"
+              maxLines={2}
+              lineHeight={1.15}
               style={{
                 fontFamily: interFamily,
-                fontSize: 26,
                 fontWeight: 600,
                 color: labelColor,
                 letterSpacing: -0.2,
-                lineHeight: 1.15,
+                textAlign: 'center',
               }}
-            >
-              {s.label}
-            </div>
+            />
             {s.sub ? (
-              <div
+              <FittedText
+                text={s.sub}
+                maxWidth={360}
+                basePx={16}
+                floorPx={11}
+                charAdvance={0.58}
+                mode="shrink-wrap"
+                maxLines={2}
+                lineHeight={1.3}
                 style={{
                   fontFamily: interFamily,
-                  fontSize: 16,
                   color: subLabelColor,
                   marginTop: 4,
-                  lineHeight: 1.3,
+                  textAlign: 'center',
                 }}
-              >
-                {s.sub}
-              </div>
+              />
             ) : null}
           </div>
         );
@@ -387,19 +404,23 @@ export const VennScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
             }}
           >
             {r.label ? (
-              <div
+              <FittedText
+                text={r.label}
+                maxWidth={260}
+                basePx={isNovelty ? 19 : 17}
+                floorPx={11}
+                charAdvance={0.58}
+                mode="shrink-wrap"
+                maxLines={3}
+                lineHeight={1.2}
                 style={{
                   fontFamily: interFamily,
-                  fontSize: isNovelty ? 19 : 17,
                   fontWeight: isNovelty || focused ? 700 : 500,
                   color: isNovelty ? accentHex : labelColor,
                   letterSpacing: -0.1,
-                  lineHeight: 1.2,
                   textShadow: isLight ? 'none' : '0 1px 3px rgba(0,0,0,0.6)',
                 }}
-              >
-                {r.label}
-              </div>
+              />
             ) : null}
           </div>
         );
@@ -444,18 +465,27 @@ export const VennScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) =>
             >
               the intersection
             </span>
-            <span
+            {/* novelty claim — banner is 1560 wide; the kicker chip
+                takes the left side (~180px), so the claim has ~1340 to
+                work with. Wrap to 2 lines and shrink past that. */}
+            <FittedText
+              text={novelty.claim}
+              maxWidth={1340}
+              basePx={22}
+              floorPx={14}
+              charAdvance={0.56}
+              mode="shrink-wrap"
+              maxLines={2}
+              lineHeight={1.3}
               style={{
                 fontFamily: interFamily,
-                fontSize: 22,
                 color: isLight ? '#15161a' : theme.ink.hi,
                 fontWeight: 500,
                 letterSpacing: -0.1,
-                lineHeight: 1.3,
+                flex: 1,
+                minWidth: 0,
               }}
-            >
-              {novelty.claim}
-            </span>
+            />
           </div>
         );
       })() : null}

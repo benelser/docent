@@ -18,6 +18,8 @@ import linearAlgebra from '../../../../films/linear-algebra.json';
 import multiRegionDb from '../../../../films/multi-region-db.json';
 import onboardingFirst30Minutes from '../../../../films/onboarding-first-30-minutes.json';
 import stoppingByWoods from '../../../../films/stopping-by-woods.json';
+import textStressDiagrammatic from '../../../../films/text-stress-diagrammatic.json';
+import textStressNarrative from '../../../../films/text-stress-narrative.json';
 import thermostat from '../../../../films/thermostat.json';
 
 export const FILMS: Record<string, FilmSpec> = {
@@ -33,5 +35,7 @@ export const FILMS: Record<string, FilmSpec> = {
   'multi-region-db': multiRegionDb as FilmSpec,
   'onboarding-first-30-minutes': onboardingFirst30Minutes as FilmSpec,
   'stopping-by-woods': stoppingByWoods as FilmSpec,
+  'text-stress-diagrammatic': textStressDiagrammatic as FilmSpec,
+  'text-stress-narrative': textStressNarrative as FilmSpec,
   'thermostat': thermostat as FilmSpec,
 };
