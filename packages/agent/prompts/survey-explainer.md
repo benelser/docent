@@ -185,3 +185,19 @@ ruling. State the verdict by saying three concrete things:
 
 A recap that summarizes instead of adjudicating is rejected — the film is
 touring itself, not reviewing the idea.
+
+## 9. When time is load-bearing — reach for `timeline`
+
+If the argument hinges on **WHEN** things happened (not just the order), reach
+for `timeline`. The gaps between dates are part of the argument: how long the
+field sat on the wrong answer before correcting, how compressed the
+breakthrough months were, how long an idea waited for its empirical proof.
+`progression` shows ordinal stages; `timeline` plots events on a real date
+axis with the proportional distance between them visible on screen.
+
+Use `timeline` when the survey turns up dated milestones whose **spacing**
+carries the claim: a chain of discoveries, the half-life of a paradigm, the
+arc of an idea from publication to consensus. If the dates are placeholders
+like "early 2024," "around that time," or "during the war," the scene fails —
+the time axis exists because the gaps are real and the explainer must commit
+to the dates.

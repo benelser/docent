@@ -97,6 +97,37 @@ makes this argument. Score these AR-only dimensions:
    - Weak: "Older replication strategies were more limited." Names no system,
      no trade-off, just praise of the subject by denying the field.
 
+### For films that use a `timeline` scene — the time dimension
+
+9. **Time is load-bearing.** If the film carries a `timeline` scene, the gaps
+   between dates must be *part of the argument*, not decoration. A strong
+   timeline says, with the axis, something the narration alone cannot: "look
+   at how long the field sat on the wrong answer," "look how compressed these
+   breakthroughs were," "look at the seven-year silence between the discovery
+   and the patent." A weak timeline is the same scene's story told in
+   `progression` — ordinal stages — with dates pasted on as labels. If you
+   could remove the dates and lose nothing, the timeline failed.
+
+   **Strong** — the gaps drive the claim:
+   - A timeline of AI capability releases 2022-2026 whose narration walks
+     the *shortening intervals* between releases — the months-then-weeks
+     compression *is* the argument that the field accelerated.
+   - A timeline of the COVID-19 vaccine 2020 whose narration names *which*
+     phases were compressed against historical baselines — the "ten months
+     vs. the historical ten years" is a real-axis claim no progression can
+     make.
+
+   **Weak** — dates as labels on an ordinal walk:
+   - "First Pfizer's Phase 1. Then Phase 2. Then Phase 3. Then approval." —
+     the narration could survive without the dates; the axis is decoration.
+   - Placeholder dates like "early 2024" or "during the war" — the spec
+     should not have rendered (the validator HARD-FAILs these), but if you
+     see one slipping through, that is the failure mode this dimension
+     exists to catch.
+
+   For films without a `timeline` scene, mark this dimension n/a (omit it
+   from the scores array).
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the

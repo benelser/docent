@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art"]},
+        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "timeline"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -121,6 +121,20 @@
         "novelty": {
           "$ref": "#/$defs/prior-art-novelty",
           "description": "prior-art scenes — which dimension carries the novelty, and the one-liner the film argues from"
+        },
+        "axis": {
+          "$ref": "#/$defs/timeline-axis",
+          "description": "timeline scenes — the dated horizontal axis the events are plotted onto"
+        },
+        "events": {
+          "type": "array",
+          "description": "timeline scenes — dated event markers pinned proportionally to the axis",
+          "items": {"$ref": "#/$defs/timeline-event"}
+        },
+        "spans": {
+          "type": "array",
+          "description": "timeline scenes — horizontal bars between two dates (wars, eras, regimes)",
+          "items": {"$ref": "#/$defs/timeline-span"}
         },
         "beats": {
           "type": "array",
@@ -412,6 +426,47 @@
       "properties": {
         "dimension": {"type": "string", "description": "a dimension id from this scene's `dimensions` — the row the film lights up"},
         "statement": {"type": "string", "minLength": 1, "description": "the one-line novelty: what is new, dimensionally"}
+      }
+    },
+    "timeline-axis": {
+      "type": "object",
+      "description": "timeline scenes — the dated horizontal axis. `start` and `end` must parse as dates (ISO 'YYYY-MM-DD', month-year 'YYYY-MM' or 'Jun 2025', or year-only '1914'). `ticks` are optional explicit tick labels, each a parseable date string; if omitted the engine auto-spaces ticks across the span. Phrases like 'early 2024' or 'during the war' are HARD-FAIL rejected.",
+      "required": ["start", "end"],
+      "additionalProperties": false,
+      "properties": {
+        "start": {"type": "string", "minLength": 1, "description": "the left edge of the axis — a parseable date string"},
+        "end": {"type": "string", "minLength": 1, "description": "the right edge of the axis — a parseable date string, must lie strictly after `start`"},
+        "ticks": {
+          "type": "array",
+          "description": "optional explicit tick labels along the axis; each must parse as a date",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "timeline-event": {
+      "type": "object",
+      "description": "timeline scenes — one dated marker. `date` is a parseable date string that MUST fall inside the scene's `axis` bounds. `lane` (0..N) stacks events vertically when they cluster on the axis (lane 0 closest to the axis line). A beat reveals an event by id and may `focus` it to glow.",
+      "required": ["id", "date", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id"},
+        "date": {"type": "string", "minLength": 1, "description": "a parseable date string — ISO, month-year, or year-only"},
+        "label": {"type": "string", "minLength": 1, "description": "the event's short label"},
+        "sub": {"type": "string", "description": "an optional one-line gloss under the label"},
+        "lane": {"type": "integer", "minimum": 0, "description": "vertical lane for stacking clustered events"}
+      }
+    },
+    "timeline-span": {
+      "type": "object",
+      "description": "timeline scenes — a horizontal bar between two dates (a war, an era, a treaty period). `from` and `to` MUST parse and both lie inside the scene's `axis` bounds; `from <= to`. Spans render below the axis as a labelled ground band.",
+      "required": ["id", "from", "to", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id"},
+        "from": {"type": "string", "minLength": 1, "description": "the span's left edge — a parseable date string"},
+        "to": {"type": "string", "minLength": 1, "description": "the span's right edge — a parseable date string, must be >= `from`"},
+        "label": {"type": "string", "minLength": 1, "description": "the span's short label, drawn inside the bar"},
+        "lane": {"type": "integer", "minimum": 0, "description": "vertical lane for stacking overlapping spans"}
       }
     }
   }

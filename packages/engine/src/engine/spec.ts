@@ -281,7 +281,8 @@ export type Scene = {
     | 'diff'
     | 'chart'
     | 'big-idea'
-    | 'prior-art';
+    | 'prior-art'
+    | 'timeline';
   accent: string;
   kicker: string;
   heading?: string;
@@ -353,6 +354,16 @@ export type Scene = {
   clip?: string;
   // recap
   points?: string[];
+  // timeline — events on a real date axis. `axis.start` and `axis.end` are
+  // date strings the engine parses (ISO "2017-06-12", year-only "1914", or
+  // month-year "Jun 2025"); `ticks` are optional date strings to label on
+  // the axis (auto-spaced if omitted). `events` are pinned to a parsed date
+  // and reveal on their beat; `spans` are horizontal bars between two dates,
+  // useful for eras / wars / treaty periods. The gaps between dates carry
+  // the argument — the time axis is load-bearing, not decoration.
+  axis?: {start: string; end: string; ticks?: string[]};
+  events?: TimelineEvent[];
+  spans?: TimelineSpan[];
   beats: Beat[];
 };
 
@@ -656,4 +667,31 @@ export type SceneProps = {
   sceneIndex: number;
   sceneCount: number;
   meta: FilmMeta;
+};
+
+// timeline scenes — events plotted on a real date axis. The argument is the
+// shape of TIME itself: 1914-1918 is a four-year span; 1907 and 1914 are
+// separated by seven years and that gap is part of the claim. Progression
+// shows ordinal *stages*; timeline shows actual *dates*, with the proportional
+// distance between them visible on screen.
+//
+// An event is a single dated marker (a treaty, a release, a discovery). A
+// `lane` (0..N) stacks events vertically when they cluster on the axis. A
+// `reveal` beat brings the event in; `focus` glows it.
+export type TimelineEvent = {
+  id: string;
+  date: string; // a parseable date string; see parseTimelineDate
+  label: string;
+  sub?: string;
+  lane?: number;
+};
+
+// A span is a horizontal bar between two dates — an era, a war, a treaty
+// period, a regime. `from <= to`, both within the axis bounds.
+export type TimelineSpan = {
+  id: string;
+  from: string;
+  to: string;
+  label: string;
+  lane?: number;
 };

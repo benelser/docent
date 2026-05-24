@@ -33,6 +33,7 @@ films/*
 !films/euclid-primes.json
 !films/stopping-by-woods.json
 !films/grammar-check.json
+!films/ai-lab-race.json
 analysis/*
 !analysis/linear-algebra.md
 !analysis/linear-algebra.source.md

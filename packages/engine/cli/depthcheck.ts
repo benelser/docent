@@ -14,6 +14,7 @@
 import {existsSync} from 'node:fs';
 import {join} from 'node:path';
 import {paths} from './paths';
+import {parseTimelineDate} from '../src/engine/time';
 
 type Spec = {
   meta: {prompt?: string; id?: string};
@@ -27,6 +28,10 @@ type Spec = {
     dimensions?: {id: string; label: string}[];
     cells?: {system: string; dimension: string; mark: 'same' | 'diverges'; note: string}[];
     novelty?: {dimension: string; statement: string};
+    // timeline scene fields — only present on `type: 'timeline'`.
+    axis?: {start: string; end: string; ticks?: string[]};
+    events?: {id: string; date: string; label: string}[];
+    spans?: {id: string; from: string; to: string; label: string}[];
   }[];
 };
 
@@ -180,6 +185,54 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
         });
       }
     }
+  }
+
+  // timeline-dates-real — every timeline event's date must be a real,
+  // parseable date string. A phrase like "early 2024" or "during the war"
+  // fails: the time axis is load-bearing, the gaps between dates are part
+  // of the argument. Soft-fail (warn) if a date contains alpha characters
+  // outside the month-abbreviation allowlist, since parseTimelineDate
+  // already HARD-FAILs at the validator. This is the depth-layer signal:
+  // a spec author who slips a placeholder past the validator (say, via a
+  // future date format we extend the parser to accept) still gets flagged.
+  const timelineScenes = spec.scenes.filter((sc) => sc.type === 'timeline');
+  if (timelineScenes.length > 0) {
+    const MONTH_OK = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec|january|february|march|april|june|july|august|september|october|november|december)\b/i;
+    const badDates: string[] = [];
+    for (const sc of timelineScenes) {
+      const checkDate = (label: string, value: string): void => {
+        if (parseTimelineDate(value) === null) {
+          badDates.push(`${label} "${value}"`);
+          return;
+        }
+        // Defensive — if the parser accepted it but it still carries
+        // non-month alpha (an extended parser future could let "Q3 2023"
+        // through, etc.), fail the depth check.
+        const alpha = value.replace(/[^A-Za-z]/g, '');
+        if (alpha.length > 0 && !MONTH_OK.test(alpha)) {
+          badDates.push(`${label} "${value}" (non-month alpha)`);
+        }
+      };
+      if (sc.axis) {
+        checkDate('axis.start', sc.axis.start);
+        checkDate('axis.end', sc.axis.end);
+        (sc.axis.ticks ?? []).forEach((t, i) => checkDate(`axis.ticks[${i}]`, t));
+      }
+      (sc.events ?? []).forEach((e) => checkDate(`event "${e.id}".date`, e.date));
+      (sc.spans ?? []).forEach((sp) => {
+        checkDate(`span "${sp.id}".from`, sp.from);
+        checkDate(`span "${sp.id}".to`, sp.to);
+      });
+    }
+    findings.push({
+      id: 'timeline-dates-real',
+      label: 'Timeline dates are real — every date parses, no "early 2024" / "during the war"',
+      status: badDates.length === 0 ? 'ok' : 'fail',
+      detail:
+        badDates.length === 0
+          ? `${timelineScenes.length} timeline scene(s); every date is parseable`
+          : `${badDates.length} unparseable date(s): ${badDates.slice(0, 5).join('; ')}${badDates.length > 5 ? '…' : ''}`,
+    });
   }
 
   // big-idea contract — the takeaway sentence the viewer should leave with.
