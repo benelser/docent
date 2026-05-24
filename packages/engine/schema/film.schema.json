@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "timeline", "tree"]},
+        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "map", "timeline", "tree"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -143,6 +143,35 @@
         "orientation": {
           "enum": ["vertical", "horizontal"],
           "description": "tree scenes — layout axis: vertical (root at top, the org-chart shape) or horizontal (root at left, the taxonomy shape). Defaults to vertical."
+        },
+        "layout": {
+          "enum": ["topology", "grid"],
+          "description": "map scenes — the layout mode. `topology` (default) is abstract named blobs at normalized 0..1 positions; `grid` is a rectangular grid of labelled cells."
+        },
+        "gridSize": {
+          "type": "object",
+          "description": "map scenes — required when layout is `grid`; the cell-grid the regions snap to",
+          "required": ["cols", "rows"],
+          "additionalProperties": false,
+          "properties": {
+            "cols": {"type": "integer", "minimum": 1},
+            "rows": {"type": "integer", "minimum": 1}
+          }
+        },
+        "regions": {
+          "type": "array",
+          "description": "map scenes — the named places. 2-12 regions; position carries information.",
+          "items": {"$ref": "#/$defs/map-region"}
+        },
+        "markers": {
+          "type": "array",
+          "description": "map scenes — labelled points pinned AT regions (cities, hops, sensors)",
+          "items": {"$ref": "#/$defs/map-marker"}
+        },
+        "connections": {
+          "type": "array",
+          "description": "map scenes — lines/arcs between regions (routes, transmission paths, supply chains)",
+          "items": {"$ref": "#/$defs/map-connection"}
         },
         "beats": {
           "type": "array",
@@ -495,6 +524,53 @@
           "description": "the recursive structure — a node's children are themselves tree-nodes",
           "items": {"$ref": "#/$defs/tree-node"}
         }
+      }
+    },
+    "map-region": {
+      "type": "object",
+      "description": "map scenes — a named region. Position is the argument: for `topology` layout, `pos` is normalized [0..1] (x, y) with optional (w, h); for `grid` layout, `pos.x` and `pos.y` are integer (col, row) on the scene's gridSize. `sub` is the per-region annotation that makes the position load-bearing — why this place.",
+      "required": ["id", "label", "pos"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "label": {"type": "string"},
+        "sub": {"type": "string", "description": "the per-region annotation — what the position MEANS (a role, a trade-off, the place's argument)"},
+        "pos": {
+          "type": "object",
+          "required": ["x", "y"],
+          "additionalProperties": false,
+          "properties": {
+            "x": {"type": "number"},
+            "y": {"type": "number"},
+            "w": {"type": "number", "description": "topology layout — optional normalized width (default ~0.18)"},
+            "h": {"type": "number", "description": "topology layout — optional normalized height (default ~0.18)"}
+          }
+        }
+      }
+    },
+    "map-marker": {
+      "type": "object",
+      "description": "map scenes — a labelled point pinned at a region. `at` references a region id. `kind` picks the glyph: pin (a teardrop), dot (a circle), flag (a triangle on a stick).",
+      "required": ["id", "at", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "at": {"type": "string", "description": "a region id"},
+        "label": {"type": "string"},
+        "kind": {"enum": ["pin", "dot", "flag"]}
+      }
+    },
+    "map-connection": {
+      "type": "object",
+      "description": "map scenes — a line/arc between two regions. `kind` picks the stroke style: route (steady line), transmission (animated dash, the signal in motion), supply (thicker arrowed flow).",
+      "required": ["id", "from", "to"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "from": {"type": "string", "description": "a region id"},
+        "to": {"type": "string", "description": "a region id"},
+        "label": {"type": "string"},
+        "kind": {"enum": ["route", "transmission", "supply"]}
       }
     }
   }

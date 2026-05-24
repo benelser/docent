@@ -38,6 +38,8 @@ type Spec = {
     spans?: {id: string; from: string; to: string; label: string}[];
     // tree scene fields — only present on `type: 'tree'`.
     root?: DepthTreeNode;
+    // map scene fields — only present on `type: 'map'`.
+    regions?: {id: string; label: string; sub?: string}[];
   }[];
 };
 
@@ -266,6 +268,38 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
           ? `${trees.length} tree scene(s) carry real branching — depth encodes a classification axis`
           : `${degenerate} tree scene(s) are degenerate (every node has 0 or 1 child) — a chain is a list, not a hierarchy`,
     });
+  }
+
+  // map scenes — the `position-meaningful` contract. A map argues from
+  // *where* things sit; if regions carry no annotated `sub` text they are
+  // just dots — the position is decoration, not argument. At least 30% of
+  // regions across all map scenes must carry a non-empty `sub`. A film
+  // with no map scenes skips this check.
+  const mapScenes = spec.scenes.filter((sc) => sc.type === 'map');
+  if (mapScenes.length > 0) {
+    const allRegions = mapScenes.flatMap((sc) => sc.regions ?? []);
+    if (allRegions.length === 0) {
+      findings.push({
+        id: 'position-meaningful',
+        label: 'Position is load-bearing — regions carry annotated meaning, not just dots',
+        status: 'fail',
+        detail: 'a map scene has no regions to argue from',
+      });
+    } else {
+      const annotated = allRegions.filter(
+        (r) => typeof r.sub === 'string' && r.sub.trim().length > 0,
+      ).length;
+      const ratio = annotated / allRegions.length;
+      findings.push({
+        id: 'position-meaningful',
+        label: 'Position is load-bearing — at least 30% of regions carry annotated meaning',
+        status: ratio >= 0.3 ? 'ok' : 'fail',
+        detail:
+          ratio >= 0.3
+            ? `${annotated}/${allRegions.length} regions annotated (${Math.round(ratio * 100)}%)`
+            : `${annotated}/${allRegions.length} regions annotated (${Math.round(ratio * 100)}%) — without per-region "sub" the regions are dots, the spatial argument doesn't land`,
+      });
+    }
   }
 
   // big-idea contract — the takeaway sentence the viewer should leave with.

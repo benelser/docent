@@ -35,6 +35,7 @@ films/*
 !films/grammar-check.json
 !films/ai-lab-race.json
 !films/ai-agent-stack.json
+!films/multi-region-db.json
 analysis/*
 !analysis/linear-algebra.md
 !analysis/linear-algebra.source.md

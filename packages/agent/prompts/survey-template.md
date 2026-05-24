@@ -180,3 +180,11 @@ that restate the level above — fails the `hierarchy-meaningful` judge
 dimension and should be authored as a `progression` or `structure` instead.
 A `tree` carries a *classification* claim; a `structure` carries a *relation*
 claim. Pick the one whose shape the subject already has.
+
+If the argument depends on *where* things are (geographic, topological,
+proximity, transmission paths), reach for `map`. Position must mean
+something — not random pin placement. Distributed-system topology, supply
+chains, urban planning, military strategy, epidemiology: layouts where a
+region's *place* on the page carries the load. A map with un-annotated
+regions is decoration; depthcheck enforces a minimum annotation density
+(`position-meaningful`) and the judge scores `space-is-load-bearing`.

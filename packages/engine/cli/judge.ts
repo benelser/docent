@@ -78,6 +78,9 @@ const DEPTH_DIMENSIONS = [
   // restate the level above — fails this dimension. Films with no tree scene
   // mark this n/a.
   {id: 'hierarchy-meaningful', label: 'Hierarchy meaningful — the levels carry information; depth is not decorative'},
+  // map-scene: when the film uses a `map`, position must carry information,
+  // not just be a decorative spatial layout.
+  {id: 'space-is-load-bearing', label: 'Space is load-bearing — position carries information, not just decoration'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per
