@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art"]},
+        "type": {"enum": ["frame", "landscape", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -66,12 +66,29 @@
           "enum": ["linear", "cycle", "braided", "iterate"],
           "description": "progression scenes — the track topology: a single path (linear), a loop (cycle), two parallel lanes (braided), or a converging loop (iterate)"
         },
-        "xAxis": {"$ref": "#/$defs/axis", "description": "chart scenes — the horizontal axis domain"},
-        "yAxis": {"$ref": "#/$defs/axis", "description": "chart scenes — the vertical axis domain"},
+        "xAxis": {
+          "oneOf": [{"$ref": "#/$defs/axis"}, {"$ref": "#/$defs/landscape-axis"}],
+          "description": "chart scenes — the horizontal axis domain (numeric); landscape scenes — the horizontal trade-off (lowLabel/highLabel)"
+        },
+        "yAxis": {
+          "oneOf": [{"$ref": "#/$defs/axis"}, {"$ref": "#/$defs/landscape-axis"}],
+          "description": "chart scenes — the vertical axis domain (numeric); landscape scenes — the vertical trade-off (lowLabel/highLabel)"
+        },
         "series": {
           "type": "array",
           "description": "chart scenes — the plotted series (line / bars / point)",
           "items": {"$ref": "#/$defs/series"}
+        },
+        "subjects": {
+          "type": "array",
+          "description": "landscape scenes — the 2-8 subject markers placed at normalized {x, y} ∈ [0..1]²",
+          "minItems": 2,
+          "maxItems": 8,
+          "items": {"$ref": "#/$defs/landscape-subject"}
+        },
+        "quadrants": {
+          "$ref": "#/$defs/landscape-quadrants",
+          "description": "landscape scenes — optional phrases pinned to the four corners (TL/TR/BL/BR)"
         },
         "text": {
           "type": "string",
@@ -412,6 +429,42 @@
       "properties": {
         "dimension": {"type": "string", "description": "a dimension id from this scene's `dimensions` — the row the film lights up"},
         "statement": {"type": "string", "minLength": 1, "description": "the one-line novelty: what is new, dimensionally"}
+      }
+    },
+    "landscape-axis": {
+      "type": "object",
+      "description": "landscape scenes — one trade-off axis. NOT a numeric domain: the axis names a trade-off (`label`) with a phrase at each end (`lowLabel` at min, `highLabel` at max). Subjects are placed in normalized [0..1] space along it.",
+      "required": ["label", "lowLabel", "highLabel"],
+      "additionalProperties": false,
+      "properties": {
+        "label": {"type": "string", "minLength": 1, "description": "the trade-off the axis names (e.g. 'freedom of expression')"},
+        "lowLabel": {"type": "string", "minLength": 1, "description": "the phrase at the axis's low end (the 0 end)"},
+        "highLabel": {"type": "string", "minLength": 1, "description": "the phrase at the axis's high end (the 1 end)"}
+      }
+    },
+    "landscape-subject": {
+      "type": "object",
+      "description": "landscape scenes — one subject marker. `x` and `y` are normalized [0..1] positions on the two axes; the engine maps them to pixels. A subject may override the scene accent via its own `accent`.",
+      "required": ["id", "label", "x", "y"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id"},
+        "label": {"type": "string", "minLength": 1, "description": "the subject's short name"},
+        "sub": {"type": "string", "description": "a short caption beneath the label"},
+        "x": {"type": "number", "minimum": 0, "maximum": 1, "description": "normalized horizontal position on xAxis (0 = lowLabel end, 1 = highLabel end)"},
+        "y": {"type": "number", "minimum": 0, "maximum": 1, "description": "normalized vertical position on yAxis (0 = lowLabel end, 1 = highLabel end)"},
+        "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]}
+      }
+    },
+    "landscape-quadrants": {
+      "type": "object",
+      "description": "landscape scenes — optional labels for the four corners (TL/TR/BL/BR). Each is a short phrase shown in faded ink, naming the cell of the quadrant analysis.",
+      "additionalProperties": false,
+      "properties": {
+        "tl": {"type": "string", "description": "top-left quadrant label"},
+        "tr": {"type": "string", "description": "top-right quadrant label"},
+        "bl": {"type": "string", "description": "bottom-left quadrant label"},
+        "br": {"type": "string", "description": "bottom-right quadrant label"}
       }
     }
   }

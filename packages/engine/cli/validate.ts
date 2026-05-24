@@ -3,7 +3,7 @@
 // is a focused check of the shape the engine actually depends on.
 // schema/film.schema.json is the documented contract this mirrors.
 
-const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art'];
+const SCENE_TYPES = ['frame', 'landscape', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art'];
 const ACCENTS = ['blue', 'cyan', 'green', 'amber', 'rose', 'violet'];
 // big-idea — the closed allowlist of anchor kinds. An anchor outside this list
 // is rejected: the author picks the kind, the engine owns the pixels.
@@ -360,8 +360,14 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         }
       }
     };
-    checkAxis(sc.xAxis, `${at}.xAxis`);
-    checkAxis(sc.yAxis, `${at}.yAxis`);
+    // `xAxis`/`yAxis` on a landscape scene are a different shape — the
+    // trade-off (lowLabel/highLabel), not a numeric domain (min/max). The
+    // landscape per-scene block below checks them; skip the chart-axis check
+    // when the scene is a landscape.
+    if (sc.type !== 'landscape') {
+      checkAxis(sc.xAxis, `${at}.xAxis`);
+      checkAxis(sc.yAxis, `${at}.yAxis`);
+    }
 
     if (sc.series !== undefined && !Array.isArray(sc.series)) {
       issues.push({path: `${at}.series`, message: 'series must be an array'});
@@ -451,6 +457,91 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
           }
         }
       });
+    }
+
+    // landscape — N options plotted on M dimensions in 2-D. Axes are NOT a
+    // numeric domain; they are trade-offs with a `lowLabel`/`highLabel` phrase
+    // at each end. Subjects sit at normalized {x, y} ∈ [0..1]² — the engine
+    // maps them to pixels. HARD FAILs:
+    //   - xAxis/yAxis both required with non-empty label, lowLabel, highLabel
+    //   - 2-8 subjects
+    //   - each subject's x/y in [0..1]
+    //   - subject ids unique
+    if (sc.type === 'landscape') {
+      const checkLandscapeAxis = (axis: any, axisAt: string): void => {
+        if (!axis || typeof axis !== 'object' || Array.isArray(axis)) {
+          issues.push({
+            path: axisAt,
+            message: 'landscape requires this axis as an object {label, lowLabel, highLabel}',
+          });
+          return;
+        }
+        for (const f of ['label', 'lowLabel', 'highLabel']) {
+          if (typeof axis[f] !== 'string' || !axis[f].trim()) {
+            issues.push({
+              path: `${axisAt}.${f}`,
+              message: `landscape ${axisAt.split('.').pop()} requires a non-empty ${f}`,
+            });
+          }
+        }
+      };
+      checkLandscapeAxis(sc.xAxis, `${at}.xAxis`);
+      checkLandscapeAxis(sc.yAxis, `${at}.yAxis`);
+
+      if (!Array.isArray(sc.subjects) || sc.subjects.length < 2 || sc.subjects.length > 8) {
+        issues.push({
+          path: `${at}.subjects`,
+          message: 'landscape requires 2-8 subjects (the markers plotted on the plane)',
+        });
+      } else {
+        const subjectIds = new Set<string>();
+        sc.subjects.forEach((sub: Record<string, any>, k: number) => {
+          const subAt = `${at}.subjects[${k}]`;
+          if (!sub || typeof sub !== 'object') {
+            issues.push({path: subAt, message: 'subject must be an object {id, label, x, y, sub?, accent?}'});
+            return;
+          }
+          if (typeof sub.id !== 'string' || !sub.id.trim()) {
+            issues.push({path: `${subAt}.id`, message: 'missing or empty string'});
+          } else if (subjectIds.has(sub.id)) {
+            issues.push({path: `${subAt}.id`, message: `duplicate subject id "${sub.id}"`});
+          } else {
+            subjectIds.add(sub.id);
+          }
+          if (typeof sub.label !== 'string' || !sub.label.trim()) {
+            issues.push({path: `${subAt}.label`, message: 'missing or empty string'});
+          }
+          if (sub.sub !== undefined && (typeof sub.sub !== 'string' || !sub.sub.trim())) {
+            issues.push({path: `${subAt}.sub`, message: 'sub must be a non-empty string when present'});
+          }
+          for (const f of ['x', 'y']) {
+            if (typeof sub[f] !== 'number' || !Number.isFinite(sub[f])) {
+              issues.push({path: `${subAt}.${f}`, message: 'must be a finite number in [0..1]'});
+            } else if (sub[f] < 0 || sub[f] > 1) {
+              issues.push({
+                path: `${subAt}.${f}`,
+                message: `must be in [0..1] (got ${sub[f]}) — landscape positions are normalized`,
+              });
+            }
+          }
+          if (sub.accent !== undefined && !ACCENTS.includes(sub.accent)) {
+            issues.push({path: `${subAt}.accent`, message: `unknown accent "${sub.accent}"`});
+          }
+        });
+      }
+
+      if (sc.quadrants !== undefined) {
+        if (!sc.quadrants || typeof sc.quadrants !== 'object' || Array.isArray(sc.quadrants)) {
+          issues.push({path: `${at}.quadrants`, message: 'quadrants must be an object {tl?, tr?, bl?, br?}'});
+        } else {
+          for (const f of ['tl', 'tr', 'bl', 'br']) {
+            const v = (sc.quadrants as Record<string, any>)[f];
+            if (v !== undefined && (typeof v !== 'string' || !v.trim())) {
+              issues.push({path: `${at}.quadrants.${f}`, message: 'must be a non-empty string when present'});
+            }
+          }
+        }
+      }
     }
 
     // passage — a plain-text artifact and the spans (`marks`) to annotate on
@@ -751,6 +842,8 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       ),
       // chart — at least one series.
       chart: () => (arrLen(sc.series) < 1 ? 'chart requires at least 1 series' : null),
+      // landscape — at least 2 subjects (a single dot isn't a landscape).
+      landscape: () => (arrLen(sc.subjects) < 2 ? 'landscape requires at least 2 subjects (the markers plotted on the plane)' : null),
       // tension — at least one node (the ledger items).
       tension: () => (arrLen(sc.nodes) < 1 ? 'tension requires at least 1 node (chosen/rejected/risk)' : null),
       // demonstrate — non-empty clip reference.

@@ -131,6 +131,22 @@ old and new — including a *forward* version-skew read? How would the on-call
 engineer know it misbehaved (a metric, a log, nothing)? Rollback cost. Who
 owns this at 3am.
 
+## 6.5 The landscape — when the argument is *placement*
+
+If the subject's argument places N alternatives on a 2-D trade-off plane
+(cost vs value, simplicity vs power, latency vs throughput) — the classic
+tool-survey shape — reach for **`landscape`**. Name the two axes BEFORE
+plotting; the axes are the argument, the markers prove it. A landscape on
+"simplicity vs simplicity" is a category error; one whose subjects cluster
+is a brochure not a survey.
+
+Each axis is a trade-off, not a quantity: a `lowLabel` phrase at the min
+end, a `highLabel` phrase at the max end. Subjects sit at normalized
+{x, y} ∈ [0..1]². 2-8 subjects per scene; each placement must follow from a
+property the survey established (positions are argued, not asserted). Optional
+quadrant labels (TL/TR/BL/BR) name the four cells when they are themselves
+load-bearing — "fast & expensive" / "slow & cheap" / etc.
+
 ## 7. Verdict inputs — the recap must *rule*, not restate
 
 The film's last scene adjudicates; it never summarizes. The judge rejects a

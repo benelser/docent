@@ -97,6 +97,28 @@ makes this argument. Score these AR-only dimensions:
    - Weak: "Older replication strategies were more limited." Names no system,
      no trade-off, just praise of the subject by denying the field.
 
+### For films that use a `landscape` scene
+
+9. **Quadrant honest.** When the film places N alternatives on a 2-D trade-off
+   plane, score whether the **positions are argued, not asserted** and whether
+   the trade-off the axes name is real. A landscape is the strongest form a
+   tool/option survey can take — and the easiest to fake: anyone can drop
+   five dots in a square. The strong version makes each placement follow from
+   a property the film *already established*; the weak version reads as if
+   the dots could swap positions without changing the argument.
+
+   - Strong: "Manim sits high-freedom / low-determinism — every render is a
+     fresh Python program; Reveal.js sits low-freedom / high-determinism —
+     the deck IS the artifact." Two placements that follow from properties
+     the prior scenes named (programmability, render reproducibility).
+   - Weak: "Tool X lives in the upper-right." A position with no reason
+     attached; could be moved anywhere without changing the narration.
+   - Fail: axes that name the same trade-off twice ("simplicity vs
+     simplicity"), or subjects that cluster in one cell. The plane has
+     collapsed to a line, or the survey has no spread to argue from.
+
+   For films that don't use a `landscape` scene, mark this dimension n/a.
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the

@@ -27,6 +27,10 @@ type Spec = {
     dimensions?: {id: string; label: string}[];
     cells?: {system: string; dimension: string; mark: 'same' | 'diverges'; note: string}[];
     novelty?: {dimension: string; statement: string};
+    // landscape scene fields — only present on `type: 'landscape'`.
+    xAxis?: {label?: string; lowLabel?: string; highLabel?: string};
+    yAxis?: {label?: string; lowLabel?: string; highLabel?: string};
+    subjects?: {id: string; label: string; x: number; y: number}[];
   }[];
 };
 
@@ -217,6 +221,53 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
           : `the big-idea sentence fails the contract: ${reasons.join('; ')}`,
       });
     }
+  }
+
+  // landscape contract — every landscape scene must:
+  //   (1) name TWO DIFFERENT axes. A landscape on "simplicity vs simplicity"
+  //       is a category error — the plane has collapsed to a line.
+  //   (2) have at least one pair of subjects visually distant (max pairwise
+  //       Euclidean distance ≥ 0.4 in [0..1] space). Otherwise it's a
+  //       cluster, not a landscape: the argument the axes name doesn't land.
+  const landscapes = spec.scenes.filter((sc) => sc.type === 'landscape');
+  for (const ls of landscapes) {
+    const xLabel = (ls.xAxis?.label ?? '').trim().toLowerCase();
+    const yLabel = (ls.yAxis?.label ?? '').trim().toLowerCase();
+    const xLow = (ls.xAxis?.lowLabel ?? '').trim().toLowerCase();
+    const xHigh = (ls.xAxis?.highLabel ?? '').trim().toLowerCase();
+    const yLow = (ls.yAxis?.lowLabel ?? '').trim().toLowerCase();
+    const yHigh = (ls.yAxis?.highLabel ?? '').trim().toLowerCase();
+    const sameAxis =
+      xLabel && yLabel && xLabel === yLabel ||
+      xLow && yLow && xLow === yLow && xHigh && yHigh && xHigh === yHigh;
+    findings.push({
+      id: 'axis-asymmetric',
+      label: 'Landscape axes are asymmetric — the two trade-offs the plane names are different',
+      status: sameAxis ? 'fail' : 'ok',
+      detail: sameAxis
+        ? `landscape "${xLabel}" vs "${yLabel}" — same axis on both — the plane has collapsed to a line, not a quadrant`
+        : `axes name two distinct trade-offs ("${xLabel}" × "${yLabel}")`,
+    });
+
+    const subs = ls.subjects ?? [];
+    let maxDist = 0;
+    for (let i = 0; i < subs.length; i++) {
+      for (let j = i + 1; j < subs.length; j++) {
+        const dx = (subs[i].x ?? 0) - (subs[j].x ?? 0);
+        const dy = (subs[i].y ?? 0) - (subs[j].y ?? 0);
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d > maxDist) maxDist = d;
+      }
+    }
+    findings.push({
+      id: 'landscape-spread',
+      label: 'Landscape is a landscape, not a cluster — at least one subject is visually distant',
+      status: maxDist >= 0.4 ? 'ok' : 'fail',
+      detail:
+        maxDist >= 0.4
+          ? `max pairwise distance ${maxDist.toFixed(2)} ≥ 0.4 — the markers actually argue`
+          : `max pairwise distance ${maxDist.toFixed(2)} < 0.4 — the subjects cluster; the axes' argument doesn't land`,
+    });
   }
 
   return findings;

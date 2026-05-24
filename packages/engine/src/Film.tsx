@@ -16,6 +16,7 @@ import {DiffScene} from './scenes/DiffScene';
 import {TensionScene} from './scenes/TensionScene';
 import {RecapScene} from './scenes/RecapScene';
 import {ChartScene} from './scenes/ChartScene';
+import {LandscapeScene} from './scenes/LandscapeScene';
 import {PassageScene} from './scenes/PassageScene';
 import {FigureScene} from './scenes/FigureScene';
 import {BigIdeaScene} from './scenes/BigIdeaScene';
@@ -93,6 +94,8 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
               <RecapScene {...common} />
             ) : t === 'chart' ? (
               <ChartScene {...common} />
+            ) : t === 'landscape' ? (
+              <LandscapeScene {...common} />
             ) : t === 'passage' ? (
               <PassageScene {...common} />
             ) : t === 'figure' ? (

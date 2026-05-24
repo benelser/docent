@@ -167,6 +167,23 @@ Surface the sentence and the anchor here. The treatment writer turns this
 into the named beat in the outline; the spec author surfaces it before
 rendering.
 
+## 7.5 The landscape — when the argument is *placement*
+
+If the subject's argument places N alternatives on a 2-D trade-off plane
+(cost vs value, simplicity vs power, latency vs throughput, freedom vs
+determinism), reach for **`landscape`**. Name the two axes BEFORE plotting;
+the axes are the argument, the markers prove it. The plane fails the moment
+the axes name the same trade-off twice ("simplicity vs simplicity" — the
+quadrant has collapsed to a line) or the markers cluster — a landscape is a
+landscape only when the spread itself reads as a claim.
+
+Each axis is a trade-off, not a quantity: it carries a `lowLabel` phrase at
+the min end and a `highLabel` phrase at the max end. Subjects sit at
+normalized {x, y} ∈ [0..1]². 2-8 subjects per scene; positions are *argued*,
+not asserted (each placement should follow from a property the survey already
+established). Optional quadrant labels (TL/TR/BL/BR) name the four cells of
+the analysis when they are themselves load-bearing.
+
 ## 8. Verdict inputs — the recap must *rule*, not restate
 
 A non-code film still ends on a stated position, never "this is interesting"

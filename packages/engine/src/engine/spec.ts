@@ -169,6 +169,36 @@ export type BigIdeaAnchor = {
   value: string;
 };
 
+// landscape scenes — N options plotted on M dimensions in 2-D, the quadrant-
+// analysis primitive: cost vs value, simplicity vs power, latency vs
+// throughput. Axes are not a domain (no min/max); they are *trade-offs* with
+// a `lowLabel` at the min end and a `highLabel` at the max end. Subject
+// markers live in normalized [0..1] × [0..1] space — the spec carries
+// position-on-the-axes, the engine maps to pixels. Optional quadrant labels
+// pin a phrase to each corner (TL/TR/BL/BR) so the four cells of the
+// quadrant analysis can be named.
+export type LandscapeAxis = {
+  label: string;
+  lowLabel: string;  // text at min
+  highLabel: string; // text at max
+};
+
+export type LandscapeSubject = {
+  id: string;
+  label: string;
+  sub?: string;
+  x: number;  // 0..1 normalized
+  y: number;  // 0..1 normalized
+  accent?: string;  // optional override of scene accent
+};
+
+export type LandscapeQuadrants = {
+  tl?: string;
+  tr?: string;
+  bl?: string;
+  br?: string;
+};
+
 // quantities scenes — magnitudes as figures, or a worked numeric grid.
 export type Figure = {id: string; label: string; value: string; unit?: string; note?: string};
 export type Matrix = {rowLabels: string[]; colLabels: string[]; cells: string[][]};
@@ -266,6 +296,7 @@ export type Scene = {
   id: string;
   type:
     | 'frame'
+    | 'landscape'
     | 'structure'
     | 'progression'
     | 'walkthrough'
@@ -331,10 +362,18 @@ export type Scene = {
   // probe
   baseline?: {label: string; outcome: string};
   variations?: Variation[];
-  // chart
-  xAxis?: Axis;
-  yAxis?: Axis;
+  // chart / landscape — both scenes carry an xAxis and yAxis, but the shape
+  // differs by scene type: chart axes are numeric domains (`min`/`max`/`ticks`)
+  // and landscape axes are trade-off labels (`lowLabel`/`highLabel`). The
+  // validator pins each to its scene type; a renderer reads the variant it
+  // needs.
+  xAxis?: Axis | LandscapeAxis;
+  yAxis?: Axis | LandscapeAxis;
   series?: Series[];
+  // landscape — the subject markers placed at normalized {x, y} ∈ [0..1]², and
+  // the optional quadrant labels pinned to the four corners.
+  subjects?: LandscapeSubject[];
+  quadrants?: LandscapeQuadrants;
   // closeup
   file?: string;
   lang?: string;
