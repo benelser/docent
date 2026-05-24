@@ -3,6 +3,7 @@ import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remoti
 import {TransitionSeries, linearTiming} from '@remotion/transitions';
 import {fade} from '@remotion/transitions/fade';
 import {FILMS, buildTimeline, cutFrames, registerDefaults} from './engine/spec';
+import {resolveStyle} from './style';
 import {FrameScene} from './scenes/FrameScene';
 import {StructureScene} from './scenes/StructureScene';
 import {ProgressionScene} from './scenes/ProgressionScene';
@@ -56,6 +57,13 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
   const timeline = buildTimeline(film);
   const count = timeline.scenes.length;
   const reg = registerDefaults(film.meta.register);
+  // Resolve once per film. `resolveStyle(undefined)` returns byte-identical
+  // neutral, so a film with no `style` field is unchanged. The resolved
+  // bundle is threaded into the `common` props every scene receives so the
+  // chrome components (and, later, the scene renderers themselves) can read
+  // tokens off it. M2 and M3 will wire the scene callsites to actually pass
+  // `style={common.style}` through to each renderer.
+  const style = resolveStyle(film.style);
   const frame = useCurrentFrame();
   const {durationInFrames} = useVideoConfig();
 
@@ -72,7 +80,7 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
     <AbsoluteFill>
       <TransitionSeries>
         {timeline.scenes.flatMap((ts, i) => {
-          const common = {ts, sceneIndex: i, sceneCount: count, meta: film.meta};
+          const common = {ts, sceneIndex: i, sceneCount: count, meta: film.meta, style};
           const t = ts.scene.type;
           // The node-diagram family — `structure` and `tension` share the
           // same `nodes`/`edges`/`grid` spec, so their *skin* is swappable:

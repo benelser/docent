@@ -5,6 +5,7 @@ import {glow} from '../theme';
 import {monoFamily} from '../fonts';
 import type {Beat} from '../engine/spec';
 import {connectorPath, curvedPath, type Box} from '../engine/layout';
+import type {ResolvedStyle} from '../style';
 
 export type EdgeState = 'hidden' | 'normal' | 'dim' | 'focus';
 
@@ -31,7 +32,13 @@ export const Connector: React.FC<{
   strength?: 'necessary' | 'contributing';
   label?: string;
   cadence?: Beat['cadence'];
-}> = ({from, to, accentHex, state, enterFrame, kind, strength, label, cadence}) => {
+  style: ResolvedStyle;
+}> = ({from, to, accentHex, state, enterFrame, kind, strength, label, cadence, style}) => {
+  // `style` is reserved for future token use (stroke widths, accent lookups).
+  // Today Connector only consumes accentHex + glow; the prop threads the
+  // resolved style through the chrome layer so M2/M3 can adopt it without
+  // a second signature change.
+  void style;
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const local = frame - enterFrame;

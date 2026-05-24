@@ -1,8 +1,9 @@
 import React, {useMemo} from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remotion';
-import {theme, glow} from '../theme';
+import {glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import type {CameraState} from '../engine/camera';
+import type {ResolvedStyle} from '../style';
 
 // Seeded RNG so the starfield is identical every render.
 const rng = (seed: number) => () => {
@@ -58,8 +59,10 @@ export const SceneFrame: React.FC<{
   // outer fill goes transparent — caller's backdrop shows through, and
   // the chrome (kicker/heading/progress/wordmark) still draws on top.
   transparentBackdrop?: boolean;
+  style: ResolvedStyle;
   children?: React.ReactNode;
-}> = ({accentHex, kicker, heading, sceneIndex, sceneCount, cam, glowScale = 1, transparentBackdrop, children}) => {
+}> = ({accentHex, kicker, heading, sceneIndex, sceneCount, cam, glowScale = 1, transparentBackdrop, style, children}) => {
+  const {bg, ink} = style.tokens;
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const intro = interpolate(frame, [0, 18], [0, 1], {
@@ -79,7 +82,7 @@ export const SceneFrame: React.FC<{
   );
 
   return (
-    <AbsoluteFill style={{backgroundColor: transparentBackdrop ? 'transparent' : theme.bg.base, fontFamily: interFamily}}>
+    <AbsoluteFill style={{backgroundColor: transparentBackdrop ? 'transparent' : bg.base, fontFamily: interFamily}}>
       {/* deep starfield — the farthest layer, barely parallaxes */}
       <AbsoluteFill style={{transformOrigin: '50% 50%', transform: par(cam, 0.1)}}>
         <svg width="100%" height="100%" viewBox="0 0 1920 1080">
@@ -94,7 +97,7 @@ export const SceneFrame: React.FC<{
         style={{
           transformOrigin: '50% 50%',
           transform: par(cam, 0.26),
-          backgroundImage: `radial-gradient(${theme.bg.line} 1.15px, transparent 1.15px)`,
+          backgroundImage: `radial-gradient(${bg.line} 1.15px, transparent 1.15px)`,
           backgroundSize: '46px 46px',
           opacity: 0.26,
         }}
@@ -144,7 +147,7 @@ export const SceneFrame: React.FC<{
       {/* vignette */}
       <AbsoluteFill
         style={{
-          background: `radial-gradient(ellipse 74% 66% at 50% 44%, transparent 38%, ${theme.bg.void}e0 100%)`,
+          background: `radial-gradient(ellipse 74% 66% at 50% 44%, transparent 38%, ${bg.void}e0 100%)`,
         }}
       />
 
@@ -194,7 +197,7 @@ export const SceneFrame: React.FC<{
                 : heading.length <= 64 ? 40
                 : 34,
               fontWeight: 700,
-              color: theme.ink.hi,
+              color: ink.hi,
               marginTop: 14,
               letterSpacing: -0.5,
               maxWidth: 1680,
@@ -215,7 +218,7 @@ export const SceneFrame: React.FC<{
               width: i === sceneIndex ? 42 : 20,
               height: 4,
               borderRadius: 2,
-              background: i <= sceneIndex ? accentHex : theme.bg.line,
+              background: i <= sceneIndex ? accentHex : bg.line,
               boxShadow: i === sceneIndex ? `0 0 10px ${accentHex}` : 'none',
             }}
           />
@@ -228,7 +231,7 @@ export const SceneFrame: React.FC<{
           bottom: 62,
           fontFamily: monoFamily,
           fontSize: 17,
-          color: theme.ink.faint,
+          color: ink.faint,
           letterSpacing: 3,
         }}
       >
