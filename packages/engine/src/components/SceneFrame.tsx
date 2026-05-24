@@ -52,8 +52,14 @@ export const SceneFrame: React.FC<{
   sceneCount: number;
   cam?: CameraState;
   glowScale?: number;
+  // When a caller paints its own backdrop *behind* SceneFrame (e.g. the
+  // whiteboard/sketch BigIdeaScene), SceneFrame must NOT paint its dark
+  // theme color over that backdrop. Set transparentBackdrop=true and the
+  // outer fill goes transparent — caller's backdrop shows through, and
+  // the chrome (kicker/heading/progress/wordmark) still draws on top.
+  transparentBackdrop?: boolean;
   children?: React.ReactNode;
-}> = ({accentHex, kicker, heading, sceneIndex, sceneCount, cam, glowScale = 1, children}) => {
+}> = ({accentHex, kicker, heading, sceneIndex, sceneCount, cam, glowScale = 1, transparentBackdrop, children}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const intro = interpolate(frame, [0, 18], [0, 1], {
@@ -73,7 +79,7 @@ export const SceneFrame: React.FC<{
   );
 
   return (
-    <AbsoluteFill style={{backgroundColor: theme.bg.base, fontFamily: interFamily}}>
+    <AbsoluteFill style={{backgroundColor: transparentBackdrop ? 'transparent' : theme.bg.base, fontFamily: interFamily}}>
       {/* deep starfield — the farthest layer, barely parallaxes */}
       <AbsoluteFill style={{transformOrigin: '50% 50%', transform: par(cam, 0.1)}}>
         <svg width="100%" height="100%" viewBox="0 0 1920 1080">

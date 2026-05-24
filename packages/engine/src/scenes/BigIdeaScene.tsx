@@ -389,6 +389,7 @@ export const BigIdeaScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount})
           sceneIndex={sceneIndex}
           sceneCount={sceneCount}
           glowScale={isLight ? 0 : 0.6}
+          transparentBackdrop
         >
           {body}
         </SceneFrame>
