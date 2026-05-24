@@ -6,7 +6,8 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import {accent, theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {DesignTokens, ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {Narration} from '../components/Narration';
 import {STAGE, resolveLayout} from '../engine/layout';
@@ -76,20 +77,24 @@ type Register = {
   brandLetterSpacing: number;
 };
 
-const SKETCH: Register = {
-  base: theme.bg.base,
-  surface: theme.bg.panel,
-  surfaceHi: theme.bg.panelHi,
+// The sketch (dark) register is built from the active token bundle so a
+// preset switch (e.g. paper → engineering) re-skins the ledger without code
+// changes. The verdict accent hexes (chosen green, risk rose) read from
+// `tokens.accent` so they track the palette family too.
+const buildSketch = (tokens: DesignTokens): Register => ({
+  base: tokens.bg.base,
+  surface: tokens.bg.panel,
+  surfaceHi: tokens.bg.panelHi,
   surfaceDim: '#0e1218',
-  divider: theme.bg.line,
-  hairline: theme.bg.line,
-  inkHi: theme.ink.hi,
-  inkMid: theme.ink.mid,
-  inkLow: theme.ink.low,
-  inkFaint: theme.ink.faint,
-  inkChosen: '#5fe8a4', // ACCENTS.green
+  divider: tokens.bg.line,
+  hairline: tokens.bg.line,
+  inkHi: tokens.ink.hi,
+  inkMid: tokens.ink.mid,
+  inkLow: tokens.ink.low,
+  inkFaint: tokens.ink.faint,
+  inkChosen: tokens.accent.green,
   inkRejected: '#8c98ad', // a cool graphite — visibly desaturated
-  inkRisk: '#ff7d97', // ACCENTS.rose
+  inkRisk: tokens.accent.rose,
   cardShadow: `0 18px 44px -24px #000000cc, inset 0 1px 0 ${glow('#ffffff', 0.04)}`,
   // The sketch register computes its focus shadow inline (the accent glow
   // breathes with the active beat), so this is only a non-empty fallback for
@@ -100,7 +105,7 @@ const SKETCH: Register = {
   headingFamily: interFamily,
   brandFamily: monoFamily,
   brandLetterSpacing: 3,
-};
+});
 
 const WHITEBOARD: Register = {
   base: '#f4eedf', // warm cream paper
@@ -751,7 +756,11 @@ const STARS = (() => {
   }));
 })();
 
-const SketchBackdrop: React.FC<{accentHex: string}> = ({accentHex}) => (
+const SketchBackdrop: React.FC<{
+  accentHex: string;
+  bgLine: string;
+  bgVoid: string;
+}> = ({accentHex, bgLine, bgVoid}) => (
   <>
     {/* starfield */}
     <AbsoluteFill>
@@ -764,7 +773,7 @@ const SketchBackdrop: React.FC<{accentHex: string}> = ({accentHex}) => (
     {/* dotted grid */}
     <AbsoluteFill
       style={{
-        backgroundImage: `radial-gradient(${theme.bg.line} 1.15px, transparent 1.15px)`,
+        backgroundImage: `radial-gradient(${bgLine} 1.15px, transparent 1.15px)`,
         backgroundSize: '46px 46px',
         opacity: 0.22,
       }}
@@ -794,7 +803,7 @@ const SketchBackdrop: React.FC<{accentHex: string}> = ({accentHex}) => (
     {/* vignette */}
     <AbsoluteFill
       style={{
-        background: `radial-gradient(ellipse 74% 66% at 50% 44%, transparent 38%, ${theme.bg.void}e0 100%)`,
+        background: `radial-gradient(ellipse 74% 66% at 50% 44%, transparent 38%, ${bgVoid}e0 100%)`,
       }}
     />
   </>
@@ -910,15 +919,23 @@ const VsDivider: React.FC<{
 
 // ----- the scene ------------------------------------------------------------
 
-export const TensionScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount}) => {
+export const TensionScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
+  ts,
+  sceneIndex,
+  sceneCount,
+  style,
+}) => {
   const frame = useCurrentFrame();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const {bg, accent: accentTokens} = style.tokens;
+  const accentOf = (k?: string): string =>
+    (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
+  const accentHex = accentOf(scene.accent);
   // Whiteboard treatment swaps the entire register: paper backdrop, dark ink,
   // drop-shadow cards. Anything else (sketch, or no treatment on a tension
   // scene) renders the dark contemplative register.
   const isWhiteboard = scene.treatment === 'whiteboard';
-  const reg = isWhiteboard ? WHITEBOARD : SKETCH;
+  const reg = isWhiteboard ? WHITEBOARD : buildSketch(style.tokens);
 
   // The spec keeps its grid (we still honour `wide` collisions through
   // resolveLayout so a malformed grid is still safe), but our placement
@@ -998,7 +1015,11 @@ export const TensionScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount})
         fontFamily: interFamily,
       }}
     >
-      {isWhiteboard ? <WhiteboardBackdrop /> : <SketchBackdrop accentHex={accentHex} />}
+      {isWhiteboard ? (
+        <WhiteboardBackdrop />
+      ) : (
+        <SketchBackdrop accentHex={accentHex} bgLine={bg.line} bgVoid={bg.void} />
+      )}
 
       {/* upper-ledger column headers */}
       <ColumnHeader
@@ -1048,7 +1069,7 @@ export const TensionScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount})
         <LedgerCard
           key={slot.node.id}
           slot={slot}
-          accentHex={accent(slot.node.accent ?? scene.accent)}
+          accentHex={accentOf(slot.node.accent ?? scene.accent)}
           state={stateOf(slot.node.id)}
           enterFrame={revealOf(slot.node.id)}
           reg={reg}
@@ -1066,7 +1087,7 @@ export const TensionScene: React.FC<SceneProps> = ({ts, sceneIndex, sceneCount})
         sceneIndex={sceneIndex}
         sceneCount={sceneCount}
         intro={intro}
-        progressDim={isWhiteboard ? '#d6cdb6' : theme.bg.line}
+        progressDim={isWhiteboard ? '#d6cdb6' : bg.line}
       />
 
       <Narration beats={ts.beats} />

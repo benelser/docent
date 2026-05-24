@@ -1,6 +1,7 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -35,14 +36,16 @@ import {paletteGlowScale, paletteSceneHex} from '../engine/knobs';
 // paper backdrop tint. The renderer remains crisp shapes — the position
 // argument is the load-bearing affordance, not the visual skin.
 
-export const MapScene: React.FC<SceneProps> = ({
+export const MapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  const {bg, ink} = style.tokens;
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const glowScale = paletteGlowScale(scene.palette);
   const layout: 'topology' | 'grid' = scene.layout ?? 'topology';
@@ -164,10 +167,10 @@ export const MapScene: React.FC<SceneProps> = ({
           opacity: a * (dim ? 0.36 : 1),
           transform: `scale(${interpolate(a, [0, 1], [0.94, 1])})`,
           borderRadius: isGrid ? 10 : Math.min(rect.w, rect.h) * 0.32,
-          border: `${st === 'focus' ? 2.5 : 1.5}px solid ${lit ? accentHex : theme.bg.lineHi}`,
+          border: `${st === 'focus' ? 2.5 : 1.5}px solid ${lit ? accentHex : bg.lineHi}`,
           background: lit
-            ? `radial-gradient(ellipse at 50% 40%, ${glow(accentHex, 0.32 * glowScale)} 0%, ${glow(accentHex, 0.08 * glowScale)} 60%, ${theme.bg.panel} 100%)`
-            : `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
+            ? `radial-gradient(ellipse at 50% 40%, ${glow(accentHex, 0.32 * glowScale)} 0%, ${glow(accentHex, 0.08 * glowScale)} 60%, ${bg.panel} 100%)`
+            : `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
           boxShadow: dim
             ? 'none'
             : st === 'focus'
@@ -186,7 +189,7 @@ export const MapScene: React.FC<SceneProps> = ({
             fontFamily: interFamily,
             fontSize: rect.h > 120 ? 24 : 19,
             fontWeight: 600,
-            color: lit ? theme.ink.hi : theme.ink.mid,
+            color: lit ? ink.hi : ink.mid,
             letterSpacing: -0.2,
             lineHeight: 1.15,
           }}
@@ -198,7 +201,7 @@ export const MapScene: React.FC<SceneProps> = ({
             style={{
               fontFamily: interFamily,
               fontSize: rect.h > 120 ? 15 : 13,
-              color: lit ? theme.ink.low : theme.ink.faint,
+              color: lit ? ink.low : ink.faint,
               marginTop: 5,
               lineHeight: 1.32,
               maxWidth: rect.w - 24,
@@ -229,7 +232,7 @@ export const MapScene: React.FC<SceneProps> = ({
         : spring({frame: local, fps, config: {damping: 200, mass: 0.8}});
     const lit = st === 'focus' || st === 'live';
     const dim = st === 'dim';
-    const stroke = lit ? accentHex : theme.ink.faint;
+    const stroke = lit ? accentHex : ink.faint;
     const kind = c.kind ?? 'route';
     const isTransmission = kind === 'transmission';
     const isSupply = kind === 'supply';
@@ -301,7 +304,7 @@ export const MapScene: React.FC<SceneProps> = ({
             fontFamily={monoFamily}
             fontSize={15}
             letterSpacing={1}
-            fill={lit ? theme.ink.mid : theme.ink.faint}
+            fill={lit ? ink.mid : ink.faint}
             opacity={a}
           >
             {c.label}
@@ -372,7 +375,7 @@ export const MapScene: React.FC<SceneProps> = ({
                 transform: 'rotate(-45deg)',
                 background: accentHex,
                 boxShadow: lit && !dim ? `0 0 14px ${glow(accentHex, 0.85)}` : 'none',
-                border: `1.5px solid ${theme.bg.void}`,
+                border: `1.5px solid ${bg.void}`,
               }}
             />
             <div
@@ -383,7 +386,7 @@ export const MapScene: React.FC<SceneProps> = ({
                 width: 8,
                 height: 8,
                 borderRadius: '50%',
-                background: theme.bg.void,
+                background: bg.void,
               }}
             />
           </div>
@@ -401,7 +404,7 @@ export const MapScene: React.FC<SceneProps> = ({
             <polygon
               points={`4,3 22,8 4,14`}
               fill={accentHex}
-              stroke={theme.bg.void}
+              stroke={bg.void}
               strokeWidth={0.8}
             />
           </svg>
@@ -413,7 +416,7 @@ export const MapScene: React.FC<SceneProps> = ({
               height: 16,
               borderRadius: '50%',
               background: accentHex,
-              border: `2px solid ${theme.bg.void}`,
+              border: `2px solid ${bg.void}`,
               boxShadow: lit && !dim ? `0 0 12px ${glow(accentHex, 0.85)}` : 'none',
             }}
           />
@@ -427,12 +430,12 @@ export const MapScene: React.FC<SceneProps> = ({
             fontFamily: interFamily,
             fontSize: 16,
             fontWeight: 600,
-            color: lit ? theme.ink.hi : theme.ink.low,
-            background: `${theme.bg.panel}d8`,
+            color: lit ? ink.hi : ink.low,
+            background: `${bg.panel}d8`,
             padding: '2px 8px',
             borderRadius: 6,
             whiteSpace: 'nowrap',
-            border: `1px solid ${lit ? glow(accentHex, 0.5) : theme.bg.line}`,
+            border: `1px solid ${lit ? glow(accentHex, 0.5) : bg.line}`,
           }}
         >
           {m.label}
@@ -478,7 +481,7 @@ export const MapScene: React.FC<SceneProps> = ({
             height={STAGE.h + 24}
             rx={16}
             fill="none"
-            stroke={theme.bg.line}
+            stroke={bg.line}
             strokeWidth={1}
             strokeDasharray="2 6"
             opacity={0.4}
@@ -494,7 +497,7 @@ export const MapScene: React.FC<SceneProps> = ({
                     y1={STAGE.y}
                     x2={x}
                     y2={STAGE.y + STAGE.h}
-                    stroke={theme.bg.lineHi}
+                    stroke={bg.lineHi}
                     strokeWidth={1}
                   />
                 );
@@ -508,7 +511,7 @@ export const MapScene: React.FC<SceneProps> = ({
                     y1={y}
                     x2={STAGE.x + STAGE.w}
                     y2={y}
-                    stroke={theme.bg.lineHi}
+                    stroke={bg.lineHi}
                     strokeWidth={1}
                   />
                 );

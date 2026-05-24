@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {accent, theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -93,14 +94,18 @@ const arcPath = (
   return {d: `M ${start.x} ${start.y} Q ${cx} ${cy} ${end.x} ${end.y}`, mid: {x: cx, y: cy}};
 };
 
-export const CausalLoopScene: React.FC<SceneProps> = ({
+export const CausalLoopScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
+  const {bg, ink, accent: accentTokens} = style.tokens;
+  const accentOf = (k?: string): string =>
+    (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
   const accentHex = paletteSceneHex(scene.palette, scene.accent);
   const variables: CausalVariable[] = scene.variables ?? [];
   const edges: CausalEdge[] = scene.causalEdges ?? [];
@@ -144,7 +149,7 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
   // StructureScene's nodes. Authors who pin a single accent get a unified
   // ring; signal/cool/warm spreads spread it.
   const variableHex = (i: number): string =>
-    accent(paletteAccentKey(scene.palette, scene.accent, undefined, i));
+    accentOf(paletteAccentKey(scene.palette, scene.accent, undefined, i));
 
   // A variable's eased 0..1 entrance progress. Mirrors Card's appear logic.
   // An id that no beat has revealed yet sits at 0 — invisible.
@@ -239,7 +244,7 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
                     cx={glyphX}
                     cy={glyphY}
                     r={15}
-                    fill={theme.bg.base}
+                    fill={bg.base}
                     stroke={isPositive ? accentHex : '#ff7d97'}
                     strokeWidth={1.8}
                   />
@@ -265,9 +270,9 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
                     fontFamily={monoFamily}
                     fontSize={14}
                     letterSpacing={0.2}
-                    fill={theme.ink.mid}
+                    fill={ink.mid}
                     opacity={draw}
-                    stroke={theme.bg.base}
+                    stroke={bg.base}
                     strokeWidth={3}
                     paintOrder="stroke"
                   >
@@ -314,7 +319,7 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
                   cx={cx}
                   cy={cy}
                   r={30 * scale}
-                  fill={theme.bg.base}
+                  fill={bg.base}
                   stroke={labelHex}
                   strokeWidth={2.2}
                   opacity={0.95}
@@ -340,8 +345,8 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
                     fontFamily={monoFamily}
                     fontSize={15}
                     letterSpacing={0.8}
-                    fill={theme.ink.mid}
-                    stroke={theme.bg.base}
+                    fill={ink.mid}
+                    stroke={bg.base}
                     strokeWidth={3}
                     paintOrder="stroke"
                   >
@@ -381,8 +386,8 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
                 opacity,
                 transform: `scale(${scale})`,
                 borderRadius: '50%',
-                background: `radial-gradient(120% 140% at 30% 30%, ${glow(hex, 0.16)} 0%, ${theme.bg.panelHi} 50%, ${theme.bg.panel} 100%)`,
-                border: `2px solid ${focused ? hex : theme.bg.line}`,
+                background: `radial-gradient(120% 140% at 30% 30%, ${glow(hex, 0.16)} 0%, ${bg.panelHi} 50%, ${bg.panel} 100%)`,
+                border: `2px solid ${focused ? hex : bg.line}`,
                 boxShadow: focused
                   ? `0 0 0 1px ${glow(hex, 0.35)}, 0 0 ${28 + breathe * 18}px ${glow(hex, 0.65)}`
                   : `0 12px 36px -16px #000000cc`,
@@ -405,7 +410,7 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
                     : v.label.length <= 20 ? 14
                     : 12,
                   fontWeight: 600,
-                  color: theme.ink.hi,
+                  color: ink.hi,
                   letterSpacing: -0.2,
                   lineHeight: 1.1,
                   maxWidth: NODE_R * 2 - 16,
@@ -418,7 +423,7 @@ export const CausalLoopScene: React.FC<SceneProps> = ({
                   style={{
                     fontFamily: monoFamily,
                     fontSize: 11,
-                    color: focused ? theme.ink.mid : theme.ink.low,
+                    color: focused ? ink.mid : ink.low,
                     letterSpacing: 0.2,
                     lineHeight: 1.15,
                     maxWidth: NODE_R * 2 - 16,

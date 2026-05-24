@@ -1,7 +1,8 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {evolvePath} from '@remotion/paths';
-import {accent, theme, glow} from '../theme';
+import {glow} from '../theme';
+import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
@@ -44,15 +45,20 @@ const fmtTick = (v: number, span: number): string => {
   return Number.isInteger(r) ? String(r) : r.toFixed(1);
 };
 
-export const ChartScene: React.FC<SceneProps> = ({
+export const ChartScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
   sceneCount,
+  style,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accent(scene.accent);
+  const {bg, ink, accent: accentTokens} = style.tokens;
+  const viz = style.visualization;
+  const accentOf = (k?: string): string =>
+    (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
+  const accentHex = accentOf(scene.accent);
   // ChartScene reads its OWN axis variant — the numeric domain. Narrow the
   // widened `Axis | LandscapeAxis` via the `kind` discriminator; the
   // validator pins `kind === 'chart'` on every chart scene's axes.
@@ -179,7 +185,7 @@ export const ChartScene: React.FC<SceneProps> = ({
   // tweened value — `tweenValue` keyed on `chart:<seriesId>:<i>` if a beat
   // drives it, else a default grow 0 → datum on the series' reveal beat.
   const barColor = (s: Series): string =>
-    s.accent ? accent(s.accent) : accentHex;
+    s.accent ? accentOf(s.accent) : accentHex;
 
   return (
     <SceneFrame
@@ -195,7 +201,11 @@ export const ChartScene: React.FC<SceneProps> = ({
           viewBox="0 0 1920 1080"
         >
           {/* ---- gridlines ---- */}
-          {yTicks.map((t, i) => {
+          {/* `visualization.gridLines` (a style knob) gates these. When the
+              caller pins it false, the chart drops both grid axes — the
+              ticks still render. Default is true so the historic look is
+              preserved. */}
+          {viz.gridLines ? yTicks.map((t, i) => {
             const p = worldToScreen(xAxis.min, t);
             return (
               <line
@@ -204,13 +214,13 @@ export const ChartScene: React.FC<SceneProps> = ({
                 y1={p.y}
                 x2={xEnd.x}
                 y2={p.y}
-                stroke={theme.bg.line}
+                stroke={bg.line}
                 strokeWidth={1}
                 opacity={0.55 * intro}
               />
             );
-          })}
-          {xTicks.map((t, i) => {
+          }) : null}
+          {viz.gridLines ? xTicks.map((t, i) => {
             const p = worldToScreen(t, yAxis.min);
             return (
               <line
@@ -219,12 +229,12 @@ export const ChartScene: React.FC<SceneProps> = ({
                 y1={origin.y}
                 x2={p.x}
                 y2={yEnd.y}
-                stroke={theme.bg.line}
+                stroke={bg.line}
                 strokeWidth={1}
                 opacity={0.55 * intro}
               />
             );
-          })}
+          }) : null}
 
           {/* ---- axes ---- */}
           <line
@@ -232,7 +242,7 @@ export const ChartScene: React.FC<SceneProps> = ({
             y1={origin.y}
             x2={xEnd.x}
             y2={xEnd.y}
-            stroke={theme.ink.low}
+            stroke={ink.low}
             strokeWidth={2.5}
             strokeLinecap="round"
             opacity={intro}
@@ -242,14 +252,17 @@ export const ChartScene: React.FC<SceneProps> = ({
             y1={origin.y}
             x2={yEnd.x}
             y2={yEnd.y}
-            stroke={theme.ink.low}
+            stroke={ink.low}
             strokeWidth={2.5}
             strokeLinecap="round"
             opacity={intro}
           />
 
           {/* ---- x tick labels ---- */}
-          {xTicks.map((t, i) => {
+          {/* `visualization.axisLabels` (a style knob) gates the numeric tick
+              labels on both axes. Axis *titles* (the x/y label strings) stay
+              — they're the scene's own data, not chrome. Default is true. */}
+          {viz.axisLabels ? xTicks.map((t, i) => {
             const p = worldToScreen(t, yAxis.min);
             return (
               <text
@@ -259,15 +272,15 @@ export const ChartScene: React.FC<SceneProps> = ({
                 textAnchor="middle"
                 fontFamily={monoFamily}
                 fontSize={17}
-                fill={theme.ink.low}
+                fill={ink.low}
                 opacity={intro}
               >
                 {fmtTick(t, xSpan)}
               </text>
             );
-          })}
+          }) : null}
           {/* ---- y tick labels ---- */}
-          {yTicks.map((t, i) => {
+          {viz.axisLabels ? yTicks.map((t, i) => {
             const p = worldToScreen(xAxis.min, t);
             return (
               <text
@@ -277,13 +290,13 @@ export const ChartScene: React.FC<SceneProps> = ({
                 textAnchor="end"
                 fontFamily={monoFamily}
                 fontSize={17}
-                fill={theme.ink.low}
+                fill={ink.low}
                 opacity={intro}
               >
                 {fmtTick(t, ySpan)}
               </text>
             );
-          })}
+          }) : null}
 
           {/* ---- axis titles ---- */}
           <text
@@ -293,7 +306,7 @@ export const ChartScene: React.FC<SceneProps> = ({
             fontFamily={interFamily}
             fontSize={19}
             fontWeight={600}
-            fill={theme.ink.mid}
+            fill={ink.mid}
             opacity={intro}
           >
             {xAxis.label}
@@ -305,7 +318,7 @@ export const ChartScene: React.FC<SceneProps> = ({
             fontFamily={interFamily}
             fontSize={19}
             fontWeight={600}
-            fill={theme.ink.mid}
+            fill={ink.mid}
             opacity={intro}
             transform={`rotate(-90 ${STAGE.x + 22} ${(origin.y + yEnd.y) / 2})`}
           >
@@ -351,7 +364,10 @@ export const ChartScene: React.FC<SceneProps> = ({
           {series
             .filter((s) => s.kind === 'bars')
             .map((s) => {
-              const data = (s.data ?? []).slice(0, 8);
+              // `visualization.maxLabelsPerSeries` clamps how many bars (and
+              // therefore datum labels) a series can show. Default 8 matches
+              // the historic cap; an executive preset narrows it.
+              const data = (s.data ?? []).slice(0, viz.maxLabelsPerSeries);
               if (data.length === 0) return null;
               const rf = revealOf(s.id);
               if (frame < rf) return null;
@@ -412,7 +428,7 @@ export const ChartScene: React.FC<SceneProps> = ({
                           fontFamily={monoFamily}
                           fontSize={20}
                           fontWeight={600}
-                          fill={theme.ink.hi}
+                          fill={ink.hi}
                           opacity={hPx > 4 ? 1 : 0}
                         >
                           {Math.abs(value % 1) < 1e-6
@@ -426,7 +442,7 @@ export const ChartScene: React.FC<SceneProps> = ({
                           textAnchor="middle"
                           fontFamily={interFamily}
                           fontSize={17}
-                          fill={theme.ink.mid}
+                          fill={ink.mid}
                           opacity={intro}
                         >
                           {d.label}
@@ -487,7 +503,7 @@ export const ChartScene: React.FC<SceneProps> = ({
                     cy={p.y}
                     r={focused ? 11 : 9}
                     fill={col}
-                    stroke={theme.bg.base}
+                    stroke={bg.base}
                     strokeWidth={3}
                     style={{
                       filter: `drop-shadow(0 0 ${10 + breathe * 12}px ${glow(col, 0.8)})`,
