@@ -3,7 +3,9 @@
 // is a focused check of the shape the engine actually depends on.
 // schema/film.schema.json is the documented contract this mirrors.
 
-const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art'];
+import {parseTimelineDate} from '../src/engine/time';
+
+const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art', 'timeline'];
 const ACCENTS = ['blue', 'cyan', 'green', 'amber', 'rose', 'violet'];
 // big-idea — the closed allowlist of anchor kinds. An anchor outside this list
 // is rejected: the author picks the kind, the engine owns the pixels.
@@ -713,6 +715,197 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       }
     }
 
+    // timeline — events plotted on a real date axis. The HARD-FAIL contracts:
+    //   - axis.start, axis.end parse as dates; end > start
+    //   - every event's date parses, lies in [start, end]
+    //   - every span's from/to parse, from <= to, both in [start, end]
+    //   - event/span ids unique within the scene
+    //   - axis.ticks (if present) each parse as dates
+    // Phrases like "early 2024" or "during the war" fail the date parser —
+    // the time axis is load-bearing, the dates must be real.
+    if (sc.type === 'timeline') {
+      let axisStartMs: number | null = null;
+      let axisEndMs: number | null = null;
+      if (!sc.axis || typeof sc.axis !== 'object' || Array.isArray(sc.axis)) {
+        issues.push({path: `${at}.axis`, message: 'timeline requires an axis {start, end, ticks?}'});
+      } else {
+        if (typeof sc.axis.start !== 'string' || !sc.axis.start.trim()) {
+          issues.push({path: `${at}.axis.start`, message: 'missing or empty start date'});
+        } else {
+          axisStartMs = parseTimelineDate(sc.axis.start);
+          if (axisStartMs === null) {
+            issues.push({
+              path: `${at}.axis.start`,
+              message: `axis.start "${sc.axis.start}" is not a parseable date — use ISO "YYYY-MM-DD", month-year "Jun 2025" / "2025-06", or year-only "1914"`,
+            });
+          }
+        }
+        if (typeof sc.axis.end !== 'string' || !sc.axis.end.trim()) {
+          issues.push({path: `${at}.axis.end`, message: 'missing or empty end date'});
+        } else {
+          axisEndMs = parseTimelineDate(sc.axis.end);
+          if (axisEndMs === null) {
+            issues.push({
+              path: `${at}.axis.end`,
+              message: `axis.end "${sc.axis.end}" is not a parseable date — use ISO "YYYY-MM-DD", month-year "Jun 2025" / "2025-06", or year-only "1914"`,
+            });
+          }
+        }
+        if (axisStartMs !== null && axisEndMs !== null && axisEndMs <= axisStartMs) {
+          issues.push({
+            path: `${at}.axis.end`,
+            message: `axis.end (${sc.axis.end}) must lie strictly after axis.start (${sc.axis.start})`,
+          });
+        }
+        if (sc.axis.ticks !== undefined) {
+          if (!Array.isArray(sc.axis.ticks)) {
+            issues.push({path: `${at}.axis.ticks`, message: 'ticks must be an array of date strings'});
+          } else {
+            sc.axis.ticks.forEach((tk: unknown, ti: number) => {
+              if (typeof tk !== 'string' || !tk.trim()) {
+                issues.push({path: `${at}.axis.ticks[${ti}]`, message: 'tick must be a non-empty date string'});
+                return;
+              }
+              const ms = parseTimelineDate(tk);
+              if (ms === null) {
+                issues.push({
+                  path: `${at}.axis.ticks[${ti}]`,
+                  message: `tick "${tk}" is not a parseable date`,
+                });
+              } else if (axisStartMs !== null && axisEndMs !== null && (ms < axisStartMs || ms > axisEndMs)) {
+                issues.push({
+                  path: `${at}.axis.ticks[${ti}]`,
+                  message: `tick "${tk}" falls outside the axis [${sc.axis.start}, ${sc.axis.end}]`,
+                });
+              }
+            });
+          }
+        }
+      }
+
+      const tlIds = new Set<string>();
+      // events
+      if (sc.events !== undefined && !Array.isArray(sc.events)) {
+        issues.push({path: `${at}.events`, message: 'events must be an array'});
+      } else if (Array.isArray(sc.events)) {
+        sc.events.forEach((e: Record<string, any>, k: number) => {
+          const eAt = `${at}.events[${k}]`;
+          if (!e || typeof e !== 'object') {
+            issues.push({path: eAt, message: 'event must be an object {id, date, label, sub?, lane?}'});
+            return;
+          }
+          if (typeof e.id !== 'string' || !e.id.trim()) {
+            issues.push({path: `${eAt}.id`, message: 'missing or empty string'});
+          } else if (tlIds.has(e.id)) {
+            issues.push({path: `${eAt}.id`, message: `duplicate timeline id "${e.id}"`});
+          } else {
+            tlIds.add(e.id);
+          }
+          if (typeof e.label !== 'string' || !e.label.trim()) {
+            issues.push({path: `${eAt}.label`, message: 'missing or empty string'});
+          }
+          if (e.sub !== undefined && (typeof e.sub !== 'string' || !e.sub.trim())) {
+            issues.push({path: `${eAt}.sub`, message: 'sub must be a non-empty string when present'});
+          }
+          if (e.lane !== undefined && (typeof e.lane !== 'number' || !Number.isInteger(e.lane) || e.lane < 0)) {
+            issues.push({path: `${eAt}.lane`, message: 'lane must be a non-negative integer'});
+          }
+          if (typeof e.date !== 'string' || !e.date.trim()) {
+            issues.push({path: `${eAt}.date`, message: 'missing or empty date string'});
+          } else {
+            const ms = parseTimelineDate(e.date);
+            if (ms === null) {
+              issues.push({
+                path: `${eAt}.date`,
+                message: `date "${e.date}" is not parseable — phrases like "early 2024" or "during the war" are rejected; use a real date`,
+              });
+            } else if (axisStartMs !== null && axisEndMs !== null && (ms < axisStartMs || ms > axisEndMs)) {
+              issues.push({
+                path: `${eAt}.date`,
+                message: `event date "${e.date}" falls outside the axis [${sc.axis?.start}, ${sc.axis?.end}]`,
+              });
+            }
+          }
+        });
+      }
+
+      // spans
+      if (sc.spans !== undefined && !Array.isArray(sc.spans)) {
+        issues.push({path: `${at}.spans`, message: 'spans must be an array'});
+      } else if (Array.isArray(sc.spans)) {
+        sc.spans.forEach((sp: Record<string, any>, k: number) => {
+          const sAt = `${at}.spans[${k}]`;
+          if (!sp || typeof sp !== 'object') {
+            issues.push({path: sAt, message: 'span must be an object {id, from, to, label, lane?}'});
+            return;
+          }
+          if (typeof sp.id !== 'string' || !sp.id.trim()) {
+            issues.push({path: `${sAt}.id`, message: 'missing or empty string'});
+          } else if (tlIds.has(sp.id)) {
+            issues.push({path: `${sAt}.id`, message: `duplicate timeline id "${sp.id}"`});
+          } else {
+            tlIds.add(sp.id);
+          }
+          if (typeof sp.label !== 'string' || !sp.label.trim()) {
+            issues.push({path: `${sAt}.label`, message: 'missing or empty string'});
+          }
+          if (sp.lane !== undefined && (typeof sp.lane !== 'number' || !Number.isInteger(sp.lane) || sp.lane < 0)) {
+            issues.push({path: `${sAt}.lane`, message: 'lane must be a non-negative integer'});
+          }
+          let fMs: number | null = null;
+          let tMs: number | null = null;
+          if (typeof sp.from !== 'string' || !sp.from.trim()) {
+            issues.push({path: `${sAt}.from`, message: 'missing or empty from date'});
+          } else {
+            fMs = parseTimelineDate(sp.from);
+            if (fMs === null) {
+              issues.push({
+                path: `${sAt}.from`,
+                message: `from "${sp.from}" is not a parseable date`,
+              });
+            } else if (axisStartMs !== null && axisEndMs !== null && (fMs < axisStartMs || fMs > axisEndMs)) {
+              issues.push({
+                path: `${sAt}.from`,
+                message: `span.from "${sp.from}" falls outside the axis [${sc.axis?.start}, ${sc.axis?.end}]`,
+              });
+            }
+          }
+          if (typeof sp.to !== 'string' || !sp.to.trim()) {
+            issues.push({path: `${sAt}.to`, message: 'missing or empty to date'});
+          } else {
+            tMs = parseTimelineDate(sp.to);
+            if (tMs === null) {
+              issues.push({
+                path: `${sAt}.to`,
+                message: `to "${sp.to}" is not a parseable date`,
+              });
+            } else if (axisStartMs !== null && axisEndMs !== null && (tMs < axisStartMs || tMs > axisEndMs)) {
+              issues.push({
+                path: `${sAt}.to`,
+                message: `span.to "${sp.to}" falls outside the axis [${sc.axis?.start}, ${sc.axis?.end}]`,
+              });
+            }
+          }
+          if (fMs !== null && tMs !== null && fMs > tMs) {
+            issues.push({
+              path: `${sAt}.to`,
+              message: `span.to (${sp.to}) must be on or after span.from (${sp.from})`,
+            });
+          }
+        });
+      }
+    } else {
+      if (sc.axis !== undefined) {
+        issues.push({path: `${at}.axis`, message: `axis has no meaning for type "${sc.type}" — only timeline (chart uses xAxis/yAxis)`});
+      }
+      if (sc.events !== undefined) {
+        issues.push({path: `${at}.events`, message: `events has no meaning for type "${sc.type}" — only timeline`});
+      }
+      if (sc.spans !== undefined) {
+        issues.push({path: `${at}.spans`, message: `spans has no meaning for type "${sc.type}" — only timeline`});
+      }
+    }
+
     // Every scene type carries narration via beats; every scene type must
     // also carry SOMETHING visible for that narration to land on. A scene
     // that ships narration with no body renders a void with audio playing
@@ -762,6 +955,13 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       // prior-art / diff — already enforced by their dedicated checks above.
       'prior-art': () => null,
       diff: () => null,
+      // timeline — at least one event OR one span (an empty axis is not a
+      // story; the axis exists to carry markers).
+      timeline: () => {
+        const hasE = arrLen(sc.events) >= 1;
+        const hasS = arrLen(sc.spans) >= 1;
+        return hasE || hasS ? null : 'timeline requires at least 1 event or 1 span (the axis exists to carry markers)';
+      },
     };
     const bodyCheck = requiredBody[sc.type];
     if (bodyCheck) {

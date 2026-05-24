@@ -147,3 +147,21 @@ concrete things:
 
 A recap that does not produce all three is rejected — it is touring its own
 film, not reviewing the change.
+
+## 8. When time is load-bearing — reach for `timeline`
+
+If the argument hinges on **WHEN** things happened (not just the order), reach
+for `timeline`. The gaps between dates are part of the argument: the four-year
+silence between two releases, the seven years between a discovery and its
+patent, the months between a CVE and its fix. `progression` shows ordinal
+stages — "first, then, then" — and cannot say *how far apart* two events are;
+`timeline` plots them on a real date axis with the proportional distance
+visible on screen.
+
+Use `timeline` when the survey turns up dated milestones whose **spacing**
+carries the claim: a regulatory chain, the AI-lab capability race, a
+scientific discovery timeline, a regression introduced months before it was
+detected, the eras of a system's evolution. If the dates are placeholders
+like "early 2024," "around that time," or "during the war," the scene fails —
+the time axis exists because the gaps are real and the author must commit to
+the dates.

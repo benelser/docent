@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "id": "ai-lab-race",
+    "title": "The AI-Lab Capability Race",
+    "subject": "Four labs, four years, and the gaps that shortened — the AI capability race 2022-2026",
+    "repo": "n/a — explainer",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "neutral"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "accent": "blue",
+      "kicker": "DOCENT // TIMELINE",
+      "title": "The AI-Lab Race",
+      "tagline": "Four years, four labs — and the months between them shrank",
+      "footnote": "A timeline reading of the frontier-model release record · 2022 through 2026 · the gaps are the argument",
+      "beats": [
+        {"id": "fr-1", "narration": "This is the AI-lab capability race -- not the labs, not the benchmarks, the gaps. The years between releases tell you something the releases themselves do not.", "show": "title"},
+        {"id": "fr-2", "narration": "From late 2022 to the present we will plot four labs onto a real date axis -- and watch the spacing collapse.", "show": "tagline"},
+        {"id": "fr-3", "narration": "The claim under test: this is not a steady drumbeat of progress. It is an accelerating one, and the dates prove it.", "show": "footnote"}
+      ]
+    },
+    {
+      "id": "axis",
+      "type": "timeline",
+      "accent": "cyan",
+      "palette": "cool",
+      "kicker": "01 // THE AXIS",
+      "heading": "Four labs on one timeline",
+      "axis": {
+        "start": "2022-01",
+        "end": "2026-12",
+        "ticks": ["2022", "2023", "2024", "2025", "2026"]
+      },
+      "events": [
+        {"id": "e-chatgpt", "date": "2022-11-30", "label": "ChatGPT", "sub": "OpenAI — public launch", "lane": 0},
+        {"id": "e-gpt4", "date": "2023-03-14", "label": "GPT-4", "sub": "OpenAI — multimodal frontier", "lane": 1},
+        {"id": "e-claude2", "date": "2023-07-11", "label": "Claude 2", "sub": "Anthropic — 100K context", "lane": 0},
+        {"id": "e-gemini", "date": "2023-12-06", "label": "Gemini 1.0", "sub": "Google DeepMind — Ultra/Pro/Nano", "lane": 1},
+        {"id": "e-claude3", "date": "2024-03-04", "label": "Claude 3", "sub": "Anthropic — Opus/Sonnet/Haiku", "lane": 0},
+        {"id": "e-llama3", "date": "2024-04-18", "label": "Llama 3", "sub": "Meta — open weights, 70B", "lane": 2},
+        {"id": "e-gpt4o", "date": "2024-05-13", "label": "GPT-4o", "sub": "OpenAI — real-time multimodal", "lane": 1},
+        {"id": "e-o1", "date": "2024-09-12", "label": "o1", "sub": "OpenAI — reasoning at test time", "lane": 1},
+        {"id": "e-claude35", "date": "2024-10-22", "label": "Claude 3.5 Sonnet (new)", "sub": "Anthropic — computer use", "lane": 0},
+        {"id": "e-deepseek", "date": "2025-01-20", "label": "DeepSeek R1", "sub": "DeepSeek — open reasoning", "lane": 2}
+      ],
+      "beats": [
+        {"id": "ax-1", "narration": "The axis runs from early 2022 to late 2026. It begins on November 30th, 2022: ChatGPT lands. Not a model release -- a public event. Everything after it is downstream of this one date.", "reveal": ["e-chatgpt"], "focus": ["e-chatgpt"]},
+        {"id": "ax-2", "narration": "Sixteen weeks later, GPT-4. The gap from the consumer surprise to the frontier model is one season.", "reveal": ["e-gpt4"], "focus": ["e-gpt4"]},
+        {"id": "ax-3", "narration": "Then Anthropic enters the public surface with Claude 2 in July, and by December Google answers with Gemini 1.0. Inside one year, four lab-level moves.", "reveal": ["e-claude2", "e-gemini"], "focus": ["e-claude2", "e-gemini"]},
+        {"id": "ax-4", "narration": "Two thousand twenty four is when the spacing collapses. Look: Claude 3 in March, Llama 3 a month later, GPT-4o the month after, o1 in September, Claude 3.5 in October. Five releases in seven months.", "reveal": ["e-claude3", "e-llama3", "e-gpt4o", "e-o1", "e-claude35"], "focus": ["e-claude3", "e-llama3", "e-gpt4o", "e-o1", "e-claude35"]},
+        {"id": "ax-5", "narration": "And in January twenty twenty five, an outsider: DeepSeek R1, with open weights, reasoning trained for a small fraction of the budget. The race stops being a four-lab race.", "reveal": ["e-deepseek"], "focus": ["e-deepseek"]}
+      ]
+    },
+    {
+      "id": "gaps",
+      "type": "timeline",
+      "accent": "amber",
+      "palette": "warm",
+      "kicker": "02 // THE GAPS",
+      "heading": "Two eras on the same axis",
+      "axis": {
+        "start": "2022-01",
+        "end": "2026-12",
+        "ticks": ["2022", "2023", "2024", "2025", "2026"]
+      },
+      "spans": [
+        {"id": "sp-slow", "from": "2022-11", "to": "2024-03", "label": "Slow era — quarterly releases", "lane": 0},
+        {"id": "sp-fast", "from": "2024-03", "to": "2025-06", "label": "Fast era — monthly releases", "lane": 1}
+      ],
+      "events": [
+        {"id": "g-chatgpt", "date": "2022-11-30", "label": "ChatGPT", "lane": 0},
+        {"id": "g-gpt4", "date": "2023-03-14", "label": "GPT-4", "lane": 1},
+        {"id": "g-claude3", "date": "2024-03-04", "label": "Claude 3", "lane": 0},
+        {"id": "g-o1", "date": "2024-09-12", "label": "o1", "lane": 1},
+        {"id": "g-deepseek", "date": "2025-01-20", "label": "DeepSeek R1", "lane": 2}
+      ],
+      "beats": [
+        {"id": "gp-1", "narration": "Now look at the same axis with two bands beneath it. The slow era and the fast era.", "reveal": ["sp-slow"]},
+        {"id": "gp-2", "narration": "The slow era runs roughly sixteen months: November twenty twenty two through Claude 3 in March twenty twenty four. The cadence is quarterly. A lab releases, a lab answers, the field catches up.", "reveal": ["g-chatgpt", "g-gpt4"], "focus": ["sp-slow"]},
+        {"id": "gp-3", "narration": "Then the fast era. From Claude 3 onward, the cadence becomes monthly. Same four labs, but the gap shrinks by a factor of three.", "reveal": ["sp-fast", "g-claude3"], "focus": ["sp-fast"]},
+        {"id": "gp-4", "narration": "September twenty twenty four: o1. Reasoning trained into the model rather than prompted out of it. Three months later DeepSeek R1 reproduces the result with open weights.", "reveal": ["g-o1", "g-deepseek"], "focus": ["g-o1", "g-deepseek"]},
+        {"id": "gp-5", "narration": "The two bands are the argument. Same labs, same years, same axis -- and the gap shortens. You cannot say this with a list. The dates have to be real, and the spacing has to be visible.", "focus": ["sp-slow", "sp-fast"]}
+      ]
+    },
+    {
+      "id": "what-shortened",
+      "type": "tension",
+      "accent": "rose",
+      "palette": "signal",
+      "kicker": "03 // THE TRADE-OFF",
+      "heading": "What shortened — and what it cost",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {"id": "n-comp", "label": "Compute scale", "sub": "10× per generation; the easy part", "col": 0, "row": 0, "weight": "primary"},
+        {"id": "n-rl", "label": "RL on reasoning", "sub": "o1-style chains; the unlock", "col": 1, "row": 0, "weight": "hero", "accent": "amber"},
+        {"id": "n-open", "label": "Open weights catch-up", "sub": "DeepSeek R1 inside 3 months", "col": 2, "row": 0, "weight": "primary"},
+        {"id": "n-eval", "label": "Eval saturation", "sub": "MMLU, HumanEval — pinned", "col": 0, "row": 1, "kind": "risk"},
+        {"id": "n-safety", "label": "Pre-release evals", "sub": "compressed alongside cadence", "col": 1, "row": 1, "kind": "risk"},
+        {"id": "n-cost", "label": "Capex per lab", "sub": "$5B+ training runs — the bill", "col": 2, "row": 1, "kind": "rejected"}
+      ],
+      "edges": [
+        {"id": "ed-comp-rl", "from": "n-comp", "to": "n-rl", "kind": "entails", "label": "enabled"},
+        {"id": "ed-rl-open", "from": "n-rl", "to": "n-open", "kind": "causes", "strength": "necessary", "label": "open-source caught up fast"},
+        {"id": "ed-rl-eval", "from": "n-rl", "to": "n-eval", "kind": "causes", "strength": "contributing"},
+        {"id": "ed-eval-safety", "from": "n-eval", "to": "n-safety", "kind": "relation"}
+      ],
+      "beats": [
+        {"id": "tn-1", "narration": "So what actually shortened the gap? The labs chose RL on reasoning over more pre-training compute. That is the bet, and we can name what it costs.", "reveal": ["n-comp", "n-rl"], "focus": ["n-rl"]},
+        {"id": "tn-2", "narration": "Reasoning-style training is cheaper to reproduce than a 10x compute jump. The result: DeepSeek R1 closed the gap to o1 in three months. The labs traded a moat for a release calendar.", "reveal": ["n-open", "ed-comp-rl", "ed-rl-open"], "focus": ["n-open"]},
+        {"id": "tn-3", "narration": "And the benchmarks the field used to measure progress -- MMLU, HumanEval -- saturated. We do not know whether the fast era is real capability or whether the eval ran out of headroom.", "reveal": ["n-eval", "ed-rl-eval"], "focus": ["n-eval"]},
+        {"id": "tn-4", "narration": "The residual risk: pre-release evaluation runs were compressed alongside the cadence. A monthly release calendar leaves weeks, not months, to red-team. Five billion dollar training runs, evaluated in weeks. That is the cost of the trade.", "reveal": ["n-safety", "n-cost", "ed-eval-safety"], "focus": ["n-safety", "n-cost"]}
+      ]
+    },
+    {
+      "id": "takeaway",
+      "type": "big-idea",
+      "accent": "amber",
+      "palette": "warm",
+      "kicker": "04 // THE BIG IDEA",
+      "heading": "The gaps are the argument",
+      "statement": "The release calendar compressed three-fold because the labs traded a compute moat for reasoning RL.",
+      "anchor": {
+        "kind": "glyph",
+        "value": "3×"
+      },
+      "beats": [
+        {"id": "bi-1", "narration": "Here is the line to leave with. The release calendar compressed three-fold -- because the labs traded a compute moat for reasoning RL.", "show": "statement"},
+        {"id": "bi-2", "narration": "Three times -- a real ratio on a real axis. The slow era was sixteen months, the fast era was five. The dates earn that number; the names alone cannot.", "focus": ["statement"]}
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "violet",
+      "kicker": "05 // THE VERDICT",
+      "heading": "Read the gaps, not the names",
+      "points": [
+        "The release dates are real — the spacing carries the claim, not the labels.",
+        "Quarterly to monthly: a 3× cadence shift inside one year, the same labs.",
+        "Trade-off: reasoning RL replaced a compute moat — open weights caught up in months.",
+        "Residual risk: pre-release evals compressed alongside the calendar; multi-billion-dollar runs red-teamed in weeks."
+      ],
+      "beats": [
+        {"id": "rc-1", "narration": "Four labs. Four years. The names matter less than the gaps between them.", "reveal": 1},
+        {"id": "rc-2", "narration": "From late 2022 through early 2024 the cadence was quarterly. From Claude 3 onward, monthly. A three-fold compression with the same labs and -- mostly -- the same compute scale per release.", "reveal": 2},
+        {"id": "rc-3", "narration": "What shortened the gap was a method change: reasoning trained into the model. The cost of that change is a shorter moat -- DeepSeek R1 reproduced the result with open weights inside three months.", "reveal": 3},
+        {"id": "rc-4", "narration": "The skepticism to carry: a monthly release calendar leaves weeks, not months, to evaluate. The fast era looks like progress on a date axis. We do not yet know how well it would look on a safety one.", "reveal": 4}
+      ]
+    }
+  ]
+}

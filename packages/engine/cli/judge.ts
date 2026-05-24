@@ -71,6 +71,8 @@ const DEPTH_DIMENSIONS = [
   // dimension scores informatively (n/a is acceptable until the renderer
   // migration lands).
   {id: 'style-honest', label: 'Style is honest — the preset matches the film\'s register; an analytical paper does not ship in playful, an executive deck is not editorial'},
+  // Timeline scene: time as load-bearing axis.
+  {id: 'time-is-load-bearing', label: 'Time is load-bearing — the gaps between events are part of the argument, not decoration'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per
