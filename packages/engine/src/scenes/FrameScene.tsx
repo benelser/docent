@@ -111,19 +111,39 @@ export const FrameScene: React.FC<SceneProps> = ({
           }}
         />
 
-        {/* tagline */}
-        <div
-          style={{
-            fontSize: 41,
-            fontWeight: 400,
-            color: theme.ink.mid,
-            opacity: taglineA,
-            transform: `translateY(${(1 - taglineA) * 14}px)`,
-            fontFamily: interFamily,
-          }}
-        >
-          {scene.tagline}
-        </div>
+        {/* tagline — auto-shrink + maxWidth + centred. Same belt-and-braces
+            as title and footnote: long taglines step down in font size and
+            stay inside the safe band, centered against the title above.
+            Without this, "Three innocent capabilities — combine them in
+            one agent and you have built an exfiltration weapon" renders
+            left-aligned and bleeds past the right edge. */}
+        {(() => {
+          const text = scene.tagline ?? '';
+          const fs = text.length <= 40 ? 41
+                   : text.length <= 60 ? 34
+                   : text.length <= 90 ? 28
+                   : text.length <= 130 ? 24
+                   : 21;
+          return (
+            <div
+              style={{
+                fontSize: fs,
+                fontWeight: 400,
+                color: theme.ink.mid,
+                opacity: taglineA,
+                transform: `translateY(${(1 - taglineA) * 14}px)`,
+                fontFamily: interFamily,
+                maxWidth: 1500,
+                textAlign: 'center',
+                lineHeight: 1.32,
+                padding: '0 24px',
+                alignSelf: 'center',
+              }}
+            >
+              {text}
+            </div>
+          );
+        })()}
 
         {/* footnote — auto-shrink + maxWidth so a long footnote never bleeds
             past the safe band. Same belt-and-braces shape as the heading in
