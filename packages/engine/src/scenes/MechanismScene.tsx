@@ -91,10 +91,10 @@ export const MechanismScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const {fps} = useVideoConfig();
   const scene = ts.scene;
   // `palette` (a scene knob) re-selects chrome over a family; without a
-  // palette this is exactly `accent(scene.accent)`. paletteSceneHex still
-  // reads the closed ACCENTS map from theme.ts (owned by engine/knobs); the
-  // tokens-driven swap of palette colours is left for a follow-on sprint.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  // palette this is exactly `accent(scene.accent)`. With `style` threaded
+  // through, the hex resolves against the preset's accent table, so a
+  // preset-redefined cyan reaches a `palette: 'cool'` scene.
+  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
   const parts: MechanismPart[] = scene.parts ?? [];
   const motion = scene.motion;
   const ink = style.tokens.ink;

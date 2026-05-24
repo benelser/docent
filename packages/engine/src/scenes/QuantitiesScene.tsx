@@ -36,7 +36,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
   // `palette` (a scene knob) re-selects the chrome accent over its family;
   // without a palette this is exactly `accent(scene.accent)`.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
   const glowScale = paletteGlowScale(scene.palette);
   const figures = scene.figures ?? [];
   const matrix = scene.matrix;

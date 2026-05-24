@@ -49,9 +49,10 @@ export const TimelineScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  // paletteSceneHex still reads ACCENTS from theme.ts (owned by knobs.ts);
-  // tokens-driven palette migration is a follow-on sprint.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  // paletteSceneHex reads the resolved-style accent table (or falls back to
+  // theme.ts ACCENTS when style is undefined). Threading `style` makes a
+  // preset's accent overrides reach this scene.
+  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
   const events: TimelineEvent[] = scene.events ?? [];
   const spans: TimelineSpan[] = scene.spans ?? [];
   const axis = scene.axis;

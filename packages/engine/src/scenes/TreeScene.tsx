@@ -247,7 +247,7 @@ export const TreeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const {bg, ink, accent: accentTokens} = style.tokens;
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
-  const accentHex = paletteSceneHex(scene.palette, scene.accent);
+  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
   const orientation = scene.orientation ?? 'vertical';
 
   // No root? Render the chrome and let the validator surface the error. (The

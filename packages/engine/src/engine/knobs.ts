@@ -10,6 +10,7 @@
 import {spring} from 'remotion';
 import type {Beat, Scene} from './spec';
 import {ACCENTS, type AccentKey} from '../theme';
+import type {ResolvedStyle} from '../style';
 
 // ----- cadence — the rhythm with which a beat's revealed items enter --------
 //
@@ -145,11 +146,17 @@ export const paletteGlowScale = (palette: Scene['palette']): number =>
 // set of elements across the family (node 0 → family[0], node 1 → family[1],
 // …, wrapping); the scene's own declared accent still wins for index 0 when
 // it already falls inside the family, so an author's explicit choice is kept.
+//
+// `style` is unused by this function (key resolution is preset-independent —
+// the palette family is itself a fixed list of accent KEYS) but is accepted
+// to keep the signature symmetric with paletteSceneHex; threading it from
+// callsites today lets the helper grow without another migration.
 export const paletteAccentKey = (
   palette: Scene['palette'],
   sceneAccent: string,
   ownAccent: string | undefined,
   index = 0,
+  _style?: ResolvedStyle,
 ): string => {
   // No palette — identity: the element's own accent, else the scene's.
   if (!palette) return ownAccent ?? sceneAccent;
@@ -163,10 +170,18 @@ export const paletteAccentKey = (
 // The resolved accent *hex* for the scene as a whole under its palette. Used
 // for the scene's chrome (SceneFrame light, kicker). Without a palette this is
 // exactly `accent(scene.accent)`.
+//
+// When `style` is supplied the lookup goes through `style.tokens.accent` —
+// the preset's accent table — so a preset that redefines `cyan` reaches every
+// scene that uses `palette: 'cool'`. When `style` is omitted the helper falls
+// back to the hardcoded `ACCENTS` map in theme.ts, preserving the pre-style
+// behaviour for any callsite the migration hasn't reached yet.
 export const paletteSceneHex = (
   palette: Scene['palette'],
   sceneAccent: string,
+  style?: ResolvedStyle,
 ): string => {
   const key = paletteAccentKey(palette, sceneAccent, sceneAccent, 0);
-  return (ACCENTS as Record<string, string>)[key] ?? ACCENTS.blue;
+  const table = (style?.tokens.accent ?? ACCENTS) as Record<string, string>;
+  return table[key] ?? table.blue ?? ACCENTS.blue;
 };
