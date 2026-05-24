@@ -24,6 +24,7 @@ import {join} from 'node:path';
 import {REPO_ROOT, paths} from './paths';
 
 export type ExplainTarget = 'claude' | 'codex' | 'all';
+export type ExplainMode = 'pr' | 'ar' | 'ex';
 
 export type ExplainStep = {
   name: string;
@@ -50,10 +51,12 @@ export type ExplainReport = {
 export type ExplainOptions = {
   url: string;
   target?: ExplainTarget;
+  mode?: ExplainMode;          // cascade mode (default 'ex' — full explainer)
   silent?: boolean;
   scale?: number;              // render scale (default 0.5 — fast for a gate)
   maxRounds?: number;          // review --max-rounds (default 2)
   keepOnFail?: boolean;        // keep film artefacts after a failed leg
+  id?: string;                 // override the auto-generated film id
 };
 
 // Run a docent subcommand with a per-stage timeout. The hermetic harness
@@ -97,7 +100,8 @@ const runExplainLeg = async (
   agent: 'claude' | 'codex',
   opts: ExplainOptions,
 ): Promise<ExplainLegReport> => {
-  const filmId = `explain-validate-${agent}-${Date.now()}`;
+  const mode: ExplainMode = opts.mode ?? 'ex';
+  const filmId = opts.id ?? `explain-validate-${agent}-${Date.now()}`;
   const scale = opts.scale ?? 0.5;
   const maxRounds = opts.maxRounds ?? 2;
   const steps: ExplainStep[] = [];
@@ -149,10 +153,10 @@ const runExplainLeg = async (
 
   // 1. Survey — the longest single stage. Both agents have to author
   //    analysis/<id>.md from the URL. Budget 12 min — covers a slow
-  //    fetch + a deep read.
+  //    fetch + a deep read. mode={pr|ar|ex} is forwarded to the CLI.
   const surveyOk = await stage(
     'survey',
-    ['survey', opts.url, '--mode', 'ex', '--agent', agent, '--id', filmId],
+    ['survey', opts.url, '--mode', mode, '--agent', agent, '--id', filmId],
     12 * 60_000,
   );
   if (!surveyOk) return {target: agent, filmId, output: null, outputBytes: null, steps};

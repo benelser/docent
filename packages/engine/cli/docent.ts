@@ -228,16 +228,23 @@ const main = async (): Promise<number> => {
         // `docent hermetic --explain <url> --target all` — the end-to-end
         // Go Live gate. Runs the FULL skill cascade per agent host and
         // asserts an mp4 lands on disk. ~30-50 min for --target all.
-        const url = positionals[0] ?? opt('url') ?? die('usage: docent hermetic --explain <url> [--target claude|codex|all]');
+        const url = positionals[0] ?? opt('url') ?? die('usage: docent hermetic --explain <url> [--target claude|codex|all] [--mode pr|ar|ex] [--id slug] [--scale S]');
         const rawTarget = opt('target') ?? 'all';
         if (rawTarget !== 'claude' && rawTarget !== 'codex' && rawTarget !== 'all') {
           die(`--target must be claude | codex | all (got: ${rawTarget})`);
         }
+        const rawMode = opt('mode') ?? 'ex';
+        if (rawMode !== 'pr' && rawMode !== 'ar' && rawMode !== 'ex') {
+          die(`--mode must be pr | ar | ex (got: ${rawMode})`);
+        }
         const scale = num(opt('scale')) ?? 0.5;
+        const id = opt('id');
         const {code} = await hermeticExplain({
           url,
           target: rawTarget as ExplainTarget,
+          mode: rawMode as 'pr' | 'ar' | 'ex',
           scale,
+          id,
         });
         return code;
       }
