@@ -5,6 +5,7 @@
 
 import {interpolate, spring} from 'remotion';
 import manifestJson from '../../../../public/audio/manifest.json';
+import type {RenderStyleInput} from '../style';
 
 export type Message = {
   from: string;
@@ -370,6 +371,15 @@ export type FilmSpec = {
     register?: 'grave' | 'neutral' | 'calm' | 'urgent' | 'playful'; // film mood
   };
   scenes: Scene[];
+  /**
+   * Optional schema-driven styling. Omitting this field reproduces the
+   * historic byte-identical render. See packages/engine/src/style/.
+   *
+   * The pipeline (preset → intent → overrides → user → validate → resolve)
+   * lives entirely behind `resolveStyle(spec.style)`; raw input never reaches
+   * the renderer.
+   */
+  style?: RenderStyleInput;
 };
 
 // Film registry. Auto-discovered: a new film is just one JSON file under

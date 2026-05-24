@@ -8,6 +8,7 @@ import {join} from 'node:path';
 import {ENGINE_ROOT, REPO_ROOT, paths} from './paths';
 import {validateSpec} from './validate';
 import {runDepthCheck, depthSummary} from './depthcheck';
+import {resolveStyle, StyleValidationError} from '../src/style';
 
 const cascadeEnv = {...process.env, DOCENT_ROOT: REPO_ROOT};
 
@@ -17,12 +18,20 @@ export type CascadeOpts = {
   skipTts?: boolean;
   scale?: number;
   concurrency?: number;
+  // When true (also honored from DOCENT_DEBUG=1), the cascade prints the
+  // resolved style as one-line JSON at the start of the render stage. This
+  // is the "loggable" acceptance criterion of the styling pipeline.
+  debug?: boolean;
 };
 
 export type CascadeResult = {
   film: string;
   output: string;
   stages: {name: string; seconds: number}[];
+  // The resolved style for this run. The render-time consumers (Card,
+  // SceneFrame, etc.) don't read this yet — the migration is the next sprint.
+  // Surfaced here so a caller (e.g. a sub-process orchestrator) can log it.
+  style?: ReturnType<typeof resolveStyle>;
 };
 
 const step = async <T>(label: string, run: () => Promise<T>): Promise<{result: T; seconds: number}> => {
@@ -71,6 +80,35 @@ export const runCascade = async (opts: CascadeOpts): Promise<CascadeResult> => {
     );
   }
 
+  // The style pipeline — resolveStyle(spec.style) is the only call site that
+  // turns raw style input into a ResolvedStyle the renderer surface can read.
+  // For the byte-identical backward-compat contract: when `spec.style` is
+  // undefined (every film in the gallery today), this resolves to neutral
+  // tokens — the same values theme.ts ships.
+  //
+  // Today this resolution is inert: the renderer migration is a follow-on
+  // sprint. The cascade computes it, logs it in --debug, and otherwise carries
+  // it as a side-effect-free precondition (it will throw on contract failure
+  // BEFORE the slow render burns minutes).
+  let resolvedStyle;
+  try {
+    resolvedStyle = resolveStyle(spec.style);
+  } catch (e) {
+    if (e instanceof StyleValidationError) {
+      throw new Error(
+        `spec films/${film}.json fails the style contract:\n` +
+          e.details.map((d) => `  ✗ [${d.code}] ${d.path}: ${d.message}`).join('\n'),
+      );
+    }
+    throw e;
+  }
+  const debug = opts.debug ?? process.env.DOCENT_DEBUG === '1';
+  if (debug) {
+    process.stdout.write(
+      `\x1b[90mstyle resolved\x1b[0m ${JSON.stringify(resolvedStyle)}\n`,
+    );
+  }
+
   // Layer 2 of depth enforcement — a visible, non-blocking depth report on
   // every build. `docent depthcheck <film>` gives the full breakdown.
   const ds = depthSummary(runDepthCheck(spec));
@@ -107,7 +145,7 @@ export const runCascade = async (opts: CascadeOpts): Promise<CascadeResult> => {
         .env(cascadeEnv);
     });
     stages.push({name: 'still', seconds});
-    return {film, output, stages};
+    return {film, output, stages, style: resolvedStyle};
   }
 
   const output = join(paths.out, `${film}.mp4`);
@@ -139,5 +177,5 @@ export const runCascade = async (opts: CascadeOpts): Promise<CascadeResult> => {
     }
   });
   stages.push({name: 'render', seconds});
-  return {film, output, stages};
+  return {film, output, stages, style: resolvedStyle};
 };

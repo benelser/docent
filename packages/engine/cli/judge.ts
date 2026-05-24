@@ -66,6 +66,11 @@ const DEPTH_DIMENSIONS = [
   // AR-mode: the film argues against a lineage. PR films mark these n/a.
   {id: 'novelty-named', label: 'Novelty named — the film says what is *new*, not what the components are'},
   {id: 'prior-art-honest', label: 'Prior art honest — prior systems named with version/year, divergence is dimensional'},
+  // Style-honest — appended for the schema-driven styling pipeline. Today the
+  // pipeline lands but no scene component consumes its tokens yet, so this
+  // dimension scores informatively (n/a is acceptable until the renderer
+  // migration lands).
+  {id: 'style-honest', label: 'Style is honest — the preset matches the film\'s register; an analytical paper does not ship in playful, an executive deck is not editorial'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per
