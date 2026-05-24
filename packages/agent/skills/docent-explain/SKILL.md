@@ -65,7 +65,28 @@ those only when the user explicitly wants to pause between stages.
    final URL + character count + the load-bearing finding before moving
    on to treatment.
 
-3. **Treatment.**
+3. **Commit to a style.** Before the treatment, decide the visual
+   register the film renders in — a `{preset, intent, rationale}` block
+   that the spec author will pin to `films/<id>.json`.
+
+   ```bash
+   bun packages/engine/cli/docent.ts style recommend <id>
+   ```
+
+   The recommender reads `analysis/<id>.md` and prints a rules-based
+   suggestion (engineering / editorial / paper / executive / analytical /
+   neutral) plus a one-line rationale. For most subjects, take the
+   recommendation; override only when you can name a specific survey
+   finding the recommender missed. Surface the choice to the user in one
+   line ("rendering in **paper** — peer-reviewed arXiv preprint with
+   load-bearing figure/table; rationale: ...") before moving on.
+
+   The spec compilation step (next) reads this block off the survey's
+   "Style commitment" section and pins it as the spec's `style: {preset,
+   intent, rationale}` field. The depth-review judge will fail the
+   `style-committed` dimension if the spec ships with the empty default.
+
+4. **Treatment.**
 
    ```bash
    bun packages/engine/cli/docent.ts treatment <id>
@@ -76,7 +97,7 @@ those only when the user explicitly wants to pause between stages.
    review; you immediately compile it to a spec. Print the treatment's
    *Angle* line so the user sees the through-line you committed to.
 
-4. **Spec — and interrogate it.**
+5. **Spec — and interrogate it.**
 
    ```bash
    bun packages/engine/cli/docent.ts treatment <id> --to-spec
@@ -103,7 +124,7 @@ those only when the user explicitly wants to pause between stages.
    no `big-idea` scene is present in an explainer spec, `review` will
    have failed the contract; do not proceed.
 
-5. **Render.**
+6. **Render.**
 
    ```bash
    bun packages/engine/cli/docent.ts build <id> --scale 1
@@ -111,13 +132,13 @@ those only when the user explicitly wants to pause between stages.
 
    Print the resulting `🎬 out/<id>.mp4` line verbatim.
 
-6. **Open the result** (unless `--no-open`). On macOS:
+7. **Open the result** (unless `--no-open`). On macOS:
 
    ```bash
    open out/<id>.mp4
    ```
 
-7. **Hand back.** Tell the user three things:
+8. **Hand back.** Tell the user three things:
    - the film id (so they can re-render via `/docent-build <id>`),
    - the verdict score, and
    - one line of the most adjudicated finding — the verdict, the biggest

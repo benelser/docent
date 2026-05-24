@@ -91,6 +91,17 @@ const DEPTH_DIMENSIONS = [
   {id: 'intersection-named', label: 'Intersection named — the film argues from what the overlap PROVES, not that the overlap exists'},
   // landscape: when the film carries one, positions must be argued.
   {id: 'quadrant-honest', label: 'Quadrant honest — positions are argued, not asserted; the trade-off the axes name is real'},
+  // style-committed — appended for the agent-facing style surface. Today
+  // `style-honest` (above) judges register-fit; this one verifies the spec
+  // actually CARRIES a `style: {preset, intent, rationale}` commitment, not
+  // the empty default. The author runs `docent style recommend <id>` and
+  // pins the result on the spec; this dimension catches when they didn't.
+  // The judge marks this fail when `style` is absent or only carries
+  // `{preset: "neutral"}` with no intent and no rationale. The rationale
+  // must tie to a SPECIFIC survey finding (a file name, a section, a
+  // quoted phrase, a quantity), not "this seems right". The preset must
+  // match the film's `meta.register` and the survey's mode.
+  {id: 'style-committed', label: 'Style is committed — the spec carries a non-default {preset, intent, rationale} block; the rationale ties to a specific survey finding; the preset matches the film\'s register'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per

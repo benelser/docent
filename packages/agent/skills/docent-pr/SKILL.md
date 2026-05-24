@@ -41,7 +41,26 @@ core before → after, what ripples, what could break, and a verdict.
    load-bearing 5% — that you review with depth — and what is the rest you
    explicitly deprioritized.
 
-3. **Treatment.**
+3. **Commit to a style.** Before the treatment, decide the visual
+   register the film renders in:
+
+   ```bash
+   bun packages/engine/cli/docent.ts style recommend <id>
+   ```
+
+   For PR films the recommender will almost always return
+   **engineering** — code-heavy, the dark console look. Take the
+   recommendation unless the survey surfaces something exceptional (an
+   exec-level retrospective of a release-blocking PR, for instance, may
+   want **executive**). Surface the choice to the user in one line —
+   "rendering in **engineering** — the load-bearing 5% is in
+   `pkg/scheduler/...`; rationale: file-level code review." — and move
+   on. The spec compilation reads this off the survey's "Style
+   commitment" section and pins it as the spec's `style: {preset,
+   intent, rationale}` field. The depth-review judge fails the
+   `style-committed` dimension if the spec ships without it.
+
+4. **Treatment.**
 
    ```bash
    docent treatment <id>
@@ -50,7 +69,7 @@ core before → after, what ripples, what could break, and a verdict.
    Writes `treatments/<id>.md`. Print the *Angle* line so the user sees
    the through-line you committed to before the spec is compiled.
 
-4. **Spec — and interrogate it.**
+5. **Spec — and interrogate it.**
 
    ```bash
    docent treatment <id> --to-spec
@@ -66,15 +85,15 @@ core before → after, what ripples, what could break, and a verdict.
    rendering. If `review` exhausts its round budget, stop and ask —
    do not ship a film the judge rejected.
 
-5. **Render.**
+6. **Render.**
 
    ```bash
    docent build <id> --scale 1
    ```
 
-6. **Open the result** (unless `--no-open`). On macOS: `open out/<id>.mp4`.
+7. **Open the result** (unless `--no-open`). On macOS: `open out/<id>.mp4`.
 
-7. **Hand back.** Three things to the user:
+8. **Hand back.** Three things to the user:
    - the film id (so they can re-render via `/docent-build <id>`),
    - the verdict score (e.g. `26/30`),
    - one sentence of the verdict — what changes, what the residual risk is.

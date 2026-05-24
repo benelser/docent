@@ -25,6 +25,8 @@ import {authorTreatment, treatmentToSpec} from './treatment';
 import {judge, reviseLoop} from './judge';
 import {flywheel} from './flywheel';
 import {preflight} from './preflight';
+import {runStyle} from './style';
+import {hermeticStyle} from './hermetic-style';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -252,6 +254,17 @@ const main = async (): Promise<number> => {
       return hermetic({fixtureId: positionals[0], scale, json: flag('json')});
     }
 
+    case 'style':
+      // `docent style list | resolve | recommend` — the agent-facing
+      // introspection surface over packages/engine/src/style. Delegates to
+      // ./style.ts; argv[1..] is the subcommand and its flags.
+      return runStyle(argv.slice(1));
+
+    case 'hermetic-style':
+      // The style-fixture harness — three synthetic surveys + a resolve probe
+      // per preset, all green or none.
+      return hermeticStyle({json: flag('json')});
+
     case 'preflight':
       return preflight();
 
@@ -268,12 +281,14 @@ const main = async (): Promise<number> => {
       console.log('  docent review <id> [--max-rounds] the inner loop: judge → revise → repeat');
       console.log('  docent flywheel                   the outer loop — recurring failures');
       console.log('  docent depthcheck <film>          the depth contract over a spec');
+      console.log('  docent style <list|resolve|recommend>  styling-resolver introspection (agent-facing)');
       console.log('  docent env                        resolved paths and versions');
       console.log('');
       console.log('  internal-test commands (not part of the user-facing surface):');
       console.log('    docent hermetic [id]            cascade harness against pinned gallery fixtures');
       console.log('    docent hermetic --fresh-user    simulate install path in a tmpdir [--target claude|codex|all]');
       console.log('    docent hermetic --explain <url> full skill cascade per agent host [--target all]');
+      console.log('    docent hermetic-style           style-recommendation fixture sweep (3 synthetic surveys + resolve)');
       console.log('    docent preflight                aggregate Go Live readiness check');
       return cmd ? 1 : 0;
   }

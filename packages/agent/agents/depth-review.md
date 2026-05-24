@@ -301,6 +301,48 @@ When the film carries a `journey-map` scene, score this dimension:
 
     For films that don't use a `landscape` scene, mark this dimension n/a.
 
+### Style commitment — the spec must pick its register
+
+12. **Style is committed.** Every spec is supposed to carry a top-level
+    `"style"` block — `{preset, intent, rationale}` — that names the visual
+    register the film renders in (engineering / editorial / paper /
+    executive / analytical / neutral). The author was instructed to run
+    `docent style recommend <id>` and pin the result; this dimension is
+    where you catch when they didn't.
+
+    Score this **fail** when:
+
+    - the spec has no `"style"` field at all (the renderer falls back to
+      neutral byte-identically, but the film *is* not neutral — it is a
+      Kubernetes PR, or a poem, or a paper),
+    - or `style.preset` is `"neutral"` *and* the survey signals would have
+      named a non-neutral preset (the recommender would have picked
+      engineering / editorial / paper) — neutral here is unearned,
+    - or `style.rationale` is absent / vague / could be lifted to any
+      other film by changing nouns ("technical subject", "professional
+      register"). The rationale must name a SPECIFIC finding from
+      `analysis/<id>.md` — a file path, a section heading, a quoted
+      phrase, a quantity — that explains *why this preset*.
+
+    Score this **strong** when:
+
+    - the preset matches the film's `meta.register` (a `grave` PR review
+      is engineering; a `playful` explainer is editorial or analytical
+      depending on subject — an executive deck on a poem fails this),
+    - the intent block names at least the audience axis (technical /
+      general / executive),
+    - and the rationale ties to a survey finding by name.
+
+    Cross-check the recommendation: read `analysis/<id>.md` and silently
+    run the survey through the keyword sieve in `packages/engine/cli/style.ts`
+    (you don't need to execute it; you can do this in your head — code
+    signals like `pkg/`, `pull request`, `subsystem` vote engineering;
+    `arxiv`, `preprint`, `doi:` vote paper; `essay`, `close reading`,
+    `poem` vote editorial). If the survey's signals plainly say one
+    preset and the spec ships a different one, the rationale had better
+    name the specific finding that justifies the override — otherwise
+    this dimension fails.
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the

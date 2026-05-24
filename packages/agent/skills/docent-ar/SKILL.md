@@ -59,7 +59,25 @@ idioms, the failure modes, the trade-offs, with a verdict.
      diverges. Confirm with the user that the named lineage is the right
      lineage *before* moving on — the rest of the cascade reads from it.
 
-3. **Treatment.**
+3. **Commit to a style.** Before the treatment, decide the visual
+   register the film renders in:
+
+   ```bash
+   bun packages/engine/cli/docent.ts style recommend <id>
+   ```
+
+   For architecture-review films the recommender will return
+   **engineering** when the subject is a code repository (most ARs) and
+   **paper** when the subject is a research-shaped artefact. Take the
+   recommendation unless the survey surfaces a specific reason to
+   override. Surface the choice in one line — "rendering in
+   **engineering** — system-level architecture review; rationale: ..."
+   — and move on. The spec compilation reads this off the survey's
+   "Style commitment" section and pins it as the spec's `style:
+   {preset, intent, rationale}` field. The depth-review judge fails
+   the `style-committed` dimension if the spec ships without it.
+
+4. **Treatment.**
 
    ```bash
    bun packages/engine/cli/docent.ts treatment <id>
@@ -68,7 +86,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
    Writes `treatments/<id>.md`. Print the *Angle* line so the user sees
    the through-line you committed to.
 
-4. **Spec — and interrogate it.**
+5. **Spec — and interrogate it.**
 
    ```bash
    bun packages/engine/cli/docent.ts treatment <id> --to-spec
@@ -98,15 +116,15 @@ idioms, the failure modes, the trade-offs, with a verdict.
    dimension is steering the film's spine — do not render past their
    objection.
 
-5. **Render.**
+6. **Render.**
 
    ```bash
    bun packages/engine/cli/docent.ts build <id> --scale 1
    ```
 
-6. **Open the result** (unless `--no-open`). On macOS: `open out/<id>.mp4`.
+7. **Open the result** (unless `--no-open`). On macOS: `open out/<id>.mp4`.
 
-7. **Hand back.** Three things to the user:
+8. **Hand back.** Three things to the user:
    - the film id (so they can re-render via `/docent-build <id>`),
    - the verdict score,
    - one sentence naming the trade-off the film adjudicates.

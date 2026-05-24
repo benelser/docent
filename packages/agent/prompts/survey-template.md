@@ -81,6 +81,60 @@ The film's Prior Art scene reads directly from this section. A survey that
 lists components without naming a lineage will not author a Prior Art scene;
 a film without a Prior Art scene cannot pass AR validation.
 
+## § 2.5 Style commitment  *(mandatory)*
+
+Before authoring the spec, commit to a `{preset, intent}` style block — this
+is the visual register the film renders in, and the agent author MUST pin it
+on `films/<id>.json` as a top-level `"style"` field.
+
+**Run the recommender** (rule-based; not an LLM call):
+
+```bash
+bun packages/engine/cli/docent.ts style recommend <id>
+```
+
+It reads this survey file (`analysis/<id>.md`) and prints a recommended
+`{preset, intent}` plus a one-line rationale. Treat the recommendation as a
+default; override it ONLY when you can name a specific survey finding the
+recommender missed.
+
+**Pin the commitment in the survey.** Write the chosen preset, the intent
+block, and a ONE-LINE rationale here. The rationale must tie to a *specific
+survey finding*, not a vague register adjective. Bad: "engineering preset
+because this is a technical subject." Good: "engineering preset because the
+load-bearing change is a comparator in `pkg/scheduler/internal/heap/heap.go`
+and the film must read code at the function level."
+
+Format:
+
+```
+preset:    <neutral | engineering | editorial | paper | executive | analytical>
+intent:    {tone, audience, medium, density, theme, emphasis} — only the axes you commit to
+rationale: <one line tying the choice to a finding in this survey>
+```
+
+Available presets:
+
+- **engineering** — code-heavy, dark register. PR films, subsystem films,
+  docent-self. The console look.
+- **editorial** — close-reading, prose-forward. Poetry, essays, blog posts.
+  Cream-on-warm, serif body.
+- **paper** — academic / arxiv-PDF. Light cream backdrop, marker-blue ink,
+  no glow. For peer-reviewed papers, preprints, and journal-shaped subjects.
+- **executive** — exec deck. High-contrast, generous spacing, fewer figures.
+- **analytical** — math / proof — euclid-primes shape. Tight mono numerics
+  on a graph-paper backdrop.
+- **neutral** — the byte-identical default. Only when no other preset fits.
+
+The skill markdown (e.g. `packages/agent/skills/docent-pr/SKILL.md`) is the
+operational checklist — it tells the runner *when* in the cascade to call
+`style recommend`. This section is where the SURVEY records what the runner
+will eventually pin.
+
+The depth-review judge scores `style-committed` on the rendered spec: a film
+that ships with `style: {preset: "neutral"}` or no style block at all (and
+the survey could have named a better fit) fails this dimension.
+
 ## 3. Hard parts
 
 - **Failure & partial failure — walk one weird-input and one at-scale case to
