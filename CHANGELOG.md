@@ -9,26 +9,37 @@ remove primitives or contracts, patch bumps fix renderers or tooling.
 
 > The grammar grows from 17 → 22 scene types. Five new primitives close
 > gaps in the cognitive-representation taxonomy that the original 17 did
-> not reach. WCAG AA enforced at style-resolve time. Audio rhythm tuned.
+> not reach. Style-resolver infrastructure (WCAG AA validated) lands as
+> a parallel module. Audio rhythm tuned.
 
-### Added
+### Added — scene types
 
 - **`timeline`** — events on a real date axis where the *gaps* between
   dates carry argumentative weight. Distinct from `progression` (ordinal,
-  cadence-only).
+  cadence-only). Validator hard-fails placeholder dates ("early 2024",
+  "during the war"); depthcheck enforces parseable dates.
 - **`tree`** — rooted hierarchy where *parent-child* and *level depth*
-  are the load-bearing structure (not the relations themselves).
+  are the load-bearing structure (not the relations themselves). Max 5
+  levels / ~30 nodes. Depthcheck flags degenerate (chain-shaped) trees.
 - **`map`** — regions in space with markers, connections, and topology.
   For arguments where *where* something is matters: geography, region
-  layout, proximity, multi-region database topology.
+  layout, proximity, multi-region database topology. Depthcheck enforces
+  ≥30% annotated regions ("position-meaningful").
 - **`journey-map`** — stages × emotion across a human experience. For
   arguments about how a *person* moves through something (onboarding,
-  failure recovery, debugging session).
+  failure recovery, debugging session). Depthcheck enforces a real arc
+  (one stage ≥0.7 AND one ≤0.3) and ≥50% of stages annotated with
+  touchpoints/painPoints.
 - **`causal-loop`** — variables influencing each other in a closed cycle
   where the dynamics come from *reinforcement or balancing*, not motion.
-  Distinct from `mechanism` (working motion) and `walkthrough` (sequence).
+  Validator enforces R/B labelling parity against polarity count;
+  depthcheck enforces closed (wrap-around) loops.
 
-### Added — styling pipeline
+Demo films land for each: `ai-lab-race` (timeline), `ai-agent-stack`
+(tree), `multi-region-db` (map), `onboarding-first-30-minutes`
+(journey-map), `causal-loop-primer` (causal-loop).
+
+### Added — styling pipeline (resolver only)
 
 - **`StylePreset`** vocabulary: six presets — `neutral`, `engineering`,
   `editorial`, `paper`, `executive`, `analytical` — each with locked
@@ -38,45 +49,42 @@ remove primitives or contracts, patch bumps fix renderers or tooling.
   through a data-driven mapper, never through renderer branching.
 - **`ResolvedStyle`** — the single output of the resolver, validated for
   WCAG AA contrast (4.5:1 body, 3:1 large text) at resolve time.
-- **Schema-driven styling**: presets are *data*, not renderer branches.
-  Raw agent instructions and freeform CSS-like overrides cannot reach
-  the renderer.
+- **`style-honest`** depth dimension added to the judge rubric.
+
+> Renderer migration to consume `ResolvedStyle` is staged but not yet
+> landed — scene renderers still read `theme.ts` directly; the pipeline
+> ships as infrastructure ahead of the renderer migration sprint.
 
 ### Added — audio
 
 - **Per-beat silence trim** controlled by the beat's `pace` knob
-  (`brisk` / `normal` / `settle` / `hold`). Average ~70% reduction in
-  Kokoro silence padding without sacrificing rhythm.
+  (`brisk` / `normal` / `settle` / `hold`) via Kokoro silence-padding
+  trim in `packages/engine/pipeline/tts.py`.
 
 ### Changed
 
-- Grammar is now self-documenting: `docs/grammar.md` is the chooser; the
-  survey template and explainer survey each restate the relevant subset
-  for their mode.
-- Discriminator fields added: `novelty.kind` and `axis.kind` discriminate
-  the unions Sprint A introduced (prior-art vs venn novelty; chart vs
-  landscape axis). No more `as` casts at narrow time.
+- Scene-type union sorted alphabetically across `spec.ts`, `validate.ts`,
+  and `schema/film.schema.json`. 22 entries total.
+- New per-scene-typed field names — `journeyStages`, `causalEdges`,
+  `variables`, `loops`, `root` (tree), `regions`/`markers`/`connections`
+  (map), `events`/`spans`/`axis` (timeline) — keep unions narrow at the
+  renderer boundary.
 
-### Removed (migration cliff)
+### Not in this release
 
-- `Scene.palette`, `Scene.treatment`, `Scene.register`, `Scene.accent` —
-  the legacy per-scene knob set is gone from `spec.ts` and
-  `film.schema.json`. The validator hard-fails any spec carrying one of
-  the removed fields with a structured migration message pointing at
-  the new vocabulary (`style.preset` or `style.intent.tone`).
-- Every scene renderer now consumes `ResolvedStyle` (passed through from
-  `Film.tsx`) instead of reading `theme.ts` directly. Six presets,
-  one resolver, no parallel APIs.
-- The gallery film JSONs and the four README hero films are
-  re-authored with `scripts/migrate-films.ts`. Manual review confirms
-  preset selection produces equivalent styling tokens.
+The following items appeared in earlier draft notes but did NOT land in
+v2.1.0; they are deferred to subsequent releases:
 
-### Re-render
-
-The four README hero films (`docent-self`, `openclaw-ar`,
-`lethal-trifecta-blog`, `arxiv-2512-14806`) are re-rendered against
-v2.1.0 with `scripts/rerender-demos.sh v2.1.0`. Release-asset mp4s
-clobber-in-place; preview GIFs refresh in `docs/stills/`.
+- **`mechanism` / `venn` / `landscape` scene types** — built but not
+  merged this pass; remain on their feature branches.
+- **Discriminator cleanup** for `Novelty` / `Axis` unions — depends on
+  the venn/landscape merges above.
+- **Renderer migration to `ResolvedStyle`** — scenes still read
+  `theme.ts` directly; the resolver lands as parallel infrastructure.
+- **Legacy knob removal** (`Scene.palette`, `Scene.treatment`,
+  `Scene.register`, `Scene.accent`) — still present in `spec.ts`.
+- **README film re-render** — `scripts/rerender-demos.sh v2.1.0` has not
+  been run; release-asset mp4s are unchanged.
 
 ## v2.0.0 — closed-grammar foundation
 
