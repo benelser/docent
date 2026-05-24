@@ -1,7 +1,7 @@
 {
   "name": "@docent/agent",
   "private": true,
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "docent agent layer — the APM package: review skills, the structured survey prompt, and the depth-review sub-agent. Distributed via Agent Package Manager so docent rides inside any coding agent.",
   "license": "MIT",
   "homepage": "https://github.com/benelser/docent",
