@@ -97,6 +97,33 @@ makes this argument. Score these AR-only dimensions:
    - Weak: "Older replication strategies were more limited." Names no system,
      no trade-off, just praise of the subject by denying the field.
 
+### For journey-map films — the experience dimension
+
+When the film carries a `journey-map` scene, score this dimension:
+
+9. **Experience is load-bearing.** The emotional arc IS the argument — not a
+   decoration. Pain and delight must be *specific*, not vague. Score whether
+   each stage names a real touchpoint or pain point (a real screen, a real
+   doc, a real wait, a real moment of confusion) or merely an emotion-word
+   floating free.
+
+   **Strong** — the arc carries the argument; specifics on every stage:
+   - "Sign-up — frustration: the email verification times out at 30s; the user
+     hits resend twice and reads the same boilerplate."
+   - "First month — fatigue: the dashboard's six metrics aren't yet sorted into
+     'mine vs ours'; the user re-pivots every login."
+
+   **Weak** — emotion-words pointing at nothing; an arc anyone could lift:
+   - "Onboarding is hard." (an adjective, not an experience)
+   - "The user feels confused." (which screen? which copy?)
+   - "Customers love the second week." (love about *what*?)
+
+   If a journey-map's curve never rises high AND never falls low, the arc is
+   not a journey — it is a verdict in disguise. If fewer than half its stages
+   carry a touchpoint or a pain point, it is a list of feelings.
+
+   For films with no journey-map scene, mark this dimension n/a.
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the

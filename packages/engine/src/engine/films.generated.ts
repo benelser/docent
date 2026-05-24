@@ -10,6 +10,7 @@ import euclidPrimes from '../../../../films/euclid-primes.json';
 import grammarCheck from '../../../../films/grammar-check.json';
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
 import linearAlgebra from '../../../../films/linear-algebra.json';
+import onboardingFirst30Minutes from '../../../../films/onboarding-first-30-minutes.json';
 import stoppingByWoods from '../../../../films/stopping-by-woods.json';
 
 export const FILMS: Record<string, FilmSpec> = {
@@ -17,5 +18,6 @@ export const FILMS: Record<string, FilmSpec> = {
   'grammar-check': grammarCheck as FilmSpec,
   'kubernetes-pr': kubernetesPr as FilmSpec,
   'linear-algebra': linearAlgebra as FilmSpec,
+  'onboarding-first-30-minutes': onboardingFirst30Minutes as FilmSpec,
   'stopping-by-woods': stoppingByWoods as FilmSpec,
 };

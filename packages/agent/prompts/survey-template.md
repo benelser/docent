@@ -131,6 +131,18 @@ old and new — including a *forward* version-skew read? How would the on-call
 engineer know it misbehaved (a metric, a log, nothing)? Rollback cost. Who
 owns this at 3am.
 
+## § 6.5 When the subject is a *person's experience*
+
+If the argument is about how a **person** moves through something — UX, customer
+experience, patient flow, employee onboarding, a developer's first hour with a
+new framework, a hire's first week — reach for `journey-map`. The shape is
+fundamentally different from `progression` (system-internal stages) and
+`walkthrough` (actors messaging): the spine of a journey-map is *a single
+person's emotional arc*, anchored to the stages they walk through. **Specify
+the emotion AND the touchpoint that causes it.** A journey-map without
+touchpoints/pain-points on at least half its stages is a list of feelings, not
+a journey — and the depthcheck contract will reject it.
+
 ## 7. Verdict inputs — the recap must *rule*, not restate
 
 The film's last scene adjudicates; it never summarizes. The judge rejects a

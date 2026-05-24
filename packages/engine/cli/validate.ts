@@ -3,7 +3,10 @@
 // is a focused check of the shape the engine actually depends on.
 // schema/film.schema.json is the documented contract this mirrors.
 
-const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art'];
+const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art', 'journey-map'];
+// journey-map — the closed allowlist of emotion chips. An emotion outside
+// this list is rejected: the author names a feeling, the engine owns the chip.
+const JOURNEY_EMOTIONS = ['delight', 'curiosity', 'satisfaction', 'neutral', 'fatigue', 'frustration', 'pain'];
 const ACCENTS = ['blue', 'cyan', 'green', 'amber', 'rose', 'violet'];
 // big-idea — the closed allowlist of anchor kinds. An anchor outside this list
 // is rejected: the author picks the kind, the engine owns the pixels.
@@ -713,6 +716,84 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       }
     }
 
+    // journey-map — a person's emotional arc across 3-8 stages. HARD-FAIL
+    // contracts: 3-8 stages; each stage's `curveValue` in [0..1]; stage ids
+    // unique; `emotion` from the JourneyEmotion enum. The journey-map is the
+    // UX/service-design primitive — without these guarantees the curve
+    // cannot draw and the chips have no colour. journeyStages must NOT
+    // appear on any other scene type (it would be a force-fit).
+    if (sc.type === 'journey-map') {
+      if (!Array.isArray(sc.journeyStages)) {
+        issues.push({
+          path: `${at}.journeyStages`,
+          message: 'journey-map requires a journeyStages array (3-8 stages along the journey)',
+        });
+      } else {
+        if (sc.journeyStages.length < 3 || sc.journeyStages.length > 8) {
+          issues.push({
+            path: `${at}.journeyStages`,
+            message: `journey-map requires 3-8 stages — ${sc.journeyStages.length} is ${sc.journeyStages.length < 3 ? 'too few (the arc has no shape)' : 'too many (the journey ceases to read)'}`,
+          });
+        }
+        const stageIds = new Set<string>();
+        sc.journeyStages.forEach((js: Record<string, any>, k: number) => {
+          const jAt = `${at}.journeyStages[${k}]`;
+          if (!js || typeof js !== 'object') {
+            issues.push({path: jAt, message: 'journey stage must be an object {id, label, emotion, curveValue, ...}'});
+            return;
+          }
+          if (typeof js.id !== 'string' || !js.id.trim()) {
+            issues.push({path: `${jAt}.id`, message: 'missing or empty string'});
+          } else if (stageIds.has(js.id)) {
+            issues.push({path: `${jAt}.id`, message: `duplicate journey stage id "${js.id}"`});
+          } else {
+            stageIds.add(js.id);
+          }
+          if (typeof js.label !== 'string' || !js.label.trim()) {
+            issues.push({path: `${jAt}.label`, message: 'missing or empty string'});
+          }
+          if (js.sub !== undefined && (typeof js.sub !== 'string' || !js.sub.trim())) {
+            issues.push({path: `${jAt}.sub`, message: 'sub must be a non-empty string when present'});
+          }
+          if (typeof js.emotion !== 'string' || !JOURNEY_EMOTIONS.includes(js.emotion)) {
+            issues.push({
+              path: `${jAt}.emotion`,
+              message: `not a valid emotion — one of: ${JOURNEY_EMOTIONS.join(', ')}`,
+            });
+          }
+          if (
+            typeof js.curveValue !== 'number' ||
+            !Number.isFinite(js.curveValue) ||
+            js.curveValue < 0 ||
+            js.curveValue > 1
+          ) {
+            issues.push({
+              path: `${jAt}.curveValue`,
+              message: 'curveValue must be a number in [0..1] (1 = best emotion, 0 = worst)',
+            });
+          }
+          for (const f of ['touchpoints', 'painPoints'] as const) {
+            const v = (js as Record<string, unknown>)[f];
+            if (v === undefined) continue;
+            if (!Array.isArray(v)) {
+              issues.push({path: `${jAt}.${f}`, message: `${f} must be an array of short strings`});
+              continue;
+            }
+            v.forEach((s: unknown, si: number) => {
+              if (typeof s !== 'string' || !s.trim()) {
+                issues.push({path: `${jAt}.${f}[${si}]`, message: 'must be a non-empty string'});
+              }
+            });
+          }
+        });
+      }
+    } else if (sc.journeyStages !== undefined) {
+      issues.push({
+        path: `${at}.journeyStages`,
+        message: `journeyStages has no meaning for type "${sc.type}" — only journey-map`,
+      });
+    }
+
     // Every scene type carries narration via beats; every scene type must
     // also carry SOMETHING visible for that narration to land on. A scene
     // that ships narration with no body renders a void with audio playing
@@ -762,6 +843,10 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       // prior-art / diff — already enforced by their dedicated checks above.
       'prior-art': () => null,
       diff: () => null,
+      // journey-map — at least 3 stages (a journey with fewer is just a list).
+      // The dedicated check above already pins the 3-8 bound and shape; this
+      // entry surfaces the body requirement in the standard required-body table.
+      'journey-map': () => (arrLen(sc.journeyStages) < 3 ? 'journey-map requires at least 3 stages (a journey with fewer is just a list)' : null),
     };
     const bodyCheck = requiredBody[sc.type];
     if (bodyCheck) {
