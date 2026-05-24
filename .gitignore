@@ -41,6 +41,10 @@ films/*
 !films/thermostat.json
 !films/auth-overlap.json
 !films/docent-landscape.json
+!films/docent-self.json
+!films/openclaw-ar.json
+!films/lethal-trifecta-blog.json
+!films/arxiv-2512-14806.json
 analysis/*
 !analysis/linear-algebra.md
 !analysis/linear-algebra.source.md

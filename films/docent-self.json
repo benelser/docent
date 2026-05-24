@@ -1,0 +1,826 @@
+{
+  "meta": {
+    "id": "docent-self",
+    "title": "docent",
+    "subject": "docent -- the tool that turns subjects into argued explainer films, surveying itself",
+    "repo": "~/.local/share/docent/engine",
+    "prompt": "architecture-review",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "neutral"
+  },
+  "style": {
+    "preset": "engineering",
+    "intent": {
+      "tone": "technical",
+      "audience": "technical",
+      "density": "comfortable",
+      "emphasis": "insight-first"
+    },
+    "rationale": "Engineering preset \u2014 the subject IS a codebase (the docent engine itself); load-bearing work is architecture-level: closed grammar, scene types, cascade composition."
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "accent": "blue",
+      "kicker": "DOCENT // ARCHITECTURE REVIEW",
+      "title": "docent",
+      "tagline": "An author. A typesetter. One document between them.",
+      "footnote": "5 gallery films  \u00b7  10 specs total  \u00b7  HEAD = 3964a58  \u00b7  the system reviews itself",
+      "beats": [
+        {
+          "id": "self-frame-1",
+          "narration": "This is docent looking at docent. The same system that turns a codebase or a paper into an argued explainer film -- this time, with itself as the subject. So we will not just describe it. We will test it.",
+          "show": "title"
+        },
+        {
+          "id": "self-frame-2",
+          "narration": "The design splits one job in two. An L-L-M decides what the film should say and in what order. A rendering engine owns every pixel of what gets put on screen. The only thing they share -- the only seam -- is one J-S-O-N document a human can read and edit between them.",
+          "show": "tagline"
+        },
+        {
+          "id": "self-frame-3",
+          "narration": "Five gallery films have been built this way; a handful of research ones too. The architecture is defensible on paper. The film's job is to ask whether that split actually holds -- where it earns its keep, and where it strains.",
+          "show": "footnote"
+        }
+      ]
+    },
+    {
+      "id": "prior-art",
+      "type": "prior-art",
+      "accent": "violet",
+      "kicker": "01 // AGAINST THE PRIOR ART",
+      "heading": "Where docent stands against the field",
+      "systems": [
+        {
+          "id": "manim",
+          "label": "Manim",
+          "sub": "Python animation library",
+          "year": "ca. 2018"
+        },
+        {
+          "id": "remotion",
+          "label": "Remotion",
+          "sub": "React-as-video",
+          "year": "v3.x, 2022"
+        },
+        {
+          "id": "reveal",
+          "label": "Reveal.js",
+          "sub": "content-as-data slide decks",
+          "year": "2011+"
+        },
+        {
+          "id": "vibevid",
+          "label": "One-shot L-L-M video apps",
+          "sub": "describe a video, get a video",
+          "year": "2024-25"
+        }
+      ],
+      "dimensions": [
+        {
+          "id": "authors",
+          "label": "What the author actually writes"
+        },
+        {
+          "id": "pixels",
+          "label": "Who owns the layout"
+        },
+        {
+          "id": "gate",
+          "label": "Quality gate before output"
+        },
+        {
+          "id": "reuse",
+          "label": "Reuse across subjects"
+        }
+      ],
+      "cells": [
+        {
+          "system": "manim",
+          "dimension": "authors",
+          "mark": "diverges",
+          "note": "imperative animation code, per video"
+        },
+        {
+          "system": "manim",
+          "dimension": "pixels",
+          "mark": "diverges",
+          "note": "the author, by hand"
+        },
+        {
+          "system": "manim",
+          "dimension": "gate",
+          "mark": "diverges",
+          "note": "manual review only"
+        },
+        {
+          "system": "manim",
+          "dimension": "reuse",
+          "mark": "diverges",
+          "note": "every video bespoke"
+        },
+        {
+          "system": "remotion",
+          "dimension": "authors",
+          "mark": "diverges",
+          "note": "T-S-X components, per video"
+        },
+        {
+          "system": "remotion",
+          "dimension": "pixels",
+          "mark": "same",
+          "note": "engine renders the frame"
+        },
+        {
+          "system": "remotion",
+          "dimension": "gate",
+          "mark": "diverges",
+          "note": "code review of components"
+        },
+        {
+          "system": "remotion",
+          "dimension": "reuse",
+          "mark": "diverges",
+          "note": "templates; no shared grammar"
+        },
+        {
+          "system": "reveal",
+          "dimension": "authors",
+          "mark": "same",
+          "note": "content as data, like docent"
+        },
+        {
+          "system": "reveal",
+          "dimension": "pixels",
+          "mark": "same",
+          "note": "engine renders the slide"
+        },
+        {
+          "system": "reveal",
+          "dimension": "gate",
+          "mark": "diverges",
+          "note": "no depth gate; no narration"
+        },
+        {
+          "system": "reveal",
+          "dimension": "reuse",
+          "mark": "diverges",
+          "note": "static; motion is not a move"
+        },
+        {
+          "system": "vibevid",
+          "dimension": "authors",
+          "mark": "diverges",
+          "note": "L-L-M writes animation code per request"
+        },
+        {
+          "system": "vibevid",
+          "dimension": "pixels",
+          "mark": "diverges",
+          "note": "the L-L-M, no guardrail"
+        },
+        {
+          "system": "vibevid",
+          "dimension": "gate",
+          "mark": "diverges",
+          "note": "none -- ships first draft"
+        },
+        {
+          "system": "vibevid",
+          "dimension": "reuse",
+          "mark": "diverges",
+          "note": "no shared grammar"
+        }
+      ],
+      "novelty": {
+        "dimension": "authors",
+        "statement": "In docent the L-L-M writes a J-S-O-N spec against 17 typed scene types -- never an animation primitive. The other systems ask either a human or a model for animation code, or cede motion entirely."
+      },
+      "beats": [
+        {
+          "id": "self-pa-1",
+          "narration": "Four systems share territory with docent. Manim from 2018: the author scripts the animation directly in Python. Remotion from 2022: React components, per video. Reveal-dot-js from 2011: content as data, but static -- no narration, no motion as a move. And the recent wave of one-shot L-L-M video apps: describe a video, get bespoke animation code per request.",
+          "reveal": [
+            "manim",
+            "remotion",
+            "reveal",
+            "vibevid"
+          ]
+        },
+        {
+          "id": "self-pa-2",
+          "narration": "Read down four rows -- four dimensions of how a video gets made. Who owns the layout. What gate runs before output. How much reuses across subjects. And the load-bearing row: what the author actually writes. On every other row, docent shares ground with at least one neighbour. On that one row, docent stands alone.",
+          "reveal": [
+            "authors",
+            "pixels",
+            "gate",
+            "reuse"
+          ]
+        },
+        {
+          "id": "self-pa-3",
+          "narration": "Here is the line, stated dimensionally. In docent the L-L-M writes a J-S-O-N spec against seventeen typed scene types, and never an animation primitive. Manim and Remotion ask a human for animation code. The L-L-M video apps ask a model for animation code -- the failure mode that produces what one engineer called the weird C-S-S moment. Reveal-dot-js asks for content but gives up motion entirely. That difference is the bet the rest of the film pays off.",
+          "focus": [
+            "authors"
+          ],
+          "pace": "hold",
+          "shot": "push"
+        }
+      ]
+    },
+    {
+      "id": "vocab",
+      "type": "structure",
+      "accent": "cyan",
+      "kicker": "02 // THE CLOSED VOCABULARY",
+      "heading": "Explanation has a finite set of moves",
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "set-up",
+          "label": "Set up",
+          "sub": "frame \u00b7 prior-art \u00b7 big-idea",
+          "col": 0,
+          "row": 0,
+          "accent": "blue"
+        },
+        {
+          "id": "layout",
+          "label": "Lay out the parts",
+          "sub": "structure \u00b7 progression \u00b7 walkthrough",
+          "col": 1,
+          "row": 0,
+          "accent": "cyan",
+          "wide": true
+        },
+        {
+          "id": "author",
+          "label": "Author",
+          "sub": "Claude or Codex, headless",
+          "col": 0,
+          "row": 1,
+          "accent": "blue",
+          "weight": "primary"
+        },
+        {
+          "id": "moves",
+          "label": "17 typed moves",
+          "sub": "the only surface the L-L-M touches",
+          "col": 1,
+          "row": 1,
+          "accent": "amber",
+          "weight": "hero"
+        },
+        {
+          "id": "engine",
+          "label": "Engine",
+          "sub": "Remotion \u00b7 5,648 LOC \u00b7 owns every pixel",
+          "col": 2,
+          "row": 1,
+          "accent": "green",
+          "weight": "primary"
+        },
+        {
+          "id": "argue",
+          "label": "Argue with the subject",
+          "sub": "compare \u00b7 quantities \u00b7 chart \u00b7 probe",
+          "col": 0,
+          "row": 2,
+          "accent": "amber",
+          "wide": true
+        },
+        {
+          "id": "conclude",
+          "label": "Annotate \u00b7 conclude",
+          "sub": "closeup \u00b7 passage \u00b7 figure \u00b7 demonstrate \u00b7 tension \u00b7 recap \u00b7 diff",
+          "col": 2,
+          "row": 2,
+          "accent": "rose"
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-am",
+          "from": "author",
+          "to": "moves",
+          "kind": "causes",
+          "strength": "necessary",
+          "label": "picks one per scene"
+        },
+        {
+          "id": "e-me",
+          "from": "moves",
+          "to": "engine",
+          "kind": "causes",
+          "strength": "necessary",
+          "label": "renders to pixels"
+        }
+      ],
+      "beats": [
+        {
+          "id": "self-vocab-1",
+          "narration": "The bet is straightforward. Explanation has a closed grammar -- a finite vocabulary of moves a film can make. The author's only choice is which move comes next; the engine's job is to render it. The seam between them is seventeen typed scene types, named once in a four-hundred-and-eighteen-line schema.",
+          "reveal": [
+            "author",
+            "moves",
+            "engine",
+            "e-am",
+            "e-me"
+          ],
+          "focus": [
+            "moves"
+          ]
+        },
+        {
+          "id": "self-vocab-2",
+          "narration": "And the moves cluster naturally. Set up the subject -- frame, prior-art, the big-idea takeaway. Lay out its parts and walk a sequence through them -- structure, progression, walkthrough.",
+          "reveal": [
+            "set-up",
+            "layout"
+          ]
+        },
+        {
+          "id": "self-vocab-3",
+          "narration": "Then argue with it. Compare options. Quantify magnitudes. Chart a curve. Probe a variable. Four moves, all built on naming what is real. Surface a tension, close-read an artefact, end on a recap -- and in P-R mode, show one diff.",
+          "reveal": [
+            "argue",
+            "conclude"
+          ]
+        },
+        {
+          "id": "self-vocab-4",
+          "narration": "That is why an L-L-M that cannot reliably write animation code can reliably author a film. It is not writing animation code. It is picking a labeled move and filling its slots -- and the engine, behind that seam, owns every pixel.",
+          "focus": [
+            "moves",
+            "engine"
+          ],
+          "pace": "hold",
+          "shot": "push"
+        }
+      ]
+    },
+    {
+      "id": "gates",
+      "type": "progression",
+      "accent": "amber",
+      "kicker": "03 // THREE GATES IN SERIES",
+      "heading": "What a draft has to clear before it ships",
+      "flow": "linear",
+      "stages": [
+        {
+          "id": "g-template",
+          "label": "Layer 1 -- the template",
+          "sub": "survey-template.md \u00b7 every section forced filled",
+          "gate": true
+        },
+        {
+          "id": "g-draft",
+          "label": "The draft spec",
+          "sub": "films/<id>.json",
+          "duration": "what the gates judge"
+        },
+        {
+          "id": "g-floor",
+          "label": "Layer 2 -- the floor",
+          "sub": "depthcheck.ts \u00b7 264 lines \u00b7 5 to 9 regex tests",
+          "gate": true
+        },
+        {
+          "id": "g-ceiling",
+          "label": "Layer 3 -- the ceiling",
+          "sub": "judge.ts \u00b7 510 lines \u00b7 L-L-M \u00b7 6 dims \u00d7 5 pts = 30",
+          "gate": true
+        },
+        {
+          "id": "g-out",
+          "label": "Past the gauntlet",
+          "sub": "T-T-S, render, ship"
+        }
+      ],
+      "beats": [
+        {
+          "id": "self-gates-1",
+          "narration": "The gauntlet is three layers, in series. Layer one is the survey template. Mandatory sections force every part of the analysis -- triage, failure modes, real numbers, the alternative not taken. An author cannot ship a draft that skipped a section.",
+          "reveal": 2,
+          "focus": [
+            "g-template",
+            "g-draft"
+          ]
+        },
+        {
+          "id": "self-gates-2",
+          "narration": "Layer two is the floor. A mechanical text check, regex-shaped, runs over the spec's narration. Does it carry a number? Does it name a failure mode? Does it call out a trade-off? Five to nine regex tests, all cheap and deterministic -- and easy to game on their own. That is the point. The floor is meant to be obvious. The cost it pays for being obvious is that on its own, it can be keyword-stuffed.",
+          "reveal": 3,
+          "focus": [
+            "g-floor"
+          ]
+        },
+        {
+          "id": "self-gates-3",
+          "narration": "Layer three is the ceiling. An adversarial L-L-M judge scores the spec on six dimensions, one to five points each, for a thirty-point scale. A real measurement, not a brochure number: first-draft specs typically lift about seven points across the revise loop. The judge does not just filter; it changes the artifact.",
+          "reveal": 4,
+          "focus": [
+            "g-ceiling"
+          ]
+        },
+        {
+          "id": "self-gates-4",
+          "narration": "And the point of the design is the pair-of-pairs. Template plus mechanical catches the fluff a model would produce. Mechanical plus adversarial catches the keyword-stuffing the floor would let through. No single gate works alone -- and the gap between the floor and the ceiling is the metric the architecture genuinely runs on.",
+          "reveal": 5,
+          "focus": [
+            "g-floor",
+            "g-ceiling"
+          ],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "fork",
+      "type": "compare",
+      "accent": "rose",
+      "kicker": "04 // THE FORK REFUSED",
+      "heading": "The free-form escape valve, and what closing it costs",
+      "columns": [
+        {
+          "id": "chosen",
+          "label": "What docent chose"
+        },
+        {
+          "id": "refused",
+          "label": "The fork it rejected"
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-writes",
+          "label": "What the L-L-M actually writes",
+          "cells": [
+            {
+              "text": "a J-S-O-N spec against 17 typed scene types",
+              "verdict": "win"
+            },
+            {
+              "text": "Remotion T-S-X, per request, for any move the grammar lacks",
+              "verdict": "lose"
+            }
+          ]
+        },
+        {
+          "id": "row-buys",
+          "label": "What it buys",
+          "cells": [
+            {
+              "text": "an engine the L-L-M cannot widen -- every pixel determined",
+              "verdict": "win"
+            },
+            {
+              "text": "every subject fits; no shoehorning required",
+              "verdict": "win"
+            }
+          ]
+        },
+        {
+          "id": "row-costs",
+          "label": "What it costs",
+          "cells": [
+            {
+              "text": "off-grammar subjects break silently at the wrong plane",
+              "verdict": "lose"
+            },
+            {
+              "text": "weird C-S-S, layout glitches -- the one-shot video-app idiom",
+              "verdict": "lose"
+            }
+          ]
+        },
+        {
+          "id": "row-exemplar",
+          "label": "The visible exemplars",
+          "cells": [
+            {
+              "text": "5 gallery films, all rendered; 4 passing depth",
+              "verdict": "win"
+            },
+            {
+              "text": "vibe-coded video agents, ca. 2024-25",
+              "verdict": "lose"
+            }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "id": "self-fork-1",
+          "narration": "The road not taken. docent could have added a custom scene type -- a free-form escape valve where the L-L-M writes Remotion T-S-X whenever no built-in move fits. It rejected that. On the chosen side, the L-L-M only ever writes a J-S-O-N spec against the seventeen typed scenes. On the refused side, it would be writing animation code itself.",
+          "reveal": 1
+        },
+        {
+          "id": "self-fork-2",
+          "narration": "Each side genuinely buys something. The chosen path buys an engine the L-L-M cannot widen -- every pixel determined, no L-L-M-authored layout to surprise the viewer. The refused path would have bought the opposite asymmetry: every subject would fit, no shoehorning required for the move that does not exist yet.",
+          "reveal": 2
+        },
+        {
+          "id": "self-fork-3",
+          "narration": "And each side genuinely pays. The chosen side pays the cost that off-grammar subjects break silently -- the validator passes, the judge passes, and the film argues at the wrong plane with no one to flag it. The refused side would pay the cost of weird C-S-S -- the exact failure mode every one-shot video app demonstrates today.",
+          "reveal": 3
+        },
+        {
+          "id": "self-fork-4",
+          "narration": "The exemplars decide. Five gallery films and a handful of research ones exist on the chosen side -- math, software, a P-R review, a proof, a poem. On the refused side, the only visible exemplars are the vibe-coded video apps themselves. docent ate the cost of refusing the escape valve instead of becoming one of them.",
+          "reveal": 4,
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "strain",
+      "type": "tension",
+      "accent": "amber",
+      "kicker": "05 // WHERE IT STRAINS",
+      "heading": "The live risks the architecture cannot detect",
+      "cut": "hold",
+      "treatment": "sketch",
+      "grid": {
+        "cols": 4,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "chosen-grammar",
+          "label": "Closed grammar (chosen)",
+          "sub": "17 scene types, structurally validated",
+          "col": 0,
+          "row": 0,
+          "accent": "green",
+          "weight": "hero",
+          "wide": true
+        },
+        {
+          "id": "off-grammar",
+          "label": "Risk -- an off-grammar subject",
+          "sub": "live REPL, an interactive game, art whose meaning is in cursor motion",
+          "col": 2,
+          "row": 0,
+          "kind": "risk",
+          "wide": true
+        },
+        {
+          "id": "regex-gameable",
+          "label": "Risk -- the regex floor is gameable",
+          "sub": "depthcheck keywords can be stuffed; the floor alone has no defence",
+          "col": 0,
+          "row": 1,
+          "kind": "risk",
+          "wide": true
+        },
+        {
+          "id": "qualitative",
+          "label": "The strain signal is qualitative",
+          "sub": "the validator cannot see meaning",
+          "col": 2,
+          "row": 1,
+          "accent": "amber",
+          "wide": true
+        },
+        {
+          "id": "judge-drift",
+          "label": "Risk -- the L-L-M judge silently degrades",
+          "sub": "model deprecation \u00b7 prompt drift \u00b7 cost-tuning -- the floor becomes the ceiling",
+          "col": 0,
+          "row": 2,
+          "kind": "risk",
+          "wide": true
+        },
+        {
+          "id": "no-metric",
+          "label": "And no metric emits",
+          "sub": "no observability; the gap between floor and judge is read by hand",
+          "col": 2,
+          "row": 2,
+          "accent": "rose",
+          "wide": true
+        }
+      ],
+      "edges": [],
+      "beats": [
+        {
+          "id": "self-strain-1",
+          "narration": "Here is the load-bearing trade-off, stated honestly. The closed grammar is the chosen design. The first risk is the first subject whose native move sits outside the seventeen types -- a live R-E-P-L, an interactive game, a piece of art whose meaning is in cursor motion. The validator passes the spec. The L-L-M judge has nothing structurally wrong to grade against. The resulting film is clean-looking, well-edited, and argues at the wrong plane. The strain signal is qualitative; the system cannot detect that it has produced one.",
+          "reveal": [
+            "chosen-grammar",
+            "off-grammar",
+            "qualitative"
+          ],
+          "focus": [
+            "chosen-grammar",
+            "off-grammar"
+          ]
+        },
+        {
+          "id": "self-strain-2",
+          "narration": "The second risk lives at the floor. The mechanical depth check is regex-shaped and gameable on its own. The keywords for failure-mode language, the quantified-claim pattern, the trade-off pattern -- all are easy to stuff. The floor only earns its keep paired with the L-L-M judge. Alone, it filters nothing serious.",
+          "reveal": [
+            "regex-gameable"
+          ],
+          "focus": [
+            "regex-gameable"
+          ]
+        },
+        {
+          "id": "self-strain-3",
+          "narration": "The third risk is the one that matters most operationally. The L-L-M judge is load-bearing -- and silently degradable. A deprecated model, a drifted prompt, a tighter cost knob -- any of them narrows the gap between the regex floor and the judge ceiling. The floor silently becomes the ceiling. And there is no metric that emits; today, the gap is read by hand off review files, or it is not read at all.",
+          "reveal": [
+            "judge-drift",
+            "no-metric"
+          ],
+          "focus": [
+            "judge-drift",
+            "no-metric"
+          ],
+          "pace": "hold",
+          "shot": "push"
+        }
+      ]
+    },
+    {
+      "id": "numbers",
+      "type": "quantities",
+      "accent": "violet",
+      "kicker": "06 // BY THE NUMBERS",
+      "heading": "The arithmetic behind the verdict's posture",
+      "metrics": [
+        {
+          "id": "m-types",
+          "label": "Scene types in the grammar",
+          "col": 0,
+          "row": 0,
+          "bind": "types",
+          "format": "int",
+          "accent": "amber"
+        },
+        {
+          "id": "m-loc",
+          "label": "Lines of TypeScript",
+          "col": 1,
+          "row": 0,
+          "bind": "loc",
+          "format": "int",
+          "accent": "blue"
+        },
+        {
+          "id": "m-films",
+          "label": "Gallery films passing depth",
+          "col": 2,
+          "row": 0,
+          "bind": "films",
+          "format": "int",
+          "accent": "green"
+        },
+        {
+          "id": "m-commits",
+          "label": "Commits in 2 calendar days",
+          "col": 0,
+          "row": 1,
+          "bind": "commits",
+          "format": "int",
+          "accent": "rose"
+        },
+        {
+          "id": "m-lift",
+          "label": "Judge lift per revise loop",
+          "col": 1,
+          "row": 1,
+          "bind": "lift",
+          "format": "int",
+          "unit": "/ 30",
+          "accent": "amber"
+        },
+        {
+          "id": "m-tests",
+          "label": "Unit tests of the validator",
+          "col": 2,
+          "row": 1,
+          "bind": "tests",
+          "format": "int",
+          "accent": "rose"
+        }
+      ],
+      "beats": [
+        {
+          "id": "self-num-1",
+          "narration": "Numbers carry the verdict's posture, so the numbers are pinned to the source. The grammar is seventeen scene types -- defined once at line 38 of the schema. Not the fifteen the README still says. Even the canonical count is not derived from a single source -- the smallest finding, and the most telling.",
+          "set": {
+            "types": {
+              "to": 17
+            }
+          },
+          "pace": "settle"
+        },
+        {
+          "id": "self-num-2",
+          "narration": "Fourteen thousand five hundred and forty-three lines of TypeScript. Almost six thousand of those live in the scene components alone -- which is what *owning every pixel* costs the engine side of the seam. The author layer, by contrast, is dwarfed by it.",
+          "set": {
+            "loc": {
+              "to": 14543
+            }
+          }
+        },
+        {
+          "id": "self-num-3",
+          "narration": "Five gallery films passed the depth contract -- and the L-L-M judge genuinely changes them. First-draft specs lift on average about seven points on the thirty-point scale across the revise loop. The gate does real work; it is not merely a filter.",
+          "set": {
+            "films": {
+              "to": 5
+            },
+            "lift": {
+              "to": 7
+            }
+          }
+        },
+        {
+          "id": "self-num-4",
+          "narration": "One hundred and two commits delivered all of it. Every single one across two calendar days, the 22nd and 23rd of May, 2026. This is greenfield by arithmetic -- not by opinion. And only four hermetic end-to-end fixtures exercise the cascade.",
+          "set": {
+            "commits": {
+              "to": 102
+            }
+          },
+          "pace": "hold"
+        },
+        {
+          "id": "self-num-5",
+          "narration": "And the number the verdict has to sit on. Zero unit tests cover the schema validator, the depthcheck regex floor, or the revise loop. The nine-hundred-and-ninety-five-line file that decides whether a spec ever reaches the engine has never been exercised by a single automated negative case.",
+          "set": {
+            "tests": {
+              "to": 0
+            }
+          },
+          "pace": "hold",
+          "shot": "push"
+        }
+      ]
+    },
+    {
+      "id": "verdict",
+      "type": "recap",
+      "accent": "blue",
+      "kicker": "RECAP // THE SCORECARD",
+      "heading": "docent on docent -- approve with caveats",
+      "points": [
+        "Disposition -- approve with caveats. The architecture is sound; the operational ground under it is greenfield.",
+        "Strength -- the author/typesetter split is genuinely original; the L-L-M never writes animation code, full stop.",
+        "Strength -- the three-layer depth enforcement is the right shape; 4 of 5 gallery films pass on first or second judging round.",
+        "Strength -- per-piece caching makes iteration cheap; one beat edit costs one T-T-S call, not a full render.",
+        "Fragility -- the closed grammar has no escape hatch; an off-grammar subject argues at the wrong plane and the system cannot detect it.",
+        "Fragility -- the L-L-M judge is load-bearing and silently degradable; the wire format carries no version field; 102 commits in 2 days with 0 unit tests is not yet pressure-tested.",
+        "When not to choose this -- a live interactive subject, a team that wants pixel-level editorial control, a sprawling repo with no obvious load-bearing 5%."
+      ],
+      "beats": [
+        {
+          "id": "self-recap-1",
+          "narration": "The verdict is approve with caveats. The architecture is sound. The operational ground under it is greenfield. Both are real, and the film owes you both.",
+          "reveal": 1
+        },
+        {
+          "id": "self-recap-2",
+          "narration": "Three strengths the architecture genuinely earns. First: the author/typesetter split is original. The L-L-M writes a J-S-O-N spec; the engine owns every pixel; the seam between them is one document. The L-L-M never writes animation code, full stop.",
+          "reveal": 2
+        },
+        {
+          "id": "self-recap-3",
+          "narration": "Second: the three-layer depth enforcement is the right shape. Template, mechanical floor, adversarial ceiling. Four of five gallery films pass on first or second judging round against the corpus that already exists.",
+          "reveal": 3
+        },
+        {
+          "id": "self-recap-4",
+          "narration": "Third: per-piece caching makes iteration cheap. A narration edit on one beat costs exactly one T-T-S call. Not a re-judge. Not a re-render. The seam between the slow half and the deterministic half is paid for, every edit.",
+          "reveal": 4
+        },
+        {
+          "id": "self-recap-5",
+          "narration": "And three fragilities to watch. First: the closed grammar has no escape hatch. A subject whose native move sits outside the seventeen types argues at the wrong plane, and the validator, the regex floor, and even the L-L-M judge cannot reliably catch it. The strain signal is qualitative.",
+          "reveal": 5
+        },
+        {
+          "id": "self-recap-6",
+          "narration": "Second: the L-L-M judge is load-bearing and silently degradable. Model deprecation, prompt drift, cost-tuning -- any of them collapses the gap between the regex floor and the judge ceiling, and the floor silently becomes the ceiling. The wire format carries no version field; schema evolution will break committed specs. One hundred and two commits across two days, zero unit tests against the gates -- this is not pressure-tested architecture.",
+          "reveal": 6
+        },
+        {
+          "id": "self-recap-7",
+          "narration": "And the bright line on when not to choose this. A live interactive subject -- a debugger, a game, a R-E-P-L. A team that wants pixel-level editorial control -- the engine is supposed to own them. A sprawling repository with no obvious load-bearing five percent. docent is a reduction tool, not a coverage tool. So: approve, with caveats. Watch the gap between the floor and the ceiling. That is the metric the system itself does not yet emit.",
+          "reveal": 7,
+          "pace": "hold"
+        }
+      ]
+    }
+  ]
+}
