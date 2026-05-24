@@ -83,6 +83,8 @@ const DEPTH_DIMENSIONS = [
   {id: 'space-is-load-bearing', label: 'Space is load-bearing — position carries information, not just decoration'},
   // journey-map: when the film carries one, the emotional arc must do work.
   {id: 'experience-is-load-bearing', label: 'Experience is load-bearing — the emotional arc is the argument; pain and delight are specific, not vague'},
+  // causal-loop: when the film carries one, the R/B structure must reason.
+  {id: 'loops-explain-not-decorate', label: 'Loops explain — the reinforcing or balancing structure is what the scene argues, not a pretty cycle'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per

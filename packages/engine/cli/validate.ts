@@ -1301,6 +1301,186 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       });
     }
 
+    // causal-loop — feedback diagrams. Variables sit on a ring; directed
+    // edges between them carry a polarity glyph (+/-); one or more loops
+    // overlay the diagram and are labelled reinforcing (R) or balancing (B).
+    //
+    // HARD-FAIL contracts:
+    //  - 3-8 variables.
+    //  - Every causalEdge `from`/`to` references a real variable id.
+    //  - Every causalEdge `polarity` is exactly '+' or '-'.
+    //  - Every loop's `path` references real variable ids.
+    //  - Every consecutive pair in a loop's path (and the wrap last→first)
+    //    has a corresponding causal edge.
+    //  - Every loop's `kind` matches the parity of '-' edges in its path
+    //    (even count → reinforcing R; odd → balancing B). The labelling
+    //    cannot lie — the math IS the argument.
+    if (sc.type === 'causal-loop') {
+      const variableIds = new Set<string>();
+      if (!Array.isArray(sc.variables) || sc.variables.length < 3 || sc.variables.length > 8) {
+        issues.push({
+          path: `${at}.variables`,
+          message: 'causal-loop requires 3-8 variables (the nouns of the feedback diagram)',
+        });
+      } else {
+        sc.variables.forEach((v: Record<string, any>, k: number) => {
+          const vAt = `${at}.variables[${k}]`;
+          if (!v || typeof v !== 'object') {
+            issues.push({path: vAt, message: 'variable must be an object {id, label, sub?}'});
+            return;
+          }
+          if (typeof v.id !== 'string' || !v.id.trim()) {
+            issues.push({path: `${vAt}.id`, message: 'missing or empty string'});
+          } else if (variableIds.has(v.id)) {
+            issues.push({path: `${vAt}.id`, message: `duplicate variable id "${v.id}"`});
+          } else {
+            variableIds.add(v.id);
+          }
+          if (typeof v.label !== 'string' || !v.label.trim()) {
+            issues.push({path: `${vAt}.label`, message: 'missing or empty string'});
+          }
+          if (v.sub !== undefined && (typeof v.sub !== 'string' || !v.sub.trim())) {
+            issues.push({path: `${vAt}.sub`, message: 'sub must be a non-empty string when present'});
+          }
+        });
+      }
+      const edgePolarity = new Map<string, '+' | '-'>();
+      const causalEdgeIds = new Set<string>();
+      if (sc.causalEdges !== undefined && !Array.isArray(sc.causalEdges)) {
+        issues.push({path: `${at}.causalEdges`, message: 'causalEdges must be an array'});
+      } else if (Array.isArray(sc.causalEdges)) {
+        sc.causalEdges.forEach((e: Record<string, any>, k: number) => {
+          const eAt = `${at}.causalEdges[${k}]`;
+          if (!e || typeof e !== 'object') {
+            issues.push({path: eAt, message: 'edge must be an object {id, from, to, polarity}'});
+            return;
+          }
+          if (typeof e.id !== 'string' || !e.id.trim()) {
+            issues.push({path: `${eAt}.id`, message: 'missing or empty string'});
+          } else if (causalEdgeIds.has(e.id)) {
+            issues.push({path: `${eAt}.id`, message: `duplicate edge id "${e.id}"`});
+          } else {
+            causalEdgeIds.add(e.id);
+          }
+          let fromOk = false;
+          let toOk = false;
+          if (typeof e.from !== 'string' || !e.from.trim()) {
+            issues.push({path: `${eAt}.from`, message: 'missing variable id'});
+          } else if (!variableIds.has(e.from)) {
+            issues.push({
+              path: `${eAt}.from`,
+              message: `edge references variable "${e.from}", which is not a variable in this scene`,
+            });
+          } else {
+            fromOk = true;
+          }
+          if (typeof e.to !== 'string' || !e.to.trim()) {
+            issues.push({path: `${eAt}.to`, message: 'missing variable id'});
+          } else if (!variableIds.has(e.to)) {
+            issues.push({
+              path: `${eAt}.to`,
+              message: `edge references variable "${e.to}", which is not a variable in this scene`,
+            });
+          } else {
+            toOk = true;
+          }
+          if (e.polarity !== '+' && e.polarity !== '-') {
+            issues.push({
+              path: `${eAt}.polarity`,
+              message: 'polarity must be "+" (reinforcing) or "-" (opposing)',
+            });
+          } else if (fromOk && toOk) {
+            edgePolarity.set(`${e.from}->${e.to}`, e.polarity);
+          }
+          if (e.label !== undefined && (typeof e.label !== 'string' || !e.label.trim())) {
+            issues.push({path: `${eAt}.label`, message: 'label must be a non-empty string when present'});
+          }
+        });
+      }
+      const loopIds = new Set<string>();
+      if (sc.loops !== undefined && !Array.isArray(sc.loops)) {
+        issues.push({path: `${at}.loops`, message: 'loops must be an array'});
+      } else if (Array.isArray(sc.loops)) {
+        sc.loops.forEach((loop: Record<string, any>, k: number) => {
+          const lAt = `${at}.loops[${k}]`;
+          if (!loop || typeof loop !== 'object') {
+            issues.push({path: lAt, message: 'loop must be an object {id, path, kind, label?}'});
+            return;
+          }
+          if (typeof loop.id !== 'string' || !loop.id.trim()) {
+            issues.push({path: `${lAt}.id`, message: 'missing or empty string'});
+          } else if (loopIds.has(loop.id)) {
+            issues.push({path: `${lAt}.id`, message: `duplicate loop id "${loop.id}"`});
+          } else {
+            loopIds.add(loop.id);
+          }
+          if (loop.label !== undefined && (typeof loop.label !== 'string' || !loop.label.trim())) {
+            issues.push({path: `${lAt}.label`, message: 'label must be a non-empty string when present'});
+          }
+          if (loop.kind !== 'reinforcing' && loop.kind !== 'balancing') {
+            issues.push({path: `${lAt}.kind`, message: 'kind must be "reinforcing" or "balancing"'});
+          }
+          if (!Array.isArray(loop.path) || loop.path.length < 2) {
+            issues.push({path: `${lAt}.path`, message: 'path must be an array of at least 2 variable ids'});
+            return;
+          }
+          let pathOk = true;
+          loop.path.forEach((pid: any, pi: number) => {
+            if (typeof pid !== 'string' || !pid.trim()) {
+              issues.push({path: `${lAt}.path[${pi}]`, message: 'path entry must be a variable id'});
+              pathOk = false;
+            } else if (!variableIds.has(pid)) {
+              issues.push({
+                path: `${lAt}.path[${pi}]`,
+                message: `path references variable "${pid}", which is not a variable in this scene`,
+              });
+              pathOk = false;
+            }
+          });
+          if (!pathOk) return;
+          let minusCount = 0;
+          const pathLen = loop.path.length;
+          for (let pi = 0; pi < pathLen; pi++) {
+            const from = loop.path[pi];
+            const to = loop.path[(pi + 1) % pathLen];
+            const key = `${from}->${to}`;
+            const pol = edgePolarity.get(key);
+            if (pol === undefined) {
+              issues.push({
+                path: `${lAt}.path`,
+                message: `loop edge "${from}" → "${to}" has no matching entry in causalEdges (a loop cannot draw over a missing edge)`,
+              });
+              pathOk = false;
+              continue;
+            }
+            if (pol === '-') minusCount += 1;
+          }
+          if (!pathOk) return;
+          const expectedKind = minusCount % 2 === 0 ? 'reinforcing' : 'balancing';
+          if (loop.kind === 'reinforcing' || loop.kind === 'balancing') {
+            if (loop.kind !== expectedKind) {
+              issues.push({
+                path: `${lAt}.kind`,
+                message:
+                  `loop labelled "${loop.kind}" but path has ${minusCount} '-' edge(s) — ` +
+                  `the parity demands "${expectedKind}" (even '-' count → reinforcing R; odd → balancing B)`,
+              });
+            }
+          }
+        });
+      }
+    } else {
+      if (sc.variables !== undefined) {
+        issues.push({path: `${at}.variables`, message: `variables has no meaning for type "${sc.type}" — only causal-loop`});
+      }
+      if (sc.causalEdges !== undefined) {
+        issues.push({path: `${at}.causalEdges`, message: `causalEdges has no meaning for type "${sc.type}" — only causal-loop`});
+      }
+      if (sc.loops !== undefined) {
+        issues.push({path: `${at}.loops`, message: `loops has no meaning for type "${sc.type}" — only causal-loop`});
+      }
+    }
+
     // Every scene type carries narration via beats; every scene type must
     // also carry SOMETHING visible for that narration to land on. A scene
     // that ships narration with no body renders a void with audio playing
@@ -1378,6 +1558,14 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       // The dedicated check above already pins the 3-8 bound and shape; this
       // entry surfaces the body requirement in the standard required-body table.
       'journey-map': () => (arrLen(sc.journeyStages) < 3 ? 'journey-map requires at least 3 stages (a journey with fewer is just a list)' : null),
+      // causal-loop — at least 3 variables AND at least 1 loop. The
+      // per-scene block above pins the upper bound (8 vars) and the
+      // labelling math; this is the minimum-body floor.
+      'causal-loop': () => {
+        const hasVars = arrLen(sc.variables) >= 3;
+        const hasLoop = arrLen(sc.loops) >= 1;
+        return hasVars && hasLoop ? null : 'causal-loop requires at least 3 variables and at least 1 loop';
+      },
     };
     const bodyCheck = requiredBody[sc.type];
     if (bodyCheck) {

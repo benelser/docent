@@ -200,3 +200,13 @@ chains, urban planning, military strategy, epidemiology: layouts where a
 region's *place* on the page carries the load. A map with un-annotated
 regions is decoration; depthcheck enforces a minimum annotation density
 (`position-meaningful`) and the judge scores `space-is-load-bearing`.
+
+- **If the argument is about how variables INFLUENCE EACH OTHER IN A CYCLE** —
+  climate feedback, organizational dynamics, economic loops, control-system
+  behaviour — reach for `causal-loop`. Mark every edge's polarity (`+` = an
+  increase in `from` drives an increase in `to`; `-` = an increase drives a
+  decrease). Name each loop **reinforcing** or **balancing**, and verify the
+  labelling matches the polarity count: an even number of `-` edges along the
+  path is reinforcing (R, the cycle compounds); an odd number is balancing
+  (B, the cycle self-corrects). The validator will reject a loop that lies
+  about its kind.

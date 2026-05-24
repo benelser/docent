@@ -229,3 +229,13 @@ whose shape the subject already has. A `tree` whose levels are decorative —
 every node a single child of the one above, or levels that restate the level
 above — fails the `hierarchy-meaningful` judge dimension; author it as a
 `progression` or a flat `structure` instead.
+
+If the argument is about how variables INFLUENCE EACH OTHER IN A CYCLE —
+climate feedback, organizational dynamics, economic loops, control-system
+behaviour — reach for `causal-loop`. Mark every edge's polarity (`+` = an
+increase in `from` drives an increase in `to`; `-` = an increase drives a
+decrease). Name each loop **reinforcing** or **balancing**, and verify the
+labelling matches the polarity count: an even number of `-` edges along the
+path is reinforcing (R, the cycle compounds); an odd number is balancing
+(B, the cycle self-corrects). The validator rejects a loop that lies about
+its kind.

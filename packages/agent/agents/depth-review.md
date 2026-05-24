@@ -193,6 +193,35 @@ When the film carries a `journey-map` scene, score this dimension:
 
    For films with no journey-map scene, mark this dimension n/a.
 
+### For films with a causal-loop scene — the feedback dimension
+
+9. **Loops explain, not decorate.** A `causal-loop` scene's argument IS the
+   reinforcing or balancing structure of the cycle: the polarity glyphs, the
+   loop label (R / B), and *why this structure produces the dynamics the
+   subject exhibits*. A scene that draws a pretty ring of variables without
+   the narration saying "this is a reinforcing loop because each step
+   compounds the next" or "this is a balancing loop because the negative
+   edge brings the system back to equilibrium" has failed. Score whether the
+   narration uses the loop's STRUCTURE (R vs B, the polarity count, the
+   compounding vs self-correcting behaviour) to *reason*, or whether the
+   loop is decorative — a diagram the film could remove without changing
+   what it claims.
+
+   **Strong** — the loop carries the argument:
+   - "Two negative edges multiply to a positive — debt grows debt grows debt.
+     That is what makes this a reinforcing vicious cycle, not a balancing
+     one." (cites the polarity math, names the dynamics)
+   - "The thermostat closes a balancing loop: when temperature rises, the
+     cooling kicks in, which drops temperature — odd negative count, B."
+     (the structure explains the behaviour)
+
+   **Weak** — the loop is decoration:
+   - "Here are the variables and how they relate." (no R/B reasoning at all)
+   - "It's a reinforcing loop." (asserted, not explained — could be lifted
+     onto any other diagram by changing nouns)
+
+   For films without a causal-loop scene, mark this dimension n/a.
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the

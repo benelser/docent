@@ -8,6 +8,7 @@ import type {FilmSpec} from './spec';
 
 import aiAgentStack from '../../../../films/ai-agent-stack.json';
 import aiLabRace from '../../../../films/ai-lab-race.json';
+import causalLoopPrimer from '../../../../films/causal-loop-primer.json';
 import euclidPrimes from '../../../../films/euclid-primes.json';
 import grammarCheck from '../../../../films/grammar-check.json';
 import kubernetesPr from '../../../../films/kubernetes-pr.json';
@@ -19,6 +20,7 @@ import stoppingByWoods from '../../../../films/stopping-by-woods.json';
 export const FILMS: Record<string, FilmSpec> = {
   'ai-agent-stack': aiAgentStack as FilmSpec,
   'ai-lab-race': aiLabRace as FilmSpec,
+  'causal-loop-primer': causalLoopPrimer as FilmSpec,
   'euclid-primes': euclidPrimes as FilmSpec,
   'grammar-check': grammarCheck as FilmSpec,
   'kubernetes-pr': kubernetesPr as FilmSpec,

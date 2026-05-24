@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "journey-map", "map", "timeline", "tree"]},
+        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "causal-loop", "journey-map", "map", "timeline", "tree"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -179,6 +179,24 @@
           "minItems": 3,
           "maxItems": 8,
           "items": {"$ref": "#/$defs/journey-stage"}
+        },
+        "variables": {
+          "type": "array",
+          "description": "causal-loop scenes — the variables of the system, drawn as labelled discs arranged in a ring (3-8 read cleanly)",
+          "minItems": 3,
+          "maxItems": 8,
+          "items": {"$ref": "#/$defs/causal-variable"}
+        },
+        "causalEdges": {
+          "type": "array",
+          "description": "causal-loop scenes — directed edges between variables, each carrying a polarity glyph (+/-). + means an increase in `from` drives an increase in `to`; - means an increase in `from` drives a decrease.",
+          "items": {"$ref": "#/$defs/causal-edge"}
+        },
+        "loops": {
+          "type": "array",
+          "description": "causal-loop scenes — closed cycles of variables. Each is reinforcing (R, even number of '-' edges along its path — the loop compounds) or balancing (B, odd number — the loop self-corrects). The validator enforces the labelling math.",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/causal-loop"}
         },
         "beats": {
           "type": "array",
@@ -609,6 +627,47 @@
           "maximum": 1,
           "description": "the y-value on the emotion curve, normalized 0..1 (1 = top / best emotion, 0 = bottom / worst)"
         }
+      }
+    },
+    "causal-variable": {
+      "type": "object",
+      "description": "causal-loop scenes — one variable of the system, drawn as a labelled disc on the ring. The variables are the *nouns* of the feedback diagram.",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id and edges reference it"},
+        "label": {"type": "string", "description": "the variable's short name (e.g. 'Debt', 'Interest payments')"},
+        "sub": {"type": "string", "description": "an optional one-line gloss shown under the label"}
+      }
+    },
+    "causal-edge": {
+      "type": "object",
+      "description": "causal-loop scenes — one directed edge between variables. `polarity` is the line's *assertion*: '+' means an increase in `from` drives an increase in `to`; '-' means an increase in `from` drives a decrease.",
+      "required": ["id", "from", "to", "polarity"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id"},
+        "from": {"type": "string", "description": "the source variable id"},
+        "to": {"type": "string", "description": "the target variable id"},
+        "polarity": {"enum": ["+", "-"], "description": "+ reinforcing influence; - opposing influence"},
+        "label": {"type": "string", "description": "an optional one-liner describing the influence"}
+      }
+    },
+    "causal-loop": {
+      "type": "object",
+      "description": "causal-loop scenes — one closed cycle of variables. `kind` MUST match the parity of '-' edges along the path: an even count = reinforcing (R, the loop compounds); odd = balancing (B, the loop self-corrects). The validator enforces this — the labelling cannot lie.",
+      "required": ["id", "path", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id (the centre R/B label lands when the loop is revealed)"},
+        "label": {"type": "string", "description": "an optional name for the loop (e.g. 'vicious cycle of debt')"},
+        "path": {
+          "type": "array",
+          "description": "the loop's variable ids in cycle order. Consecutive pairs (and the wrap from last → first) must each have a corresponding causal edge.",
+          "minItems": 2,
+          "items": {"type": "string"}
+        },
+        "kind": {"enum": ["reinforcing", "balancing"], "description": "R (reinforcing) or B (balancing) — the labelling parity-matched against the path's '-' edges"}
       }
     }
   }
