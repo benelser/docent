@@ -300,6 +300,7 @@ export type Scene = {
     | 'chart'
     | 'big-idea'
     | 'prior-art'
+    | 'journey-map'
     | 'map'
     | 'timeline'
     | 'tree';
@@ -401,6 +402,16 @@ export type Scene = {
   regions?: MapRegion[];
   markers?: MapMarker[];
   connections?: MapConnection[];
+  // journey-map — a person's experience across stages, with emotion and
+  // touchpoints. The shape UX research, customer onboarding, patient flows
+  // argue from. Not `progression` (which is system-internal stages over
+  // time) and not `walkthrough` (which is actor message-passing): journey-
+  // map's spine is *a single person's emotional arc* across the stages
+  // they walk through. The continuous emotional curve at the top of the
+  // scene reads the arc as a whole; each stage's chip pins the local
+  // feeling to a specific moment and (optionally) the touchpoint that
+  // caused it. A journey-map is the first UX/service-design primitive.
+  journeyStages?: JourneyStage[];
   beats: Beat[];
 };
 
@@ -777,4 +788,44 @@ export type TimelineSpan = {
   to: string;
   label: string;
   lane?: number;
+};
+
+// ----- journey-map — a person's experience across stages -------------------
+//
+// The UX/service-design primitive: stages × emotional touchpoints. Renders
+// horizontal stages along a journey (e.g. "first hear" → "evaluate" → "sign
+// up" → "first month" → "year two"). Per stage: an emotional indicator
+// (frustration / curiosity / delight / fatigue / …) shown as a colored chip,
+// plus optional `touchpoints` (what the user encounters) and `painPoints`
+// (what goes wrong). A continuous emotional curve runs across all stages —
+// high points are good emotion, low points are bad. Reveal beats walk one
+// stage at a time; focused stages get glow.
+//
+// Why this is its own primitive: docent had nothing in the *human experience*
+// cluster. UX research, healthcare patient flows, customer onboarding,
+// service design, education — all argue from a person's experience across
+// stages. The shape is fundamentally different from `progression` (which is
+// system-internal stages, often over time) or `walkthrough` (which is
+// message-passing between actors). A journey-map's spine is a single
+// person's emotional arc, anchored to the stages they walk through.
+
+export type JourneyEmotion =
+  | 'delight'
+  | 'curiosity'
+  | 'satisfaction'
+  | 'neutral'
+  | 'fatigue'
+  | 'frustration'
+  | 'pain';
+
+export type JourneyStage = {
+  id: string;
+  label: string; // e.g. 'evaluate'
+  sub?: string; // e.g. 'a week of trial'
+  emotion: JourneyEmotion;
+  touchpoints?: string[]; // short bullets — what the person encounters
+  painPoints?: string[]; // short bullets — what goes wrong
+  // The emotion curve's y-value, normalized [0..1]: 1=top (best emotion),
+  // 0=bottom. The author owns the shape; the engine smooths between stages.
+  curveValue: number;
 };

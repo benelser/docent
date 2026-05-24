@@ -1,0 +1,141 @@
+{
+  "meta": {
+    "id": "onboarding-first-30-minutes",
+    "title": "Onboarding: First 30 Minutes",
+    "subject": "A developer's first 30 minutes with a new framework — where they feel curious, where they grind, where they quit",
+    "repo": "n/a",
+    "prompt": "journey-map-demo",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "neutral"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "accent": "cyan",
+      "kicker": "DOCENT // JOURNEY-MAP",
+      "title": "First 30 Minutes",
+      "tagline": "Where a developer feels curious — and where they quit",
+      "footnote": "A demo of the new journey-map primitive   ·   one person, six stages, one arc",
+      "beats": [
+        {"id": "om-1", "narration": "This is what the first thirty minutes with a new framework actually feel like, from the inside.", "show": "title"},
+        {"id": "om-2", "narration": "We are not narrating the API. We are tracing the person walking through it -- where curiosity holds, where it breaks, and the exact touchpoint that broke it.", "show": "tagline"},
+        {"id": "om-3", "narration": "Six stages, one arc, one developer. The shape teams keep missing when they audit their docs by reading them instead of by walking them.", "show": "footnote"}
+      ]
+    },
+    {
+      "id": "the-walk",
+      "type": "journey-map",
+      "accent": "cyan",
+      "kicker": "01 // THE WALK",
+      "heading": "Six stages — one developer, thirty minutes",
+      "journeyStages": [
+        {
+          "id": "j-discover",
+          "label": "Discover",
+          "sub": "0:00 — a tweet, a comparison post",
+          "emotion": "curiosity",
+          "curveValue": 0.72,
+          "touchpoints": ["a tweet with a 30-second screencast", "the home page hero"]
+        },
+        {
+          "id": "j-install",
+          "label": "Install",
+          "sub": "0:02 — one-line shell command",
+          "emotion": "satisfaction",
+          "curveValue": 0.82,
+          "touchpoints": ["the curl-into-shell installer", "version printed to stdout"],
+          "painPoints": ["no SHA pinned in the docs"]
+        },
+        {
+          "id": "j-hello",
+          "label": "Hello world",
+          "sub": "0:06 — paste, save, run",
+          "emotion": "delight",
+          "curveValue": 0.95,
+          "touchpoints": ["the README's runnable snippet", "the dev-server's hot-reload"]
+        },
+        {
+          "id": "j-config",
+          "label": "Configure",
+          "sub": "0:14 — auth + database wiring",
+          "emotion": "fatigue",
+          "curveValue": 0.32,
+          "touchpoints": ["the configuration guide", "an env-var dance"],
+          "painPoints": ["six rotating examples, none of them current", "the v2 -> v3 rename buried in a changelog"]
+        },
+        {
+          "id": "j-stuck",
+          "label": "First bug",
+          "sub": "0:21 — a stack trace from inside the framework",
+          "emotion": "frustration",
+          "curveValue": 0.12,
+          "touchpoints": ["a 14-line stack trace", "search.duckduckgo dot com"],
+          "painPoints": ["the trace stops at framework code, not user code", "the StackOverflow answer is for v1"]
+        },
+        {
+          "id": "j-quit",
+          "label": "Switch tabs",
+          "sub": "0:29 — opens a competitor's docs",
+          "emotion": "pain",
+          "curveValue": 0.05,
+          "touchpoints": ["Cmd-T", "the comparison post bookmarked at minute zero"],
+          "painPoints": ["nothing in the last ten minutes felt addressable"]
+        }
+      ],
+      "beats": [
+        {"id": "ow-1", "narration": "Minute zero: discovery. A tweet, a screencast, a comparison post. The curiosity is high -- that is what got the developer here.", "reveal": 1, "focus": ["j-discover"]},
+        {"id": "ow-2", "narration": "Two minutes in: install. The one-line installer works. Confidence climbs. There is no SHA pinned in the docs -- a small thing, but the supply-chain reflex flickers.", "reveal": 2, "focus": ["j-install"]},
+        {"id": "ow-3", "narration": "Six minutes in: hello world. Paste, save, hot-reload. This is the peak of the arc. The framework has just shown the developer it can do the thing they came for.", "reveal": 3, "focus": ["j-hello"]},
+        {"id": "ow-4", "narration": "Fourteen minutes in: configure. Auth, a database, an env-var dance. The configuration guide has six examples and the v2 to v3 rename is buried in a changelog. The arc breaks -- fatigue, not failure, but fatigue.", "reveal": 4, "focus": ["j-config"]},
+        {"id": "ow-5", "narration": "Twenty-one minutes in: the first bug. The stack trace stops at framework code, not user code. The first StackOverflow answer is for v1. The arc is now well below the bad line.", "reveal": 5, "focus": ["j-stuck"], "pace": "settle"},
+        {"id": "ow-6", "narration": "Twenty-nine minutes in: Command-T. The developer opens a competitor's docs. The framework did not lose them at install or at hello-world. It lost them at minute fourteen, in a configuration guide that drifted out of date.", "reveal": 6, "focus": ["j-quit"], "pace": "hold"}
+      ]
+    },
+    {
+      "id": "the-shape",
+      "type": "tension",
+      "accent": "rose",
+      "kicker": "02 // THE SHAPE",
+      "heading": "The drop is not where teams think",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {"id": "n-install", "label": "Installer", "sub": "the team's audit target", "col": 0, "row": 0, "accent": "cyan", "kind": "rejected"},
+        {"id": "n-hello", "label": "Hello world", "sub": "the team's audit target", "col": 1, "row": 0, "accent": "cyan", "kind": "rejected"},
+        {"id": "n-config", "label": "Config guide", "sub": "the actual cliff", "col": 0, "row": 1, "accent": "rose", "kind": "risk", "weight": "hero"},
+        {"id": "n-trace", "label": "Stack trace", "sub": "stops at framework code", "col": 1, "row": 1, "accent": "rose", "kind": "risk"},
+        {"id": "n-aud", "label": "Doc audit", "sub": "by reading, not walking", "col": 2, "row": 0, "accent": "amber", "kind": "rejected"}
+      ],
+      "edges": [
+        {"id": "e-aud-inst", "from": "n-aud", "to": "n-install", "kind": "causes", "strength": "contributing"},
+        {"id": "e-aud-hello", "from": "n-aud", "to": "n-hello", "kind": "causes", "strength": "contributing"},
+        {"id": "e-config-trace", "from": "n-config", "to": "n-trace", "kind": "causes", "strength": "necessary", "label": "the same fatigue"}
+      ],
+      "beats": [
+        {"id": "os-1", "narration": "Here is the trade-off the team made without realizing it. They audit the installer and the hello-world -- the bright minutes -- because those are the pages new developers see first.", "reveal": ["n-install", "n-hello", "n-aud", "e-aud-inst", "e-aud-hello"], "focus": ["n-aud"]},
+        {"id": "os-2", "narration": "The cliff is not there. The cliff is minute fourteen -- the configuration guide that drifted, and the framework stack trace that does not point at user code. The two are the same fatigue, compounded.", "reveal": ["n-config", "n-trace", "e-config-trace"], "focus": ["n-config", "n-trace"], "pace": "hold"},
+        {"id": "os-3", "narration": "Chose: audit the docs the team is proud of. Costs: the developer quits in a section nobody reads on purpose. The configuration guide is unowned -- and unowned is where every onboarding arc breaks.", "focus": ["n-config"], "pulse": [["n-config", "n-trace"]]}
+      ]
+    },
+    {
+      "id": "verdict",
+      "type": "recap",
+      "accent": "amber",
+      "kicker": "03 // VERDICT",
+      "heading": "Where the arc actually breaks",
+      "points": [
+        "Disposition — the framework does not lose developers at install. It loses them at minute fourteen, in an unowned configuration guide.",
+        "The single biggest residual risk — the framework's stack trace stops at framework code, not user code. Every developer's first bug is a debugger that points at someone else's mistake.",
+        "What to watch — the time-to-quit metric, not the time-to-hello-world. A team that optimises hello-world while config rots is auditing the wrong stage."
+      ],
+      "beats": [
+        {"id": "ov-1", "narration": "The disposition: this framework does not lose developers at install. It loses them at minute fourteen, in a configuration guide nobody owns.", "reveal": 1, "pace": "settle"},
+        {"id": "ov-2", "narration": "The residual risk: the framework's stack trace stops at framework code, not user code. Every developer's first bug is a debugger that points at someone else's mistake -- and that is the moment they switch tabs.", "reveal": 2, "pace": "settle"},
+        {"id": "ov-3", "narration": "Watch the time-to-quit, not the time-to-hello-world. A team that optimises hello-world while config rots is reviewing the wrong stage of the journey.", "reveal": 3, "pace": "hold"}
+      ]
+    }
+  ]
+}

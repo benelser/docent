@@ -23,6 +23,7 @@ import {PriorArtScene} from './scenes/PriorArtScene';
 import {TimelineScene} from './scenes/TimelineScene';
 import {TreeScene} from './scenes/TreeScene';
 import {MapScene} from './scenes/MapScene';
+import {JourneyMapScene} from './scenes/JourneyMapScene';
 
 // `treatment` (a scene knob) — the visual *skin*, decoupled from scene type.
 // Today the hand-drawn chalkboard skin is welded to the `tension` type and the
@@ -114,6 +115,8 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
               <TreeScene {...common} />
             ) : t === 'map' ? (
               <MapScene {...common} />
+            ) : t === 'journey-map' ? (
+              <JourneyMapScene {...common} />
             ) : t === 'tension' || t === 'structure' ? (
               // Skin chosen by `treatment`: sketch → chalkboard, whiteboard →
               // marker-on-paper (same rough.js renderer, light palette picked

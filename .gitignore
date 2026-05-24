@@ -36,6 +36,7 @@ films/*
 !films/ai-lab-race.json
 !films/ai-agent-stack.json
 !films/multi-region-db.json
+!films/onboarding-first-30-minutes.json
 analysis/*
 !analysis/linear-algebra.md
 !analysis/linear-algebra.source.md

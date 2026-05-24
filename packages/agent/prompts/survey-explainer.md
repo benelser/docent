@@ -131,6 +131,19 @@ there is no competing view, the idea was never tested. ("This account beats X
 because Z; it costs W.") A film that presents one idea as the only idea is a
 brochure.
 
+## § 6.5 When the idea is a *person's experience*
+
+If the argument is about how a **person** moves through something — UX research,
+customer experience, a patient's flow through care, employee onboarding, a
+developer's first hour with a new framework, a hire's first week — reach for
+`journey-map`. The shape is fundamentally different from `progression`
+(system-internal stages) and `walkthrough` (actors messaging): the spine of a
+journey-map is *a single person's emotional arc*, anchored to the stages they
+walk through. **Specify the emotion AND the touchpoint that causes it** — the
+emotion alone is a feeling, the touchpoint alone is a list; the pair is what
+makes the journey-map argue. A journey-map without touchpoints/pain-points on
+at least half its stages is rejected by depthcheck.
+
 ## 7. The Big Idea
 
 One sentence the viewer should leave with — the claim that survives if

@@ -40,6 +40,15 @@ type Spec = {
     root?: DepthTreeNode;
     // map scene fields — only present on `type: 'map'`.
     regions?: {id: string; label: string; sub?: string}[];
+    // journey-map scene fields — only present on `type: 'journey-map'`.
+    journeyStages?: {
+      id: string;
+      label: string;
+      emotion: string;
+      curveValue: number;
+      touchpoints?: string[];
+      painPoints?: string[];
+    }[];
   }[];
 };
 
@@ -300,6 +309,46 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
             : `${annotated}/${allRegions.length} regions annotated (${Math.round(ratio * 100)}%) — without per-region "sub" the regions are dots, the spatial argument doesn't land`,
       });
     }
+  }
+
+  // journey-map — every scene of this type must have a real emotional ARC,
+  // not a flat experience. A journey-map all-delight or all-pain is not a
+  // journey; it is a verdict in disguise. HARD-FAIL: at least one stage
+  // ≥ 0.7 AND at least one ≤ 0.3 (the curve must visibly rise and fall),
+  // AND at least 50% of stages must have either touchpoints OR painPoints
+  // documented — a journey without specifics is just a list of feelings.
+  const journeys = spec.scenes.filter((sc) => sc.type === 'journey-map');
+  for (const j of journeys) {
+    const jstages = j.journeyStages ?? [];
+    if (jstages.length === 0) continue; // structural validator owns the empty case
+    const high = jstages.some((s) => s.curveValue >= 0.7);
+    const low = jstages.some((s) => s.curveValue <= 0.3);
+    findings.push({
+      id: 'journey-asymmetric',
+      label: 'Journey-map emotional arc — at least one high (≥ 0.7) AND one low (≤ 0.3); a flat curve is not a journey',
+      status: high && low ? 'ok' : 'fail',
+      detail:
+        high && low
+          ? 'the arc visibly rises and falls'
+          : !high && !low
+            ? 'the curve is flat — every stage sits in the middle band; not a journey'
+            : !high
+              ? 'no stage reaches the top of the curve (≥ 0.7) — the journey has no payoff or relief'
+              : 'no stage reaches the bottom of the curve (≤ 0.3) — the journey has no friction; a journey-map that flatters is not a journey',
+    });
+    const documented = jstages.filter(
+      (s) => (s.touchpoints?.length ?? 0) > 0 || (s.painPoints?.length ?? 0) > 0,
+    ).length;
+    const ratio = documented / jstages.length;
+    findings.push({
+      id: 'journey-specifics',
+      label: 'Journey-map specifics — at least half the stages name touchpoints or pain points',
+      status: ratio >= 0.5 ? 'ok' : 'fail',
+      detail:
+        ratio >= 0.5
+          ? `${documented}/${jstages.length} stages carry concrete touchpoints or pain points`
+          : `only ${documented}/${jstages.length} stages have any touchpoint or pain-point — a journey without specifics is just a list of feelings`,
+    });
   }
 
   // big-idea contract — the takeaway sentence the viewer should leave with.

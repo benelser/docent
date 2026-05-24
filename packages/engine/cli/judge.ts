@@ -81,6 +81,8 @@ const DEPTH_DIMENSIONS = [
   // map-scene: when the film uses a `map`, position must carry information,
   // not just be a decorative spatial layout.
   {id: 'space-is-load-bearing', label: 'Space is load-bearing — position carries information, not just decoration'},
+  // journey-map: when the film carries one, the emotional arc must do work.
+  {id: 'experience-is-load-bearing', label: 'Experience is load-bearing — the emotional arc is the argument; pain and delight are specific, not vague'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per

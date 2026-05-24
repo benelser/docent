@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "map", "timeline", "tree"]},
+        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "journey-map", "map", "timeline", "tree"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -172,6 +172,13 @@
           "type": "array",
           "description": "map scenes — lines/arcs between regions (routes, transmission paths, supply chains)",
           "items": {"$ref": "#/$defs/map-connection"}
+        },
+        "journeyStages": {
+          "type": "array",
+          "description": "journey-map scenes — a person's emotional arc across 3-8 stages, each with an emotion chip and optional touchpoints / pain points",
+          "minItems": 3,
+          "maxItems": 8,
+          "items": {"$ref": "#/$defs/journey-stage"}
         },
         "beats": {
           "type": "array",
@@ -571,6 +578,37 @@
         "to": {"type": "string", "description": "a region id"},
         "label": {"type": "string"},
         "kind": {"enum": ["route", "transmission", "supply"]}
+      }
+    },
+    "journey-stage": {
+      "type": "object",
+      "description": "journey-map scenes — one stage on a person's emotional journey. `emotion` is the local feeling (an enum from the JourneyEmotion allowlist); `curveValue` is the y-value on the scene's continuous emotion curve, normalized [0..1] (1 = best emotion, 0 = worst). `touchpoints` are what the person encounters in this stage; `painPoints` are what goes wrong. A journey with no specifics is just a list.",
+      "required": ["id", "label", "emotion", "curveValue"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id"},
+        "label": {"type": "string", "description": "the stage's name (e.g. 'evaluate', 'first month')"},
+        "sub": {"type": "string", "description": "a one-line gloss (e.g. 'a week of trial')"},
+        "emotion": {
+          "enum": ["delight", "curiosity", "satisfaction", "neutral", "fatigue", "frustration", "pain"],
+          "description": "the local feeling — drives the chip's colour and label"
+        },
+        "touchpoints": {
+          "type": "array",
+          "description": "short bullets — what the person encounters in this stage (docs they read, screens they see, people they talk to)",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "painPoints": {
+          "type": "array",
+          "description": "short bullets — what goes wrong in this stage (the specific frictions, blockers, confusions)",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "curveValue": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "the y-value on the emotion curve, normalized 0..1 (1 = top / best emotion, 0 = bottom / worst)"
+        }
       }
     }
   }
