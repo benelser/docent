@@ -57,12 +57,19 @@ remove primitives or contracts, patch bumps fix renderers or tooling.
   the unions Sprint A introduced (prior-art vs venn novelty; chart vs
   landscape axis). No more `as` casts at narrow time.
 
-### Migration
+### Removed (migration cliff)
 
-The legacy knob removal sprint (migration sprint) ships in v2.2.0 — see
-`docs/design/migration-sprint-brief.md`. v2.1.0 keeps the legacy knobs
-working alongside the new styling pipeline so the four gallery films
-continue to render unchanged.
+- `Scene.palette`, `Scene.treatment`, `Scene.register`, `Scene.accent` —
+  the legacy per-scene knob set is gone from `spec.ts` and
+  `film.schema.json`. The validator hard-fails any spec carrying one of
+  the removed fields with a structured migration message pointing at
+  the new vocabulary (`style.preset` or `style.intent.tone`).
+- Every scene renderer now consumes `ResolvedStyle` (passed through from
+  `Film.tsx`) instead of reading `theme.ts` directly. Six presets,
+  one resolver, no parallel APIs.
+- The gallery film JSONs and the four README hero films are
+  re-authored with `scripts/migrate-films.ts`. Manual review confirms
+  preset selection produces equivalent styling tokens.
 
 ### Re-render
 
