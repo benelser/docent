@@ -97,6 +97,23 @@ makes this argument. Score these AR-only dimensions:
    - Weak: "Older replication strategies were more limited." Names no system,
      no trade-off, just praise of the subject by denying the field.
 
+### For map-bearing films — space must do work
+
+9. **Space is load-bearing.** When a film uses a `map` scene, the *position*
+   of every region must carry information — a role, a trade-off, a proximity
+   claim, a transmission path. A map whose regions could be permuted at
+   random without changing the argument fails this; the regions were dots,
+   not places. The strong version annotates each region with a `sub` that
+   says *why this place* — the difference between a topology and a heatmap.
+
+   - Strong: "us-east-1 (the write quorum) — the only region that sees the
+     authoritative commit." Position MEANS something.
+   - Weak: "us-east-1 / us-west-2 / eu-west-1" — three labels on a canvas;
+     the argument would survive renaming any of them.
+
+   For films that do not use a `map` scene, mark this dimension n/a (omit it
+   from the scores array).
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the

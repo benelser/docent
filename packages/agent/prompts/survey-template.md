@@ -147,3 +147,13 @@ concrete things:
 
 A recap that does not produce all three is rejected — it is touring its own
 film, not reviewing the change.
+
+## 8. Scene-type reach — match the spec to the argument
+
+If the argument depends on *where* things are (geographic, topological,
+proximity, transmission paths), reach for `map`. Position must mean
+something — not random pin placement. Distributed-system topology, supply
+chains, urban planning, military strategy, epidemiology: layouts where a
+region's *place* on the page carries the load. A map with un-annotated
+regions is decoration; depthcheck enforces a minimum annotation density
+(`position-meaningful`) and the judge scores `space-is-load-bearing`.

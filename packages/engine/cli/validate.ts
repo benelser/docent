@@ -3,7 +3,7 @@
 // is a focused check of the shape the engine actually depends on.
 // schema/film.schema.json is the documented contract this mirrors.
 
-const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art'];
+const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art', 'map'];
 const ACCENTS = ['blue', 'cyan', 'green', 'amber', 'rose', 'violet'];
 // big-idea — the closed allowlist of anchor kinds. An anchor outside this list
 // is rejected: the author picks the kind, the engine owns the pixels.
@@ -713,6 +713,212 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       }
     }
 
+    // map — a spatial / topological layout. 2-12 regions; markers must point
+    // at a real region; connection from/to must point at real regions; grid
+    // layout requires gridSize.
+    if (sc.type === 'map') {
+      const layout = sc.layout ?? 'topology';
+      if (layout !== 'topology' && layout !== 'grid') {
+        issues.push({
+          path: `${at}.layout`,
+          message: `not a valid layout — one of: topology, grid`,
+        });
+      }
+      const regionIds = new Set<string>();
+      if (!Array.isArray(sc.regions) || sc.regions.length < 2) {
+        issues.push({
+          path: `${at}.regions`,
+          message: 'map requires at least 2 regions (position carries information)',
+        });
+      } else if (sc.regions.length > 12) {
+        issues.push({
+          path: `${at}.regions`,
+          message: `${sc.regions.length} regions is past the legibility cap — keep to 12 or fewer`,
+        });
+      } else {
+        sc.regions.forEach((r: Record<string, any>, k: number) => {
+          const rAt = `${at}.regions[${k}]`;
+          if (!r || typeof r !== 'object') {
+            issues.push({path: rAt, message: 'region must be an object {id, label, pos, sub?}'});
+            return;
+          }
+          if (typeof r.id !== 'string' || !r.id.trim()) {
+            issues.push({path: `${rAt}.id`, message: 'missing or empty string'});
+          } else if (regionIds.has(r.id)) {
+            issues.push({path: `${rAt}.id`, message: `duplicate region id "${r.id}"`});
+          } else {
+            regionIds.add(r.id);
+          }
+          if (typeof r.label !== 'string' || !r.label.trim()) {
+            issues.push({path: `${rAt}.label`, message: 'missing or empty string'});
+          }
+          if (r.sub !== undefined && (typeof r.sub !== 'string' || !r.sub.trim())) {
+            issues.push({path: `${rAt}.sub`, message: 'sub must be a non-empty string when present'});
+          }
+          if (!r.pos || typeof r.pos !== 'object') {
+            issues.push({path: `${rAt}.pos`, message: 'pos must be an object {x, y, w?, h?}'});
+          } else {
+            for (const f of ['x', 'y']) {
+              if (typeof r.pos[f] !== 'number' || !Number.isFinite(r.pos[f])) {
+                issues.push({path: `${rAt}.pos.${f}`, message: 'must be a finite number'});
+              }
+            }
+            if (layout === 'topology') {
+              for (const f of ['x', 'y']) {
+                if (typeof r.pos[f] === 'number' && (r.pos[f] < 0 || r.pos[f] > 1)) {
+                  issues.push({
+                    path: `${rAt}.pos.${f}`,
+                    message: 'topology positions must be normalized in 0..1',
+                  });
+                }
+              }
+              for (const f of ['w', 'h']) {
+                if (r.pos[f] !== undefined) {
+                  if (typeof r.pos[f] !== 'number' || !Number.isFinite(r.pos[f])) {
+                    issues.push({path: `${rAt}.pos.${f}`, message: 'must be a finite number'});
+                  } else if (r.pos[f] <= 0 || r.pos[f] > 1) {
+                    issues.push({
+                      path: `${rAt}.pos.${f}`,
+                      message: 'topology sizes must be in (0..1]',
+                    });
+                  }
+                }
+              }
+            } else {
+              // grid — integer cell coords
+              for (const f of ['x', 'y']) {
+                if (typeof r.pos[f] === 'number' && !Number.isInteger(r.pos[f])) {
+                  issues.push({
+                    path: `${rAt}.pos.${f}`,
+                    message: 'grid layout positions must be integers (col / row)',
+                  });
+                }
+              }
+            }
+          }
+        });
+      }
+      // gridSize required when layout is `grid`.
+      if (layout === 'grid') {
+        if (
+          !sc.gridSize ||
+          typeof sc.gridSize !== 'object' ||
+          typeof sc.gridSize.cols !== 'number' ||
+          typeof sc.gridSize.rows !== 'number' ||
+          !Number.isInteger(sc.gridSize.cols) ||
+          !Number.isInteger(sc.gridSize.rows) ||
+          sc.gridSize.cols < 1 ||
+          sc.gridSize.rows < 1
+        ) {
+          issues.push({
+            path: `${at}.gridSize`,
+            message: 'layout: "grid" requires gridSize {cols, rows} of positive integers',
+          });
+        } else if (Array.isArray(sc.regions)) {
+          // Validate every region's grid pos sits inside the gridSize.
+          sc.regions.forEach((r: Record<string, any>, k: number) => {
+            if (!r?.pos) return;
+            if (
+              typeof r.pos.x === 'number' &&
+              (r.pos.x < 0 || r.pos.x >= sc.gridSize.cols)
+            ) {
+              issues.push({
+                path: `${at}.regions[${k}].pos.x`,
+                message: `col ${r.pos.x} is outside the ${sc.gridSize.cols}-column grid`,
+              });
+            }
+            if (
+              typeof r.pos.y === 'number' &&
+              (r.pos.y < 0 || r.pos.y >= sc.gridSize.rows)
+            ) {
+              issues.push({
+                path: `${at}.regions[${k}].pos.y`,
+                message: `row ${r.pos.y} is outside the ${sc.gridSize.rows}-row grid`,
+              });
+            }
+          });
+        }
+      } else if (sc.gridSize !== undefined) {
+        issues.push({
+          path: `${at}.gridSize`,
+          message: 'gridSize has meaning only when layout is "grid"',
+        });
+      }
+      // markers — `at` must reference a real region id.
+      if (sc.markers !== undefined && !Array.isArray(sc.markers)) {
+        issues.push({path: `${at}.markers`, message: 'markers must be an array'});
+      } else if (Array.isArray(sc.markers)) {
+        const markerIds = new Set<string>();
+        sc.markers.forEach((m: Record<string, any>, k: number) => {
+          const mAt = `${at}.markers[${k}]`;
+          if (!m || typeof m !== 'object') {
+            issues.push({path: mAt, message: 'marker must be an object {id, at, label, kind?}'});
+            return;
+          }
+          if (typeof m.id !== 'string' || !m.id.trim()) {
+            issues.push({path: `${mAt}.id`, message: 'missing or empty string'});
+          } else if (markerIds.has(m.id)) {
+            issues.push({path: `${mAt}.id`, message: `duplicate marker id "${m.id}"`});
+          } else {
+            markerIds.add(m.id);
+          }
+          if (typeof m.at !== 'string' || !m.at.trim()) {
+            issues.push({path: `${mAt}.at`, message: 'missing region id'});
+          } else if (regionIds.size > 0 && !regionIds.has(m.at)) {
+            issues.push({
+              path: `${mAt}.at`,
+              message: `marker "at" references "${m.at}", which is not a region in this scene`,
+            });
+          }
+          if (typeof m.label !== 'string' || !m.label.trim()) {
+            issues.push({path: `${mAt}.label`, message: 'missing or empty string'});
+          }
+          if (m.kind !== undefined && !['pin', 'dot', 'flag'].includes(m.kind)) {
+            issues.push({
+              path: `${mAt}.kind`,
+              message: 'not a valid kind — one of: pin, dot, flag',
+            });
+          }
+        });
+      }
+      // connections — from / to must reference real region ids.
+      if (sc.connections !== undefined && !Array.isArray(sc.connections)) {
+        issues.push({path: `${at}.connections`, message: 'connections must be an array'});
+      } else if (Array.isArray(sc.connections)) {
+        const connIds = new Set<string>();
+        sc.connections.forEach((c: Record<string, any>, k: number) => {
+          const cAt = `${at}.connections[${k}]`;
+          if (!c || typeof c !== 'object') {
+            issues.push({path: cAt, message: 'connection must be an object {id, from, to, label?, kind?}'});
+            return;
+          }
+          if (typeof c.id !== 'string' || !c.id.trim()) {
+            issues.push({path: `${cAt}.id`, message: 'missing or empty string'});
+          } else if (connIds.has(c.id)) {
+            issues.push({path: `${cAt}.id`, message: `duplicate connection id "${c.id}"`});
+          } else {
+            connIds.add(c.id);
+          }
+          for (const f of ['from', 'to']) {
+            if (typeof c[f] !== 'string' || !c[f].trim()) {
+              issues.push({path: `${cAt}.${f}`, message: 'missing region id'});
+            } else if (regionIds.size > 0 && !regionIds.has(c[f])) {
+              issues.push({
+                path: `${cAt}.${f}`,
+                message: `connection "${f}" references "${c[f]}", which is not a region in this scene`,
+              });
+            }
+          }
+          if (c.kind !== undefined && !['route', 'transmission', 'supply'].includes(c.kind)) {
+            issues.push({
+              path: `${cAt}.kind`,
+              message: 'not a valid kind — one of: route, transmission, supply',
+            });
+          }
+        });
+      }
+    }
+
     // Every scene type carries narration via beats; every scene type must
     // also carry SOMETHING visible for that narration to land on. A scene
     // that ships narration with no body renders a void with audio playing
@@ -762,6 +968,10 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       // prior-art / diff — already enforced by their dedicated checks above.
       'prior-art': () => null,
       diff: () => null,
+      // map — at least 2 regions (the spatial argument needs places to argue
+      // among). Further constraints (grid needs gridSize, refs must resolve)
+      // are enforced by the per-scene block above.
+      map: () => (arrLen(sc.regions) < 2 ? 'map requires at least 2 regions (position carries information)' : null),
     };
     const bodyCheck = requiredBody[sc.type];
     if (bodyCheck) {

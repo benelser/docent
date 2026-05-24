@@ -281,7 +281,8 @@ export type Scene = {
     | 'diff'
     | 'chart'
     | 'big-idea'
-    | 'prior-art';
+    | 'prior-art'
+    | 'map';
   accent: string;
   kicker: string;
   heading?: string;
@@ -353,7 +354,55 @@ export type Scene = {
   clip?: string;
   // recap
   points?: string[];
+  // map — a spatial / topological / geographic layout. `layout` picks the
+  // mode: `topology` (default) is abstract named blobs at normalized 0..1
+  // positions; `grid` is a rectangular grid of labelled cells. `gridSize`
+  // is required only when layout === 'grid'. `regions` are the named
+  // places, `markers` pin labelled points to regions, `connections` draw
+  // arcs/lines between regions (routes, transmission paths, supply chains).
+  layout?: 'topology' | 'grid';
+  gridSize?: {cols: number; rows: number};
+  regions?: MapRegion[];
+  markers?: MapMarker[];
+  connections?: MapConnection[];
   beats: Beat[];
+};
+
+// ----- map scenes — spatial / topological / geographic -----------------
+// A region is a named place. For `topology` layout, `pos` is normalized
+// (x, y, w?, h?) in 0..1 — the abstract spatial relation IS the geometry,
+// not real geography. For `grid` layout, `pos` is integer {col, row} on the
+// scene's `gridSize`. `sub` is the per-region annotation that makes the
+// position load-bearing: a region with a `sub` says *why this place* — its
+// role in the topology, its trade-off, its difference. Without `sub` a region
+// is a dot; the depth contract enforces an annotation density.
+export type MapRegion = {
+  id: string;
+  label: string;
+  pos: {x: number; y: number; w?: number; h?: number};
+  sub?: string;
+};
+
+// A marker pins a labelled point AT a region — a route hop, a city on the
+// floor plan, a sensor on the topology. `kind` picks the glyph: a `pin` is a
+// teardrop, a `dot` a circle, a `flag` a triangle on a stick.
+export type MapMarker = {
+  id: string;
+  at: string; // a region id
+  label: string;
+  kind?: 'pin' | 'dot' | 'flag';
+};
+
+// A connection draws a line/arc between two regions — a route, a packet path,
+// a transmission link, a supply-chain hop. `kind` picks the stroke style: a
+// `route` is a steady line, a `transmission` is dashed (the signal in motion),
+// a `supply` is a thicker arrowed flow.
+export type MapConnection = {
+  id: string;
+  from: string; // region id
+  to: string; // region id
+  label?: string;
+  kind?: 'route' | 'transmission' | 'supply';
 };
 
 export type FilmSpec = {
