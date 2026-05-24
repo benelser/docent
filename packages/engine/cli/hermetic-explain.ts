@@ -151,46 +151,53 @@ const runExplainLeg = async (
 
   log(`\x1b[1m── ${agent} leg — film id ${filmId} ──\x1b[0m`);
 
-  // 1. Survey — the longest single stage. Both agents have to author
-  //    analysis/<id>.md from the URL. Budget 12 min — covers a slow
-  //    fetch + a deep read. mode={pr|ar|ex} is forwarded to the CLI.
+  // 1. Survey — the longest single stage. The agent has to author
+  //    analysis/<id>.md from the URL. Budget 20 min — covers a slow
+  //    fetch + a deep read of a real codebase. mode={pr|ar|ex} is
+  //    forwarded to the CLI.
   const surveyOk = await stage(
     'survey',
     ['survey', opts.url, '--mode', mode, '--agent', agent, '--id', filmId],
-    12 * 60_000,
+    20 * 60_000,
   );
   if (!surveyOk) return {target: agent, filmId, output: null, outputBytes: null, steps};
 
-  // 2. Treatment — writes treatments/<id>.md. ~2-5 min on a real run.
+  // 2. Treatment — writes treatments/<id>.md.
   const treatmentOk = await stage(
     'treatment',
     ['treatment', filmId, '--agent', agent],
-    8 * 60_000,
+    10 * 60_000,
   );
   if (!treatmentOk) return {target: agent, filmId, output: null, outputBytes: null, steps};
 
-  // 3. Spec compile — writes films/<id>.json. Fast (~1 min).
+  // 3. Spec compile — writes films/<id>.json. The agent writes the JSON
+  //    spec satisfying the schema, then iterates if the schema check
+  //    surfaces issues. AR specs are bigger (more scenes, more nodes) and
+  //    can take 10+ min for the agent to author cleanly; budget accordingly.
   const specOk = await stage(
     'spec compile',
     ['treatment', filmId, '--to-spec', '--agent', agent],
-    5 * 60_000,
+    15 * 60_000,
   );
   if (!specOk) return {target: agent, filmId, output: null, outputBytes: null, steps};
 
-  // 4. Review — the mandatory judge loop. Up to 2 rounds × ~3-4 min each.
+  // 4. Review — the mandatory judge loop. Up to 2 rounds × ~5-8 min each.
+  //    Bumping budget because real surveys produce larger specs that take
+  //    longer to grade.
   const reviewOk = await stage(
     'review (judge × n rounds)',
     ['review', filmId, '--max-rounds', String(maxRounds), '--agent', agent],
-    20 * 60_000,
+    30 * 60_000,
   );
   if (!reviewOk) return {target: agent, filmId, output: null, outputBytes: null, steps};
 
   // 5. Build — survey/treatment/review all done; this is the cascade.
-  //    TTS + render at the chosen scale. Budget 15 min.
+  //    TTS + render at the chosen scale. Budget 20 min (scale 1 of a
+  //    real 8-scene film is ~11 min wall on a 10-core M-series).
   const buildOk = await stage(
     `build (scale ${scale})`,
     ['build', filmId, '--scale', String(scale)],
-    15 * 60_000,
+    20 * 60_000,
   );
   if (!buildOk) return {target: agent, filmId, output: null, outputBytes: null, steps};
 
