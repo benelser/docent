@@ -1,0 +1,181 @@
+{
+  "meta": {
+    "id": "text-stress-narrative",
+    "title": "Narrative Text Stress — Frame Titles, Taglines, Big-Idea Statements, Recap Bullets, And Long Prose In Every Slot",
+    "subject": "the engine's text-fitting contract for prose-shaped scenes",
+    "repo": "docent",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "calm"
+  },
+  "scenes": [
+    {
+      "id": "s-frame",
+      "type": "frame",
+      "accent": "blue",
+      "kicker": "TEXT STRESS // NARRATIVE",
+      "title": "A Frame Title Long Enough To Force The Renderer's Tiered Auto-Shrink Down Three Steps Before The Word \"Renderer\" Reaches The Right Edge Of The Safe Band",
+      "tagline": "The taglines a real explainer carries are often longer than the slide-ware designer's original Lorem Ipsum — a sentence that names the misconception the film must kill, plus a clause that names what survives the kill. This fixture's tagline is exactly that shape, two hundred and ninety characters long, and the renderer wraps it to four lines at a comfortable size rather than letting it overrun the column or bleed past the title above.",
+      "footnote": "Compared with the gallery films, this fixture trades coherence for the worst-case length distribution; each scene asks its renderer one question — does the long-text strategy hold? — and the answer the eye can read off the rendered video is the contract.",
+      "beats": [
+        {
+          "id": "frame-1",
+          "narration": "This fixture is the narrative torture test — frame titles, taglines, big-idea statements, recap bullets, every prose-shaped slot pushed past its expected length.",
+          "show": "title"
+        },
+        {
+          "id": "frame-2",
+          "narration": "The strategy is uniform: wrap to a documented line count first, shrink before the floor, ellipsis after — never a mid-word clip.",
+          "show": "tagline"
+        }
+      ]
+    },
+    {
+      "id": "s-passage",
+      "type": "passage",
+      "accent": "amber",
+      "kicker": "TEXT STRESS // PASSAGE — A SHORT PRIMARY SOURCE WITH ANNOTATIONS THAT ARE LONG SENTENCES, NOT TWO-WORD POSTILS",
+      "heading": "passage scene — the artifact is short, the marks are full sentences, and the annotation column has to host them inside its width",
+      "text": "Whose woods these are I think I know.\nHis house is in the village though;\nHe will not see me stopping here\nTo watch his woods fill up with snow.",
+      "marks": [
+        {
+          "id": "mk1",
+          "quote": "His house is in the village though",
+          "note": "A claim about location that is also a claim about ownership and absence — the speaker is in the woods, the owner is in the village, and the woods are the disputed middle ground the poem will walk through."
+        },
+        {
+          "id": "mk2",
+          "quote": "fill up with snow",
+          "note": "The image the stanza closes on is the one the rest of the poem will return to — accumulation, weight, the slow filling of a container — and we will see it again when the speaker thinks about sleep."
+        }
+      ],
+      "beats": [
+        {
+          "id": "passage-1",
+          "narration": "The two marks each carry an annotation that is a full sentence — far longer than a typical postil. The annotation column wraps and shrinks rather than truncating mid-thought.",
+          "reveal": ["mk1"]
+        },
+        {
+          "id": "passage-2",
+          "narration": "On the second mark the eye lands on the image the poem will return to.",
+          "reveal": ["mk2"],
+          "focus": ["mk2"],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "s-closeup",
+      "type": "closeup",
+      "accent": "violet",
+      "kicker": "TEXT STRESS // CLOSEUP — FILE PATH LONG ENOUGH TO TEST THE WINDOW CHROME AND A FULL-SENTENCE BEAT NOTE",
+      "heading": "closeup scene — the file path stretches the window chrome and the per-beat note carries a full claim, not a fragment",
+      "file": "packages/engine/src/components/very-long-path-to-the-actual-file-the-closeup-scene-is-arguing-from/and-yet-another-segment/FittedText.tsx",
+      "lang": "tsx",
+      "code": "// FittedText — the canonical \"make this text fit its slot\" primitive.\nexport const FittedText: React.FC<FittedTextProps> = ({\n  text,\n  maxWidth,\n  basePx,\n  floorPx,\n  charAdvance,\n  mode = 'shrink-single',\n  maxLines = 2,\n  lineHeight = 1.25,\n  style,\n}) => {\n  const fontSize = fitFont(text, basePx, floor, maxWidth, advance, lines);\n  return <div style={layoutStyle}>{text}</div>;\n};",
+      "beats": [
+        {
+          "id": "closeup-1",
+          "narration": "The file path is long enough that the window chrome has to shrink it; the code body shows the API the rest of the fixture has been calling all the way through.",
+          "highlight": [1, 4],
+          "note": "The annotation note pinned beneath the window is also a full sentence — it should auto-shrink, wrap to a couple of lines, and never bleed past the window's bottom edge into the wordmark band."
+        },
+        {
+          "id": "closeup-2",
+          "narration": "The full shape of the props — the contract the helper exposes — is a slot description, not a free-form configuration.",
+          "highlight": [3, 12],
+          "note": "Mode is the strategy chooser; maxLines bounds the wrap; floorPx bounds the shrink. Together they make the failure mode predictable, which is the property the depth-review eye needs to confirm."
+        }
+      ]
+    },
+    {
+      "id": "s-tension",
+      "type": "tension",
+      "accent": "amber",
+      "kicker": "TEXT STRESS // TENSION — THE TRADE-OFF THE NARRATIVE FIXTURE HAS TO NAME",
+      "heading": "tension scene — what the long-text strategy gives up in exchange for what it guarantees",
+      "cut": "hold",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {
+          "id": "c1",
+          "label": "A documented floor and a bounded line count over a clean ellipsis fallback",
+          "sub": "We chose the predictable failure mode — every slot's worst case is documented, and a depth-review eye can audit it at a glance without running anything.",
+          "col": 0, "row": 0, "accent": "green"
+        },
+        {
+          "id": "r1",
+          "label": "Optimizing for the typical case with a generous floor and no documented ceiling",
+          "sub": "Rejected — the worst case becomes invisible: a short label looks fine, but a long label in a film a year from now blows past the column without any signal.",
+          "col": 2, "row": 0,
+          "kind": "rejected"
+        },
+        {
+          "id": "k1",
+          "label": "The readability floor is documented per-slot but not validated end-to-end against narration speed",
+          "sub": "A 12-px floor that reads cleanly at 1920×1080 may not read at 1280×720, and the contract does not yet bind floors to render scale.",
+          "col": 1, "row": 1,
+          "kind": "risk"
+        }
+      ],
+      "edges": [],
+      "beats": [
+        {
+          "id": "tension-1",
+          "narration": "We chose the predictable failure mode over the prettier typical case. The bill is that a corner case never looks great — it shrinks visibly or truncates with an ellipsis — instead of working until it doesn't.",
+          "reveal": ["c1", "r1"]
+        },
+        {
+          "id": "tension-2",
+          "narration": "The residual risk is that the floor is hand-tuned per slot rather than validated against narration speed. A read-it-once-and-move-on cadence might tolerate a different floor than a hold-and-savour one.",
+          "reveal": ["k1"],
+          "focus": ["k1"],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "s-big-idea",
+      "type": "big-idea",
+      "accent": "cyan",
+      "kicker": "TEXT STRESS // BIG-IDEA — THE TAKEAWAY",
+      "heading": "big-idea scene — one sentence the viewer should leave with",
+      "statement": "Bound the slot, document the floor, fail predictably.",
+      "anchor": {
+        "kind": "glyph",
+        "value": "↘"
+      },
+      "beats": [
+        {
+          "id": "bi-1",
+          "narration": "The big-idea contract is exactly twenty words or fewer — the renderer's auto-shrink covers anything longer that ever slips through.",
+          "show": "statement",
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "s-recap",
+      "type": "recap",
+      "accent": "green",
+      "kicker": "TEXT STRESS // RECAP — THE BULLETS",
+      "heading": "recap scene — bullets long enough that the wrap-and-shrink path is the one the renderer takes for each",
+      "points": [
+        "Every prose-shaped slot in the engine — frame titles, taglines, footnotes, passage annotations, closeup notes, big-idea statements, recap bullets — has been pushed past its base size; each one wraps to its bounded line count or auto-shrinks past the wrap budget without any mid-word clipping or off-frame bleed.",
+        "What the fixture proves is the predictability of the failure mode, not that every slot is happy at every length. A 300-character recap bullet still looks like a 300-character bullet; it just behaves like the contract said it would, with the U-plus-2026 ellipsis at the end of the trailing line where the line cap kicks in.",
+        "The trade-off the engine makes is uniformly visible: a depth-review eye watching this fixture once can audit every long-text strategy without leaving the rendered video — and that is the property the contract was written to give."
+      ],
+      "beats": [
+        {
+          "id": "recap-1",
+          "narration": "Three long bullets — each wraps and shrinks under the contract; the rejected alternative would have been 4 short bullets, which would have hidden the test from the depth-review eye. The contract's main limit is real: a tight 12-px floor cannot rescue a slot whose surrounding geometry is itself broken.",
+          "reveal": 3,
+          "pace": "hold"
+        }
+      ]
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import {Highlight} from 'prism-react-renderer';
 import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {codeTheme} from '../components/code-theme';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
 import type {ResolvedStyle} from '../style';
@@ -96,9 +97,23 @@ export const CloseupScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
               <div key={c} style={{width: 12, height: 12, borderRadius: 6, background: c, opacity: 0.9}} />
             ))}
           </div>
-          <div style={{fontFamily: monoFamily, fontSize: 16, color: ink.mid, letterSpacing: 0.3}}>
-            {scene.file}
-          </div>
+          {/* file path — window-chrome label. The chrome reserves room
+              for the traffic-light dots on the left (~60px). The window
+              is 1300px wide; budget the rest for the path with a clean
+              shrink-then-ellipsis. */}
+          <FittedText
+            text={scene.file ?? ''}
+            maxWidth={1300 - 60 - 60}
+            basePx={16}
+            floorPx={11}
+            charAdvance={0.62}
+            mode="shrink-single"
+            style={{
+              fontFamily: monoFamily,
+              color: ink.mid,
+              letterSpacing: 0.3,
+            }}
+          />
         </div>
 
         {/* code body */}
@@ -145,7 +160,11 @@ export const CloseupScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         </div>
       </div>
 
-      {/* per-beat annotation */}
+      {/* per-beat annotation — sits below the code window, centred. The
+          window is 1300px wide; let the note breathe up to 2 wrapped
+          lines so a fully-formed sentence ("This is the keystone — the
+          pin every later cycle depends on") fits without spilling past
+          the safe band or wrapping into the wordmark below. */}
       {note ? (
         <div
           style={{
@@ -153,13 +172,28 @@ export const CloseupScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
             left: '50%',
             top: top + winH + 26,
             transform: 'translateX(-50%)',
-            fontFamily: monoFamily,
-            fontSize: 19,
-            color: accentHex,
-            letterSpacing: 0.4,
+            width: 1300,
+            textAlign: 'center',
+            display: 'flex',
+            justifyContent: 'center',
           }}
         >
-          {note}
+          <FittedText
+            text={note}
+            maxWidth={1260}
+            basePx={19}
+            floorPx={13}
+            charAdvance={0.6}
+            mode="shrink-wrap"
+            maxLines={2}
+            lineHeight={1.32}
+            style={{
+              fontFamily: monoFamily,
+              color: accentHex,
+              letterSpacing: 0.4,
+              textAlign: 'center',
+            }}
+          />
         </div>
       ) : null}
 

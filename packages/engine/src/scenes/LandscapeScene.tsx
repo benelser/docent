@@ -5,6 +5,7 @@ import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {fitFontSize, truncateForSlot} from '../components/FittedText';
 import {
   activeBeatIndex,
   type LandscapeAxis,
@@ -180,150 +181,161 @@ export const LandscapeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
             opacity={intro}
           />
 
-          {/* x-axis title — pinned center-bottom under the axis */}
-          {xAxis?.label ? (
-            <text
-              x={PLOT.x + PLOT.w / 2}
-              y={PLOT.y + PLOT.h + 60}
-              textAnchor="middle"
-              fontFamily={interFamily}
-              fontSize={22}
-              fontWeight={600}
-              fill={ink.hi}
-              opacity={intro}
-            >
-              {xAxis.label}
-            </text>
-          ) : null}
-          {/* x-axis lowLabel (left end) and highLabel (right end) */}
-          {xAxis?.lowLabel ? (
-            <text
-              x={PLOT.x + 6}
-              y={PLOT.y + PLOT.h + 32}
-              textAnchor="start"
-              fontFamily={monoFamily}
-              fontSize={16}
-              fill={ink.mid}
-              opacity={intro}
-            >
-              ← {xAxis.lowLabel}
-            </text>
-          ) : null}
-          {xAxis?.highLabel ? (
-            <text
-              x={PLOT.x + PLOT.w - 6}
-              y={PLOT.y + PLOT.h + 32}
-              textAnchor="end"
-              fontFamily={monoFamily}
-              fontSize={16}
-              fill={ink.mid}
-              opacity={intro}
-            >
-              {xAxis.highLabel} →
-            </text>
-          ) : null}
+          {/* All axis prose is SVG text — shrink-then-ellipsis via the
+              raw fitFontSize/truncateForSlot helpers (CSS line-clamp
+              doesn't work inside <text>). The budget is the plot width
+              for horizontal labels, the plot height for the rotated
+              y-axis title, and the half-plot-width for the corner
+              "← lowLabel" / "highLabel →" tags. */}
+          {xAxis?.label ? (() => {
+            const fs = fitFontSize(xAxis.label, {maxWidth: PLOT.w - 80, basePx: 22, floorPx: 13, charAdvance: 0.56});
+            const txt = truncateForSlot(xAxis.label, {maxWidth: PLOT.w - 80, fontSize: fs, charAdvance: 0.56});
+            return (
+              <text
+                x={PLOT.x + PLOT.w / 2}
+                y={PLOT.y + PLOT.h + 60}
+                textAnchor="middle"
+                fontFamily={interFamily}
+                fontSize={fs}
+                fontWeight={600}
+                fill={ink.hi}
+                opacity={intro}
+              >
+                {txt}
+              </text>
+            );
+          })() : null}
+          {xAxis?.lowLabel ? (() => {
+            const raw = `← ${xAxis.lowLabel}`;
+            const budget = PLOT.w / 2 - 20;
+            const fs = fitFontSize(raw, {maxWidth: budget, basePx: 16, floorPx: 11, charAdvance: 0.6});
+            const txt = truncateForSlot(raw, {maxWidth: budget, fontSize: fs, charAdvance: 0.6});
+            return (
+              <text
+                x={PLOT.x + 6}
+                y={PLOT.y + PLOT.h + 32}
+                textAnchor="start"
+                fontFamily={monoFamily}
+                fontSize={fs}
+                fill={ink.mid}
+                opacity={intro}
+              >
+                {txt}
+              </text>
+            );
+          })() : null}
+          {xAxis?.highLabel ? (() => {
+            const raw = `${xAxis.highLabel} →`;
+            const budget = PLOT.w / 2 - 20;
+            const fs = fitFontSize(raw, {maxWidth: budget, basePx: 16, floorPx: 11, charAdvance: 0.6});
+            const txt = truncateForSlot(raw, {maxWidth: budget, fontSize: fs, charAdvance: 0.6});
+            return (
+              <text
+                x={PLOT.x + PLOT.w - 6}
+                y={PLOT.y + PLOT.h + 32}
+                textAnchor="end"
+                fontFamily={monoFamily}
+                fontSize={fs}
+                fill={ink.mid}
+                opacity={intro}
+              >
+                {txt}
+              </text>
+            );
+          })() : null}
 
-          {/* y-axis title — rotated, pinned center-left of the axis */}
-          {yAxis?.label ? (
-            <text
-              x={PLOT.x - 86}
-              y={PLOT.y + PLOT.h / 2}
-              textAnchor="middle"
-              fontFamily={interFamily}
-              fontSize={22}
-              fontWeight={600}
-              fill={ink.hi}
-              opacity={intro}
-              transform={`rotate(-90 ${PLOT.x - 86} ${PLOT.y + PLOT.h / 2})`}
-            >
-              {yAxis.label}
-            </text>
-          ) : null}
-          {/* y-axis highLabel (top) and lowLabel (bottom) */}
-          {yAxis?.highLabel ? (
-            <text
-              x={PLOT.x - 18}
-              y={PLOT.y + 12}
-              textAnchor="end"
-              fontFamily={monoFamily}
-              fontSize={16}
-              fill={ink.mid}
-              opacity={intro}
-            >
-              ↑ {yAxis.highLabel}
-            </text>
-          ) : null}
-          {yAxis?.lowLabel ? (
-            <text
-              x={PLOT.x - 18}
-              y={PLOT.y + PLOT.h - 4}
-              textAnchor="end"
-              fontFamily={monoFamily}
-              fontSize={16}
-              fill={ink.mid}
-              opacity={intro}
-            >
-              {yAxis.lowLabel} ↓
-            </text>
-          ) : null}
+          {yAxis?.label ? (() => {
+            const fs = fitFontSize(yAxis.label, {maxWidth: PLOT.h - 60, basePx: 22, floorPx: 13, charAdvance: 0.56});
+            const txt = truncateForSlot(yAxis.label, {maxWidth: PLOT.h - 60, fontSize: fs, charAdvance: 0.56});
+            return (
+              <text
+                x={PLOT.x - 86}
+                y={PLOT.y + PLOT.h / 2}
+                textAnchor="middle"
+                fontFamily={interFamily}
+                fontSize={fs}
+                fontWeight={600}
+                fill={ink.hi}
+                opacity={intro}
+                transform={`rotate(-90 ${PLOT.x - 86} ${PLOT.y + PLOT.h / 2})`}
+              >
+                {txt}
+              </text>
+            );
+          })() : null}
+          {yAxis?.highLabel ? (() => {
+            const raw = `↑ ${yAxis.highLabel}`;
+            const budget = 240;
+            const fs = fitFontSize(raw, {maxWidth: budget, basePx: 16, floorPx: 11, charAdvance: 0.6});
+            const txt = truncateForSlot(raw, {maxWidth: budget, fontSize: fs, charAdvance: 0.6});
+            return (
+              <text
+                x={PLOT.x - 18}
+                y={PLOT.y + 12}
+                textAnchor="end"
+                fontFamily={monoFamily}
+                fontSize={fs}
+                fill={ink.mid}
+                opacity={intro}
+              >
+                {txt}
+              </text>
+            );
+          })() : null}
+          {yAxis?.lowLabel ? (() => {
+            const raw = `${yAxis.lowLabel} ↓`;
+            const budget = 240;
+            const fs = fitFontSize(raw, {maxWidth: budget, basePx: 16, floorPx: 11, charAdvance: 0.6});
+            const txt = truncateForSlot(raw, {maxWidth: budget, fontSize: fs, charAdvance: 0.6});
+            return (
+              <text
+                x={PLOT.x - 18}
+                y={PLOT.y + PLOT.h - 4}
+                textAnchor="end"
+                fontFamily={monoFamily}
+                fontSize={fs}
+                fill={ink.mid}
+                opacity={intro}
+              >
+                {txt}
+              </text>
+            );
+          })() : null}
 
-          {/* optional quadrant labels — faded ink in the four corners */}
-          {quadrants?.tl ? (
-            <text
-              x={qPos.tl.x}
-              y={qPos.tl.y}
-              textAnchor="middle"
-              fontFamily={interFamily}
-              fontSize={17}
-              fontStyle="italic"
-              fill={ink.faint}
-              opacity={intro * 0.85}
-            >
-              {quadrants.tl}
-            </text>
-          ) : null}
-          {quadrants?.tr ? (
-            <text
-              x={qPos.tr.x}
-              y={qPos.tr.y}
-              textAnchor="middle"
-              fontFamily={interFamily}
-              fontSize={17}
-              fontStyle="italic"
-              fill={ink.faint}
-              opacity={intro * 0.85}
-            >
-              {quadrants.tr}
-            </text>
-          ) : null}
-          {quadrants?.bl ? (
-            <text
-              x={qPos.bl.x}
-              y={qPos.bl.y}
-              textAnchor="middle"
-              fontFamily={interFamily}
-              fontSize={17}
-              fontStyle="italic"
-              fill={ink.faint}
-              opacity={intro * 0.85}
-            >
-              {quadrants.bl}
-            </text>
-          ) : null}
-          {quadrants?.br ? (
-            <text
-              x={qPos.br.x}
-              y={qPos.br.y}
-              textAnchor="middle"
-              fontFamily={interFamily}
-              fontSize={17}
-              fontStyle="italic"
-              fill={ink.faint}
-              opacity={intro * 0.85}
-            >
-              {quadrants.br}
-            </text>
-          ) : null}
+          {/* optional quadrant labels — italic ink in the four corners.
+              Budget is half the plot width per quadrant minus the
+              corner safety margin. */}
+          {(() => {
+            const renderQ = (txt: string | undefined, x: number, y: number, key: string) => {
+              if (!txt) return null;
+              const budget = PLOT.w / 2 - 60;
+              const fs = fitFontSize(txt, {maxWidth: budget, basePx: 17, floorPx: 11, charAdvance: 0.56});
+              const visible = truncateForSlot(txt, {maxWidth: budget, fontSize: fs, charAdvance: 0.56});
+              return (
+                <text
+                  key={key}
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  fontFamily={interFamily}
+                  fontSize={fs}
+                  fontStyle="italic"
+                  fill={ink.faint}
+                  opacity={intro * 0.85}
+                >
+                  {visible}
+                </text>
+              );
+            };
+            return (
+              <>
+                {renderQ(quadrants?.tl, qPos.tl.x, qPos.tl.y, 'tl')}
+                {renderQ(quadrants?.tr, qPos.tr.x, qPos.tr.y, 'tr')}
+                {renderQ(quadrants?.bl, qPos.bl.x, qPos.bl.y, 'bl')}
+                {renderQ(quadrants?.br, qPos.br.x, qPos.br.y, 'br')}
+              </>
+            );
+          })()}
 
           {/* subject markers — a dot + label + sub, with a glow ring on focus */}
           {subjects.map((s) => {
@@ -375,31 +387,51 @@ export const LandscapeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                     filter: `drop-shadow(0 0 ${focused ? 18 : 10}px ${glow(col, 0.7)})`,
                   }}
                 />
-                {/* the label + sub — pinned beside the dot */}
-                <text
-                  x={p.x + (flipLeft ? -dotR - 10 : dotR + 10)}
-                  y={p.y + (flipUp ? -10 : 6)}
-                  textAnchor={flipLeft ? 'end' : 'start'}
-                  fontFamily={interFamily}
-                  fontSize={focused ? 22 : 20}
-                  fontWeight={600}
-                  fill={focused ? ink.hi : ink.hi}
-                  letterSpacing={-0.2}
-                >
-                  {s.label}
-                </text>
-                {s.sub ? (
-                  <text
-                    x={p.x + (flipLeft ? -dotR - 10 : dotR + 10)}
-                    y={p.y + (flipUp ? -30 : 28)}
-                    textAnchor={flipLeft ? 'end' : 'start'}
-                    fontFamily={monoFamily}
-                    fontSize={14}
-                    fill={ink.low}
-                  >
-                    {s.sub}
-                  </text>
-                ) : null}
+                {/* the label + sub — pinned beside the dot. Budget the
+                    available stage width on the dot's side so a longer
+                    subject name doesn't bleed off-frame. */}
+                {(() => {
+                  const sideBudget = flipLeft
+                    ? p.x - PLOT.x - dotR - 14
+                    : PLOT.x + PLOT.w - p.x - dotR - 14;
+                  const budget = Math.max(80, Math.min(420, sideBudget));
+                  const fsLabel = fitFontSize(s.label, {maxWidth: budget, basePx: focused ? 22 : 20, floorPx: 12, charAdvance: 0.58});
+                  const txtLabel = truncateForSlot(s.label, {maxWidth: budget, fontSize: fsLabel, charAdvance: 0.58});
+                  return (
+                    <text
+                      x={p.x + (flipLeft ? -dotR - 10 : dotR + 10)}
+                      y={p.y + (flipUp ? -10 : 6)}
+                      textAnchor={flipLeft ? 'end' : 'start'}
+                      fontFamily={interFamily}
+                      fontSize={fsLabel}
+                      fontWeight={600}
+                      fill={ink.hi}
+                      letterSpacing={-0.2}
+                    >
+                      {txtLabel}
+                    </text>
+                  );
+                })()}
+                {s.sub ? (() => {
+                  const sideBudget = flipLeft
+                    ? p.x - PLOT.x - dotR - 14
+                    : PLOT.x + PLOT.w - p.x - dotR - 14;
+                  const budget = Math.max(80, Math.min(420, sideBudget));
+                  const fs = fitFontSize(s.sub, {maxWidth: budget, basePx: 14, floorPx: 10, charAdvance: 0.62});
+                  const txt = truncateForSlot(s.sub, {maxWidth: budget, fontSize: fs, charAdvance: 0.62});
+                  return (
+                    <text
+                      x={p.x + (flipLeft ? -dotR - 10 : dotR + 10)}
+                      y={p.y + (flipUp ? -30 : 28)}
+                      textAnchor={flipLeft ? 'end' : 'start'}
+                      fontFamily={monoFamily}
+                      fontSize={fs}
+                      fill={ink.low}
+                    >
+                      {txt}
+                    </text>
+                  );
+                })() : null}
               </g>
             );
           })}

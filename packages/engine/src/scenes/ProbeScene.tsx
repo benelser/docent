@@ -4,6 +4,7 @@ import {accent, theme, glow, ACCENTS} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
 import type {ResolvedStyle} from '../style';
 import {
@@ -51,50 +52,69 @@ export const ProbeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const rowX = (1920 - rowW) / 2;
 
   // A single change → outcome row, used for both baseline and variations.
+  // Row geometry: row is 1380px wide with 56px horizontal padding (28
+  // each side). Subtract the arrow column (40), the tag column (132),
+  // and the two gaps (22 each). Each text column gets ~585px to itself
+  // — wrap to 2 lines and auto-shrink for longer prose.
   const Row: React.FC<{
     change: string;
     outcome: string;
     tag: React.ReactNode;
     arrow: boolean;
-  }> = ({change, outcome, tag, arrow}) => (
-    <div style={{display: 'flex', alignItems: 'center', gap: 22, width: '100%'}}>
-      <div
-        style={{
-          flex: 1,
-          fontFamily: monoFamily,
-          fontSize: 21,
-          fontWeight: 500,
-          color: theme.ink.hi,
-          padding: '0 4px',
-        }}
-      >
-        {change}
+  }> = ({change, outcome, tag, arrow}) => {
+    const textCol = Math.floor((rowW - 56 - 40 - 132 - 22 * 3) / 2);
+    return (
+      <div style={{display: 'flex', alignItems: 'center', gap: 22, width: '100%'}}>
+        <div style={{flex: 1, minWidth: 0, padding: '0 4px'}}>
+          <FittedText
+            text={change}
+            maxWidth={textCol - 8}
+            basePx={21}
+            floorPx={13}
+            charAdvance={0.62}
+            mode="shrink-wrap"
+            maxLines={2}
+            lineHeight={1.22}
+            style={{
+              fontFamily: monoFamily,
+              fontWeight: 500,
+              color: theme.ink.hi,
+            }}
+          />
+        </div>
+        <div
+          style={{
+            fontFamily: monoFamily,
+            fontSize: 26,
+            color: theme.ink.low,
+            width: 40,
+            textAlign: 'center',
+            flexShrink: 0,
+          }}
+        >
+          {arrow ? '→' : ''}
+        </div>
+        <div style={{flex: 1, minWidth: 0}}>
+          <FittedText
+            text={outcome}
+            maxWidth={textCol}
+            basePx={21}
+            floorPx={13}
+            charAdvance={0.58}
+            mode="shrink-wrap"
+            maxLines={2}
+            lineHeight={1.22}
+            style={{
+              fontFamily: interFamily,
+              fontWeight: 500,
+              color: theme.ink.mid,
+            }}
+          />
+        </div>
+        <div style={{width: 132, flexShrink: 0, textAlign: 'right'}}>{tag}</div>
       </div>
-      <div
-        style={{
-          fontFamily: monoFamily,
-          fontSize: 26,
-          color: theme.ink.low,
-          width: 40,
-          textAlign: 'center',
-        }}
-      >
-        {arrow ? '→' : ''}
-      </div>
-      <div
-        style={{
-          flex: 1.1,
-          fontFamily: interFamily,
-          fontSize: 21,
-          fontWeight: 500,
-          color: theme.ink.mid,
-        }}
-      >
-        {outcome}
-      </div>
-      <div style={{width: 132, flexShrink: 0, textAlign: 'right'}}>{tag}</div>
-    </div>
-  );
+    );
+  };
 
   return (
     <SceneFrame

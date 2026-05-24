@@ -3,6 +3,7 @@ import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from
 import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText, fitFontSize, truncateForSlot} from '../components/FittedText';
 import {STAGE} from '../engine/layout';
 import {
   activeBeatIndex,
@@ -247,17 +248,26 @@ export const TimelineScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                     strokeWidth={focused ? 2.2 : 1.6}
                     opacity={0.85}
                   />
-                  <text
-                    x={(x1 + x2) / 2}
-                    y={y + 5}
-                    textAnchor="middle"
-                    fontFamily={monoFamily}
-                    fontSize={14}
-                    fill={ink.hi}
-                    letterSpacing={0.5}
-                  >
-                    {sp.label}
-                  </text>
+                  {/* span label — fits inside the span bar's pixel width;
+                      shrink past the floor or ellipsis. */}
+                  {(() => {
+                    const w = Math.max(40, x2 - x1 - 12);
+                    const fs = fitFontSize(sp.label, {maxWidth: w, basePx: 14, floorPx: 9, charAdvance: 0.6});
+                    const txt = truncateForSlot(sp.label, {maxWidth: w, fontSize: fs, charAdvance: 0.6});
+                    return (
+                      <text
+                        x={(x1 + x2) / 2}
+                        y={y + 5}
+                        textAnchor="middle"
+                        fontFamily={monoFamily}
+                        fontSize={fs}
+                        fill={ink.hi}
+                        letterSpacing={0.5}
+                      >
+                        {txt}
+                      </text>
+                    );
+                  })()}
                 </g>
               );
             })}
@@ -364,44 +374,50 @@ export const TimelineScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                   >
                     {e.date}
                   </div>
-                  <div
+                  {/* event card label — 300px wide, 32px horizontal pad
+                      reserved on the card. Wrap to 2 lines so a longer
+                      event name reads cleanly; auto-shrink under the
+                      wrap budget. */}
+                  <FittedText
+                    text={e.label}
+                    maxWidth={300 - 32}
+                    basePx={
+                      e.label.length <= 18 ? 21
+                      : e.label.length <= 28 ? 18
+                      : e.label.length <= 38 ? 15
+                      : 13
+                    }
+                    floorPx={11}
+                    charAdvance={0.58}
+                    mode="shrink-wrap"
+                    maxLines={2}
+                    lineHeight={1.14}
                     style={{
                       fontFamily: sansFamily,
-                      fontSize:
-                        e.label.length <= 18 ? 21
-                        : e.label.length <= 28 ? 18
-                        : e.label.length <= 38 ? 15
-                        : 13,
                       fontWeight: 600,
                       color: ink.hi,
-                      lineHeight: 1.14,
                       letterSpacing: -0.2,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: '100%',
                     }}
-                  >
-                    {e.label}
-                  </div>
+                  />
                   {e.sub ? (
-                    <div
+                    <FittedText
+                      text={e.sub}
+                      maxWidth={300 - 32}
+                      basePx={
+                        e.sub.length <= 32 ? 13
+                        : e.sub.length <= 48 ? 11.5
+                        : 10.5
+                      }
+                      floorPx={9}
+                      charAdvance={0.62}
+                      mode="shrink-wrap"
+                      maxLines={2}
+                      lineHeight={1.22}
                       style={{
                         fontFamily: monoFamily,
-                        fontSize:
-                          e.sub.length <= 32 ? 13
-                          : e.sub.length <= 48 ? 11.5
-                          : 10.5,
                         color: focused ? ink.mid : ink.low,
-                        lineHeight: 1.22,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        maxWidth: '100%',
                       }}
-                    >
-                      {e.sub}
-                    </div>
+                    />
                   ) : null}
                 </div>
               </React.Fragment>

@@ -4,6 +4,7 @@ import {Highlight} from 'prism-react-renderer';
 import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {codeTheme} from '../components/code-theme';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
 import type {ResolvedStyle} from '../style';
@@ -102,10 +103,25 @@ export const DiffScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
               <div key={c} style={{width: 12, height: 12, borderRadius: 6, background: c, opacity: 0.9}} />
             ))}
           </div>
-          <div style={{fontFamily: monoFamily, fontSize: 16, color: ink.mid, letterSpacing: 0.3}}>
-            {scene.file}
-          </div>
-          <div style={{marginLeft: 'auto', fontFamily: monoFamily, fontSize: 15, letterSpacing: 0.5}}>
+          {/* file path — single-line shrink with ellipsis. The window is
+              1320px wide; the dots eat ~60px, the stats column eats
+              ~140px, headerH padding eats ~22px on each side. */}
+          <FittedText
+            text={scene.file ?? ''}
+            maxWidth={1320 - 60 - 140 - 60}
+            basePx={16}
+            floorPx={11}
+            charAdvance={0.62}
+            mode="shrink-single"
+            style={{
+              fontFamily: monoFamily,
+              color: ink.mid,
+              letterSpacing: 0.3,
+              flexShrink: 1,
+              minWidth: 0,
+            }}
+          />
+          <div style={{marginLeft: 'auto', fontFamily: monoFamily, fontSize: 15, letterSpacing: 0.5, flexShrink: 0}}>
             <span style={{color: GREEN}}>+{adds}</span>
             <span style={{color: ink.faint}}> / </span>
             <span style={{color: ROSE}}>&minus;{dels}</span>

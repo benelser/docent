@@ -4,6 +4,7 @@ import {glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import type {CameraState} from '../engine/camera';
 import type {ResolvedStyle} from '../style';
+import {FittedText} from './FittedText';
 
 // Seeded RNG so the starfield is identical every render.
 const rng = (seed: number) => () => {
@@ -173,39 +174,54 @@ export const SceneFrame: React.FC<{
               boxShadow: `0 0 14px ${accentHex}`,
             }}
           />
-          <div
+          {/* kicker — single-line auto-shrink with a hard cap. 4-px tracking
+              makes "ARCHITECTURE REVIEW · DOCENT" the longest realistic
+              kicker; if a film stretches it past the safe band the
+              helper falls back to ellipsis rather than overflowing. */}
+          <FittedText
+            text={kicker}
+            maxWidth={1480}
+            basePx={21}
+            floorPx={13}
+            charAdvance={0.78}
+            mode="shrink-single"
             style={{
               fontFamily: monoFamily,
-              fontSize: 21,
               letterSpacing: 4,
               color: accentHex,
               fontWeight: 500,
             }}
-          >
-            {kicker}
-          </div>
+          />
         </div>
         {heading ? (
-          <div
+          // Heading: the safe band is 120→1800px (1680 wide). The legacy
+          // step-down handled lengths up to ~80 chars cleanly. FittedText
+          // adds a hard cap at 2 lines — past that the trailing line
+          // ellipses with a real U+2026 rather than spilling into the
+          // chrome below. The tiered base size keeps short headings at
+          // 54px (the design intent) and steps to a more-room font for
+          // long ones, so the auto-shrink doesn't degrade the common case.
+          <FittedText
+            text={heading}
+            maxWidth={1680}
+            basePx={
+              heading.length <= 38 ? 54
+              : heading.length <= 50 ? 46
+              : heading.length <= 64 ? 40
+              : 34
+            }
+            floorPx={26}
+            charAdvance={0.55}
+            mode="shrink-wrap"
+            maxLines={2}
+            lineHeight={1.06}
             style={{
-              // Heading auto-shrinks for long lines so it never escapes the
-              // safe band (left:120 → right:120 = max 1680px). Short
-              // headings keep the full 54px; long ones step down.
-              fontSize:
-                heading.length <= 38 ? 54
-                : heading.length <= 50 ? 46
-                : heading.length <= 64 ? 40
-                : 34,
               fontWeight: 700,
               color: ink.hi,
               marginTop: 14,
               letterSpacing: -0.5,
-              maxWidth: 1680,
-              lineHeight: 1.06,
             }}
-          >
-            {heading}
-          </div>
+          />
         ) : null}
       </div>
 

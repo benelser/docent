@@ -3,6 +3,7 @@ import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {glow} from '../theme';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {activeBeatIndex, type Beat, type Mark, type SceneProps} from '../engine/spec';
 import type {ResolvedStyle} from '../style';
 
@@ -252,31 +253,41 @@ export const PassageScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                       boxShadow: dim ? 'none' : `0 0 12px ${accentHex}`,
                     }}
                   />
-                  <div
+                  {/* annotation quote — single-line shrink with
+                      ellipsis; the quoted phrase is the *handle*, not
+                      the substance. */}
+                  <FittedText
+                    text={`“${m.quote}”`}
+                    maxWidth={360}
+                    basePx={21}
+                    floorPx={14}
+                    charAdvance={0.58}
+                    mode="shrink-single"
                     style={{
                       fontFamily: serifFamily,
                       fontStyle: 'italic',
-                      fontSize: 21,
                       color: accentHex,
                       flexShrink: 0,
-                      maxWidth: 360,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
                     }}
-                  >
-                    “{m.quote}”
-                  </div>
-                  <div
+                  />
+                  {/* annotation note — the substantive prose. Wrap to
+                      3 lines and auto-shrink past that. The annotation
+                      row's available width is panelW - quote (360) -
+                      gap (16) - bullet (24). */}
+                  <FittedText
+                    text={m.note}
+                    maxWidth={Math.max(300, panelW - 360 - 40)}
+                    basePx={21}
+                    floorPx={13}
+                    charAdvance={0.56}
+                    mode="shrink-wrap"
+                    maxLines={3}
+                    lineHeight={1.4}
                     style={{
                       fontFamily: sansFamily,
-                      fontSize: 21,
                       color: ink.mid,
-                      lineHeight: 1.4,
                     }}
-                  >
-                    {m.note}
-                  </div>
+                  />
                 </div>
               );
             })}

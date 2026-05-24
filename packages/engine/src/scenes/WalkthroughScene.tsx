@@ -5,6 +5,7 @@ import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {STAGE} from '../engine/layout';
 import {activeBeatIndex, type SceneProps} from '../engine/spec';
 
@@ -192,34 +193,42 @@ export const WalkthroughScene: React.FC<SceneProps & {style: ResolvedStyle}> = (
               boxSizing: 'border-box',
             }}
           >
-            <div
+            {/* actor label / sub — the actor pill is 232px wide with 12px
+                horizontal padding (~208px content). Allow up to 2 wrapped
+                lines for long actor names ("Distributed Coordination
+                Service"); auto-shrink kicks in past the wrap budget. */}
+            <FittedText
+              text={a.label}
+              maxWidth={208}
+              basePx={a.label.length <= 14 ? 22 : a.label.length <= 20 ? 18 : 15}
+              floorPx={12}
+              charAdvance={0.58}
+              mode="shrink-wrap"
+              maxLines={2}
+              lineHeight={1.1}
               style={{
                 fontFamily: interFamily,
-                fontSize:
-                  a.label.length <= 14 ? 22 : a.label.length <= 20 ? 18 : 15,
                 fontWeight: 600,
                 color: ink.hi,
                 textAlign: 'center',
-                lineHeight: 1.1,
-                maxWidth: '100%',
               }}
-            >
-              {a.label}
-            </div>
+            />
             {a.sub ? (
-              <div
+              <FittedText
+                text={a.sub}
+                maxWidth={208}
+                basePx={a.sub.length <= 24 ? 13 : a.sub.length <= 34 ? 11 : 10}
+                floorPx={9}
+                charAdvance={0.62}
+                mode="shrink-wrap"
+                maxLines={2}
+                lineHeight={1.2}
                 style={{
                   fontFamily: monoFamily,
-                  fontSize:
-                    a.sub.length <= 24 ? 13 : a.sub.length <= 34 ? 11 : 10,
                   color: ink.low,
                   textAlign: 'center',
-                  lineHeight: 1.2,
-                  maxWidth: '100%',
                 }}
-              >
-                {a.sub}
-              </div>
+              />
             ) : null}
           </div>
         );
@@ -241,6 +250,15 @@ export const WalkthroughScene: React.FC<SceneProps & {style: ResolvedStyle}> = (
           extrapolateLeft: 'clamp',
           extrapolateRight: 'clamp',
         });
+        // message label — the message label sits on its message line,
+        // between the two actor lifelines. The chord length is
+        // |x2-x1| (or 92 for a self-message); we budget 86% of that
+        // so the label keeps clear air on each side, with a 200-px
+        // minimum so a tight cluster still reads. Single-line shrink
+        // so the label rides the wire; floor at 11px before
+        // U+2026 truncation.
+        const chord = self ? 184 : Math.abs(x2 - x1);
+        const maxW = Math.max(200, Math.min(720, chord * 0.86 - 32));
         return (
           <div
             key={b.id}
@@ -250,20 +268,39 @@ export const WalkthroughScene: React.FC<SceneProps & {style: ResolvedStyle}> = (
               top: y - (self ? 14 : 40),
               transform: 'translateX(-50%)',
               opacity: labelIn * (isCurrent ? 1 : 0.5),
-              fontFamily: monoFamily,
-              fontSize: 16.5,
-              letterSpacing: 0.3,
-              color: isCurrent ? ink.hi : ink.mid,
-              whiteSpace: 'nowrap',
               background: bg.base,
               padding: '2px 12px',
               borderRadius: 6,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0,
+              maxWidth: maxW + 32,
             }}
           >
-            <span style={{color: m.kind === 'reply' ? ink.low : accentHex}}>
-              {m.kind === 'reply' ? '◁ ' : '▶ '}
+            <span
+              style={{
+                color: m.kind === 'reply' ? ink.low : accentHex,
+                fontFamily: monoFamily,
+                fontSize: 16.5,
+                flexShrink: 0,
+                marginRight: 6,
+              }}
+            >
+              {m.kind === 'reply' ? '◁' : '▶'}
             </span>
-            {m.label}
+            <FittedText
+              text={m.label}
+              maxWidth={maxW}
+              basePx={16.5}
+              floorPx={11}
+              charAdvance={0.6}
+              mode="shrink-single"
+              style={{
+                fontFamily: monoFamily,
+                letterSpacing: 0.3,
+                color: isCurrent ? ink.hi : ink.mid,
+              }}
+            />
           </div>
         );
       })}

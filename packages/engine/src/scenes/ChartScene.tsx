@@ -6,6 +6,7 @@ import type {ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {fitFontSize, truncateForSlot} from '../components/FittedText';
 import {STAGE} from '../engine/layout';
 import {
   activeBeatIndex,
@@ -299,31 +300,46 @@ export const ChartScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
           }) : null}
 
           {/* ---- axis titles ---- */}
-          <text
-            x={(origin.x + xEnd.x) / 2}
-            y={origin.y + 62}
-            textAnchor="middle"
-            fontFamily={interFamily}
-            fontSize={19}
-            fontWeight={600}
-            fill={ink.mid}
-            opacity={intro}
-          >
-            {xAxis.label}
-          </text>
-          <text
-            x={STAGE.x + 22}
-            y={(origin.y + yEnd.y) / 2}
-            textAnchor="middle"
-            fontFamily={interFamily}
-            fontSize={19}
-            fontWeight={600}
-            fill={ink.mid}
-            opacity={intro}
-            transform={`rotate(-90 ${STAGE.x + 22} ${(origin.y + yEnd.y) / 2})`}
-          >
-            {yAxis.label}
-          </text>
+          {(() => {
+            const xLabel = xAxis.label ?? '';
+            const fs = fitFontSize(xLabel, {maxWidth: plot.w - 40, basePx: 19, floorPx: 12, charAdvance: 0.58});
+            const txt = truncateForSlot(xLabel, {maxWidth: plot.w - 40, fontSize: fs, charAdvance: 0.58});
+            return (
+              <text
+                x={(origin.x + xEnd.x) / 2}
+                y={origin.y + 62}
+                textAnchor="middle"
+                fontFamily={interFamily}
+                fontSize={fs}
+                fontWeight={600}
+                fill={ink.mid}
+                opacity={intro}
+              >
+                {txt}
+              </text>
+            );
+          })()}
+          {(() => {
+            const yLabel = yAxis.label ?? '';
+            // Rotated label budget = plot height (it runs along the y axis).
+            const fs = fitFontSize(yLabel, {maxWidth: plot.h - 40, basePx: 19, floorPx: 12, charAdvance: 0.58});
+            const txt = truncateForSlot(yLabel, {maxWidth: plot.h - 40, fontSize: fs, charAdvance: 0.58});
+            return (
+              <text
+                x={STAGE.x + 22}
+                y={(origin.y + yEnd.y) / 2}
+                textAnchor="middle"
+                fontFamily={interFamily}
+                fontSize={fs}
+                fontWeight={600}
+                fill={ink.mid}
+                opacity={intro}
+                transform={`rotate(-90 ${STAGE.x + 22} ${(origin.y + yEnd.y) / 2})`}
+              >
+                {txt}
+              </text>
+            );
+          })()}
 
           {/* ---- line series — drawn on with evolvePath ---- */}
           {series
@@ -435,18 +451,26 @@ export const ChartScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                             ? String(Math.round(value))
                             : value.toFixed(1)}
                         </text>
-                        {/* the datum label, below the axis */}
-                        <text
-                          x={cx}
-                          y={origin.y + 30}
-                          textAnchor="middle"
-                          fontFamily={interFamily}
-                          fontSize={17}
-                          fill={ink.mid}
-                          opacity={intro}
-                        >
-                          {d.label}
-                        </text>
+                        {/* the datum label, below the axis. Bar slot is
+                            `slot` wide; shrink-then-ellipsis so a
+                            longer category name stays inside its slot. */}
+                        {(() => {
+                          const fs = fitFontSize(d.label, {maxWidth: slot - 8, basePx: 17, floorPx: 10, charAdvance: 0.58});
+                          const txt = truncateForSlot(d.label, {maxWidth: slot - 8, fontSize: fs, charAdvance: 0.58});
+                          return (
+                            <text
+                              x={cx}
+                              y={origin.y + 30}
+                              textAnchor="middle"
+                              fontFamily={interFamily}
+                              fontSize={fs}
+                              fill={ink.mid}
+                              opacity={intro}
+                            >
+                              {txt}
+                            </text>
+                          );
+                        })()}
                       </g>
                     );
                   })}

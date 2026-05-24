@@ -5,6 +5,7 @@ import type {DesignTokens, ResolvedStyle} from '../style';
 import {interFamily, monoFamily} from '../fonts';
 import {SceneFrame} from '../components/SceneFrame';
 import {Narration} from '../components/Narration';
+import {FittedText} from '../components/FittedText';
 import {activeBeatIndex, type JourneyEmotion, type SceneProps} from '../engine/spec';
 import {
   cadenceOffset,
@@ -346,42 +347,50 @@ export const JourneyMapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                     {eLabel}
                   </div>
                 </div>
-                <div
+                {/* stage card label — the card is 290px wide with 18px
+                    horizontal padding (~254px content). Wrap to 2 lines
+                    for longer stage names; auto-shrink under the
+                    wrap budget. */}
+                <FittedText
+                  text={s.label}
+                  maxWidth={254}
+                  basePx={
+                    s.label.length <= 14 ? 22
+                    : s.label.length <= 22 ? 18
+                    : s.label.length <= 30 ? 15
+                    : 13
+                  }
+                  floorPx={11}
+                  charAdvance={0.58}
+                  mode="shrink-wrap"
+                  maxLines={2}
+                  lineHeight={1.14}
                   style={{
                     fontFamily: interFamily,
-                    fontSize:
-                      s.label.length <= 14 ? 22
-                      : s.label.length <= 22 ? 18
-                      : s.label.length <= 30 ? 15
-                      : 13,
                     fontWeight: 600,
                     color: ink.hi,
                     letterSpacing: -0.2,
-                    lineHeight: 1.12,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                   }}
-                >
-                  {s.label}
-                </div>
+                />
                 {s.sub ? (
-                  <div
+                  <FittedText
+                    text={s.sub}
+                    maxWidth={254}
+                    basePx={
+                      s.sub.length <= 28 ? 13.5
+                      : s.sub.length <= 40 ? 11.5
+                      : 10.5
+                    }
+                    floorPx={9}
+                    charAdvance={0.62}
+                    mode="shrink-wrap"
+                    maxLines={2}
+                    lineHeight={1.22}
                     style={{
                       fontFamily: monoFamily,
-                      fontSize:
-                        s.sub.length <= 28 ? 13.5
-                        : s.sub.length <= 40 ? 11.5
-                        : 10.5,
                       color: focused ? ink.mid : ink.low,
-                      lineHeight: 1.2,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
                     }}
-                  >
-                    {s.sub}
-                  </div>
+                  />
                 ) : null}
 
                 {touchpoints.length > 0 ? (
