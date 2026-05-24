@@ -1,10 +1,11 @@
 import React from 'react';
 import {Highlight} from 'prism-react-renderer';
-import {theme, glow} from '../theme';
+import {glow} from '../theme';
 import {monoFamily} from '../fonts';
 import {codeTheme} from './code-theme';
 import type {Box} from '../engine/layout';
 import type {Node, NodeRepr as Repr} from '../engine/spec';
+import type {ResolvedStyle} from '../style';
 
 // The non-`box` node representations — the content drawn *inside* a morph
 // target's bounding box. Each fills its `box` exactly (the container tween
@@ -22,7 +23,12 @@ const CellGrid: React.FC<{
   box: Box;
   cells: (string | number)[][];
   accentHex: string;
-}> = ({box, cells, accentHex}) => {
+  style: ResolvedStyle;
+}> = ({box, cells, accentHex, style}) => {
+  // `accentHex` was already unused in CellGrid prior to the style port;
+  // keeping it in the signature for symmetry with the other reprs.
+  void accentHex;
+  const {bg, ink} = style.tokens;
   const rows = Math.max(1, cells.length);
   const cols = Math.max(1, ...cells.map((r) => r.length));
   const pad = 14;
@@ -56,8 +62,8 @@ const CellGrid: React.FC<{
             key={`${ri}-${ci}`}
             style={{
               borderRadius: 9,
-              background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-              border: `1.5px solid ${theme.bg.line}`,
+              background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+              border: `1.5px solid ${bg.line}`,
               boxShadow: `0 10px 26px -22px #000000cc`,
               display: 'flex',
               alignItems: 'center',
@@ -65,7 +71,7 @@ const CellGrid: React.FC<{
               fontFamily: monoFamily,
               fontSize,
               fontWeight: 500,
-              color: theme.ink.hi,
+              color: ink.hi,
             }}
           >
             {cells[ri]?.[ci] ?? '—'}
@@ -82,7 +88,9 @@ const CodeWindow: React.FC<{
   box: Box;
   node: Node;
   accentHex: string;
-}> = ({box, node, accentHex}) => {
+  style: ResolvedStyle;
+}> = ({box, node, accentHex, style}) => {
+  const {bg, ink} = style.tokens;
   const code = (node.sub ?? node.label ?? '').replace(/\s+$/, '');
   const lineCount = Math.max(1, code.split('\n').length);
   const headerH = 30;
@@ -103,8 +111,8 @@ const CodeWindow: React.FC<{
         height: box.h,
         borderRadius: 14,
         overflow: 'hidden',
-        background: theme.bg.panel,
-        border: `1.5px solid ${theme.bg.line}`,
+        background: bg.panel,
+        border: `1.5px solid ${bg.line}`,
         boxShadow: `0 18px 44px -24px #000000cc, 0 0 0 1px ${glow(accentHex, 0.12)}`,
         boxSizing: 'border-box',
       }}
@@ -117,8 +125,8 @@ const CodeWindow: React.FC<{
           gap: 10,
           padding: '0 14px',
           height: headerH,
-          background: theme.bg.panelHi,
-          borderBottom: `1px solid ${theme.bg.line}`,
+          background: bg.panelHi,
+          borderBottom: `1px solid ${bg.line}`,
         }}
       >
         <div style={{display: 'flex', gap: 6}}>
@@ -134,7 +142,7 @@ const CodeWindow: React.FC<{
             style={{
               fontFamily: monoFamily,
               fontSize: 12,
-              color: theme.ink.mid,
+              color: ink.mid,
               letterSpacing: 0.3,
             }}
           >
@@ -155,7 +163,7 @@ const CodeWindow: React.FC<{
                       width: 38,
                       textAlign: 'right',
                       paddingRight: 12,
-                      color: theme.ink.faint,
+                      color: ink.faint,
                       flexShrink: 0,
                     }}
                   >
@@ -189,7 +197,9 @@ const EquationPane: React.FC<{
   box: Box;
   node: Node;
   accentHex: string;
-}> = ({box, node, accentHex}) => {
+  style: ResolvedStyle;
+}> = ({box, node, accentHex, style}) => {
+  const {bg, ink} = style.tokens;
   const expr = (node.expr ?? node.label ?? '').trim();
   // The expression fills the box; the font size eases down for longer markup
   // so a derivation step never overruns its container.
@@ -207,8 +217,8 @@ const EquationPane: React.FC<{
         width: box.w,
         height: box.h,
         borderRadius: 14,
-        background: `linear-gradient(158deg, ${theme.bg.panelHi}, ${theme.bg.panel})`,
-        border: `1.5px solid ${theme.bg.line}`,
+        background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+        border: `1.5px solid ${bg.line}`,
         boxShadow: `0 18px 44px -24px #000000cc, 0 0 0 1px ${glow(accentHex, 0.12)}`,
         boxSizing: 'border-box',
         display: 'flex',
@@ -238,7 +248,7 @@ const EquationPane: React.FC<{
           fontSize,
           fontWeight: 500,
           lineHeight: 1.15,
-          color: theme.ink.hi,
+          color: ink.hi,
           textAlign: 'center',
           whiteSpace: 'pre-wrap',
         }}
@@ -255,12 +265,17 @@ export const NodeRepresentation: React.FC<{
   box: Box;
   node: Node;
   accentHex: string;
-}> = ({box, node, accentHex}) => {
+  style: ResolvedStyle;
+}> = ({box, node, accentHex, style}) => {
   const as: Repr = node.as ?? 'box';
-  if (as === 'code') return <CodeWindow box={box} node={node} accentHex={accentHex} />;
-  if (as === 'equation') return <EquationPane box={box} node={node} accentHex={accentHex} />;
+  if (as === 'code')
+    return <CodeWindow box={box} node={node} accentHex={accentHex} style={style} />;
+  if (as === 'equation')
+    return <EquationPane box={box} node={node} accentHex={accentHex} style={style} />;
   if (as === 'matrix' || as === 'vector' || as === 'grid') {
-    return <CellGrid box={box} cells={node.cells ?? []} accentHex={accentHex} />;
+    return (
+      <CellGrid box={box} cells={node.cells ?? []} accentHex={accentHex} style={style} />
+    );
   }
   return null;
 };

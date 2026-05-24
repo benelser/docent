@@ -1,6 +1,7 @@
 import React from 'react';
 import {glow} from '../theme';
 import {edgePoint, type Box} from '../engine/layout';
+import type {ResolvedStyle} from '../style';
 
 // A comet of data travelling an edge — a bright head with a tapering trail.
 // `t` is 0..1 along the from→to edge.
@@ -9,7 +10,10 @@ export const Pulse: React.FC<{
   to: Box;
   accentHex: string;
   t: number;
-}> = ({from, to, accentHex, t}) => {
+  style: ResolvedStyle;
+}> = ({from, to, accentHex, t, style}) => {
+  // `style` is reserved for future token use; today the comet is pure accent.
+  void style;
   if (t <= 0 || t >= 1) return null;
   const s = edgePoint(from, to.cx, to.cy);
   const e = edgePoint(to, from.cx, from.cy);

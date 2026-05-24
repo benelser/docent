@@ -1,10 +1,11 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {theme, glow} from '../theme';
+import {glow} from '../theme';
 import {interFamily, monoFamily} from '../fonts';
 import {cadenceSpringConfig} from '../engine/knobs';
 import type {Beat} from '../engine/spec';
 import type {Box} from '../engine/layout';
+import type {ResolvedStyle} from '../style';
 
 export type CardState = 'hidden' | 'normal' | 'focus' | 'dim';
 // `weight` — the node's authorial emphasis, a 4-step gradient. `hero` is the
@@ -29,7 +30,9 @@ export const Card: React.FC<{
   state: CardState;
   enterFrame: number;
   cadence?: Beat['cadence'];
-}> = ({box, label, sub, tag, accentHex, emphasis, weight, state, enterFrame, cadence}) => {
+  style: ResolvedStyle;
+}> = ({box, label, sub, tag, accentHex, emphasis, weight, state, enterFrame, cadence, style}) => {
+  const {bg, ink} = style.tokens;
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const local = frame - enterFrame;
@@ -80,9 +83,9 @@ export const Card: React.FC<{
         transform: `scale(${scale})`,
         borderRadius: 18,
         background: focus
-          ? `radial-gradient(120% 140% at 0% 0%, ${glow(accentHex, 0.14)} 0%, ${theme.bg.panelHi} 42%, ${theme.bg.panel} 100%)`
-          : `linear-gradient(158deg, ${theme.bg.panelHi} 0%, ${theme.bg.panel} 100%)`,
-        border: `1.5px solid ${glowing ? accentHex : theme.bg.line}`,
+          ? `radial-gradient(120% 140% at 0% 0%, ${glow(accentHex, 0.14)} 0%, ${bg.panelHi} 42%, ${bg.panel} 100%)`
+          : `linear-gradient(158deg, ${bg.panelHi} 0%, ${bg.panel} 100%)`,
+        border: `1.5px solid ${glowing ? accentHex : bg.line}`,
         boxShadow: focus
           ? `0 0 0 1px ${glow(accentHex, 0.35)}, 0 24px 60px -22px ${glow(
               accentHex,
@@ -117,7 +120,7 @@ export const Card: React.FC<{
             fontFamily: interFamily,
             fontSize: labelSize,
             fontWeight: 600,
-            color: theme.ink.hi,
+            color: ink.hi,
             letterSpacing: -0.2,
             whiteSpace: 'nowrap',
             // Belt-and-braces — fitFont already shrinks; this ellipsis is
@@ -136,7 +139,7 @@ export const Card: React.FC<{
             style={{
               fontFamily: monoFamily,
               fontSize: subSize,
-              color: focus ? theme.ink.mid : theme.ink.low,
+              color: focus ? ink.mid : ink.low,
               letterSpacing: 0.2,
               // Wrap to 2 lines instead of truncating a long descriptive
               // sub mid-thought. -webkit-line-clamp is the multi-line
