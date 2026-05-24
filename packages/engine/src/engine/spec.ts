@@ -169,6 +169,37 @@ export type BigIdeaAnchor = {
   value: string;
 };
 
+// venn scenes — overlap analysis. 2 or 3 named sets, rendered as overlapping
+// circles; every region (each "petal" plus the central intersection) is
+// addressable by an id so beats can reveal/focus regions one at a time. The
+// film argues from the INTERSECTION: what lives ONLY in the overlap is the
+// claim that earns the scene. `novelty.regionId` names the region the
+// argument hinges on — its glow ring + one-line claim render when revealed.
+export type VennSet = {
+  id: string; // 'A', 'B', 'C' or named like 'data', 'tools', 'untrusted'
+  label: string; // 'private data', 'outbound tools', 'untrusted content'
+  sub?: string; // optional one-liner
+};
+
+// A region is defined by which sets it's IN. For 3 sets {A,B,C} the seven
+// addressable regions are {A}, {B}, {C}, {A,B}, {A,C}, {B,C}, {A,B,C}. The
+// implicit "outside all" region {} is not addressable: a film does not argue
+// about what lies outside every set.
+export type VennRegion = {
+  id: string; // a stable id beats reveal/focus
+  in: string[]; // ids from `sets`
+  label?: string; // what lives in this region (a one-liner)
+  note?: string; // an annotation that surfaces when focused
+};
+
+// The intersection the film argues from — the dangerous region. `claim` is
+// the one-line statement of what the overlap PROVES (not "X is dangerous",
+// but "X plus Y plus Z together exfiltrate because no token has provenance").
+export type VennNovelty = {
+  regionId: string; // a region id from `regions`
+  claim: string; // the one-liner the film argues from
+};
+
 // quantities scenes — magnitudes as figures, or a worked numeric grid.
 export type Figure = {id: string; label: string; value: string; unit?: string; note?: string};
 export type Matrix = {rowLabels: string[]; colLabels: string[]; cells: string[][]};
@@ -281,7 +312,8 @@ export type Scene = {
     | 'diff'
     | 'chart'
     | 'big-idea'
-    | 'prior-art';
+    | 'prior-art'
+    | 'venn';
   accent: string;
   kicker: string;
   heading?: string;
@@ -317,13 +349,22 @@ export type Scene = {
   systems?: PriorArtSystem[];
   dimensions?: PriorArtDimension[];
   cells?: PriorArtCell[];
-  novelty?: PriorArtNovelty;
+  // `novelty` is shared by prior-art (PriorArtNovelty: dimension+statement)
+  // and venn (VennNovelty: regionId+claim). The validator dispatches on
+  // scene.type to enforce the correct shape; either is structurally valid here.
+  novelty?: PriorArtNovelty | VennNovelty;
   // big-idea (explainer mode) — the single-sentence takeaway. `statement` is
   // the sentence; `anchor` is the visual that lands it. Validator forbids
   // more than one big-idea per explainer and pins position to immediately
   // before the recap.
   statement?: string;
   anchor?: BigIdeaAnchor;
+  // venn — 2 or 3 overlapping sets and each addressable region.
+  // `sets` are the circles; `regions` are the (in-set, out-set) zones beats
+  // can reveal/focus by id; `novelty` (above, typed as VennNovelty) names the
+  // intersection the film argues from.
+  sets?: VennSet[];
+  regions?: VennRegion[];
   // quantities
   figures?: Figure[];
   matrix?: Matrix;

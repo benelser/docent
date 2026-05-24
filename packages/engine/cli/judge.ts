@@ -66,6 +66,7 @@ const DEPTH_DIMENSIONS = [
   // AR-mode: the film argues against a lineage. PR films mark these n/a.
   {id: 'novelty-named', label: 'Novelty named — the film says what is *new*, not what the components are'},
   {id: 'prior-art-honest', label: 'Prior art honest — prior systems named with version/year, divergence is dimensional'},
+  {id: 'intersection-named', label: 'Intersection named — the film argues from what the overlap PROVES, not that the overlap exists'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per

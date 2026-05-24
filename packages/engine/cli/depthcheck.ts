@@ -26,7 +26,16 @@ type Spec = {
     systems?: {id: string; label: string; year?: string}[];
     dimensions?: {id: string; label: string}[];
     cells?: {system: string; dimension: string; mark: 'same' | 'diverges'; note: string}[];
-    novelty?: {dimension: string; statement: string};
+    // novelty — shared by prior-art (dimension+statement) and venn (regionId+claim).
+    novelty?: {
+      dimension?: string;
+      statement?: string;
+      regionId?: string;
+      claim?: string;
+    };
+    // venn scene fields — only present on `type: 'venn'`.
+    sets?: {id: string; label: string; sub?: string}[];
+    regions?: {id: string; in: string[]; label?: string; note?: string}[];
   }[];
 };
 
@@ -71,6 +80,15 @@ const isAr = (s: Spec): boolean => /^architecture[- ]review$/i.test((s.meta.prom
 // vocabulary that betrays an evaluation, not a dimensional difference.
 const EVALUATIVE_NOVELTY =
   /\b(better|worse|best|worst|inferior|superior|stronger|weaker|faster than|slower than|wins?\b|beats?\b|outperforms?|defeats?|the right (choice|answer)|the wrong (choice|answer))\b/i;
+
+// Reject evaluative venn-intersection claims — the trap parallel to
+// EVALUATIVE_NOVELTY. "the overlap is dangerous" / "this combination is
+// risky" is a FAIL (an evaluation of the overlap); "data plus tools plus
+// untrusted input exfiltrate because no token carries provenance" is a PASS
+// (the mechanism the intersection PROVES). The claim must name what lives in
+// the overlap and why, not deliver a verdict about its character.
+const EVALUATIVE_INTERSECTION =
+  /\b(dangerous|risky|unsafe|safe|bad|good|catastrophic|harmful|terrible|important|crucial|critical|fascinating|interesting)\b/i;
 const narrationOf = (scenes: Spec['scenes']): string =>
   scenes.flatMap((sc) => sc.beats).map((b) => b.narration).join('  ');
 
@@ -180,6 +198,30 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
         });
       }
     }
+  }
+
+  // venn contract — `intersection-honest`. Any venn scene's novelty claim
+  // must NOT be evaluative ("the overlap is dangerous" is FAIL; "X + Y + Z
+  // exfiltrate because no token has provenance" is PASS). Like
+  // EVALUATIVE_NOVELTY for prior-art, this is a regex floor: it catches the
+  // verdict-shaped vocabulary that betrays an evaluation about the
+  // intersection instead of a mechanism inside it. The judge (Layer 3)
+  // catches the subtle cases this regex cannot.
+  const venns = spec.scenes.filter((sc) => sc.type === 'venn');
+  for (const v of venns) {
+    const claim = (v.novelty?.claim ?? '').trim();
+    const evaluative = EVALUATIVE_INTERSECTION.test(claim);
+    findings.push({
+      id: 'intersection-honest',
+      label:
+        'Intersection honest — the venn claim names what the overlap PROVES, not that the overlap is "dangerous"/"risky"',
+      status: claim && !evaluative ? 'ok' : 'fail',
+      detail: !claim
+        ? 'venn scene has an empty novelty claim'
+        : evaluative
+          ? `claim reads as evaluative ("dangerous"/"risky"/etc.) — restate as a mechanism: what lives ONLY in the intersection and WHY`
+          : 'the claim names the mechanism inside the overlap',
+    });
   }
 
   // big-idea contract — the takeaway sentence the viewer should leave with.

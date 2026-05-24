@@ -97,6 +97,34 @@ makes this argument. Score these AR-only dimensions:
    - Weak: "Older replication strategies were more limited." Names no system,
      no trade-off, just praise of the subject by denying the field.
 
+### For films that use a venn scene — the intersection dimension
+
+9. **Intersection named.** When the film argues from a `venn` scene, does it
+   argue from what the OVERLAP PROVES, or does it just narrate that the
+   overlap exists? A venn that ends at "these three things share an overlap"
+   is a tour of set membership, not a review. The strong version names the
+   mechanism that lives ONLY in the intersection and not in any single set
+   alone — the reason the overlap is load-bearing.
+
+   **Strong** — what the overlap proves, mechanistically:
+   - "Private data plus untrusted input plus outbound tools exfiltrate
+     because the model has no provenance per token." (the mechanism the
+     trifecta forces; not in any pair alone)
+   - "Only HMAC with a published verification key is both authenticated AND
+     publicly verifiable AND replay-protected; remove any single property
+     and the scheme collapses to one already named." (the move only the
+     triple intersection makes)
+
+   **Weak** — evaluative, asserts overlap-as-character not overlap-as-proof:
+   - "This combination is dangerous." (an evaluation, not a mechanism)
+   - "The overlap is the risky region." (says the overlap exists; says
+     nothing about why)
+   - "These three things together create critical risk." (compliment-shaped;
+     would fit any 3-set Venn by changing nouns)
+
+   For films with no venn scene, mark this dimension n/a (omit it from the
+   scores array).
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the

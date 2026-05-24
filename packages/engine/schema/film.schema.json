@@ -35,7 +35,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art"]},
+        "type": {"enum": ["frame", "structure", "progression", "walkthrough", "compare", "quantities", "probe", "tension", "closeup", "passage", "figure", "demonstrate", "recap", "diff", "chart", "big-idea", "prior-art", "venn"]},
         "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
@@ -119,8 +119,23 @@
           "items": {"$ref": "#/$defs/prior-art-cell"}
         },
         "novelty": {
-          "$ref": "#/$defs/prior-art-novelty",
-          "description": "prior-art scenes — which dimension carries the novelty, and the one-liner the film argues from"
+          "description": "prior-art scenes — which dimension carries the novelty, and the one-liner the film argues from. Also used by venn scenes (regionId + claim).",
+          "oneOf": [
+            {"$ref": "#/$defs/prior-art-novelty"},
+            {"$ref": "#/$defs/venn-novelty"}
+          ]
+        },
+        "sets": {
+          "type": "array",
+          "description": "venn scenes — the 2 or 3 named sets rendered as overlapping circles",
+          "minItems": 2,
+          "maxItems": 3,
+          "items": {"$ref": "#/$defs/venn-set"}
+        },
+        "regions": {
+          "type": "array",
+          "description": "venn scenes — the addressable zones inside the diagram (every (in, out) combination of sets except the implicit 'outside all'); beats reveal/focus these by id",
+          "items": {"$ref": "#/$defs/venn-region"}
         },
         "beats": {
           "type": "array",
@@ -412,6 +427,44 @@
       "properties": {
         "dimension": {"type": "string", "description": "a dimension id from this scene's `dimensions` — the row the film lights up"},
         "statement": {"type": "string", "minLength": 1, "description": "the one-line novelty: what is new, dimensionally"}
+      }
+    },
+    "venn-set": {
+      "type": "object",
+      "description": "venn scenes — one set (a circle of the diagram). `id` is referenced by every region the set is `in`; `label` is the human-facing name; `sub` is an optional one-liner.",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; regions reference this id"},
+        "label": {"type": "string", "description": "the set's human-facing name"},
+        "sub": {"type": "string", "description": "an optional one-line gloss"}
+      }
+    },
+    "venn-region": {
+      "type": "object",
+      "description": "venn scenes — one addressable region of the diagram. `in` is the list of set ids the region IS IN; every set NOT in `in` it is implicitly OUT of. Beats reveal/focus the region by id. The implicit 'outside all' region is not addressable: a film does not argue about what lies outside every set.",
+      "required": ["id", "in"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "description": "unique within the scene; beats reveal/focus this id"},
+        "in": {
+          "type": "array",
+          "description": "ids from this scene's `sets` — the sets this region is IN. Non-empty: the outside-all region is not addressable.",
+          "minItems": 1,
+          "items": {"type": "string"}
+        },
+        "label": {"type": "string", "description": "what lives in this region (a one-liner)"},
+        "note": {"type": "string", "description": "an annotation that surfaces when focused"}
+      }
+    },
+    "venn-novelty": {
+      "type": "object",
+      "description": "venn scenes — the intersection the film argues from. `regionId` names a region in this scene's `regions`; `claim` is the one-line statement of what the overlap PROVES. The claim must say what lives ONLY in the intersection (the mechanism), not that the intersection is dangerous.",
+      "required": ["regionId", "claim"],
+      "additionalProperties": false,
+      "properties": {
+        "regionId": {"type": "string", "description": "a region id from this scene's `regions` — the dangerous intersection the film hinges on"},
+        "claim": {"type": "string", "minLength": 1, "description": "what the overlap PROVES — the mechanism, not the verdict"}
       }
     }
   }

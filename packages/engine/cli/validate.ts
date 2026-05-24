@@ -3,7 +3,7 @@
 // is a focused check of the shape the engine actually depends on.
 // schema/film.schema.json is the documented contract this mirrors.
 
-const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art'];
+const SCENE_TYPES = ['frame', 'structure', 'progression', 'walkthrough', 'compare', 'quantities', 'probe', 'tension', 'closeup', 'passage', 'figure', 'demonstrate', 'recap', 'diff', 'chart', 'big-idea', 'prior-art', 'venn'];
 const ACCENTS = ['blue', 'cyan', 'green', 'amber', 'rose', 'violet'];
 // big-idea — the closed allowlist of anchor kinds. An anchor outside this list
 // is rejected: the author picks the kind, the engine owns the pixels.
@@ -680,6 +680,109 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       }
     }
 
+    // venn — overlap analysis. 2 or 3 named sets, every region (each (in, out)
+    // combination of the sets, except the implicit "outside all") is
+    // addressable by a stable id beats reveal/focus, and exactly one named
+    // novelty whose `regionId` references the dangerous intersection. The
+    // HARD-FAIL contracts are:
+    //   - `sets` must have 2 or 3 entries (a 1-circle Venn is not a Venn; a
+    //     4+ Venn does not have a clean planar layout).
+    //   - every region's `in` must reference real set ids in `sets`.
+    //   - every region's `in` must be NON-EMPTY (the outside-all region is
+    //     not addressable: a film does not argue about what lies outside
+    //     every set).
+    //   - `novelty.regionId` must reference a real region in `regions`.
+    if (sc.type === 'venn') {
+      const setIds = new Set<string>();
+      if (!Array.isArray(sc.sets) || sc.sets.length < 2 || sc.sets.length > 3) {
+        issues.push({
+          path: `${at}.sets`,
+          message: 'venn requires 2 or 3 sets (the circles of the diagram)',
+        });
+      } else {
+        sc.sets.forEach((p: Record<string, any>, k: number) => {
+          const pAt = `${at}.sets[${k}]`;
+          if (!p || typeof p !== 'object') {
+            issues.push({path: pAt, message: 'set must be an object {id, label, sub?}'});
+            return;
+          }
+          if (typeof p.id !== 'string' || !p.id.trim()) {
+            issues.push({path: `${pAt}.id`, message: 'missing or empty string'});
+          } else if (setIds.has(p.id)) {
+            issues.push({path: `${pAt}.id`, message: `duplicate set id "${p.id}"`});
+          } else {
+            setIds.add(p.id);
+          }
+          if (typeof p.label !== 'string' || !p.label.trim()) {
+            issues.push({path: `${pAt}.label`, message: 'missing or empty string'});
+          }
+          if (p.sub !== undefined && (typeof p.sub !== 'string' || !p.sub.trim())) {
+            issues.push({path: `${pAt}.sub`, message: 'sub must be a non-empty string when present'});
+          }
+        });
+      }
+      // regions — each must reference real set ids in `in`, and `in` must be
+      // non-empty (the outside-all region is not addressable).
+      const regionIds = new Set<string>();
+      if (sc.regions === undefined || !Array.isArray(sc.regions)) {
+        issues.push({path: `${at}.regions`, message: 'venn requires a regions array (the addressable zones)'});
+      } else {
+        sc.regions.forEach((r: Record<string, any>, k: number) => {
+          const rAt = `${at}.regions[${k}]`;
+          if (!r || typeof r !== 'object') {
+            issues.push({path: rAt, message: 'region must be an object {id, in, label?, note?}'});
+            return;
+          }
+          if (typeof r.id !== 'string' || !r.id.trim()) {
+            issues.push({path: `${rAt}.id`, message: 'missing or empty string'});
+          } else if (regionIds.has(r.id)) {
+            issues.push({path: `${rAt}.id`, message: `duplicate region id "${r.id}"`});
+          } else {
+            regionIds.add(r.id);
+          }
+          if (!Array.isArray(r.in) || r.in.length === 0) {
+            issues.push({
+              path: `${rAt}.in`,
+              message: 'in must be a non-empty array of set ids — the implicit "outside all" region is not addressable',
+            });
+          } else {
+            r.in.forEach((sid: any, ii: number) => {
+              if (typeof sid !== 'string' || !sid.trim()) {
+                issues.push({path: `${rAt}.in[${ii}]`, message: 'must be a set id'});
+              } else if (!setIds.has(sid)) {
+                issues.push({
+                  path: `${rAt}.in[${ii}]`,
+                  message: `region references set "${sid}", which is not a set in this scene`,
+                });
+              }
+            });
+          }
+          if (r.label !== undefined && (typeof r.label !== 'string' || !r.label.trim())) {
+            issues.push({path: `${rAt}.label`, message: 'label must be a non-empty string when present'});
+          }
+          if (r.note !== undefined && (typeof r.note !== 'string' || !r.note.trim())) {
+            issues.push({path: `${rAt}.note`, message: 'note must be a non-empty string when present'});
+          }
+        });
+      }
+      // novelty — the dangerous intersection. Must reference a real region.
+      if (!sc.novelty || typeof sc.novelty !== 'object') {
+        issues.push({path: `${at}.novelty`, message: 'venn requires a novelty {regionId, claim} — the intersection the film argues from'});
+      } else {
+        if (typeof sc.novelty.regionId !== 'string' || !sc.novelty.regionId.trim()) {
+          issues.push({path: `${at}.novelty.regionId`, message: 'missing or empty region id'});
+        } else if (!regionIds.has(sc.novelty.regionId)) {
+          issues.push({
+            path: `${at}.novelty.regionId`,
+            message: `novelty references region "${sc.novelty.regionId}", which is not a region in this scene`,
+          });
+        }
+        if (typeof sc.novelty.claim !== 'string' || !sc.novelty.claim.trim()) {
+          issues.push({path: `${at}.novelty.claim`, message: 'missing or empty claim'});
+        }
+      }
+    }
+
     // big-idea — the takeaway scene. Non-empty statement; optional anchor
     // with a valid kind. Position/uniqueness enforced film-wide below.
     if (sc.type === 'big-idea') {
@@ -759,8 +862,9 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       frame: () => (typeof sc.title !== 'string' || !sc.title.trim() ? 'frame requires a title' : null),
       // big-idea — statement is the load-bearing visual. Anchor optional.
       'big-idea': () => null, // already enforced above (statement required)
-      // prior-art / diff — already enforced by their dedicated checks above.
+      // prior-art / venn / diff — already enforced by their dedicated checks above.
       'prior-art': () => null,
+      venn: () => null,
       diff: () => null,
     };
     const bodyCheck = requiredBody[sc.type];

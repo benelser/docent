@@ -167,6 +167,34 @@ Surface the sentence and the anchor here. The treatment writer turns this
 into the named beat in the outline; the spec author surfaces it before
 rendering.
 
+## 7b. When the argument hinges on an overlap — reach for `venn`
+
+If the subject's argument hinges on the **OVERLAP of multiple capabilities,
+properties, or communities** — a security trifecta (private data + untrusted
+input + outbound tools), a set-theoretic distinction between schemes (HMAC
+vs signed JWT vs MAC), a market category intersection ("only the things in
+the intersection of A, B, and C are X") — reach for the `venn` scene type.
+
+State three things explicitly in the survey:
+
+- **Which sets**: name the 2 or 3 sets the argument relies on (each one a
+  distinct capability/property/community). Three is the upper bound: a 4+
+  Venn has no clean planar layout and the argument almost certainly wants a
+  different primitive.
+- **Which intersection**: which region the argument hinges on — every set,
+  or two of three, or just two of two. The intersection is the dangerous
+  one: name it.
+- **What that intersection alone proves**: the one-line mechanism. Not "the
+  overlap is dangerous" (an evaluation), but "no token in this combination
+  carries provenance, so the model cannot distinguish data from instruction"
+  (a mechanism). The depthcheck contract `intersection-honest` rejects
+  evaluative claims; the judge dimension `intersection-named` enforces it
+  with judgement.
+
+A film that needs a Venn but uses structure or tension will name the
+components but lose the argument — the overlap is the point, and only the
+Venn primitive renders it.
+
 ## 8. Verdict inputs — the recap must *rule*, not restate
 
 A non-code film still ends on a stated position, never "this is interesting"
