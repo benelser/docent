@@ -5,7 +5,16 @@
 
 import {parseTimelineDate} from '../src/engine/time';
 
-const SCENE_TYPES = ['big-idea', 'causal-loop', 'chart', 'closeup', 'compare', 'demonstrate', 'diff', 'figure', 'frame', 'journey-map', 'landscape', 'map', 'mechanism', 'passage', 'prior-art', 'probe', 'progression', 'quantities', 'recap', 'structure', 'tension', 'timeline', 'tree', 'venn', 'walkthrough'];
+const SCENE_TYPES = ['big-idea', 'causal-loop', 'chart', 'closeup', 'compare', 'concession', 'demonstrate', 'diff', 'epigraph', 'figure', 'frame', 'journey-map', 'landscape', 'map', 'mechanism', 'objection', 'passage', 'prior-art', 'probe', 'progression', 'provocation', 'quantities', 'recap', 'structure', 'tension', 'timeline', 'tree', 'venn', 'walkthrough'];
+// Scene types that are CLAIM scenes — the concession contract says
+// `concession` must precede any of these, and the objection contract says
+// `objection` must FOLLOW at least one. These are the scene types that argue
+// for a position (a structure, a comparison, a trade-off): they are the
+// things a concession draws the line around and an objection challenges.
+const CLAIM_SCENE_TYPES = new Set([
+  'structure', 'compare', 'tension', 'chart', 'prior-art', 'venn',
+  'landscape', 'causal-loop', 'mechanism',
+]);
 // journey-map — the closed allowlist of emotion chips. An emotion outside
 // this list is rejected: the author names a feeling, the engine owns the chip.
 const JOURNEY_EMOTIONS = ['delight', 'curiosity', 'satisfaction', 'neutral', 'fatigue', 'frustration', 'pain'];
@@ -1948,6 +1957,221 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       }
     }
 
+    // ----- rhetorical primitives — Sprint C -------------------------------
+    // Four scene types render the *author's stance* toward the subject:
+    // epigraph (a cited authority opens the film), concession (the film
+    // states what it does not cover), objection (the film argues against
+    // itself, then refutes), and provocation (the film hands the open
+    // question to the viewer). Each carries a per-scene HARD-FAIL contract
+    // for shape (below) and a depth-check rule in cli/depthcheck.ts. The
+    // spec-level position contracts (epigraph at index 0 or right after
+    // `frame`; concession before any claim scene; objection between claims
+    // and recap; provocation as the absolute last scene, mutually exclusive
+    // with big-idea) are enforced film-wide below.
+
+    // epigraph — a cited authority opens the film.
+    if (sc.type === 'epigraph') {
+      if (typeof sc.quote !== 'string' || !sc.quote.trim()) {
+        issues.push({
+          path: `${at}.quote`,
+          message: 'an epigraph requires a non-empty quote — the cited passage that opens the film',
+        });
+      } else {
+        const words = sc.quote.trim().split(/\s+/).filter(Boolean).length;
+        if (words > 60) {
+          issues.push({
+            path: `${at}.quote`,
+            message: `the quote is ${words} words — keep epigraph quotes to ≤ 60 words (the typographic register is a small breath, not a paragraph)`,
+            severity: 'warning',
+          });
+        }
+      }
+      if (typeof sc.attribution !== 'string' || !sc.attribution.trim()) {
+        issues.push({
+          path: `${at}.attribution`,
+          message: 'an epigraph requires an attribution — who said it; a bare quote with no source span fails the depth contract',
+        });
+      }
+      if (sc.epigraphTreatment !== undefined && sc.epigraphTreatment !== 'block' && sc.epigraphTreatment !== 'pull') {
+        issues.push({
+          path: `${at}.epigraphTreatment`,
+          message: 'epigraphTreatment must be "block" or "pull"',
+        });
+      }
+    } else {
+      if (sc.quote !== undefined) {
+        issues.push({path: `${at}.quote`, message: `quote has no meaning for type "${sc.type}" — only epigraph`});
+      }
+      if (sc.attribution !== undefined) {
+        issues.push({path: `${at}.attribution`, message: `attribution has no meaning for type "${sc.type}" — only epigraph`});
+      }
+      if (sc.epigraphTreatment !== undefined) {
+        issues.push({path: `${at}.epigraphTreatment`, message: `epigraphTreatment has no meaning for type "${sc.type}" — only epigraph`});
+      }
+    }
+
+    // concession — what the film does NOT cover. The depthcheck rule
+    // `concession-non-trivial` enforces (a) ≥ 2 outOfScope items and (b)
+    // non-tautological text; the structural rule below enforces shape.
+    if (sc.type === 'concession') {
+      if (!Array.isArray(sc.scope) || sc.scope.length < 1) {
+        issues.push({
+          path: `${at}.scope`,
+          message: 'concession requires a non-empty scope array — the IN SCOPE column (what the film argues about)',
+        });
+      } else {
+        sc.scope.forEach((s: unknown, k: number) => {
+          if (typeof s !== 'string' || !s.trim()) {
+            issues.push({path: `${at}.scope[${k}]`, message: 'scope item must be a non-empty string'});
+          }
+        });
+      }
+      if (!Array.isArray(sc.outOfScope) || sc.outOfScope.length < 2) {
+        issues.push({
+          path: `${at}.outOfScope`,
+          message: 'concession requires at least 2 outOfScope items (a single set-aside is a footnote; the cut needs to be visible as a cut)',
+        });
+      } else {
+        sc.outOfScope.forEach((s: unknown, k: number) => {
+          if (typeof s !== 'string' || !s.trim()) {
+            issues.push({path: `${at}.outOfScope[${k}]`, message: 'outOfScope item must be a non-empty string'});
+          }
+        });
+      }
+      if (sc.reason !== undefined && (typeof sc.reason !== 'string' || !sc.reason.trim())) {
+        issues.push({path: `${at}.reason`, message: 'reason must be a non-empty string when present'});
+      }
+    } else {
+      if (sc.scope !== undefined) {
+        issues.push({path: `${at}.scope`, message: `scope has no meaning for type "${sc.type}" — only concession`});
+      }
+      if (sc.outOfScope !== undefined) {
+        issues.push({path: `${at}.outOfScope`, message: `outOfScope has no meaning for type "${sc.type}" — only concession`});
+      }
+      if (sc.reason !== undefined) {
+        issues.push({path: `${at}.reason`, message: `reason has no meaning for type "${sc.type}" — only concession`});
+      }
+    }
+
+    // objection — the film argues against itself, then refutes. The
+    // `objection-steelmanned` rule below: objection ≥ 12 words and NOT
+    // evaluative; `refutationStrength` matches the rhetorical force of
+    // the refutation paragraph.
+    if (sc.type === 'objection') {
+      if (typeof sc.claim !== 'string' || !sc.claim.trim()) {
+        issues.push({path: `${at}.claim`, message: 'objection requires a non-empty claim — what the film has been arguing'});
+      }
+      if (typeof sc.objection !== 'string' || !sc.objection.trim()) {
+        issues.push({
+          path: `${at}.objection`,
+          message: 'objection requires a non-empty objection — the steelman against the claim',
+        });
+      } else {
+        const words = sc.objection.trim().split(/\s+/).filter(Boolean).length;
+        if (words < 12) {
+          issues.push({
+            path: `${at}.objection`,
+            message: `the objection is ${words} words — a steelmanned objection is at least 12 words; shorter is a slogan, not a counterargument`,
+          });
+        }
+        // Evaluative-shape rejection — the strong-version contract: the
+        // objection must say WHAT is wrong, mechanistically, not deliver a
+        // verdict about the argument's character. Same regex shape as
+        // EVALUATIVE_NOVELTY in depthcheck.
+        const EVALUATIVE_OBJECTION =
+          /^\s*(this|the)\s+(argument|claim|paper|film|case|view|analysis|approach|design|system|review)\s+(is|seems|appears|reads as|feels|comes across as|sounds)\s+(weak|bad|wrong|unconvincing|flawed|broken|broken|naive|simplistic|incorrect|fragile|untenable|inadequate|insufficient)\b/i;
+        if (EVALUATIVE_OBJECTION.test(sc.objection)) {
+          issues.push({
+            path: `${at}.objection`,
+            message: 'the objection reads as evaluative ("this argument is weak") — restate as a mechanism the objection cites (e.g. "the argument under-states the cost of cluster-wide synchronization in production")',
+          });
+        }
+      }
+      if (typeof sc.refutation !== 'string' || !sc.refutation.trim()) {
+        issues.push({path: `${at}.refutation`, message: 'objection requires a non-empty refutation — the film\'s response'});
+      }
+      if (sc.refutationStrength !== 'partial' && sc.refutationStrength !== 'full') {
+        issues.push({
+          path: `${at}.refutationStrength`,
+          message: 'refutationStrength must be "partial" (admits the objection partly holds) or "full"',
+        });
+      } else if (
+        sc.refutationStrength === 'partial' &&
+        typeof sc.refutation === 'string' &&
+        sc.refutation.trim().length > 0
+      ) {
+        // A `partial` refutation must visibly carry a concession word —
+        // a film that says `partial` but writes a complete refutation is
+        // being dishonest about its own concession. We look for the
+        // honesty markers a partial refutation must carry.
+        const HONESTY = /\b(partly|partial|to an extent|in part|some of this|this is true|grants?|concedes?|conceding|admit|admittedly|fair point|the objection holds|the critic is right|to that extent|insofar as)\b/i;
+        if (!HONESTY.test(sc.refutation)) {
+          issues.push({
+            path: `${at}.refutation`,
+            message: 'refutationStrength is "partial" but the refutation reads as a full rebuttal — name what the objection gets RIGHT (use "partly", "in part", "concede", "to that extent") or set refutationStrength to "full"',
+          });
+        }
+      }
+      if (sc.evidence !== undefined) {
+        if (!Array.isArray(sc.evidence)) {
+          issues.push({path: `${at}.evidence`, message: 'evidence must be an array of non-empty strings'});
+        } else {
+          sc.evidence.forEach((e: unknown, k: number) => {
+            if (typeof e !== 'string' || !e.trim()) {
+              issues.push({path: `${at}.evidence[${k}]`, message: 'evidence item must be a non-empty string'});
+            }
+          });
+        }
+      }
+    } else {
+      if (sc.claim !== undefined) {
+        issues.push({path: `${at}.claim`, message: `claim has no meaning for type "${sc.type}" — only objection`});
+      }
+      if (sc.objection !== undefined) {
+        issues.push({path: `${at}.objection`, message: `objection has no meaning for type "${sc.type}" — only objection`});
+      }
+      if (sc.refutation !== undefined) {
+        issues.push({path: `${at}.refutation`, message: `refutation has no meaning for type "${sc.type}" — only objection`});
+      }
+      if (sc.refutationStrength !== undefined) {
+        issues.push({path: `${at}.refutationStrength`, message: `refutationStrength has no meaning for type "${sc.type}" — only objection`});
+      }
+      if (sc.evidence !== undefined) {
+        issues.push({path: `${at}.evidence`, message: `evidence has no meaning for type "${sc.type}" — only objection`});
+      }
+    }
+
+    // provocation — an incomplete closing. The `provocation-specific` rule
+    // below: `unresolved` must be a specific question, not "more research
+    // is needed". Position/mutual-exclusion enforced film-wide.
+    if (sc.type === 'provocation') {
+      if (typeof sc.unresolved !== 'string' || !sc.unresolved.trim()) {
+        issues.push({
+          path: `${at}.unresolved`,
+          message: 'provocation requires a non-empty unresolved — the question the film deliberately doesn\'t answer',
+        });
+      }
+      if (typeof sc.why !== 'string' || !sc.why.trim()) {
+        issues.push({path: `${at}.why`, message: 'provocation requires a non-empty why — why the film leaves this open'});
+      }
+      if (typeof sc.invitation !== 'string' || !sc.invitation.trim()) {
+        issues.push({
+          path: `${at}.invitation`,
+          message: 'provocation requires a non-empty invitation — what the viewer is invited to do with the open question',
+        });
+      }
+    } else {
+      if (sc.unresolved !== undefined) {
+        issues.push({path: `${at}.unresolved`, message: `unresolved has no meaning for type "${sc.type}" — only provocation`});
+      }
+      if (sc.why !== undefined) {
+        issues.push({path: `${at}.why`, message: `why has no meaning for type "${sc.type}" — only provocation`});
+      }
+      if (sc.invitation !== undefined) {
+        issues.push({path: `${at}.invitation`, message: `invitation has no meaning for type "${sc.type}" — only provocation`});
+      }
+    }
+
     // Every scene type carries narration via beats; every scene type must
     // also carry SOMETHING visible for that narration to land on. A scene
     // that ships narration with no body renders a void with audio playing
@@ -2043,6 +2267,13 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         const hasLoop = arrLen(sc.loops) >= 1;
         return hasVars && hasLoop ? null : 'causal-loop requires at least 3 variables and at least 1 loop';
       },
+      // rhetorical primitives — body already enforced by the per-scene
+      // blocks above; entries here surface the required-body shape in the
+      // standard table so a quick-look at the contract is complete.
+      epigraph: () => null,
+      concession: () => null,
+      objection: () => null,
+      provocation: () => null,
     };
     const bodyCheck = requiredBody[sc.type];
     if (bodyCheck) {
@@ -2077,7 +2308,14 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
       // their body from frame 1 — passage text, figure image, closeup code,
       // frame title, diff (before/after code), demonstrate (clip playing) —
       // don't need a per-beat trigger and are exempt.
-      const ALWAYS_ON = new Set(['passage', 'figure', 'closeup', 'frame', 'diff', 'demonstrate', 'mechanism']);
+      const ALWAYS_ON = new Set([
+        'passage', 'figure', 'closeup', 'frame', 'diff', 'demonstrate', 'mechanism',
+        // Sprint C rhetorical primitives — each scene's body is the
+        // typographic content (quote, columns, panels, unresolved
+        // question) and is visible from frame 1; the beats walk
+        // narration over it, not visual reveals.
+        'epigraph', 'concession', 'objection', 'provocation',
+      ]);
       if (j === 0 && !ALWAYS_ON.has(sc.type)) {
         const hasReveal =
           (Array.isArray(b.reveal) && b.reveal.length > 0) ||
@@ -2238,7 +2476,13 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
     typeof s.meta?.prompt === 'string' && /explain/i.test(s.meta.prompt);
   const isBigIdeaGrandfathered =
     typeof s.meta?.id === 'string' && BIG_IDEA_GRANDFATHERED.has(s.meta.id);
-  if (isExplainer && !isBigIdeaGrandfathered && Array.isArray(s.scenes)) {
+  // Sprint C — provocation is mutually exclusive with big-idea, so an
+  // explainer that closes with a provocation is exempt from the big-idea
+  // requirement. The provocation position contract (last scene) is enforced
+  // film-wide below.
+  const hasProvocationScene =
+    Array.isArray(s.scenes) && s.scenes.some((sc: any) => sc?.type === 'provocation');
+  if (isExplainer && !isBigIdeaGrandfathered && !hasProvocationScene && Array.isArray(s.scenes)) {
     const bigIdeaIdx: number[] = [];
     s.scenes.forEach((sc: Record<string, any>, i: number) => {
       if (sc?.type === 'big-idea') bigIdeaIdx.push(i);
@@ -2267,6 +2511,128 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         issues.push({
           path: `scenes[${idx}]`,
           message: `the big-idea must sit immediately before the recap (expected at scenes[${lastIdx - 1}], found at scenes[${idx}])`,
+        });
+      }
+    }
+  }
+
+  // ----- Sprint C — rhetorical-primitive position contracts ---------------
+  // These four scene types render the *author's stance*; their position
+  // inside the film is part of their grammar. The contracts only apply to
+  // films that actually USE the scene type (the existing gallery + demo
+  // films predate the sprint and are grandfathered by virtue of not using
+  // these types). A film that ships an epigraph/concession/objection/
+  // provocation must place it correctly; a film with none is unaffected.
+  if (Array.isArray(s.scenes)) {
+    const scenes = s.scenes as Record<string, any>[];
+    const indexOfFirst = (t: string): number => scenes.findIndex((sc) => sc?.type === t);
+    const indicesOf = (t: string): number[] =>
+      scenes.flatMap((sc, i) => (sc?.type === t ? [i] : []));
+
+    // epigraph — at most one; if present, at index 0 OR immediately after
+    // a `frame` scene (so the film either opens with the quote or opens
+    // with a kicker frame and then the quote — both are honest registers
+    // of "a cited authority opens the film").
+    const epigraphIdx = indicesOf('epigraph');
+    if (epigraphIdx.length > 1) {
+      issues.push({
+        path: 'scenes',
+        message: `a film may carry at most one epigraph — found ${epigraphIdx.length} (indices ${epigraphIdx.join(', ')})`,
+      });
+    } else if (epigraphIdx.length === 1) {
+      const idx = epigraphIdx[0];
+      const frameIdx = indexOfFirst('frame');
+      const validAtZero = idx === 0;
+      const validAfterFrame = frameIdx >= 0 && idx === frameIdx + 1;
+      if (!validAtZero && !validAfterFrame) {
+        issues.push({
+          path: `scenes[${idx}]`,
+          message:
+            frameIdx >= 0
+              ? `epigraph must sit at index 0 OR immediately after the frame scene (expected index 0 or ${frameIdx + 1}, found ${idx})`
+              : `epigraph must sit at index 0 when no frame scene is present (found at index ${idx})`,
+        });
+      }
+    }
+
+    // concession — must sit after `frame` (if any) and BEFORE any claim
+    // scene (the first structure/compare/tension/chart/prior-art/venn/
+    // landscape/causal-loop/mechanism). The concession draws the line; the
+    // claims sit inside that line.
+    const concessionIdx = indicesOf('concession');
+    if (concessionIdx.length > 0) {
+      const firstClaim = scenes.findIndex((sc) => sc?.type && CLAIM_SCENE_TYPES.has(sc.type));
+      const frameIdx = indexOfFirst('frame');
+      for (const idx of concessionIdx) {
+        if (frameIdx >= 0 && idx < frameIdx) {
+          issues.push({
+            path: `scenes[${idx}]`,
+            message: `concession must sit AFTER the frame scene (frame at index ${frameIdx}, found concession at ${idx})`,
+          });
+        }
+        if (firstClaim >= 0 && idx > firstClaim) {
+          issues.push({
+            path: `scenes[${idx}]`,
+            message: `concession must sit BEFORE any claim scene (a structure/compare/tension/chart/prior-art/venn/landscape/causal-loop/mechanism); first claim is at index ${firstClaim}`,
+          });
+        }
+      }
+    }
+
+    // objection — must sit AFTER at least one claim scene and BEFORE the
+    // recap / big-idea / provocation. The objection is an *anticipated*
+    // counterattack; it earns its place by sitting after the film has made
+    // its argument and before the film closes.
+    const objectionIdx = indicesOf('objection');
+    if (objectionIdx.length > 0) {
+      const firstClaim = scenes.findIndex((sc) => sc?.type && CLAIM_SCENE_TYPES.has(sc.type));
+      const firstClosing = scenes.findIndex(
+        (sc) => sc?.type === 'recap' || sc?.type === 'big-idea' || sc?.type === 'provocation',
+      );
+      for (const idx of objectionIdx) {
+        if (firstClaim < 0) {
+          issues.push({
+            path: `scenes[${idx}]`,
+            message: 'objection must sit after at least one claim scene (a structure/compare/tension/chart/etc.) — there is nothing to argue against without one',
+          });
+        } else if (idx <= firstClaim) {
+          issues.push({
+            path: `scenes[${idx}]`,
+            message: `objection must sit AFTER at least one claim scene (first claim at index ${firstClaim}, found objection at ${idx})`,
+          });
+        }
+        if (firstClosing >= 0 && idx >= firstClosing) {
+          issues.push({
+            path: `scenes[${idx}]`,
+            message: `objection must sit BEFORE the closing (recap/big-idea/provocation at index ${firstClosing}, found objection at ${idx})`,
+          });
+        }
+      }
+    }
+
+    // provocation — must be the ABSOLUTE LAST scene of the film, and is
+    // mutually exclusive with big-idea (a film either COMMITS to a
+    // takeaway or HANDS OFF an open question, never both).
+    const provocationIdx = indicesOf('provocation');
+    if (provocationIdx.length > 1) {
+      issues.push({
+        path: 'scenes',
+        message: `a film may carry at most one provocation — found ${provocationIdx.length} (indices ${provocationIdx.join(', ')})`,
+      });
+    } else if (provocationIdx.length === 1) {
+      const idx = provocationIdx[0];
+      const lastIdx = scenes.length - 1;
+      if (idx !== lastIdx) {
+        issues.push({
+          path: `scenes[${idx}]`,
+          message: `provocation must be the absolute last scene of the film (expected index ${lastIdx}, found ${idx})`,
+        });
+      }
+      const bigIdeaScenes = indicesOf('big-idea');
+      if (bigIdeaScenes.length > 0) {
+        issues.push({
+          path: `scenes[${idx}]`,
+          message: `provocation is mutually exclusive with big-idea (big-idea at indices ${bigIdeaScenes.join(', ')}) — a film either COMMITS to a takeaway (big-idea) or HANDS OFF an open question (provocation), never both`,
         });
       }
     }

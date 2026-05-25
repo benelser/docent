@@ -47,6 +47,7 @@ films/*
 !films/arxiv-2512-14806.json
 !films/text-stress-diagrammatic.json
 !films/text-stress-narrative.json
+!films/rhetorical-primer.json
 analysis/*
 !analysis/linear-algebra.md
 !analysis/linear-algebra.source.md

@@ -1,0 +1,304 @@
+{
+  "meta": {
+    "id": "rhetorical-primer",
+    "title": "The Author's Stance",
+    "subject": "Rhetorical primitives — how a docent film argues, not what it argues about",
+    "repo": "docent itself",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "calm"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "accent": "cyan",
+      "kicker": "DOCENT // RHETORICAL PRIMITIVES",
+      "title": "The Author's Stance",
+      "tagline": "Four scene types render where the author stands — not what they describe",
+      "footnote": "epigraph   ·   concession   ·   objection   ·   provocation",
+      "beats": [
+        {
+          "id": "primer-frame-1",
+          "narration": "A docent film visualizes a subject. But every film also takes a stance toward that subject — what to cite, what to set aside, what to argue against, what to leave open. Sprint C gives that stance four scene types of its own.",
+          "show": "title"
+        },
+        {
+          "id": "primer-frame-2",
+          "narration": "These are not diagram primitives. They render the editorial commitment, the way tension and big-idea already do. This film walks all four, in the order they sit in a film.",
+          "show": "tagline"
+        },
+        {
+          "id": "primer-frame-3",
+          "narration": "Epigraph opens. Concession draws the line. Objection answers a real counterposition. Provocation hands the open question to the viewer.",
+          "show": "footnote"
+        }
+      ]
+    },
+    {
+      "id": "epigraph",
+      "type": "epigraph",
+      "accent": "violet",
+      "kicker": "01 // OPEN",
+      "heading": "Argue with the quote, do not decorate from it",
+      "quote": "A theory which is not refutable by any conceivable event is non-scientific. Irrefutability is not a virtue of a theory but a vice.",
+      "attribution": "Karl Popper, Conjectures and Refutations (1963)",
+      "epigraphTreatment": "block",
+      "beats": [
+        {
+          "id": "primer-epigraph-1",
+          "narration": "An epigraph opens the film by anchoring it in a tradition. Popper is the right opening for a film about argument because his line is itself an argument about what counts as one."
+        },
+        {
+          "id": "primer-epigraph-2",
+          "narration": "The depth test for an epigraph is whether the rest of the film engages with the quote. If we never return to Popper, this opening was decoration. We return to him in the objection scene."
+        }
+      ]
+    },
+    {
+      "id": "concession",
+      "type": "concession",
+      "accent": "cyan",
+      "kicker": "02 // THE LINE",
+      "heading": "What this film does not cover",
+      "scope": [
+        "The four new rhetorical scene types — epigraph, concession, objection, provocation",
+        "Where each sits in the film's spine, and why",
+        "The depth contract each scene type carries"
+      ],
+      "outOfScope": [
+        "How the renderer typesets each scene at the pixel level",
+        "The broader cognitive-representation primitives like structure, compare, tension",
+        "The treatment knobs — crisp, sketch, whiteboard skins — which apply across scene types"
+      ],
+      "reason": "We argue narrow because the rhetorical primitives are the contribution; the rest already has its own films.",
+      "beats": [
+        {
+          "id": "primer-concession-1",
+          "narration": "Every film that argues something narrow ought to draw the line. Most do not, because the spec author forgets to. The concession is the move that strengthens every other claim — by saying what the film chooses not to fight about."
+        },
+        {
+          "id": "primer-concession-2",
+          "narration": "On the left, what this film is for. On the right, set aside with a strike-through, three concrete things this film does not cover. Below them, the cut — the one-line reason the line falls here."
+        },
+        {
+          "id": "primer-concession-3",
+          "narration": "Notice the items on the right are named, not gestured at. A concession that says merely not relevant is a footnote. A concession that names what is set aside is a real boundary."
+        }
+      ]
+    },
+    {
+      "id": "stance-shape",
+      "type": "structure",
+      "accent": "cyan",
+      "kicker": "03 // THE STANCE",
+      "heading": "Four moves the existing grammar did not carry",
+      "grid": {"cols": 4, "rows": 2},
+      "nodes": [
+        {
+          "id": "epi",
+          "label": "epigraph",
+          "sub": "a cited authority opens the film",
+          "col": 0,
+          "row": 0,
+          "accent": "violet"
+        },
+        {
+          "id": "con",
+          "label": "concession",
+          "sub": "what is NOT covered",
+          "col": 1,
+          "row": 0,
+          "accent": "cyan"
+        },
+        {
+          "id": "obj",
+          "label": "objection",
+          "sub": "the steelman, then the answer",
+          "col": 2,
+          "row": 0,
+          "accent": "rose"
+        },
+        {
+          "id": "pro",
+          "label": "provocation",
+          "sub": "an open question handed off",
+          "col": 3,
+          "row": 0,
+          "accent": "amber"
+        },
+        {
+          "id": "stance",
+          "label": "the author's stance",
+          "sub": "what they cite · cut · answer · leave open",
+          "col": 0,
+          "row": 1,
+          "accent": "blue",
+          "weight": "hero",
+          "wide": true
+        },
+        {
+          "id": "subject",
+          "label": "the subject's diagram",
+          "sub": "structure · compare · chart · venn · tree …",
+          "col": 2,
+          "row": 1,
+          "accent": "green",
+          "wide": true
+        }
+      ],
+      "edges": [
+        {"id": "e1", "from": "epi", "to": "stance", "kind": "causes", "strength": "contributing"},
+        {"id": "e2", "from": "con", "to": "stance", "kind": "causes", "strength": "contributing"},
+        {"id": "e3", "from": "obj", "to": "stance", "kind": "causes", "strength": "contributing"},
+        {"id": "e4", "from": "pro", "to": "stance", "kind": "causes", "strength": "contributing"}
+      ],
+      "beats": [
+        {
+          "id": "primer-stance-1",
+          "narration": "Here is the claim the four scene types make together. Each one is a stance move, not a subject move.",
+          "reveal": ["stance", "subject"]
+        },
+        {
+          "id": "primer-stance-2",
+          "narration": "The diagram primitives describe the subject. The rhetorical primitives describe where the author stands. Both are visualization; the grammar needed both registers.",
+          "reveal": ["epi", "con", "obj", "pro"]
+        },
+        {
+          "id": "primer-stance-3",
+          "narration": "Tension and big-idea already lived here — they argue trade-offs and takeaways. These four round out the rest of the rhetorical-move vocabulary serious arguments use.",
+          "focus": ["stance"]
+        }
+      ]
+    },
+    {
+      "id": "tradeoff",
+      "type": "tension",
+      "accent": "amber",
+      "kicker": "04 // TRADE-OFF",
+      "heading": "Four scene types instead of one callout primitive",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {
+          "id": "chose",
+          "label": "four scene types",
+          "sub": "each with its own depth contract and position rule",
+          "col": 0,
+          "row": 0,
+          "accent": "green",
+          "weight": "hero"
+        },
+        {
+          "id": "rejected",
+          "label": "one generic callout",
+          "sub": "free-form prose overlay on any scene",
+          "col": 1,
+          "row": 0,
+          "accent": "rose",
+          "kind": "rejected"
+        },
+        {
+          "id": "cost",
+          "label": "the cost we pay",
+          "sub": "twelve fields on Scene; 4 renderers; 4 depthcheck rules",
+          "col": 2,
+          "row": 0,
+          "accent": "amber"
+        },
+        {
+          "id": "risk",
+          "label": "the risk we live with",
+          "sub": "scene-count inflation if every editorial move becomes a type",
+          "col": 0,
+          "row": 1,
+          "accent": "rose",
+          "kind": "risk",
+          "wide": true
+        },
+        {
+          "id": "win",
+          "label": "what the scenes buy",
+          "sub": "a regex can audit four shapes; a callout fails the depth gate silently",
+          "col": 2,
+          "row": 1,
+          "accent": "green"
+        }
+      ],
+      "beats": [
+        {
+          "id": "primer-trade-1",
+          "narration": "Why four new scene types and not one generic callout overlay? We chose four scene types instead of one. The cost: 12 new fields on the scene type, 4 renderers, and 4 depthcheck rules — a fixed 16 percent rise in grammar surface area.",
+          "reveal": ["chose", "rejected", "cost"]
+        },
+        {
+          "id": "primer-trade-2",
+          "narration": "What we buy is a regex that can audit each shape. A callout would fail the depth gate silently — there is no contract on free-form prose.",
+          "reveal": ["win"]
+        },
+        {
+          "id": "primer-trade-3",
+          "narration": "The residual risk is scene-count inflation. If every editorial move becomes its own type, the grammar bloats. We accept it because the four moves we picked are load-bearing — tension and big-idea already proved the pattern.",
+          "reveal": ["risk"],
+          "focus": ["risk"]
+        }
+      ]
+    },
+    {
+      "id": "objection",
+      "type": "objection",
+      "accent": "blue",
+      "kicker": "05 // ANSWER",
+      "heading": "A real counterposition the film must answer",
+      "claim": "Rhetorical scene types belong in the docent grammar alongside the cognitive-representation primitives.",
+      "objection": "Rhetorical is not a category of visualization primitive — these scene types conflate prose with diagram, inflate the grammar's scene-type count, and substitute fixed templates for what text overlays would carry without the cost.",
+      "evidence": [
+        "Popper's quote is text; an epigraph is just a typesetting choice",
+        "A concession could be a callout, an objection a paragraph",
+        "Promoting words to scenes inflates the grammar"
+      ],
+      "refutation": "Tension and big-idea already proved this objection wrong: each renders an editorial commitment as a structured visual, not free-form prose. Concession's two-column ledger, objection's three-panel rhetorical layout, provocation's typographic ellipsis — each is a fixed grammar a regex can audit, with depth rules a callout cannot enforce.",
+      "refutationStrength": "full",
+      "beats": [
+        {
+          "id": "primer-objection-1",
+          "narration": "Returning to Popper. A theory that cannot be refuted by any conceivable event is not science. By that standard, a grammar that cannot be argued against is not a grammar."
+        },
+        {
+          "id": "primer-objection-2",
+          "narration": "Here is the serious objection. Rhetorical is not a category of visualization primitive. These scenes render words. A grammar should not promote prose to first-class scene status when callouts would carry the load."
+        },
+        {
+          "id": "primer-objection-3",
+          "narration": "The answer is that tension and big-idea already proved the objection wrong. Each renders an editorial commitment as a structured visual with a depth contract — not free-form prose, not a callout. The rhetorical primitives extend the same pattern."
+        }
+      ]
+    },
+    {
+      "id": "provocation",
+      "type": "provocation",
+      "accent": "amber",
+      "kicker": "06 // OPEN",
+      "heading": "The open question this sprint hands off",
+      "unresolved": "Whether a fifth rhetorical primitive — a reservation, recording what the film argues despite, rather than what it argues against — would carry the half of editorial commitment these four do not",
+      "why": "The four primitives cover citing, cutting, answering, and handing off. The shape they do not cover is the explicit live-with — the trade-off the film commits to despite knowing the cost.",
+      "invitation": "Author a draft spec that uses reservation against your hardest case and bring it to the next sprint review.",
+      "beats": [
+        {
+          "id": "primer-provocation-1",
+          "narration": "The right ending for this film is not a takeaway. It is a question handed off. The four primitives cover four rhetorical moves, but they do not cover all of them."
+        },
+        {
+          "id": "primer-provocation-2",
+          "narration": "The shape they do not carry is the explicit live-with — the trade-off the film commits to despite knowing the cost. The next sprint may need a fifth scene type."
+        },
+        {
+          "id": "primer-provocation-3",
+          "narration": "If you have a case that wants this shape, bring a draft. The grammar is not closed."
+        }
+      ]
+    }
+  ]
+}

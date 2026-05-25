@@ -351,3 +351,35 @@ labelling matches the polarity count: an even number of `-` edges along the
 path is reinforcing (R, the cycle compounds); an odd number is balancing
 (B, the cycle self-corrects). The validator rejects a loop that lies about
 its kind.
+
+### Rhetorical primitives — when the film's *stance* is what's at issue
+
+These four scene types render the **author's stance** toward the idea, not
+the idea itself. They are the visual form of an editorial commitment —
+distinct from `tension` (the trade-off the idea makes) and `big-idea` (the
+takeaway). Reach for them when the film's argument needs a rhetorical move
+the other primitives don't carry.
+
+- **`epigraph`** — when the film should **anchor in a tradition**. A short
+  cited quote (≤ 60 words) opens the film, naming the authority the rest of
+  the explanation will *argue with*, not merely decorate from. The killer
+  case for an essay or wiki article whose author quotes earlier thinkers.
+  Position: at index 0 or immediately after the `frame` scene; at most one
+  per film.
+- **`concession`** — when the explainer covers a narrow slice of a broader
+  topic. Two columns: IN SCOPE / OUT OF SCOPE. The move that strengthens
+  every other claim by drawing the line; most explainers skip it because
+  the author forgets to. Position: after `frame`, before any claim scene
+  (structure / compare / tension / chart / venn / landscape / etc.).
+- **`objection`** — when the idea has been **seriously challenged** and the
+  film must answer the objection rather than ignore it. Three panels —
+  CLAIM / OBJECTION / REFUTATION — the refutation overlaying but not
+  deleting the objection. The strong version is a steelman the film
+  anticipates from the actual literature, not a weak opponent invented to
+  defeat. Position: after at least one claim scene, before the closing.
+- **`provocation`** — when the right ending is *"and this is where we
+  don't know yet"* — a research-frontier explainer, an essay arguing for
+  a position whose implementation is unsettled, a policy piece. A specific,
+  question-shaped unresolved replaces the takeaway. Mutually exclusive
+  with `big-idea` — the film either COMMITS or HANDS OFF, never both.
+  Position: the absolute last scene.

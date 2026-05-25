@@ -34,7 +34,7 @@
       "required": ["id", "type", "beats"],
       "properties": {
         "id": {"type": "string"},
-        "type": {"enum": ["big-idea", "causal-loop", "chart", "closeup", "compare", "demonstrate", "diff", "figure", "frame", "journey-map", "landscape", "map", "mechanism", "passage", "prior-art", "probe", "progression", "quantities", "recap", "structure", "tension", "timeline", "tree", "venn", "walkthrough"]},
+        "type": {"enum": ["big-idea", "causal-loop", "chart", "closeup", "compare", "concession", "demonstrate", "diff", "epigraph", "figure", "frame", "journey-map", "landscape", "map", "mechanism", "objection", "passage", "prior-art", "probe", "progression", "provocation", "quantities", "recap", "structure", "tension", "timeline", "tree", "venn", "walkthrough"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
         "cut": {"enum": ["dissolve", "hold", "continue"]},
@@ -241,6 +241,65 @@
           "description": "causal-loop scenes — closed cycles of variables. Each is reinforcing (R, even number of '-' edges along its path — the loop compounds) or balancing (B, odd number — the loop self-corrects). The validator enforces the labelling math.",
           "minItems": 1,
           "items": {"$ref": "#/$defs/causal-loop"}
+        },
+        "quote": {
+          "type": "string",
+          "description": "epigraph scenes — the cited passage (≤ 60 words). Renders in large serif type as the visual centre of the scene."
+        },
+        "attribution": {
+          "type": "string",
+          "description": "epigraph scenes — who said it. Renders beneath the quote in smaller mono caps (e.g. 'Karl Popper, 1934')."
+        },
+        "epigraphTreatment": {
+          "enum": ["block", "pull"],
+          "description": "epigraph scenes — layout treatment. `block` (default) centers the quote on its own panel; `pull` is inline-marginal with a leading rule. Field-namespaced to avoid collision with the top-level `treatment` knob (which names the visual skin)."
+        },
+        "scope": {
+          "type": "array",
+          "description": "concession scenes — what IS in scope (verbatim from the survey's section 0). The IN SCOPE column.",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "outOfScope": {
+          "type": "array",
+          "description": "concession scenes — what is explicitly NOT in scope. Renders dimmed with a strike-through ledger mark. depthcheck requires ≥ 2 items and rejects tautological ones ('not relevant').",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "reason": {
+          "type": "string",
+          "description": "concession scenes — optional one-line WHY this cut was made. Sits beneath the two columns as a quiet editorial line."
+        },
+        "claim": {
+          "type": "string",
+          "description": "objection scenes — what the film has been arguing (the claim the objection challenges)."
+        },
+        "objection": {
+          "type": "string",
+          "description": "objection scenes — the steelman against the claim. Must be ≥ 12 words and NOT evaluative ('This argument is weak' fails; 'the argument under-states the cost of cluster-wide synchronization' passes)."
+        },
+        "evidence": {
+          "type": "array",
+          "description": "objection scenes — what the objection cites or implies. Renders as a small evidence ledger beneath the objection panel.",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "refutation": {
+          "type": "string",
+          "description": "objection scenes — the film's response to the objection. Not a hand-wave — the refutation's rhetorical force must match its `refutationStrength`."
+        },
+        "refutationStrength": {
+          "enum": ["partial", "full"],
+          "description": "objection scenes — `partial` admits the objection partly holds (a chip explicitly says so); `full` is the film's complete answer. The depthcheck rule rejects a `partial` whose refutation reads as full."
+        },
+        "unresolved": {
+          "type": "string",
+          "description": "provocation scenes — the question the film deliberately doesn't answer. Must be specific ('More research is needed' fails; 'Whether the cluster-wide rebalancer can be made incremental without sacrificing the latency invariant' passes). Renders in display-size type with a trailing ellipsis."
+        },
+        "why": {
+          "type": "string",
+          "description": "provocation scenes — why the film leaves this open. The 'why this stays open' quiet line beneath the unresolved question."
+        },
+        "invitation": {
+          "type": "string",
+          "description": "provocation scenes — what the viewer is invited to do with the open question. The 'your turn' closing breath of the film."
         },
         "beats": {
           "type": "array",
@@ -896,6 +955,52 @@
         "tr": {"type": "string", "description": "top-right quadrant label"},
         "bl": {"type": "string", "description": "bottom-left quadrant label"},
         "br": {"type": "string", "description": "bottom-right quadrant label"}
+      }
+    },
+    "epigraph-shape": {
+      "type": "object",
+      "description": "epigraph scenes — a cited authority opens the film. The author writes a quote and its attribution; the engine renders a quiet typographic scene (large serif quote, mono attribution). Position contract: a film with an epigraph must have it at index 0 or immediately after the `frame` scene; at most one per film.",
+      "required": ["quote", "attribution"],
+      "additionalProperties": false,
+      "properties": {
+        "quote": {"type": "string", "minLength": 1, "description": "the cited passage — ≤ 60 words (depthcheck floor)"},
+        "attribution": {"type": "string", "minLength": 1, "description": "the source — 'Karl Popper, 1934', 'Aristotle, Metaphysics'"},
+        "epigraphTreatment": {"enum": ["block", "pull"], "description": "block (default) centers the quote on its own panel; pull is inline-marginal with a leading rule"}
+      }
+    },
+    "concession-shape": {
+      "type": "object",
+      "description": "concession scenes — what the film does NOT cover. Two columns: IN SCOPE (kept, lit) / OUT OF SCOPE (set aside, dimmed with strike-through). The move strengthens every other claim — by drawing the line. Position contract: must sit after `frame` and before any claim scene (the first `structure` / `compare` / `tension`).",
+      "required": ["scope", "outOfScope"],
+      "additionalProperties": false,
+      "properties": {
+        "scope": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "description": "the IN SCOPE column — verbatim from the survey's section 0"},
+        "outOfScope": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}, "description": "the OUT OF SCOPE column — depthcheck requires ≥ 2 items and non-tautological text"},
+        "reason": {"type": "string", "description": "optional one-line WHY this cut was made"}
+      }
+    },
+    "objection-shape": {
+      "type": "object",
+      "description": "objection scenes — the film argues against itself, then refutes. Three stacked panels (CLAIM / OBJECTION / REFUTATION), the refutation overlaying the objection. Distinct from `tension` (the design trade-off the author chose) — objection is the intellectual counterattack the author has ANTICIPATED. Position contract: must sit AFTER at least one claim scene and BEFORE the recap / big-idea.",
+      "required": ["claim", "objection", "refutation", "refutationStrength"],
+      "additionalProperties": false,
+      "properties": {
+        "claim": {"type": "string", "minLength": 1, "description": "what the film has been arguing"},
+        "objection": {"type": "string", "minLength": 1, "description": "the steelman against the claim — must be ≥ 12 words and NOT evaluative"},
+        "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "what the objection cites or implies"},
+        "refutation": {"type": "string", "minLength": 1, "description": "the film's response — NOT a hand-wave; rhetorical force must match `refutationStrength`"},
+        "refutationStrength": {"enum": ["partial", "full"], "description": "partial admits the objection partly holds; full is the film's complete answer"}
+      }
+    },
+    "provocation-shape": {
+      "type": "object",
+      "description": "provocation scenes — an incomplete closing that hands the question to the viewer. The `unresolved` renders in display-size type with a trailing ellipsis; `why` and `invitation` sit beneath in muted ink. Position contract: the ABSOLUTE LAST scene of the film, and mutually exclusive with `big-idea` — a film either COMMITS to a takeaway (big-idea) or HANDS OFF an open question (provocation), never both.",
+      "required": ["unresolved", "why", "invitation"],
+      "additionalProperties": false,
+      "properties": {
+        "unresolved": {"type": "string", "minLength": 1, "description": "the question the film deliberately doesn't answer — specific, not a vague gesture"},
+        "why": {"type": "string", "minLength": 1, "description": "why the film leaves this open"},
+        "invitation": {"type": "string", "minLength": 1, "description": "what the viewer is invited to do with the open question"}
       }
     }
   }

@@ -343,6 +343,79 @@ When the film carries a `journey-map` scene, score this dimension:
     name the specific finding that justifies the override — otherwise
     this dimension fails.
 
+### Rhetorical primitives — when the film carries an `epigraph` / `concession` / `objection` / `provocation`
+
+These four scene types render the **author's stance** toward the subject, not
+the subject itself. Each carries a judgement dimension; films with no instance
+of the scene type mark the dimension n/a.
+
+13. **Epigraph earned.** When the film opens with an `epigraph`, score whether
+    the rest of the film *argues with* the quote, or merely *decorates from
+    it*. The strong version threads the quote: a later scene refers to it, an
+    objection answers the quoted thinker, a tension cites the quote's
+    assumption. The weak version is a beautiful sentence at the top that the
+    rest of the film never returns to. If you could delete the epigraph and
+    the film would read identically, the epigraph failed.
+
+    - Strong: a film on falsifiability opens with Popper's "A theory which is
+      not refutable by any conceivable event is non-scientific," and the
+      tension scene later names the boundary case the theory CAN'T be
+      refuted at — directly engaging the quote.
+    - Weak: an epigraph from Wittgenstein opening a film about distributed
+      systems, with no later beat naming Wittgenstein or his claim.
+
+    For films without an epigraph scene, mark this dimension n/a.
+
+14. **Scope honest.** When the film carries a `concession`, score whether the
+    concession honestly narrows — the film does NOT sneak claims about its
+    out-of-scope items back in later scenes. A film that says "single-region
+    only" and then asserts something about multi-region in its tension scene
+    has eaten its own concession.
+
+    - Strong: a concession that names "OS-level forks before 2018 — out of
+      scope" and a film that, when faced with one, explicitly defers to that
+      cut rather than smuggling a claim through.
+    - Weak: a concession that says "I'm not arguing X" and a recap that
+      casually rules on X anyway.
+
+    For films without a concession scene, mark this dimension n/a.
+
+15. **Objection real.** When the film carries an `objection`, score whether
+    the objection cites a REAL counterposition (one that appears in the
+    actual literature on the subject, or at minimum is the objection a
+    sharp peer reviewer would raise), or whether the film has invented a
+    weak opponent to defeat. The depthcheck's `objection-steelmanned` rule
+    catches evaluative-shape objections ("the argument is weak") with a
+    regex; your job is the harder read: does this objection name a
+    counterposition that a person actually holds, or is it a strawman the
+    film built to knock down?
+
+    - Strong: a film on monorepos whose objection is "the build-graph
+      explodes past 10k packages — Bazel's authors have written about this"
+      — naming a real critique the field has actually published.
+    - Weak: a film whose objection is "some people think monorepos are
+      bad" — invented opposition with no specific cite.
+
+    For films without an objection scene, mark this dimension n/a.
+
+16. **Provocation load-bearing.** When the film ends with a `provocation`,
+    score whether the unresolved question FOLLOWS FROM what the film just
+    argued, or is bolted on as a generic "what's next." The strong
+    provocation is the question the film's argument PRODUCES — the next
+    operationally-shaped problem the film's framing makes visible. The
+    weak provocation is the kind of thing that could close any film of the
+    same shape ("Will this scale?", "What does the next decade hold?").
+
+    - Strong: a film that walks the cluster rebalancer's design and ends
+      with "Whether the rebalancer can be made incremental without
+      sacrificing the latency invariant" — the unresolved is the next
+      load-bearing problem the design opens.
+    - Weak: any film that ends with "More research is needed" or "The
+      field will tell" or "Time will tell" — generic gesture, not a
+      specific open question.
+
+    For films without a provocation scene, mark this dimension n/a.
+
 ## Your output
 
 A disposition — **pass** or **revise** — and, if revise, a short list of the
