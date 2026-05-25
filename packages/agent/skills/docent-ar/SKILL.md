@@ -77,6 +77,26 @@ idioms, the failure modes, the trade-offs, with a verdict.
    {preset, intent, rationale}` field. The depth-review judge fails
    the `style-committed` dimension if the spec ships without it.
 
+3b. **Commit to a scene set.** Same shape as the style commitment, one
+   layer down — the cognitive moves the film will make.
+
+   ```bash
+   bun packages/engine/cli/docent.ts scene-fit recommend <id>
+   ```
+
+   The recommender reads the survey and prints the top scene types
+   with rationales tying each to a specific survey finding.
+   Architecture films almost always want `prior-art` (the lineage from
+   § 1.7), `structure` (the components), and either `tension` (the
+   trade-off the design made) or `causal-loop` / `mechanism` (when
+   the dynamics matter more than the layout). If the recommender
+   returns `warningOnDefault: true`, the survey collapsed to the
+   default rut — re-read § 1.5/1.6 and ask whether the system's bet
+   is genuinely about *components* or about something specific
+   (feedback dynamics → `causal-loop`; a working motion →
+   `mechanism`; a regional topology → `map`). Pin the chosen scene
+   set in the survey's "Scene-set commitment" section.
+
 4. **Treatment.**
 
    ```bash

@@ -135,6 +135,48 @@ The depth-review judge scores `style-committed` on the rendered spec: a film
 that ships with `style: {preset: "neutral"}` or no style block at all (and
 the survey could have named a better fit) fails this dimension.
 
+## § 2.6 Scene-set commitment  *(mandatory)*
+
+Before authoring the spec, commit to a **scene set** — the cognitive moves
+the film will make. Without this step, the agent reflex-defaults to the
+suspected rut (`frame` → `structure` → `compare` → `tension` → `recap`) on
+every film, regardless of whether the subject actually demands those
+primitives. Most subjects want something else.
+
+**Run the recommender** (rule-based; not an LLM call):
+
+```bash
+bun packages/engine/cli/docent.ts scene-fit recommend <id>
+```
+
+It reads this survey file (`analysis/<id>.md`), scores every cognitive
+signal it finds in the body against the 29-scene grammar, and prints the
+top scene types with one-line rationales tying each to a specific survey
+finding. If the recommender returns `warningOnDefault: true`, the survey
+collapsed to the default rut — re-read the survey and ask whether you
+actually surfaced the signals that would pull `causal-loop`, `landscape`,
+`timeline`, `tree`, `map`, `journey-map`, `venn`, `mechanism`, `passage`,
+`figure`, `probe`, `epigraph`, `concession`, `objection`, or `provocation`
+into the recommendation. The fix is almost always in the survey itself
+(a missing finding), not in the spec.
+
+**Pin the commitment.** Write the chosen scene set (in author order) plus
+a ONE-LINE rationale per scene. The rationale must tie to a *specific
+survey finding* — the same depth bar as the style commitment. Bad: "tree
+because hierarchy". Good: "tree because § 3 establishes that the levels
+encode kingdom → phylum → class as a real classification axis, not
+decoration."
+
+Format:
+
+```
+scenes:    [frame, <body picks>, recap]
+rationale per scene: <one line per scene tying to a survey finding>
+```
+
+Treat the recommender's output as a default; override it ONLY when you
+can name a specific survey finding the recommender missed.
+
 ## 3. Hard parts
 
 - **Failure & partial failure — walk one weird-input and one at-scale case to
