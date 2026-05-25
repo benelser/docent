@@ -1,0 +1,387 @@
+{
+  "meta": {
+    "id": "sprint-b-composition-demo",
+    "title": "The compositional grammar — every host slot, exercised",
+    "subject": "Sprint B compositional grammar — a demo of every supported host/embed pair",
+    "repo": "archcast",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "calm"
+  },
+  "scenes": [
+    {
+      "id": "open",
+      "type": "frame",
+      "accent": "blue",
+      "kicker": "Sprint B",
+      "heading": "Compositional grammar",
+      "title": "Scenes nest inside scenes",
+      "tagline": "Six hosts, six embed allowlists",
+      "footnote": "every primitive can host every other primitive",
+      "beats": [
+        {
+          "id": "frame-1",
+          "narration": "Sprint B lets scenes nest. The unlock is exponential, not linear: 6 hosts times 8 embeds give 24 expressible compositions where the flat grammar had 0.",
+          "show": "open"
+        }
+      ]
+    },
+    {
+      "id": "landscape-host",
+      "type": "landscape",
+      "accent": "cyan",
+      "kicker": "Host 1 of 6",
+      "heading": "landscape.subjects[].embed",
+      "xAxis": {
+        "kind": "landscape",
+        "label": "expressivity",
+        "lowLabel": "leaf-only",
+        "highLabel": "composable"
+      },
+      "yAxis": {
+        "kind": "landscape",
+        "label": "depth of argument",
+        "lowLabel": "decorates",
+        "highLabel": "interrogates"
+      },
+      "subjects": [
+        {
+          "id": "before",
+          "label": "before Sprint B",
+          "sub": "leaf-only scenes",
+          "x": 0.18,
+          "y": 0.32,
+          "accent": "amber"
+        },
+        {
+          "id": "after",
+          "label": "after Sprint B",
+          "sub": "scenes embed scenes",
+          "x": 0.82,
+          "y": 0.86,
+          "accent": "cyan",
+          "embed": {
+            "type": "mechanism",
+            "caption": "the embed loop",
+            "parts": [
+              {"id": "host", "label": "host", "pos": {"x": 0.2, "y": 0.5}},
+              {"id": "slot", "label": "slot", "pos": {"x": 0.5, "y": 0.2}},
+              {"id": "embed", "label": "embed", "pos": {"x": 0.8, "y": 0.5}},
+              {"id": "render", "label": "render", "pos": {"x": 0.5, "y": 0.8}}
+            ],
+            "motion": {
+              "kind": "cycle",
+              "path": ["host", "slot", "embed", "render"],
+              "period": 90
+            }
+          }
+        }
+      ],
+      "quadrants": {
+        "tl": "old shape",
+        "br": "the unlock"
+      },
+      "beats": [
+        {"id": "land-1", "narration": "Before Sprint B, every scene was a leaf. A landscape was a marker; a timeline was a date; a structure was a card.", "reveal": ["before"], "focus": ["before"]},
+        {"id": "land-2", "narration": "After Sprint B, that marker can carry a mechanism inside it. The position on the plane is still the argument; the embed shows how the thing operates.", "reveal": ["after", "after.embed"], "focus": ["after"]}
+      ]
+    },
+    {
+      "id": "timeline-host",
+      "type": "timeline",
+      "accent": "violet",
+      "kicker": "Host 2 of 6",
+      "heading": "timeline.events[].embed",
+      "axis": {"start": "2024", "end": "2027"},
+      "events": [
+        {
+          "id": "v1",
+          "date": "2024-06",
+          "label": "v1 — flat grammar",
+          "sub": "leaf scenes only"
+        },
+        {
+          "id": "v2-3",
+          "date": "2025-08",
+          "label": "v2.3 — 15 scene types",
+          "sub": "still leaf-only"
+        },
+        {
+          "id": "sprint-b",
+          "date": "2026-05",
+          "label": "v2.4 — Sprint B",
+          "sub": "scenes nest",
+          "embed": {
+            "type": "venn",
+            "caption": "the six slots",
+            "sets": [
+              {"id": "host", "label": "hosts"},
+              {"id": "embed", "label": "embeds"}
+            ],
+            "regions": [
+              {"id": "host", "in": ["host"]},
+              {"id": "embed", "in": ["embed"]},
+              {"id": "slot", "in": ["host", "embed"], "label": "slot table"}
+            ],
+            "novelty": {
+              "kind": "venn",
+              "regionId": "slot",
+              "claim": "the closed allowlist of which host accepts which embed"
+            }
+          }
+        }
+      ],
+      "beats": [
+        {"id": "tl-1", "narration": "The grammar shipped flat in v1.", "reveal": ["v1"], "focus": ["v1"]},
+        {"id": "tl-2", "narration": "By v2.3 we had fifteen scene types, all leaves.", "reveal": ["v2-3"], "focus": ["v2-3"]},
+        {"id": "tl-3", "narration": "Sprint B opens the slot table — the overlap region carries the contract of which embed lives in which host.", "reveal": ["sprint-b", "sprint-b.embed"], "focus": ["sprint-b"]}
+      ]
+    },
+    {
+      "id": "journey-host",
+      "type": "journey-map",
+      "accent": "green",
+      "kicker": "Host 3 of 6",
+      "heading": "journey-map.stages[].embed",
+      "journeyStages": [
+        {
+          "id": "discover",
+          "label": "discover",
+          "sub": "first read of the brief",
+          "emotion": "curiosity",
+          "touchpoints": ["the design doc"],
+          "curveValue": 0.65
+        },
+        {
+          "id": "struggle",
+          "label": "struggle",
+          "sub": "the slot table is heavier than it reads",
+          "emotion": "frustration",
+          "painPoints": ["six host renderers", "validator recursion"],
+          "curveValue": 0.18
+        },
+        {
+          "id": "grasp",
+          "label": "grasp",
+          "sub": "one EmbeddedScene component",
+          "emotion": "satisfaction",
+          "touchpoints": ["the SVG group renderer"],
+          "curveValue": 0.78,
+          "embed": {
+            "type": "compare",
+            "caption": "two strategies",
+            "columns": [
+              {"id": "per-host", "label": "per-host flag"},
+              {"id": "shared", "label": "shared component"}
+            ],
+            "rows": [
+              {"id": "lines", "label": "lines added", "cells": [{"text": "~1200", "verdict": "lose"}, {"text": "~600", "verdict": "win"}]},
+              {"id": "risk", "label": "regression risk", "cells": [{"text": "high", "verdict": "lose"}, {"text": "low", "verdict": "win"}]}
+            ]
+          }
+        },
+        {
+          "id": "ship",
+          "label": "ship",
+          "sub": "demo film validates",
+          "emotion": "delight",
+          "touchpoints": ["hermetic green", "depthcheck met"],
+          "curveValue": 0.92
+        }
+      ],
+      "beats": [
+        {"id": "j-1", "narration": "The journey begins with the design doc — curiosity.", "reveal": ["discover"], "focus": ["discover"]},
+        {"id": "j-2", "narration": "Then the realisation: six renderers, recursive validation. The valley.", "reveal": ["struggle"], "focus": ["struggle"]},
+        {"id": "j-3", "narration": "The grasp moment lands with a trade-off — embed a sub-component over wiring every host's renderer. Lower risk wins.", "reveal": ["grasp", "grasp.embed"], "focus": ["grasp"]},
+        {"id": "j-4", "narration": "Ship. The demo film validates, the gate is green.", "reveal": ["ship"], "focus": ["ship"]}
+      ]
+    },
+    {
+      "id": "tree-host",
+      "type": "tree",
+      "accent": "amber",
+      "kicker": "Host 4 of 6",
+      "heading": "tree.children[].embed",
+      "orientation": "vertical",
+      "root": {
+        "id": "root",
+        "label": "Sprint B unlock",
+        "sub": "composition, not arbitrary recursion",
+        "children": [
+          {
+            "id": "spec",
+            "label": "spec",
+            "sub": "embed?: EmbeddedScene",
+            "embed": {
+              "type": "quantities",
+              "caption": "6 slots, 24 pairs",
+              "figures": [
+                {"id": "slots", "label": "host slots", "value": "6"},
+                {"id": "pairs", "label": "allowed pairs", "value": "24"}
+              ]
+            }
+          },
+          {
+            "id": "validator",
+            "label": "validator",
+            "sub": "recursive, depth-2"
+          },
+          {
+            "id": "render",
+            "label": "render",
+            "sub": "static tableau"
+          }
+        ]
+      },
+      "beats": [
+        {"id": "tr-1", "narration": "The unlock decomposes into three branches.", "reveal": ["root"], "focus": ["root"]},
+        {"id": "tr-2", "narration": "The spec branch carries a closed slot table: six hosts, twenty-four allowed pairs.", "reveal": ["spec", "spec.embed"], "focus": ["spec"]},
+        {"id": "tr-3", "narration": "The validator enforces the table and a hard depth cap of two.", "reveal": ["validator"], "focus": ["validator"]},
+        {"id": "tr-4", "narration": "The renderer draws each embed as a static tableau — no animation, no audio, one cognitive move.", "reveal": ["render"], "focus": ["render"]}
+      ]
+    },
+    {
+      "id": "structure-host",
+      "type": "structure",
+      "accent": "rose",
+      "kicker": "Host 5 of 6",
+      "heading": "structure.nodes[].embed",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {"id": "host", "label": "host scene", "col": 0, "row": 0, "weight": "primary"},
+        {
+          "id": "node",
+          "label": "node",
+          "sub": "with embed",
+          "col": 1,
+          "row": 0,
+          "weight": "hero",
+          "embed": {
+            "type": "venn",
+            "caption": "host ∩ embed",
+            "sets": [
+              {"id": "h", "label": "host"},
+              {"id": "e", "label": "embed"}
+            ],
+            "regions": [
+              {"id": "h", "in": ["h"]},
+              {"id": "e", "in": ["e"]},
+              {"id": "he", "in": ["h", "e"], "label": "slot"}
+            ],
+            "novelty": {
+              "kind": "venn",
+              "regionId": "he",
+              "claim": "the slot binds host to embed, with chrome inheritance"
+            }
+          }
+        },
+        {"id": "leaf", "label": "leaf node", "col": 2, "row": 0}
+      ],
+      "edges": [
+        {"id": "host-node", "from": "host", "to": "node", "kind": "relation"},
+        {"id": "node-leaf", "from": "node", "to": "leaf", "kind": "relation"}
+      ],
+      "beats": [
+        {"id": "st-1", "narration": "Inside a structure scene, a node can host an embed.", "reveal": ["host", "leaf", "host-node", "node-leaf"]},
+        {"id": "st-2", "narration": "The middle node carries a venn that names what the slot is — the intersection of host and embed.", "reveal": ["node", "node.embed"], "focus": ["node"]}
+      ]
+    },
+    {
+      "id": "compare-host",
+      "type": "compare",
+      "accent": "blue",
+      "kicker": "Host 6 of 6",
+      "heading": "compare.cells[].embed",
+      "columns": [
+        {"id": "flat", "label": "flat grammar"},
+        {"id": "comp", "label": "compositional"}
+      ],
+      "rows": [
+        {
+          "id": "pairs",
+          "label": "expressible compositions",
+          "cells": [
+            {"text": "0", "verdict": "lose"},
+            {
+              "text": "24+",
+              "verdict": "win",
+              "embed": {
+                "type": "quantities",
+                "caption": "the table",
+                "figures": [
+                  {"id": "h", "label": "hosts", "value": "6"},
+                  {"id": "e", "label": "embeds", "value": "8"},
+                  {"id": "p", "label": "pairs", "value": "24"}
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "depth",
+          "label": "depth contract",
+          "cells": [
+            {"text": "scene-only", "verdict": "neutral"},
+            {"text": "+ embed-load-bearing", "verdict": "win"}
+          ]
+        }
+      ],
+      "beats": [
+        {"id": "co-1", "narration": "The flat grammar expresses no compositions.", "reveal": ["pairs"], "focus": ["pairs"]},
+        {"id": "co-2", "narration": "The compositional one expresses twenty-four — and the cell embed counts them for the eye.", "reveal": ["depth"], "focus": ["depth"]}
+      ]
+    },
+    {
+      "id": "tension",
+      "type": "tension",
+      "accent": "amber",
+      "kicker": "Trade-off",
+      "heading": "Static embeds are the line",
+      "treatment": "sketch",
+      "grid": {"cols": 2, "rows": 2},
+      "nodes": [
+        {"id": "chosen", "label": "static tableau", "sub": "one cognitive move", "col": 0, "row": 0, "weight": "hero"},
+        {"id": "rejected", "label": "animated embed", "sub": "movies-within-movies", "col": 1, "row": 0, "kind": "rejected"},
+        {"id": "cost", "label": "no per-embed beats", "sub": "parent owns the audio", "col": 0, "row": 1},
+        {"id": "risk", "label": "tableau crowding", "sub": "small slots, dense visual", "col": 1, "row": 1, "kind": "risk"}
+      ],
+      "beats": [
+        {"id": "ten-1", "narration": "We chose static embeds over animated ones because only one narration track plays at a time.", "reveal": ["chosen", "rejected"], "focus": ["chosen"]},
+        {"id": "ten-2", "narration": "The cost: an embed cannot animate; it lands at the moment its parent reveals it.", "reveal": ["cost"], "focus": ["cost"]},
+        {"id": "ten-3", "narration": "The residual risk: a dense embed in a small slot fails to land, the eye breaks down, the tableau reads as ornament. The embed-load-bearing depthcheck is the only guardrail that catches it.", "reveal": ["risk"], "focus": ["risk"], "pace": "hold"}
+      ]
+    },
+    {
+      "id": "big-idea",
+      "type": "big-idea",
+      "accent": "cyan",
+      "kicker": "The takeaway",
+      "heading": "One sentence",
+      "statement": "Composition turns N primitives into N times N expressions.",
+      "anchor": {"kind": "equation", "value": "N × N"},
+      "beats": [
+        {"id": "bi-1", "narration": "Composition turns N primitives into N times N expressions — the same five scene types ship five new things flat, twenty-five in a compositional grammar.", "show": "big-idea"}
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "accent": "blue",
+      "kicker": "Recap",
+      "heading": "What landed",
+      "points": [
+        "Six hosts opt into embeds via a closed slot table",
+        "Embeds inherit chrome, beats, audio from the parent — they are tableaux, not movies",
+        "Max nesting depth two; the validator hard-fails deeper",
+        "The embed-load-bearing depthcheck dimension guards against decoration",
+        "Caveat — tableau crowding limits embed density at small slots"
+      ],
+      "beats": [
+        {"id": "re-1", "narration": "Six hosts, the closed slot table, chrome inheritance, depth two, and the load-bearing guardrail. The caveat: the grammar cannot animate inside a slot, and small slots limit how dense an embed can be.", "reveal": 5, "pace": "settle"}
+      ]
+    }
+  ]
+}

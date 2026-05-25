@@ -20,14 +20,25 @@ import {parseTimelineDate} from '../src/engine/time';
 // only needs to know the shape; the engine's TreeNode owns the full type.
 type DepthTreeNode = {id?: string; label?: string; children?: DepthTreeNode[]};
 
+// Sprint B — an embed-load-bearing check. The embed must contribute to the
+// host's argument, not decorate it. We surface a finding when any embed in the
+// film has no narration anchor (no beat names the embed's slot or any of its
+// inner ids in `reveal` or `focus`). A decorative embed never lands in
+// narration; a load-bearing one does.
+type DepthEmbed = {
+  type: string;
+  // Inner ids that beats can reveal/focus (the embed's own argument hooks).
+  innerIds: string[];
+};
+
 type Spec = {
   meta: {prompt?: string; id?: string};
   scenes: {
     id?: string;
     type: string;
     statement?: string;
-    nodes?: {kind?: string}[];
-    beats: {id: string; narration: string}[];
+    nodes?: {kind?: string; id?: string; embed?: any}[];
+    beats: {id: string; narration: string; reveal?: string[] | number; focus?: string[]}[];
     // prior-art scene fields — only present on `type: 'prior-art'`.
     systems?: {id: string; label: string; year?: string}[];
     dimensions?: {id: string; label: string}[];
@@ -68,8 +79,86 @@ type Spec = {
     // landscape scene fields — only present on `type: 'landscape'`.
     xAxis?: {label?: string; lowLabel?: string; highLabel?: string};
     yAxis?: {label?: string; lowLabel?: string; highLabel?: string};
-    subjects?: {id: string; label: string; x: number; y: number}[];
+    subjects?: {id: string; label: string; x: number; y: number; embed?: any}[];
+    // compare scene fields — rows[].cells[].embed are the cell embeds we
+    // surface for the embed-load-bearing check.
+    columns?: {id: string; label: string}[];
+    rows?: {id: string; label: string; cells?: {text?: string; embed?: any}[]}[];
   }[];
+};
+
+// Sprint B — walk a scene's slot table and emit, for each present embed, a
+// short record carrying the parent slot id (the address the host's beats can
+// reveal/focus) and the embed's own inner addressable ids. The judge wants
+// both: the slot id is the embed's HANDLE on the host's argument; the inner
+// ids let a beat narrate ABOUT the embed.
+const collectEmbeds = (
+  sc: Spec['scenes'][number],
+): {slotId: string; innerIds: string[]; embedType: string}[] => {
+  const out: {slotId: string; innerIds: string[]; embedType: string}[] = [];
+  const innerOf = (e: any): string[] => {
+    const ids: string[] = [];
+    if (Array.isArray(e?.nodes)) for (const n of e.nodes) if (n?.id) ids.push(n.id);
+    if (Array.isArray(e?.subjects)) for (const s of e.subjects) if (s?.id) ids.push(s.id);
+    if (Array.isArray(e?.regions)) for (const r of e.regions) if (r?.id) ids.push(r.id);
+    if (Array.isArray(e?.parts)) for (const p of e.parts) if (p?.id) ids.push(p.id);
+    if (Array.isArray(e?.variables)) for (const v of e.variables) if (v?.id) ids.push(v.id);
+    if (Array.isArray(e?.events)) for (const ev of e.events) if (ev?.id) ids.push(ev.id);
+    if (Array.isArray(e?.journeyStages)) for (const j of e.journeyStages) if (j?.id) ids.push(j.id);
+    if (Array.isArray(e?.figures)) for (const f of e.figures) if ((f as {id?: string})?.id) ids.push((f as {id: string}).id);
+    if (Array.isArray(e?.metrics)) for (const m of e.metrics) if (m?.id) ids.push(m.id);
+    if (Array.isArray(e?.rows)) for (const r of e.rows) if (r?.id) ids.push(r.id);
+    if (Array.isArray(e?.columns)) for (const c of e.columns) if (c?.id) ids.push(c.id);
+    if (Array.isArray(e?.sets)) for (const s of e.sets) if (s?.id) ids.push(s.id);
+    return ids;
+  };
+  if (sc.type === 'landscape' && Array.isArray(sc.subjects)) {
+    for (const s of sc.subjects) {
+      if (s?.embed) out.push({slotId: s.id, embedType: s.embed.type, innerIds: innerOf(s.embed)});
+    }
+  }
+  if (sc.type === 'timeline' && Array.isArray(sc.events)) {
+    for (const e of sc.events) {
+      if ((e as any)?.embed) out.push({slotId: e.id, embedType: (e as any).embed.type, innerIds: innerOf((e as any).embed)});
+    }
+  }
+  if (sc.type === 'journey-map' && Array.isArray(sc.journeyStages)) {
+    for (const j of sc.journeyStages) {
+      if ((j as any)?.embed) out.push({slotId: j.id, embedType: (j as any).embed.type, innerIds: innerOf((j as any).embed)});
+    }
+  }
+  if (sc.type === 'structure' && Array.isArray(sc.nodes)) {
+    for (const n of sc.nodes) {
+      if ((n as any)?.embed && (n as any).id) {
+        out.push({slotId: (n as any).id, embedType: (n as any).embed.type, innerIds: innerOf((n as any).embed)});
+      }
+    }
+  }
+  if (sc.type === 'compare' && Array.isArray(sc.rows)) {
+    for (const r of sc.rows) {
+      if (!Array.isArray(r.cells)) continue;
+      for (const cell of r.cells) {
+        if (cell?.embed) {
+          out.push({slotId: r.id, embedType: cell.embed.type, innerIds: innerOf(cell.embed)});
+        }
+      }
+    }
+  }
+  // tree — walk children recursively, only the children (root has no slot)
+  if (sc.type === 'tree' && (sc as any).root) {
+    const walk = (n: any): void => {
+      if (Array.isArray(n.children)) {
+        for (const c of n.children) {
+          if (c?.embed && c.id) {
+            out.push({slotId: c.id, embedType: c.embed.type, innerIds: innerOf(c.embed)});
+          }
+          walk(c);
+        }
+      }
+    };
+    walk((sc as any).root);
+  }
+  return out;
 };
 
 export type DepthFinding = {
@@ -578,6 +667,51 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
           : `the big-idea sentence fails the contract: ${reasons.join('; ')}`,
       });
     }
+  }
+
+  // Sprint B — embed-load-bearing. For every embedded scene in the film, at
+  // least one beat on the same parent scene must reference either the embed's
+  // slot id (the host's hook for it) or one of the embed's own inner ids,
+  // through `reveal` or `focus`. A decorative embed — one that no narration
+  // hooks into — is rejected: the embed must contribute to the host's
+  // argument, not flank it. A film with no embeds skips the check entirely
+  // (no finding added).
+  const sceneEmbeds: {scene: string; embeds: ReturnType<typeof collectEmbeds>; refs: Set<string>}[] = [];
+  for (const sc of spec.scenes) {
+    const embeds = collectEmbeds(sc);
+    if (embeds.length === 0) continue;
+    // The set of ids beats reference (reveal | focus) anywhere on this scene.
+    const refs = new Set<string>();
+    for (const b of sc.beats) {
+      if (Array.isArray(b.reveal)) for (const id of b.reveal) refs.add(id);
+      if (Array.isArray(b.focus)) for (const id of b.focus) refs.add(id);
+    }
+    sceneEmbeds.push({scene: sc.id ?? '(unnamed)', embeds, refs});
+  }
+  if (sceneEmbeds.length > 0) {
+    const orphans: {scene: string; slot: string; embedType: string}[] = [];
+    let total = 0;
+    for (const {scene, embeds, refs} of sceneEmbeds) {
+      for (const e of embeds) {
+        total += 1;
+        const handles = [e.slotId, `${e.slotId}.embed`, ...e.innerIds];
+        const referenced = handles.some((h) => refs.has(h));
+        if (!referenced) orphans.push({scene, slot: e.slotId, embedType: e.embedType});
+      }
+    }
+    findings.push({
+      id: 'embed-load-bearing',
+      label:
+        'Compositional embeds are load-bearing — at least one beat on the host scene names the embed (its slot id, slot.embed, or an inner id) in reveal or focus',
+      status: orphans.length === 0 ? 'ok' : 'fail',
+      detail:
+        orphans.length === 0
+          ? `${total} embed(s) across ${sceneEmbeds.length} scene(s); every embed has a narration hook`
+          : `${orphans.length}/${total} embed(s) have no narration hook — the embed decorates the slot rather than contributing to the host's argument: ${orphans
+              .slice(0, 5)
+              .map((o) => `${o.scene}:${o.slot} (${o.embedType})`)
+              .join('; ')}`,
+    });
   }
 
   // narration-rhythm — informational rule that fires when the audio

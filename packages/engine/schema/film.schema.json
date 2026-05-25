@@ -246,11 +246,105 @@
           "minItems": 1,
           "items": {"$ref": "#/$defs/causal-loop"}
         },
+        "columns": {
+          "type": "array",
+          "description": "compare scenes — the options (column headers of the judgement table)",
+          "items": {"$ref": "#/$defs/compare-column"}
+        },
+        "rows": {
+          "type": "array",
+          "description": "compare scenes — the criteria (rows of the judgement table); each row carries one cell per column",
+          "items": {"$ref": "#/$defs/compare-row"}
+        },
         "beats": {
           "type": "array",
           "minItems": 1,
           "items": {"$ref": "#/$defs/beat"}
         }
+      }
+    },
+    "embedded-scene": {
+      "type": "object",
+      "description": "Sprint B compositional grammar — an embedded scene that lives inside a host scene's sub-record slot. Structurally a `scene` minus the chrome / orchestration fields (beats, kicker, heading, cut, cam, style) which the parent owns. An embed is a STATIC tableau: it renders one visual state at the moment the parent's beat reveals it, with no animation and no audio. Per-slot allowlists are documented on each host's sub-record $def; the validator enforces max nesting depth 2.",
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["big-idea", "causal-loop", "chart", "closeup", "compare", "demonstrate", "diff", "figure", "frame", "journey-map", "landscape", "map", "mechanism", "passage", "prior-art", "probe", "progression", "quantities", "recap", "structure", "tension", "timeline", "tree", "venn", "walkthrough"]},
+        "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
+        "palette": {"enum": ["cool", "warm", "signal", "mono"]},
+        "treatment": {"enum": ["crisp", "sketch", "whiteboard"]},
+        "caption": {"type": "string", "description": "optional short label drawn under the embed inside its slot (≤ 24 chars reads cleanly)"},
+        "grid": {"type": "object", "additionalProperties": false, "properties": {"cols": {"type": "number"}, "rows": {"type": "number"}}},
+        "nodes": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+        "edges": {"type": "array", "items": {"$ref": "#/$defs/edge"}},
+        "stages": {"type": "array", "items": {"$ref": "#/$defs/stage"}},
+        "flow": {"enum": ["linear", "cycle", "braided", "iterate"]},
+        "xAxis": {"oneOf": [{"$ref": "#/$defs/axis"}, {"$ref": "#/$defs/landscape-axis"}]},
+        "yAxis": {"oneOf": [{"$ref": "#/$defs/axis"}, {"$ref": "#/$defs/landscape-axis"}]},
+        "series": {"type": "array", "items": {"$ref": "#/$defs/series"}},
+        "subjects": {"type": "array", "items": {"$ref": "#/$defs/landscape-subject"}},
+        "quadrants": {"$ref": "#/$defs/landscape-quadrants"},
+        "parts": {"type": "array", "items": {"$ref": "#/$defs/mechanism-part"}},
+        "motion": {"$ref": "#/$defs/mechanism-motion"},
+        "sets": {"type": "array", "items": {"$ref": "#/$defs/venn-set"}},
+        "regions": {"type": "array", "items": {"oneOf": [{"$ref": "#/$defs/map-region"}, {"$ref": "#/$defs/venn-region"}]}},
+        "novelty": {"oneOf": [{"$ref": "#/$defs/prior-art-novelty"}, {"$ref": "#/$defs/venn-novelty"}]},
+        "metrics": {"type": "array", "items": {"$ref": "#/$defs/metric"}},
+        "figures": {"type": "array"},
+        "matrix": {"type": "object"},
+        "axis": {"$ref": "#/$defs/timeline-axis"},
+        "events": {"type": "array", "items": {"$ref": "#/$defs/timeline-event"}},
+        "spans": {"type": "array", "items": {"$ref": "#/$defs/timeline-span"}},
+        "root": {"$ref": "#/$defs/tree-node"},
+        "orientation": {"enum": ["vertical", "horizontal"]},
+        "journeyStages": {"type": "array", "items": {"$ref": "#/$defs/journey-stage"}},
+        "variables": {"type": "array", "items": {"$ref": "#/$defs/causal-variable"}},
+        "causalEdges": {"type": "array", "items": {"$ref": "#/$defs/causal-edge"}},
+        "loops": {"type": "array", "items": {"$ref": "#/$defs/causal-loop"}},
+        "columns": {"type": "array", "items": {"$ref": "#/$defs/compare-column"}},
+        "rows": {"type": "array", "items": {"$ref": "#/$defs/compare-row"}}
+      },
+      "not": {
+        "anyOf": [
+          {"required": ["beats"]},
+          {"required": ["kicker"]},
+          {"required": ["heading"]},
+          {"required": ["cut"]},
+          {"required": ["cam"]},
+          {"required": ["style"]}
+        ]
+      }
+    },
+    "compare-column": {
+      "type": "object",
+      "description": "compare scenes — one column header (an option being judged)",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "label": {"type": "string"},
+        "sub": {"type": "string"}
+      }
+    },
+    "compare-row": {
+      "type": "object",
+      "description": "compare scenes — one row (a criterion judged across columns)",
+      "required": ["id", "label", "cells"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "label": {"type": "string"},
+        "cells": {"type": "array", "items": {"$ref": "#/$defs/compare-cell"}}
+      }
+    },
+    "compare-cell": {
+      "type": "object",
+      "description": "compare scenes — one cell in the judgement table. Sprint B: `embed` (optional) attaches a static sub-scene tableau inside the cell; allowlist quantities | chart | venn.",
+      "required": ["text"],
+      "additionalProperties": false,
+      "properties": {
+        "text": {"type": "string"},
+        "verdict": {"enum": ["win", "lose", "neutral"]},
+        "embed": {"$ref": "#/$defs/embedded-scene", "description": "Sprint B compositional grammar — a static sub-scene tableau attached to this cell. Allowlist: quantities | chart | venn."}
       }
     },
     "beat": {
@@ -281,7 +375,7 @@
     },
     "node": {
       "type": "object",
-      "description": "a component box in a structure diagram. `as` is its representation (default `box`, the labelled Card); a `transform` can morph one node into another representation.",
+      "description": "a component box in a structure diagram. `as` is its representation (default `box`, the labelled Card); a `transform` can morph one node into another representation. Sprint B: `embed` (optional) attaches a static sub-scene tableau inside the card; allowlist mechanism | chart | venn.",
       "required": ["id", "label", "col", "row"],
       "additionalProperties": false,
       "properties": {
@@ -311,7 +405,8 @@
         "expr": {
           "type": "string",
           "description": "as: equation — the mathematical markup the engine typesets. Intent-level and never evaluated; morphing one equation node into another is a derivation step"
-        }
+        },
+        "embed": {"$ref": "#/$defs/embedded-scene", "description": "Sprint B compositional grammar — a static sub-scene tableau attached to this node. Allowlist: mechanism | chart | venn."}
       }
     },
     "transform": {
@@ -557,7 +652,7 @@
     },
     "timeline-event": {
       "type": "object",
-      "description": "timeline scenes — one dated marker. `date` is a parseable date string that MUST fall inside the scene's `axis` bounds. `lane` (0..N) stacks events vertically when they cluster on the axis (lane 0 closest to the axis line). A beat reveals an event by id and may `focus` it to glow.",
+      "description": "timeline scenes — one dated marker. `date` is a parseable date string that MUST fall inside the scene's `axis` bounds. `lane` (0..N) stacks events vertically when they cluster on the axis (lane 0 closest to the axis line). A beat reveals an event by id and may `focus` it to glow. Sprint B: `embed` (optional) attaches a static sub-scene tableau inside the event card; allowlist venn | quantities | compare | structure.",
       "required": ["id", "date", "label"],
       "additionalProperties": false,
       "properties": {
@@ -565,7 +660,8 @@
         "date": {"type": "string", "minLength": 1, "description": "a parseable date string — ISO, month-year, or year-only"},
         "label": {"type": "string", "minLength": 1, "description": "the event's short label"},
         "sub": {"type": "string", "description": "an optional one-line gloss under the label"},
-        "lane": {"type": "integer", "minimum": 0, "description": "vertical lane for stacking clustered events"}
+        "lane": {"type": "integer", "minimum": 0, "description": "vertical lane for stacking clustered events"},
+        "embed": {"$ref": "#/$defs/embedded-scene", "description": "Sprint B compositional grammar — a static sub-scene tableau attached to this event. Allowlist: venn | quantities | compare | structure."}
       }
     },
     "timeline-span": {
@@ -583,7 +679,7 @@
     },
     "tree-node": {
       "type": "object",
-      "description": "tree scenes — one node in a rooted hierarchy. Recursive: `children` references the same $def. Up to 5 levels deep and ~30 visible nodes total; the validator HARD FAILS on max depth, total count, or non-unique ids. Depth must encode an actual classification axis — kingdom→phylum→class, parent→child reporting, type→instance.",
+      "description": "tree scenes — one node in a rooted hierarchy. Recursive: `children` references the same $def. Up to 5 levels deep and ~30 visible nodes total; the validator HARD FAILS on max depth, total count, or non-unique ids. Depth must encode an actual classification axis — kingdom→phylum→class, parent→child reporting, type→instance. Sprint B: `embed` (optional, on children only — the root is the spine the renderer owns) attaches a static sub-scene tableau inside a child node; allowlist tree (recursive) | compare | quantities.",
       "required": ["id", "label"],
       "additionalProperties": false,
       "properties": {
@@ -598,7 +694,8 @@
           "type": "array",
           "description": "the recursive structure — a node's children are themselves tree-nodes",
           "items": {"$ref": "#/$defs/tree-node"}
-        }
+        },
+        "embed": {"$ref": "#/$defs/embedded-scene", "description": "Sprint B compositional grammar — a static sub-scene tableau attached to this child node. Allowlist: tree (recursive) | compare | quantities."}
       }
     },
     "map-region": {
@@ -650,7 +747,7 @@
     },
     "journey-stage": {
       "type": "object",
-      "description": "journey-map scenes — one stage on a person's emotional journey. `emotion` is the local feeling (an enum from the JourneyEmotion allowlist); `curveValue` is the y-value on the scene's continuous emotion curve, normalized [0..1] (1 = best emotion, 0 = worst). `touchpoints` are what the person encounters in this stage; `painPoints` are what goes wrong. A journey with no specifics is just a list.",
+      "description": "journey-map scenes — one stage on a person's emotional journey. `emotion` is the local feeling (an enum from the JourneyEmotion allowlist); `curveValue` is the y-value on the scene's continuous emotion curve, normalized [0..1] (1 = best emotion, 0 = worst). `touchpoints` are what the person encounters in this stage; `painPoints` are what goes wrong. A journey with no specifics is just a list. Sprint B: `embed` (optional) attaches a static sub-scene tableau inside the stage tile; allowlist causal-loop | mechanism | compare.",
       "required": ["id", "label", "emotion", "curveValue"],
       "additionalProperties": false,
       "properties": {
@@ -676,7 +773,8 @@
           "minimum": 0,
           "maximum": 1,
           "description": "the y-value on the emotion curve, normalized 0..1 (1 = top / best emotion, 0 = bottom / worst)"
-        }
+        },
+        "embed": {"$ref": "#/$defs/embedded-scene", "description": "Sprint B compositional grammar — a static sub-scene tableau attached to this stage. Allowlist: causal-loop | mechanism | compare."}
       }
     },
     "causal-variable": {
@@ -879,7 +977,7 @@
     },
     "landscape-subject": {
       "type": "object",
-      "description": "landscape scenes — one subject marker. `x` and `y` are normalized [0..1] positions on the two axes; the engine maps them to pixels. A subject may override the scene accent via its own `accent`.",
+      "description": "landscape scenes — one subject marker. `x` and `y` are normalized [0..1] positions on the two axes; the engine maps them to pixels. A subject may override the scene accent via its own `accent`. Sprint B: `embed` (optional) attaches a static sub-scene tableau inside the marker; allowlist mechanism | venn | chart | quantities.",
       "required": ["id", "label", "x", "y"],
       "additionalProperties": false,
       "properties": {
@@ -888,7 +986,8 @@
         "sub": {"type": "string", "description": "a short caption beneath the label"},
         "x": {"type": "number", "minimum": 0, "maximum": 1, "description": "normalized horizontal position on xAxis (0 = lowLabel end, 1 = highLabel end)"},
         "y": {"type": "number", "minimum": 0, "maximum": 1, "description": "normalized vertical position on yAxis (0 = lowLabel end, 1 = highLabel end)"},
-        "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]}
+        "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
+        "embed": {"$ref": "#/$defs/embedded-scene", "description": "Sprint B compositional grammar — a static sub-scene tableau attached to this marker. Allowlist: mechanism | venn | chart | quantities."}
       }
     },
     "landscape-quadrants": {

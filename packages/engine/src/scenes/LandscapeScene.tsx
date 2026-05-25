@@ -13,6 +13,7 @@ import {
   type SceneProps,
 } from '../engine/spec';
 import {paletteGlowScale, paletteSceneHex} from '../engine/knobs';
+import {EmbeddedScene} from './EmbeddedScene';
 
 // Landscape — N options plotted on M dimensions in 2-D, the quadrant-analysis
 // primitive. The classic strategic / tool-survey shape: "cost vs value",
@@ -430,6 +431,28 @@ export const LandscapeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                     >
                       {txt}
                     </text>
+                  );
+                })() : null}
+                {/* Sprint B — compositional embed. A landscape subject may
+                    carry a static sub-scene tableau in its slot. The embed
+                    sits adjacent to the marker, sized to a fraction of the
+                    plot box; visible only once the marker is revealed. */}
+                {s.embed ? (() => {
+                  const embedW = Math.min(240, PLOT.w * 0.18);
+                  const embedH = Math.min(180, PLOT.h * 0.28);
+                  // Place opposite the label so they don't collide.
+                  const ex = flipLeft ? p.x + dotR + embedW / 2 + 14 : p.x - dotR - embedW / 2 - 14;
+                  const ey = flipUp ? p.y + embedH / 2 + 14 : p.y - embedH / 2 - 14;
+                  // Clamp inside the plot box so embeds never bleed off-stage.
+                  const cx = Math.max(PLOT.x + embedW / 2, Math.min(PLOT.x + PLOT.w - embedW / 2, ex));
+                  const cy = Math.max(PLOT.y + embedH / 2, Math.min(PLOT.y + PLOT.h - embedH / 2, ey));
+                  return (
+                    <EmbeddedScene
+                      embed={s.embed}
+                      bounds={{cx, cy, w: embedW, h: embedH}}
+                      inheritedStyle={style}
+                      parentAccent={col}
+                    />
                   );
                 })() : null}
               </g>

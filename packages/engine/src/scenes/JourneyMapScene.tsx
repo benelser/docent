@@ -14,6 +14,7 @@ import {
   paletteGlowScale,
   paletteSceneHex,
 } from '../engine/knobs';
+import {EmbeddedScene} from './EmbeddedScene';
 
 // journey-map — the UX/service-design primitive. Horizontal stages along a
 // journey, each with an emotion chip and optional touchpoints / painPoints.
@@ -475,6 +476,29 @@ export const JourneyMapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                   </div>
                 ) : null}
               </div>
+              {/* Sprint B — compositional embed. A journey-map stage may
+                  carry a static sub-scene tableau, drawn above the axis
+                  in the curve band area so it sits beside its curve dot. */}
+              {s.embed ? (
+                <svg
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    opacity,
+                  }}
+                  viewBox="0 0 1920 1080"
+                >
+                  <EmbeddedScene
+                    embed={s.embed}
+                    bounds={{cx: x, cy: 130, w: 220, h: 160}}
+                    inheritedStyle={style}
+                    parentAccent={accentHex}
+                  />
+                </svg>
+              ) : null}
             </React.Fragment>
           );
         })}

@@ -14,6 +14,7 @@ import {
   paletteGlowScale,
   paletteSceneHex,
 } from '../engine/knobs';
+import {EmbeddedScene} from './EmbeddedScene';
 
 // A judgement table: options across the top (columns), criteria down the left
 // gutter (rows), cells in the grid. A `win` cell is accent-tinted, a `lose`
@@ -212,6 +213,7 @@ export const CompareScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                   >
                     <div
                       style={{
+                        position: 'relative',
                         height: '100%',
                         borderRadius: 11,
                         display: 'flex',
@@ -271,6 +273,35 @@ export const CompareScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                           textAlign: 'center',
                         }}
                       />
+                      {/* Sprint B — compositional embed. A compare cell may
+                          carry a static sub-scene tableau drawn beneath the
+                          cell text inside the cell tile. The embed inherits
+                          the row's reveal/focus state through the parent
+                          row's opacity (it lives inside the same flex). */}
+                      {cell?.embed ? (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            pointerEvents: 'none',
+                          }}
+                        >
+                          <svg
+                            width="100%"
+                            height="100%"
+                            viewBox="0 0 1920 1080"
+                            preserveAspectRatio="xMidYMid meet"
+                            style={{position: 'absolute', inset: 0}}
+                          >
+                            <EmbeddedScene
+                              embed={cell.embed}
+                              bounds={{cx: 960, cy: 540, w: 900, h: 500}}
+                              inheritedStyle={style}
+                              parentAccent={accentHex}
+                            />
+                          </svg>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 );
