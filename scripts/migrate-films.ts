@@ -151,11 +151,25 @@ const main = async () => {
 
   // Sniff the dominant legacy knobs across the film.
   const knobs = dominantKnobs(scenes);
-  const {style, rationale} = resolveLegacy(knobs);
+  const {style: derivedStyle, rationale: derivedRationale} = resolveLegacy(knobs);
+
+  // Preserve any existing top-level `style` block — the v2.2.0 README films
+  // already committed to a preset; the migrator must not clobber that.
+  const hasExistingStyle =
+    spec.style && typeof spec.style === 'object' && spec.style.preset;
+  const style = hasExistingStyle ? spec.style : derivedStyle;
+  const rationale = hasExistingStyle
+    ? `preserved existing style commitment (preset: ${spec.style.preset})`
+    : derivedRationale;
+
+  // Strip meta.register if present (the film-mood knob, removed in v2.4).
+  const {register: _r, ...metaRest} = (spec.meta ?? {}) as Record<string, unknown>;
+  void _r;
 
   // Apply: set FilmSpec.style; strip per-scene legacy knobs.
   const migrated = {
     ...spec,
+    meta: metaRest,
     style,
     scenes: scenes.map(stripLegacy),
   };

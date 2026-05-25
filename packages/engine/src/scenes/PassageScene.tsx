@@ -70,7 +70,7 @@ export const PassageScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accentOf(style, scene.accent);
+  const accentHex = accentOf(style, undefined);
   const text = (scene.text ?? '').replace(/\s+$/, '');
   const marks = scene.marks ?? [];
 

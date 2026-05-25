@@ -107,7 +107,7 @@ export const CausalLoopScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const {bg, ink, accent: accentTokens} = style.tokens;
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const variables: CausalVariable[] = scene.variables ?? [];
   const edges: CausalEdge[] = scene.causalEdges ?? [];
   const loops: CausalLoop[] = scene.loops ?? [];
@@ -150,7 +150,7 @@ export const CausalLoopScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // StructureScene's nodes. Authors who pin a single accent get a unified
   // ring; signal/cool/warm spreads spread it.
   const variableHex = (i: number): string =>
-    accentOf(paletteAccentKey(scene.palette, scene.accent, undefined, i));
+    accentOf(paletteAccentKey(undefined, undefined, undefined, i));
 
   // A variable's eased 0..1 entrance progress. Mirrors Card's appear logic.
   // An id that no beat has revealed yet sits at 0 — invisible.
@@ -185,7 +185,7 @@ export const CausalLoopScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
-      glowScale={paletteGlowScale(scene.palette)}
+      glowScale={paletteGlowScale(undefined)}
     >
       <AbsoluteFill>
         <svg

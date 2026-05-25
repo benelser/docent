@@ -33,11 +33,12 @@ const TREE_MAX_NODES = 30;
 // them. Each is a closed enum, and that is the point: a value outside the
 // enum would be a free-form (pixel) value sneaking in — exactly what these
 // checks forbid. An intent knob cannot degrade into a raw value.
+//
+// v2.4.0 — the Phase-1 mood/skin knobs (`meta.register`, `scene.palette`,
+// `scene.treatment`, `scene.accent`) were removed. The validator hard-fails
+// any spec that still carries them; see REMOVED_KNOBS below.
 const KNOBS: Record<string, string[]> = {
-  register: ['grave', 'neutral', 'calm', 'urgent', 'playful'],
   cut: ['dissolve', 'hold', 'continue'],
-  palette: ['cool', 'warm', 'signal', 'mono'],
-  treatment: ['crisp', 'sketch', 'whiteboard'],
   pace: ['hold', 'settle', 'normal', 'brisk'],
   cadence: ['cascade', 'together', 'snap'],
   shot: ['wide', 'follow', 'push', 'hold'],
@@ -57,6 +58,20 @@ const KNOBS: Record<string, string[]> = {
   edgeKind: ['relation', 'feedback', 'entails', 'causes'],
   edgeStrength: ['necessary', 'contributing'],
 };
+
+// v2.4.0 — the legacy mood/skin knobs the renderer no longer honours. A
+// single rule replaces the four old per-knob enum checks: any spec that
+// still carries one of these is rejected with a structured migration message
+// that points the author at the styling pipeline (`FilmSpec.style {preset,
+// intent}`) that replaced them end-to-end. See packages/engine/src/style/.
+//
+// The structured message names the field explicitly (so a downstream tool
+// can grep for it across many specs) and tells the author exactly which
+// authoring surface to migrate to.
+const REMOVED_SCENE_KNOBS = ['palette', 'treatment', 'accent'] as const;
+const REMOVED_META_KNOBS = ['register'] as const;
+const removalMessage = (path: string): string =>
+  `${path}: removed in v2.4. Use FilmSpec.style {preset, intent} — see packages/engine/src/style/ and \`docent style list\`.`;
 
 // An issue is an error by default. A `warning` is advisory — it flags a spec
 // that renders but past a recommended bound (e.g. too many bars to read
@@ -104,7 +119,12 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         issues.push({path: `meta.${k}`, message: 'missing or non-positive number'});
       }
     }
-    checkKnob(s.meta, 'register', 'meta', issues);
+    // v2.4.0 — hard-fail if a removed meta-level knob is still set.
+    for (const k of REMOVED_META_KNOBS) {
+      if (s.meta[k] !== undefined) {
+        issues.push({path: `meta.${k}`, message: removalMessage(`meta.${k}`)});
+      }
+    }
   }
 
   // scenes
@@ -127,12 +147,16 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
     if (!SCENE_TYPES.includes(sc.type)) {
       issues.push({path: `${at}.type`, message: `unknown scene type "${sc.type}"`});
     }
-    if (sc.accent && !ACCENTS.includes(sc.accent)) {
-      issues.push({path: `${at}.accent`, message: `unknown accent "${sc.accent}"`});
+    // v2.4.0 — hard-fail if a removed scene-level knob is still set. One
+    // structured message replaces the four old per-knob enum checks; the
+    // renderer ignores these fields end-to-end (every accent now flows
+    // through `FilmSpec.style`).
+    for (const k of REMOVED_SCENE_KNOBS) {
+      if (sc[k] !== undefined) {
+        issues.push({path: `${at}.${k}`, message: removalMessage(`scenes[${i}].${k}`)});
+      }
     }
     checkKnob(sc, 'cut', at, issues);
-    checkKnob(sc, 'palette', at, issues);
-    checkKnob(sc, 'treatment', at, issues);
     // progression — the track topology. Closed enum; an unknown value is a
     // free-form layout sneaking in, exactly what an intent knob forbids.
     checkKnob(sc, 'flow', at, issues);

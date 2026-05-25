@@ -333,10 +333,13 @@ export const BigIdeaScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accentOf(style, scene.accent);
-  const treatment = scene.treatment;
-  const isLight = treatment === 'whiteboard';
-  const isSketch = treatment === 'sketch';
+  const accentHex = accentOf(style, undefined);
+  // v2.4.0 — `treatment` is no longer authored. Big-idea renders in its
+  // default register: no sketch/whiteboard skin (those went away with the
+  // knob). The branches stay so a future style-driven re-introduction can
+  // flip them back on without restructuring the scene.
+  const isLight = false;
+  const isSketch = false;
 
   const inkHi = style.tokens.ink.hi;
   const bg = style.tokens.bg;

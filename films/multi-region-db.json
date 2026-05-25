@@ -8,28 +8,37 @@
     "fps": 30,
     "width": 1920,
     "height": 1080,
-    "voice": "af_heart",
-    "register": "calm"
+    "voice": "af_heart"
   },
   "scenes": [
     {
       "id": "frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "DOCENT // SPATIAL",
       "title": "Multi-region database",
       "tagline": "The topology IS the trade-off — position carries the consistency story",
       "footnote": "A demo of the `map` scene type   ·   regions are not pins on a globe; they are choices in space",
       "beats": [
-        {"id": "mr-frame-1", "narration": "Most distributed-system films draw boxes and arrows. They flatten geography into a graph. But for a multi-region database, the geography IS the design — and so is the trade-off.", "show": "title"},
-        {"id": "mr-frame-2", "narration": "We will not tour every region. We will look at where the writes live, where the reads live, and what the layout itself is asserting about consistency, latency, and what gets lost when a region disappears.", "show": "tagline"},
-        {"id": "mr-frame-3", "narration": "This film is also a demonstration. The map scene type ships today because some arguments live in space, not on a grid of cards.", "show": "footnote"}
+        {
+          "id": "mr-frame-1",
+          "narration": "Most distributed-system films draw boxes and arrows. They flatten geography into a graph. But for a multi-region database, the geography IS the design — and so is the trade-off.",
+          "show": "title"
+        },
+        {
+          "id": "mr-frame-2",
+          "narration": "We will not tour every region. We will look at where the writes live, where the reads live, and what the layout itself is asserting about consistency, latency, and what gets lost when a region disappears.",
+          "show": "tagline"
+        },
+        {
+          "id": "mr-frame-3",
+          "narration": "This film is also a demonstration. The map scene type ships today because some arguments live in space, not on a grid of cards.",
+          "show": "footnote"
+        }
       ]
     },
     {
       "id": "topology",
       "type": "map",
-      "accent": "cyan",
       "kicker": "01 // THE TOPOLOGY",
       "heading": "Five regions — only one writes",
       "layout": "topology",
@@ -38,150 +47,438 @@
           "id": "us-east",
           "label": "us-east-1",
           "sub": "the write quorum — the only region that holds the authoritative commit",
-          "pos": {"x": 0.28, "y": 0.32, "w": 0.18, "h": 0.22}
+          "pos": {
+            "x": 0.28,
+            "y": 0.32,
+            "w": 0.18,
+            "h": 0.22
+          }
         },
         {
           "id": "us-west",
           "label": "us-west-2",
           "sub": "async follower — reads are eventually consistent",
-          "pos": {"x": 0.08, "y": 0.55, "w": 0.16, "h": 0.18}
+          "pos": {
+            "x": 0.08,
+            "y": 0.55,
+            "w": 0.16,
+            "h": 0.18
+          }
         },
         {
           "id": "eu-west",
           "label": "eu-west-1",
           "sub": "async follower — same lag, different ocean",
-          "pos": {"x": 0.55, "y": 0.32, "w": 0.16, "h": 0.18}
+          "pos": {
+            "x": 0.55,
+            "y": 0.32,
+            "w": 0.16,
+            "h": 0.18
+          }
         },
         {
           "id": "ap-south",
           "label": "ap-south-1",
           "sub": "async follower — the furthest write-path; the longest stale window",
-          "pos": {"x": 0.78, "y": 0.62, "w": 0.16, "h": 0.18}
+          "pos": {
+            "x": 0.78,
+            "y": 0.62,
+            "w": 0.16,
+            "h": 0.18
+          }
         },
         {
           "id": "edge-cdn",
           "label": "Edge CDN",
           "sub": "read cache only — never sees a write, never proves freshness",
-          "pos": {"x": 0.45, "y": 0.78, "w": 0.18, "h": 0.16}
+          "pos": {
+            "x": 0.45,
+            "y": 0.78,
+            "w": 0.18,
+            "h": 0.16
+          }
         }
       ],
       "connections": [
-        {"id": "rep-w", "from": "us-east", "to": "us-west", "kind": "supply", "label": "replicate"},
-        {"id": "rep-e", "from": "us-east", "to": "eu-west", "kind": "supply", "label": "replicate"},
-        {"id": "rep-a", "from": "us-east", "to": "ap-south", "kind": "supply", "label": "replicate"},
-        {"id": "cdn-w", "from": "us-west", "to": "edge-cdn", "kind": "transmission"},
-        {"id": "cdn-e", "from": "eu-west", "to": "edge-cdn", "kind": "transmission"}
+        {
+          "id": "rep-w",
+          "from": "us-east",
+          "to": "us-west",
+          "kind": "supply",
+          "label": "replicate"
+        },
+        {
+          "id": "rep-e",
+          "from": "us-east",
+          "to": "eu-west",
+          "kind": "supply",
+          "label": "replicate"
+        },
+        {
+          "id": "rep-a",
+          "from": "us-east",
+          "to": "ap-south",
+          "kind": "supply",
+          "label": "replicate"
+        },
+        {
+          "id": "cdn-w",
+          "from": "us-west",
+          "to": "edge-cdn",
+          "kind": "transmission"
+        },
+        {
+          "id": "cdn-e",
+          "from": "eu-west",
+          "to": "edge-cdn",
+          "kind": "transmission"
+        }
       ],
       "markers": [
-        {"id": "m-write", "at": "us-east", "label": "writes land HERE", "kind": "pin"},
-        {"id": "m-stale", "at": "ap-south", "label": "~280ms stale", "kind": "flag"}
+        {
+          "id": "m-write",
+          "at": "us-east",
+          "label": "writes land HERE",
+          "kind": "pin"
+        },
+        {
+          "id": "m-stale",
+          "at": "ap-south",
+          "label": "~280ms stale",
+          "kind": "flag"
+        }
       ],
       "beats": [
-        {"id": "mr-topo-1", "narration": "Five regions. Only one of them writes. That is the first asymmetry the topology asserts, and the entire consistency story flows from where us-east-1 sits.", "reveal": ["us-east", "m-write"], "focus": ["us-east"]},
-        {"id": "mr-topo-2", "narration": "Three followers — us-west, eu-west, ap-south — each pulls the write log across a different ocean. The replication itself is a supply chain: us-east is the foundry, the others are assembly lines.", "reveal": ["us-west", "eu-west", "ap-south", "rep-w", "rep-e", "rep-a"], "focus": ["us-west", "eu-west", "ap-south"]},
-        {"id": "mr-topo-3", "narration": "ap-south is the furthest from the write quorum, and the lag shows. Two-hundred and eighty milliseconds of staleness on a normal day. That number is not decoration — it is what an ap-south read can legally tell a user.", "reveal": ["m-stale"], "focus": ["ap-south", "m-stale"]},
-        {"id": "mr-topo-4", "narration": "The edge CDN sits below everything, fed by the nearest follower. It is a read cache that never sees a write — it cannot prove freshness, only speed. That position, at the bottom of the diagram, is where the consistency argument ends.", "reveal": ["edge-cdn", "cdn-w", "cdn-e"], "focus": ["edge-cdn"]}
+        {
+          "id": "mr-topo-1",
+          "narration": "Five regions. Only one of them writes. That is the first asymmetry the topology asserts, and the entire consistency story flows from where us-east-1 sits.",
+          "reveal": [
+            "us-east",
+            "m-write"
+          ],
+          "focus": [
+            "us-east"
+          ]
+        },
+        {
+          "id": "mr-topo-2",
+          "narration": "Three followers — us-west, eu-west, ap-south — each pulls the write log across a different ocean. The replication itself is a supply chain: us-east is the foundry, the others are assembly lines.",
+          "reveal": [
+            "us-west",
+            "eu-west",
+            "ap-south",
+            "rep-w",
+            "rep-e",
+            "rep-a"
+          ],
+          "focus": [
+            "us-west",
+            "eu-west",
+            "ap-south"
+          ]
+        },
+        {
+          "id": "mr-topo-3",
+          "narration": "ap-south is the furthest from the write quorum, and the lag shows. Two-hundred and eighty milliseconds of staleness on a normal day. That number is not decoration — it is what an ap-south read can legally tell a user.",
+          "reveal": [
+            "m-stale"
+          ],
+          "focus": [
+            "ap-south",
+            "m-stale"
+          ]
+        },
+        {
+          "id": "mr-topo-4",
+          "narration": "The edge CDN sits below everything, fed by the nearest follower. It is a read cache that never sees a write — it cannot prove freshness, only speed. That position, at the bottom of the diagram, is where the consistency argument ends.",
+          "reveal": [
+            "edge-cdn",
+            "cdn-w",
+            "cdn-e"
+          ],
+          "focus": [
+            "edge-cdn"
+          ]
+        }
       ]
     },
     {
       "id": "routing",
       "type": "map",
-      "accent": "amber",
       "kicker": "02 // ROUTING",
       "heading": "The grid the router actually sees",
       "layout": "grid",
-      "gridSize": {"cols": 4, "rows": 3},
+      "gridSize": {
+        "cols": 4,
+        "rows": 3
+      },
       "regions": [
         {
           "id": "g-write",
           "label": "Writes",
           "sub": "always route to us-east — strong consistency, one round-trip",
-          "pos": {"x": 0, "y": 0}
+          "pos": {
+            "x": 0,
+            "y": 0
+          }
         },
         {
           "id": "g-read-strong",
           "label": "Strong reads",
           "sub": "also route to us-east — pay the latency for the freshness",
-          "pos": {"x": 1, "y": 0}
+          "pos": {
+            "x": 1,
+            "y": 0
+          }
         },
         {
           "id": "g-read-bounded",
           "label": "Bounded-stale reads",
           "sub": "route to the nearest follower — accept up to ~300ms drift",
-          "pos": {"x": 2, "y": 0}
+          "pos": {
+            "x": 2,
+            "y": 0
+          }
         },
         {
           "id": "g-read-cache",
           "label": "Cache reads",
           "sub": "route to the edge CDN — speed only, no freshness claim",
-          "pos": {"x": 3, "y": 0}
+          "pos": {
+            "x": 3,
+            "y": 0
+          }
         },
         {
           "id": "g-east",
           "label": "us-east",
           "sub": "the strong-consistency hot path — the only region that can refuse a write",
-          "pos": {"x": 0, "y": 1}
+          "pos": {
+            "x": 0,
+            "y": 1
+          }
         },
         {
           "id": "g-follow",
           "label": "followers",
           "sub": "the bounded-stale lane — three regions, same role",
-          "pos": {"x": 2, "y": 1}
+          "pos": {
+            "x": 2,
+            "y": 1
+          }
         },
         {
           "id": "g-cdn",
           "label": "CDN edge",
           "sub": "the speed lane — no freshness check, no write path",
-          "pos": {"x": 3, "y": 1}
+          "pos": {
+            "x": 3,
+            "y": 1
+          }
         },
         {
           "id": "g-app",
           "label": "Application",
           "sub": "picks a lane PER REQUEST — the policy lives here, not in the database",
-          "pos": {"x": 1, "y": 2}
+          "pos": {
+            "x": 1,
+            "y": 2
+          }
         }
       ],
       "connections": [
-        {"id": "r-w", "from": "g-write", "to": "g-east", "kind": "route"},
-        {"id": "r-rs", "from": "g-read-strong", "to": "g-east", "kind": "route"},
-        {"id": "r-rb", "from": "g-read-bounded", "to": "g-follow", "kind": "route"},
-        {"id": "r-rc", "from": "g-read-cache", "to": "g-cdn", "kind": "route"},
-        {"id": "r-app-w", "from": "g-app", "to": "g-write", "kind": "transmission"},
-        {"id": "r-app-rs", "from": "g-app", "to": "g-read-strong", "kind": "transmission"},
-        {"id": "r-app-rb", "from": "g-app", "to": "g-read-bounded", "kind": "transmission"},
-        {"id": "r-app-rc", "from": "g-app", "to": "g-read-cache", "kind": "transmission"}
+        {
+          "id": "r-w",
+          "from": "g-write",
+          "to": "g-east",
+          "kind": "route"
+        },
+        {
+          "id": "r-rs",
+          "from": "g-read-strong",
+          "to": "g-east",
+          "kind": "route"
+        },
+        {
+          "id": "r-rb",
+          "from": "g-read-bounded",
+          "to": "g-follow",
+          "kind": "route"
+        },
+        {
+          "id": "r-rc",
+          "from": "g-read-cache",
+          "to": "g-cdn",
+          "kind": "route"
+        },
+        {
+          "id": "r-app-w",
+          "from": "g-app",
+          "to": "g-write",
+          "kind": "transmission"
+        },
+        {
+          "id": "r-app-rs",
+          "from": "g-app",
+          "to": "g-read-strong",
+          "kind": "transmission"
+        },
+        {
+          "id": "r-app-rb",
+          "from": "g-app",
+          "to": "g-read-bounded",
+          "kind": "transmission"
+        },
+        {
+          "id": "r-app-rc",
+          "from": "g-app",
+          "to": "g-read-cache",
+          "kind": "transmission"
+        }
       ],
       "beats": [
-        {"id": "mr-route-1", "narration": "Switch from globe to grid. The router does not see oceans. It sees four kinds of request, lined up across the top, and three layers of where each lands. The position is the policy.", "reveal": ["g-write", "g-read-strong", "g-read-bounded", "g-read-cache"], "focus": ["g-write", "g-read-strong", "g-read-bounded", "g-read-cache"]},
-        {"id": "mr-route-2", "narration": "Writes and strong reads both fall into us-east. That is the cost of strong consistency — one round-trip to one region, no matter where the user is. The grid lines that column up, deliberately, against the same destination.", "reveal": ["g-east"], "focus": ["g-write", "g-read-strong", "g-east"]},
-        {"id": "mr-route-3", "narration": "Bounded-stale reads drop into followers. Cache reads drop into the edge. Each lane buys speed by giving up something — freshness, or the proof of freshness. The grid makes the trade legible.", "reveal": ["g-follow", "g-cdn", "r-w", "r-rs", "r-rb", "r-rc"], "focus": ["g-follow", "g-cdn"]},
-        {"id": "mr-route-4", "narration": "And the application — the bottom row, deliberately wide — picks the lane per request. That is where the policy actually lives. Not in the database, not in the topology. In the call site that decided how stale was acceptable for this read.", "reveal": ["g-app", "r-app-w", "r-app-rs", "r-app-rb", "r-app-rc"], "focus": ["g-app"]}
+        {
+          "id": "mr-route-1",
+          "narration": "Switch from globe to grid. The router does not see oceans. It sees four kinds of request, lined up across the top, and three layers of where each lands. The position is the policy.",
+          "reveal": [
+            "g-write",
+            "g-read-strong",
+            "g-read-bounded",
+            "g-read-cache"
+          ],
+          "focus": [
+            "g-write",
+            "g-read-strong",
+            "g-read-bounded",
+            "g-read-cache"
+          ]
+        },
+        {
+          "id": "mr-route-2",
+          "narration": "Writes and strong reads both fall into us-east. That is the cost of strong consistency — one round-trip to one region, no matter where the user is. The grid lines that column up, deliberately, against the same destination.",
+          "reveal": [
+            "g-east"
+          ],
+          "focus": [
+            "g-write",
+            "g-read-strong",
+            "g-east"
+          ]
+        },
+        {
+          "id": "mr-route-3",
+          "narration": "Bounded-stale reads drop into followers. Cache reads drop into the edge. Each lane buys speed by giving up something — freshness, or the proof of freshness. The grid makes the trade legible.",
+          "reveal": [
+            "g-follow",
+            "g-cdn",
+            "r-w",
+            "r-rs",
+            "r-rb",
+            "r-rc"
+          ],
+          "focus": [
+            "g-follow",
+            "g-cdn"
+          ]
+        },
+        {
+          "id": "mr-route-4",
+          "narration": "And the application — the bottom row, deliberately wide — picks the lane per request. That is where the policy actually lives. Not in the database, not in the topology. In the call site that decided how stale was acceptable for this read.",
+          "reveal": [
+            "g-app",
+            "r-app-w",
+            "r-app-rs",
+            "r-app-rb",
+            "r-app-rc"
+          ],
+          "focus": [
+            "g-app"
+          ]
+        }
       ]
     },
     {
       "id": "tension",
       "type": "tension",
-      "accent": "rose",
       "kicker": "03 // WHAT IT COSTS",
       "heading": "What the topology refuses to handle",
-      "grid": {"cols": 3, "rows": 3},
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
       "nodes": [
-        {"id": "single-write", "label": "Single write region", "sub": "the design that bought strong consistency", "col": 0, "row": 0, "accent": "green"},
-        {"id": "multi-write", "label": "Multi-master writes", "sub": "rejected — conflict resolution would dominate the system", "col": 2, "row": 0, "kind": "rejected"},
-        {"id": "outage", "label": "us-east outage = write outage", "sub": "no follower is promoted; the system stops accepting writes", "col": 1, "row": 1, "kind": "risk"},
-        {"id": "stale-budget", "label": "Stale-read budget is a contract", "sub": "300ms feels safe — until a downstream service depends on a 100ms claim", "col": 1, "row": 2, "kind": "risk"}
+        {
+          "id": "single-write",
+          "label": "Single write region",
+          "sub": "the design that bought strong consistency",
+          "col": 0,
+          "row": 0,
+          "accent": "green"
+        },
+        {
+          "id": "multi-write",
+          "label": "Multi-master writes",
+          "sub": "rejected — conflict resolution would dominate the system",
+          "col": 2,
+          "row": 0,
+          "kind": "rejected"
+        },
+        {
+          "id": "outage",
+          "label": "us-east outage = write outage",
+          "sub": "no follower is promoted; the system stops accepting writes",
+          "col": 1,
+          "row": 1,
+          "kind": "risk"
+        },
+        {
+          "id": "stale-budget",
+          "label": "Stale-read budget is a contract",
+          "sub": "300ms feels safe — until a downstream service depends on a 100ms claim",
+          "col": 1,
+          "row": 2,
+          "kind": "risk"
+        }
       ],
       "edges": [],
       "beats": [
-        {"id": "mr-tension-1", "narration": "The trade-off the topology refused to take is multi-master writes — the layout you would draw if every region could accept a commit. The bill there is conflict resolution, and the system would spend its entire budget paying it. So us-east stands alone, and the diagram refuses to draw the alternative.", "reveal": ["single-write", "multi-write"], "focus": ["single-write", "multi-write"]},
-        {"id": "mr-tension-2", "narration": "But the bill the chosen topology DOES pay is steep. When us-east loses power, no follower gets promoted. The system stops accepting writes — full stop. The followers are not replicas in the failover sense; they are read caches with a write log attached. The position they occupy on the map is precisely as load-bearing as the role they cannot take on.", "reveal": ["outage"], "focus": ["outage"]},
-        {"id": "mr-tension-3", "narration": "And the stale-read budget is a contract masquerading as a number. Three hundred milliseconds feels safe in isolation. It feels less safe when a downstream service is making a 100ms freshness claim against the same row. The topology does not enforce the budget — the application does, and the application forgets.", "reveal": ["stale-budget"], "focus": ["stale-budget"]}
+        {
+          "id": "mr-tension-1",
+          "narration": "The trade-off the topology refused to take is multi-master writes — the layout you would draw if every region could accept a commit. The bill there is conflict resolution, and the system would spend its entire budget paying it. So us-east stands alone, and the diagram refuses to draw the alternative.",
+          "reveal": [
+            "single-write",
+            "multi-write"
+          ],
+          "focus": [
+            "single-write",
+            "multi-write"
+          ]
+        },
+        {
+          "id": "mr-tension-2",
+          "narration": "But the bill the chosen topology DOES pay is steep. When us-east loses power, no follower gets promoted. The system stops accepting writes — full stop. The followers are not replicas in the failover sense; they are read caches with a write log attached. The position they occupy on the map is precisely as load-bearing as the role they cannot take on.",
+          "reveal": [
+            "outage"
+          ],
+          "focus": [
+            "outage"
+          ]
+        },
+        {
+          "id": "mr-tension-3",
+          "narration": "And the stale-read budget is a contract masquerading as a number. Three hundred milliseconds feels safe in isolation. It feels less safe when a downstream service is making a 100ms freshness claim against the same row. The topology does not enforce the budget — the application does, and the application forgets.",
+          "reveal": [
+            "stale-budget"
+          ],
+          "focus": [
+            "stale-budget"
+          ]
+        }
       ]
     },
     {
       "id": "recap",
       "type": "recap",
-      "accent": "blue",
       "kicker": "RECAP // VERDICT",
       "heading": "Multi-region — an honest verdict",
       "points": [
@@ -192,12 +489,35 @@
         "Carry it — the topology buys you strong writes and three speed lanes. It does not buy you write availability when the foundry burns down."
       ],
       "beats": [
-        {"id": "mr-recap-1", "narration": "The verdict. Approve with caveats. The single-write topology is the right trade for a database that values commit correctness over write availability — but call that what it is. It is not high-availability writes; it is consistent writes, with three speed lanes for reads.", "reveal": 1},
-        {"id": "mr-recap-2", "narration": "The biggest residual risk: us-east outages stop every write in the system. There is no automatic promotion. That is a deliberate design choice, and it is also a 3am page that has to be human-driven.", "reveal": 2},
-        {"id": "mr-recap-3", "narration": "What to watch post-launch: not the database, but the application's per-request consistency choice. The stale-read budget is a contract the topology cannot enforce. Find the call sites that quietly upgrade a cache read to a strong read under load — that is where the latency budget breaks.", "reveal": 3},
-        {"id": "mr-recap-4", "narration": "And the meta-claim of this film: the position on the map is the argument. Permute us-east into the corner and the strong-consistency story breaks. The topology is not decoration. It is the shape of what the system can refuse to do.", "reveal": 4},
-        {"id": "mr-recap-5", "narration": "So carry this. The topology buys you strong writes and three speed lanes. It does not buy you write availability when the foundry burns down. Position carries the bill — and the bill is real.", "reveal": 5}
+        {
+          "id": "mr-recap-1",
+          "narration": "The verdict. Approve with caveats. The single-write topology is the right trade for a database that values commit correctness over write availability — but call that what it is. It is not high-availability writes; it is consistent writes, with three speed lanes for reads.",
+          "reveal": 1
+        },
+        {
+          "id": "mr-recap-2",
+          "narration": "The biggest residual risk: us-east outages stop every write in the system. There is no automatic promotion. That is a deliberate design choice, and it is also a 3am page that has to be human-driven.",
+          "reveal": 2
+        },
+        {
+          "id": "mr-recap-3",
+          "narration": "What to watch post-launch: not the database, but the application's per-request consistency choice. The stale-read budget is a contract the topology cannot enforce. Find the call sites that quietly upgrade a cache read to a strong read under load — that is where the latency budget breaks.",
+          "reveal": 3
+        },
+        {
+          "id": "mr-recap-4",
+          "narration": "And the meta-claim of this film: the position on the map is the argument. Permute us-east into the corner and the strong-consistency story breaks. The topology is not decoration. It is the shape of what the system can refuse to do.",
+          "reveal": 4
+        },
+        {
+          "id": "mr-recap-5",
+          "narration": "So carry this. The topology buys you strong writes and three speed lanes. It does not buy you write availability when the foundry burns down. Position carries the bill — and the bill is real.",
+          "reveal": 5
+        }
       ]
     }
-  ]
+  ],
+  "style": {
+    "preset": "neutral"
+  }
 }

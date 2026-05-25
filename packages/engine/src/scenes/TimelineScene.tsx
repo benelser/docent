@@ -52,12 +52,13 @@ export const TimelineScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // paletteSceneHex reads the resolved-style accent table (or falls back to
   // theme.ts ACCENTS when style is undefined). Threading `style` makes a
   // preset's accent overrides reach this scene.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const events: TimelineEvent[] = scene.events ?? [];
   const spans: TimelineSpan[] = scene.spans ?? [];
   const axis = scene.axis;
-  const treatment = scene.treatment;
-  const sketch = treatment === 'sketch' || treatment === 'whiteboard';
+  // v2.4.0 — `treatment` is no longer authored; the sketch/whiteboard skin
+  // retired with the knob. Timeline renders in its crisp default.
+  const sketch = false;
   const ink = style.tokens.ink;
   const bg = style.tokens.bg;
   const sansFamily = style.tokens.typography.family.sans;
@@ -156,7 +157,7 @@ export const TimelineScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
-      glowScale={paletteGlowScale(scene.palette)}
+      glowScale={paletteGlowScale(undefined)}
     >
       <AbsoluteFill>
         <svg

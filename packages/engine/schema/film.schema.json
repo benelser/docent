@@ -19,8 +19,7 @@
         "fps": {"type": "number", "exclusiveMinimum": 0},
         "width": {"type": "number", "exclusiveMinimum": 0},
         "height": {"type": "number", "exclusiveMinimum": 0},
-        "voice": {"type": "string"},
-        "register": {"enum": ["grave", "neutral", "calm", "urgent", "playful"]}
+        "voice": {"type": "string"}
       }
     },
     "scenes": {
@@ -36,12 +35,9 @@
       "properties": {
         "id": {"type": "string"},
         "type": {"enum": ["big-idea", "causal-loop", "chart", "closeup", "compare", "demonstrate", "diff", "figure", "frame", "journey-map", "landscape", "map", "mechanism", "passage", "prior-art", "probe", "progression", "quantities", "recap", "structure", "tension", "timeline", "tree", "venn", "walkthrough"]},
-        "accent": {"enum": ["blue", "cyan", "green", "amber", "rose", "violet"]},
         "kicker": {"type": "string"},
         "heading": {"type": "string"},
         "cut": {"enum": ["dissolve", "hold", "continue"]},
-        "palette": {"enum": ["cool", "warm", "signal", "mono"]},
-        "treatment": {"enum": ["crisp", "sketch", "whiteboard"]},
         "metrics": {
           "type": "array",
           "description": "quantities scenes — figure cards whose number is a tweened value that counts up across beats",

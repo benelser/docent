@@ -450,13 +450,16 @@ export type Scene = {
     | 'tree'
     | 'venn'
     | 'walkthrough';
-  accent: string;
   kicker: string;
   heading?: string;
   // intent knobs — scene-level; the engine interprets these.
   cut?: 'dissolve' | 'hold' | 'continue'; // transition feeling into the next scene
-  palette?: 'cool' | 'warm' | 'signal' | 'mono'; // accent family / mood
-  treatment?: 'crisp' | 'sketch' | 'whiteboard'; // visual skin, decoupled from scene type
+  // NOTE: `accent`, `palette`, and `treatment` were removed in v2.4.0. They
+  // were the Phase-1 intent knobs, end-to-end replaced by `FilmSpec.style:
+  // RenderStyleInput` (preset + intent + overrides), which resolves to the
+  // single `ResolvedStyle` token bundle every renderer now reads from. The
+  // validator hard-fails any spec that still carries them, with a migration
+  // pointer. See `packages/engine/src/style/` and `docent style list`.
   // frame
   title?: string;
   tagline?: string;
@@ -642,7 +645,9 @@ export type FilmSpec = {
     width: number;
     height: number;
     voice: string;
-    register?: 'grave' | 'neutral' | 'calm' | 'urgent' | 'playful'; // film mood
+    // NOTE: `register` (a film-mood knob) was removed in v2.4.0. The mood is
+    // now part of the resolved style — set `FilmSpec.style.intent.tone`
+    // instead. The validator hard-fails any spec that still carries it.
   };
   scenes: Scene[];
   /**
@@ -682,24 +687,12 @@ const PACE: Record<NonNullable<Beat['pace']>, number> = {
 export const cutFrames = (cut?: Scene['cut']): number =>
   cut === 'hold' ? 28 : cut === 'continue' ? 8 : TRANSITION;
 
-// `register` (a film knob) sets the overall mood — and with it the *default*
-// pace and cut. Any per-beat or per-scene knob still overrides these.
-type RegisterDefaults = {pace: NonNullable<Beat['pace']>; cut: NonNullable<Scene['cut']>};
-export const registerDefaults = (
-  register?: FilmSpec['meta']['register'],
-): RegisterDefaults => {
-  switch (register) {
-    case 'grave':
-    case 'calm':
-      return {pace: 'settle', cut: 'hold'};
-    case 'urgent':
-      return {pace: 'brisk', cut: 'continue'};
-    case 'playful':
-      return {pace: 'normal', cut: 'continue'};
-    default:
-      return {pace: 'normal', cut: 'dissolve'};
-  }
-};
+// The default pace and cut for any beat/scene that does not name its own.
+// `register` (a film knob) used to set this from a film-mood enum; v2.4.0
+// removed that knob — every film now uses the neutral defaults, with per-beat
+// `pace` and per-scene `cut` overrides where the author wants something else.
+export const DEFAULT_PACE: NonNullable<Beat['pace']> = 'normal';
+export const DEFAULT_CUT: NonNullable<Scene['cut']> = 'dissolve';
 
 // Words-per-second fallback so the film has sane timing before TTS has run
 // (keeps `remotion studio` usable on a fresh checkout).
@@ -733,14 +726,13 @@ export type Timeline = {
 export const buildTimeline = (film: FilmSpec): Timeline => {
   const fps = film.meta.fps;
   const lead = Math.round(LEAD * fps);
-  const reg = registerDefaults(film.meta.register);
 
   const scenes: TimedScene[] = film.scenes.map((scene, index) => {
     let cursor = lead;
     const beats: TimedBeat[] = scene.beats.map((b, i) => {
       const m = manifest[`${film.meta.id}/${b.id}`];
       const seconds = m ? m.seconds : estimateSeconds(b.narration);
-      const durationInFrames = Math.round((seconds + TAIL * PACE[b.pace ?? reg.pace]) * fps);
+      const durationInFrames = Math.round((seconds + TAIL * PACE[b.pace ?? DEFAULT_PACE]) * fps);
       const tb: TimedBeat = {
         ...b,
         index: i,
@@ -759,7 +751,7 @@ export const buildTimeline = (film: FilmSpec): Timeline => {
   // transition's overlap (not a flat TRANSITION) so the film length is exact.
   const transitionTotal = scenes
     .slice(0, -1)
-    .reduce((a, s) => a + cutFrames(s.scene.cut ?? reg.cut), 0);
+    .reduce((a, s) => a + cutFrames(s.scene.cut ?? DEFAULT_CUT), 0);
   const total =
     scenes.reduce((a, s) => a + s.durationInFrames, 0) - transitionTotal;
 

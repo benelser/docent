@@ -8,14 +8,12 @@
     "fps": 30,
     "width": 1920,
     "height": 1080,
-    "voice": "af_heart",
-    "register": "calm"
+    "voice": "af_heart"
   },
   "scenes": [
     {
       "id": "s-frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "TEXT STRESS // NARRATIVE",
       "title": "A Frame Title Long Enough To Force The Renderer's Tiered Auto-Shrink Down Three Steps Before The Word \"Renderer\" Reaches The Right Edge Of The Safe Band",
       "tagline": "The taglines a real explainer carries are often longer than the slide-ware designer's original Lorem Ipsum — a sentence that names the misconception the film must kill, plus a clause that names what survives the kill. This fixture's tagline is exactly that shape, two hundred and ninety characters long, and the renderer wraps it to four lines at a comfortable size rather than letting it overrun the column or bleed past the title above.",
@@ -36,7 +34,6 @@
     {
       "id": "s-passage",
       "type": "passage",
-      "accent": "amber",
       "kicker": "TEXT STRESS // PASSAGE — A SHORT PRIMARY SOURCE WITH ANNOTATIONS THAT ARE LONG SENTENCES, NOT TWO-WORD POSTILS",
       "heading": "passage scene — the artifact is short, the marks are full sentences, and the annotation column has to host them inside its width",
       "text": "Whose woods these are I think I know.\nHis house is in the village though;\nHe will not see me stopping here\nTo watch his woods fill up with snow.",
@@ -56,13 +53,19 @@
         {
           "id": "passage-1",
           "narration": "The two marks each carry an annotation that is a full sentence — far longer than a typical postil. The annotation column wraps and shrinks rather than truncating mid-thought.",
-          "reveal": ["mk1"]
+          "reveal": [
+            "mk1"
+          ]
         },
         {
           "id": "passage-2",
           "narration": "On the second mark the eye lands on the image the poem will return to.",
-          "reveal": ["mk2"],
-          "focus": ["mk2"],
+          "reveal": [
+            "mk2"
+          ],
+          "focus": [
+            "mk2"
+          ],
           "pace": "hold"
         }
       ]
@@ -70,7 +73,6 @@
     {
       "id": "s-closeup",
       "type": "closeup",
-      "accent": "violet",
       "kicker": "TEXT STRESS // CLOSEUP — FILE PATH LONG ENOUGH TO TEST THE WINDOW CHROME AND A FULL-SENTENCE BEAT NOTE",
       "heading": "closeup scene — the file path stretches the window chrome and the per-beat note carries a full claim, not a fragment",
       "file": "packages/engine/src/components/very-long-path-to-the-actual-file-the-closeup-scene-is-arguing-from/and-yet-another-segment/FittedText.tsx",
@@ -80,13 +82,19 @@
         {
           "id": "closeup-1",
           "narration": "The file path is long enough that the window chrome has to shrink it; the code body shows the API the rest of the fixture has been calling all the way through.",
-          "highlight": [1, 4],
+          "highlight": [
+            1,
+            4
+          ],
           "note": "The annotation note pinned beneath the window is also a full sentence — it should auto-shrink, wrap to a couple of lines, and never bleed past the window's bottom edge into the wordmark band."
         },
         {
           "id": "closeup-2",
           "narration": "The full shape of the props — the contract the helper exposes — is a slot description, not a free-form configuration.",
-          "highlight": [3, 12],
+          "highlight": [
+            3,
+            12
+          ],
           "note": "Mode is the strategy chooser; maxLines bounds the wrap; floorPx bounds the shrink. Together they make the failure mode predictable, which is the property the depth-review eye needs to confirm."
         }
       ]
@@ -94,30 +102,36 @@
     {
       "id": "s-tension",
       "type": "tension",
-      "accent": "amber",
       "kicker": "TEXT STRESS // TENSION — THE TRADE-OFF THE NARRATIVE FIXTURE HAS TO NAME",
       "heading": "tension scene — what the long-text strategy gives up in exchange for what it guarantees",
       "cut": "hold",
-      "grid": {"cols": 3, "rows": 2},
+      "grid": {
+        "cols": 3,
+        "rows": 2
+      },
       "nodes": [
         {
           "id": "c1",
           "label": "A documented floor and a bounded line count over a clean ellipsis fallback",
           "sub": "We chose the predictable failure mode — every slot's worst case is documented, and a depth-review eye can audit it at a glance without running anything.",
-          "col": 0, "row": 0, "accent": "green"
+          "col": 0,
+          "row": 0,
+          "accent": "green"
         },
         {
           "id": "r1",
           "label": "Optimizing for the typical case with a generous floor and no documented ceiling",
           "sub": "Rejected — the worst case becomes invisible: a short label looks fine, but a long label in a film a year from now blows past the column without any signal.",
-          "col": 2, "row": 0,
+          "col": 2,
+          "row": 0,
           "kind": "rejected"
         },
         {
           "id": "k1",
           "label": "The readability floor is documented per-slot but not validated end-to-end against narration speed",
           "sub": "A 12-px floor that reads cleanly at 1920×1080 may not read at 1280×720, and the contract does not yet bind floors to render scale.",
-          "col": 1, "row": 1,
+          "col": 1,
+          "row": 1,
           "kind": "risk"
         }
       ],
@@ -126,13 +140,20 @@
         {
           "id": "tension-1",
           "narration": "We chose the predictable failure mode over the prettier typical case. The bill is that a corner case never looks great — it shrinks visibly or truncates with an ellipsis — instead of working until it doesn't.",
-          "reveal": ["c1", "r1"]
+          "reveal": [
+            "c1",
+            "r1"
+          ]
         },
         {
           "id": "tension-2",
           "narration": "The residual risk is that the floor is hand-tuned per slot rather than validated against narration speed. A read-it-once-and-move-on cadence might tolerate a different floor than a hold-and-savour one.",
-          "reveal": ["k1"],
-          "focus": ["k1"],
+          "reveal": [
+            "k1"
+          ],
+          "focus": [
+            "k1"
+          ],
           "pace": "hold"
         }
       ]
@@ -140,7 +161,6 @@
     {
       "id": "s-big-idea",
       "type": "big-idea",
-      "accent": "cyan",
       "kicker": "TEXT STRESS // BIG-IDEA — THE TAKEAWAY",
       "heading": "big-idea scene — one sentence the viewer should leave with",
       "statement": "Bound the slot, document the floor, fail predictably.",
@@ -160,7 +180,6 @@
     {
       "id": "s-recap",
       "type": "recap",
-      "accent": "green",
       "kicker": "TEXT STRESS // RECAP — THE BULLETS",
       "heading": "recap scene — bullets long enough that the wrap-and-shrink path is the one the renderer takes for each",
       "points": [
@@ -177,5 +196,8 @@
         }
       ]
     }
-  ]
+  ],
+  "style": {
+    "preset": "neutral"
+  }
 }

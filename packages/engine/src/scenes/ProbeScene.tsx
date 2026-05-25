@@ -30,7 +30,7 @@ export const ProbeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const scene = ts.scene;
   // `palette` (a scene knob) re-selects the chrome accent over its family;
   // without a palette this is exactly `accent(scene.accent)`.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const baseline = scene.baseline;
   const variations = scene.variations ?? [];
 
@@ -124,7 +124,7 @@ export const ProbeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
-      glowScale={paletteGlowScale(scene.palette)}
+      glowScale={paletteGlowScale(undefined)}
     >
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
         <div style={{width: rowW, display: 'flex', flexDirection: 'column', gap: 18}}>

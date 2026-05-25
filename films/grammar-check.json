@@ -14,7 +14,6 @@
     {
       "id": "s-frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "GRAMMAR // 01",
       "title": "The scene grammar",
       "tagline": "Eleven ways to explain anything",
@@ -35,7 +34,6 @@
     {
       "id": "s-structure",
       "type": "structure",
-      "accent": "cyan",
       "kicker": "GRAMMAR // 02",
       "heading": "structure — how the parts relate",
       "grid": {
@@ -108,7 +106,6 @@
     {
       "id": "s-progression",
       "type": "progression",
-      "accent": "violet",
       "kicker": "GRAMMAR // 03",
       "heading": "progression — stages along a path",
       "flow": "linear",
@@ -151,7 +148,6 @@
     {
       "id": "s-walkthrough",
       "type": "walkthrough",
-      "accent": "green",
       "kicker": "GRAMMAR // 04",
       "heading": "walkthrough — one instance, step by step",
       "actors": [
@@ -207,7 +203,6 @@
     {
       "id": "s-compare",
       "type": "compare",
-      "accent": "amber",
       "kicker": "GRAMMAR // 05",
       "heading": "compare — options side by side",
       "columns": [
@@ -277,7 +272,6 @@
     {
       "id": "s-quantities",
       "type": "quantities",
-      "accent": "cyan",
       "kicker": "GRAMMAR // 06",
       "heading": "quantities — the numbers",
       "metrics": [
@@ -335,7 +329,6 @@
     {
       "id": "s-probe",
       "type": "probe",
-      "accent": "rose",
       "kicker": "GRAMMAR // 07",
       "heading": "probe — vary one input",
       "baseline": {
@@ -381,7 +374,6 @@
     {
       "id": "s-tension",
       "type": "tension",
-      "accent": "amber",
       "kicker": "GRAMMAR // 08",
       "heading": "tension — the trade-off",
       "cut": "hold",
@@ -442,7 +434,6 @@
     {
       "id": "s-closeup",
       "type": "closeup",
-      "accent": "blue",
       "kicker": "GRAMMAR // 09",
       "heading": "closeup — annotate one artifact",
       "file": "packages/engine/src/engine/spec.ts",
@@ -470,7 +461,6 @@
     {
       "id": "s-demonstrate",
       "type": "demonstrate",
-      "accent": "violet",
       "kicker": "GRAMMAR // 10",
       "heading": "demonstrate — show the phenomenon",
       "beats": [
@@ -484,7 +474,6 @@
     {
       "id": "s-recap",
       "type": "recap",
-      "accent": "green",
       "kicker": "GRAMMAR // 11",
       "heading": "recap — the takeaway",
       "points": [
@@ -510,7 +499,6 @@
     {
       "id": "s-diff",
       "type": "diff",
-      "accent": "rose",
       "kicker": "GRAMMAR // 12",
       "heading": "diff — what changed (a PR dialect)",
       "file": "packages/engine/src/engine/spec.ts",
@@ -538,7 +526,6 @@
     {
       "id": "s-chart",
       "type": "chart",
-      "accent": "cyan",
       "kicker": "GRAMMAR // 13",
       "heading": "chart — plot the data",
       "xAxis": {
@@ -599,7 +586,6 @@
     {
       "id": "s-passage",
       "type": "passage",
-      "accent": "amber",
       "kicker": "GRAMMAR // 14",
       "heading": "passage — annotate a text",
       "text": "Content is data; the engine is the typesetter.\nThe author chooses the move — and the move is never a pixel.",
@@ -639,7 +625,6 @@
     {
       "id": "s-figure",
       "type": "figure",
-      "accent": "violet",
       "kicker": "GRAMMAR // 15",
       "heading": "figure — annotate an image",
       "image": "figures/grammar-check/plate.png",
@@ -679,5 +664,8 @@
         }
       ]
     }
-  ]
+  ],
+  "style": {
+    "preset": "neutral"
+  }
 }

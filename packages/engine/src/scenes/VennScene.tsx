@@ -93,7 +93,7 @@ export const VennScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const {fps} = useVideoConfig();
   const scene = ts.scene;
   const {ink} = style.tokens;
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const sets = scene.sets ?? [];
   // VennScene reads its OWN regions variant — VennRegion (with `in`). The
   // spec union (MapRegion[] | VennRegion[]) is widened on Scene so the same
@@ -106,9 +106,10 @@ export const VennScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // spec that passes the contract.
   const novelty: VennNovelty | undefined =
     scene.novelty?.kind === 'venn' ? scene.novelty : undefined;
-  const treatment = scene.treatment;
-  const isLight = treatment === 'whiteboard';
-  const isSketch = treatment === 'sketch';
+  // v2.4.0 — `treatment` is no longer authored. Venn renders in its
+  // default skin (no sketch/whiteboard). Branches stay; flags pinned false.
+  const isLight = false;
+  const isSketch = false;
 
   // 2 or 3 sets — validator enforces this; clamp defensively.
   const setCount: 2 | 3 = sets.length >= 3 ? 3 : 2;
@@ -506,7 +507,7 @@ export const VennScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
-      glowScale={paletteGlowScale(scene.palette)}
+      glowScale={paletteGlowScale(undefined)}
     >
       {body}
       <Narration style={style} beats={ts.beats} />

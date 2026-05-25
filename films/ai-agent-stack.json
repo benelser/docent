@@ -8,28 +8,37 @@
     "fps": 30,
     "width": 1920,
     "height": 1080,
-    "voice": "af_heart",
-    "register": "calm"
+    "voice": "af_heart"
   },
   "scenes": [
     {
       "id": "frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "DOCENT // EXPLAINER",
       "title": "The Modern AI Agent Stack",
       "tagline": "An agent is not a model; it is a hierarchy whose levels constrain each other",
       "footnote": "Surveyed against Anthropic's Building Effective Agents (2024) and the LangChain / OpenAI agent guides",
       "beats": [
-        {"id": "stk-frame-1", "narration": "The phrase agent gets used as if it named one thing. The literature actually names four, stacked in a hierarchy where each level constrains the next.", "show": "title"},
-        {"id": "stk-frame-2", "narration": "The misconception this film must kill is the flat one: that an agent is a model with a tool wrapper. The model is the floor. Three more layers sit between it and the user.", "show": "tagline"},
-        {"id": "stk-frame-3", "narration": "We will name the four layers, then push on the hierarchy: does depth really carry engineering, or could the same agent be built with the levels collapsed?", "show": "footnote"}
+        {
+          "id": "stk-frame-1",
+          "narration": "The phrase agent gets used as if it named one thing. The literature actually names four, stacked in a hierarchy where each level constrains the next.",
+          "show": "title"
+        },
+        {
+          "id": "stk-frame-2",
+          "narration": "The misconception this film must kill is the flat one: that an agent is a model with a tool wrapper. The model is the floor. Three more layers sit between it and the user.",
+          "show": "tagline"
+        },
+        {
+          "id": "stk-frame-3",
+          "narration": "We will name the four layers, then push on the hierarchy: does depth really carry engineering, or could the same agent be built with the levels collapsed?",
+          "show": "footnote"
+        }
       ]
     },
     {
       "id": "stack",
       "type": "tree",
-      "accent": "cyan",
       "kicker": "01 // THE FOUR LEVELS",
       "heading": "Each level decides what the level above is allowed to ask",
       "orientation": "vertical",
@@ -51,9 +60,24 @@
                 "sub": "what actions the agent may take",
                 "accent": "green",
                 "children": [
-                  {"id": "model-llm", "label": "Language model", "sub": "generates the next token", "accent": "amber"},
-                  {"id": "model-emb", "label": "Embedding model", "sub": "finds nearby memories", "accent": "amber"},
-                  {"id": "model-rer", "label": "Reranker", "sub": "scores retrieved chunks", "accent": "amber"}
+                  {
+                    "id": "model-llm",
+                    "label": "Language model",
+                    "sub": "generates the next token",
+                    "accent": "amber"
+                  },
+                  {
+                    "id": "model-emb",
+                    "label": "Embedding model",
+                    "sub": "finds nearby memories",
+                    "accent": "amber"
+                  },
+                  {
+                    "id": "model-rer",
+                    "label": "Reranker",
+                    "sub": "scores retrieved chunks",
+                    "accent": "amber"
+                  }
                 ]
               }
             ]
@@ -61,16 +85,57 @@
         ]
       },
       "beats": [
-        {"id": "stk-stack-1", "narration": "Start at the bottom. The model layer is plural: at least one language model, usually an embedding model for memory, often a reranker. None of these are agents. They produce tokens, vectors, and scores.", "reveal": ["model-llm", "model-emb", "model-rer"], "focus": ["model-llm", "model-emb", "model-rer"]},
-        {"id": "stk-stack-2", "narration": "The toolset wraps the models in a runtime. It defines which actions exist, which arguments are typed, which are sandboxed. The toolset is where capability becomes auditable.", "reveal": ["tools"], "focus": ["tools"]},
-        {"id": "stk-stack-3", "narration": "The orchestrator is the control flow. It runs the loop: plan, call, observe, decide whether to continue or stop. It owns retries, timeouts, and the budget. This is the layer most people mean when they say agent.", "reveal": ["orch"], "focus": ["orch"]},
-        {"id": "stk-stack-4", "narration": "And the application is the task itself, phrased in the user's vocabulary. It picks an orchestrator, gives it a goal, and reads back the result. The user does not see the levels beneath.", "reveal": ["app"], "focus": ["app"], "pace": "hold", "shot": "push"}
+        {
+          "id": "stk-stack-1",
+          "narration": "Start at the bottom. The model layer is plural: at least one language model, usually an embedding model for memory, often a reranker. None of these are agents. They produce tokens, vectors, and scores.",
+          "reveal": [
+            "model-llm",
+            "model-emb",
+            "model-rer"
+          ],
+          "focus": [
+            "model-llm",
+            "model-emb",
+            "model-rer"
+          ]
+        },
+        {
+          "id": "stk-stack-2",
+          "narration": "The toolset wraps the models in a runtime. It defines which actions exist, which arguments are typed, which are sandboxed. The toolset is where capability becomes auditable.",
+          "reveal": [
+            "tools"
+          ],
+          "focus": [
+            "tools"
+          ]
+        },
+        {
+          "id": "stk-stack-3",
+          "narration": "The orchestrator is the control flow. It runs the loop: plan, call, observe, decide whether to continue or stop. It owns retries, timeouts, and the budget. This is the layer most people mean when they say agent.",
+          "reveal": [
+            "orch"
+          ],
+          "focus": [
+            "orch"
+          ]
+        },
+        {
+          "id": "stk-stack-4",
+          "narration": "And the application is the task itself, phrased in the user's vocabulary. It picks an orchestrator, gives it a goal, and reads back the result. The user does not see the levels beneath.",
+          "reveal": [
+            "app"
+          ],
+          "focus": [
+            "app"
+          ],
+          "pace": "hold",
+          "shot": "push"
+        }
       ]
     },
     {
       "id": "constrain",
       "type": "tree",
-      "accent": "amber",
       "kicker": "02 // THE CONSTRAINT FLOWS UP",
       "heading": "A level cannot ask for what the level below does not expose",
       "orientation": "vertical",
@@ -92,60 +157,193 @@
                 "sub": "exposes: search, price, book, cancel",
                 "accent": "green",
                 "children": [
-                  {"id": "c-llm", "label": "Language model", "sub": "returns: a typed action call", "accent": "amber"}
+                  {
+                    "id": "c-llm",
+                    "label": "Language model",
+                    "sub": "returns: a typed action call",
+                    "accent": "amber"
+                  }
                 ]
               },
-              {"id": "c-mem", "label": "Memory store", "sub": "what the loop remembers turn to turn", "accent": "violet"},
-              {"id": "c-trace", "label": "Trace / log", "sub": "what got tried; the audit surface", "accent": "rose"}
+              {
+                "id": "c-mem",
+                "label": "Memory store",
+                "sub": "what the loop remembers turn to turn",
+                "accent": "violet"
+              },
+              {
+                "id": "c-trace",
+                "label": "Trace / log",
+                "sub": "what got tried; the audit surface",
+                "accent": "rose"
+              }
             ]
           }
         ]
       },
       "beats": [
-        {"id": "stk-constrain-1", "narration": "Now the hierarchy starts paying. A language model can return any string. But the toolset narrows that infinite output space to a small set of typed function calls.", "reveal": ["c-llm", "c-tools"], "focus": ["c-llm", "c-tools"]},
-        {"id": "stk-constrain-2", "narration": "The orchestrator narrows it further. It owns three things at once: the tool sequence, the memory of what was tried, and the trace that proves what happened. Those three siblings are why the orchestrator is a layer at all.", "reveal": ["c-orch", "c-mem", "c-trace"], "focus": ["c-orch", "c-mem", "c-trace"]},
-        {"id": "stk-constrain-3", "narration": "And the application narrows it most of all. The user asked for one flight under 400 dollars. The application keeps that frame, no matter what the lower levels improvise. The constraint flows up the tree, never down.", "reveal": ["c-app"], "focus": ["c-app", "c-orch"], "pace": "hold"}
+        {
+          "id": "stk-constrain-1",
+          "narration": "Now the hierarchy starts paying. A language model can return any string. But the toolset narrows that infinite output space to a small set of typed function calls.",
+          "reveal": [
+            "c-llm",
+            "c-tools"
+          ],
+          "focus": [
+            "c-llm",
+            "c-tools"
+          ]
+        },
+        {
+          "id": "stk-constrain-2",
+          "narration": "The orchestrator narrows it further. It owns three things at once: the tool sequence, the memory of what was tried, and the trace that proves what happened. Those three siblings are why the orchestrator is a layer at all.",
+          "reveal": [
+            "c-orch",
+            "c-mem",
+            "c-trace"
+          ],
+          "focus": [
+            "c-orch",
+            "c-mem",
+            "c-trace"
+          ]
+        },
+        {
+          "id": "stk-constrain-3",
+          "narration": "And the application narrows it most of all. The user asked for one flight under 400 dollars. The application keeps that frame, no matter what the lower levels improvise. The constraint flows up the tree, never down.",
+          "reveal": [
+            "c-app"
+          ],
+          "focus": [
+            "c-app",
+            "c-orch"
+          ],
+          "pace": "hold"
+        }
       ]
     },
     {
       "id": "collapse",
       "type": "tension",
-      "accent": "rose",
       "kicker": "03 // PUSH ON IT",
       "heading": "Why not collapse the levels?",
-      "grid": {"cols": 3, "rows": 2},
+      "grid": {
+        "cols": 3,
+        "rows": 2
+      },
       "nodes": [
-        {"id": "tx-keep", "label": "Keep four layers", "sub": "model · tools · orchestrator · app — auditable, swappable, slow", "col": 0, "row": 0, "accent": "green", "weight": "hero"},
-        {"id": "tx-collapse", "label": "Collapse to model + prompt", "sub": "skip the tree — let the LLM do it all", "col": 2, "row": 0, "accent": "rose", "kind": "rejected"},
-        {"id": "tx-risk-cost", "label": "Cost of the tree: latency", "sub": "each level adds at least one round-trip; agents become slower than direct calls", "col": 0, "row": 1, "accent": "amber", "kind": "risk"},
-        {"id": "tx-risk-audit", "label": "Cost of collapsing: no audit", "sub": "a prompt-only agent has no typed action surface; you cannot tell what it tried", "col": 2, "row": 1, "accent": "amber", "kind": "risk"}
+        {
+          "id": "tx-keep",
+          "label": "Keep four layers",
+          "sub": "model · tools · orchestrator · app — auditable, swappable, slow",
+          "col": 0,
+          "row": 0,
+          "accent": "green",
+          "weight": "hero"
+        },
+        {
+          "id": "tx-collapse",
+          "label": "Collapse to model + prompt",
+          "sub": "skip the tree — let the LLM do it all",
+          "col": 2,
+          "row": 0,
+          "accent": "rose",
+          "kind": "rejected"
+        },
+        {
+          "id": "tx-risk-cost",
+          "label": "Cost of the tree: latency",
+          "sub": "each level adds at least one round-trip; agents become slower than direct calls",
+          "col": 0,
+          "row": 1,
+          "accent": "amber",
+          "kind": "risk"
+        },
+        {
+          "id": "tx-risk-audit",
+          "label": "Cost of collapsing: no audit",
+          "sub": "a prompt-only agent has no typed action surface; you cannot tell what it tried",
+          "col": 2,
+          "row": 1,
+          "accent": "amber",
+          "kind": "risk"
+        }
       ],
       "edges": [
-        {"id": "e-tx", "from": "tx-keep", "to": "tx-collapse", "kind": "relation", "label": "vs"}
+        {
+          "id": "e-tx",
+          "from": "tx-keep",
+          "to": "tx-collapse",
+          "kind": "relation",
+          "label": "vs"
+        }
       ],
       "beats": [
-        {"id": "stk-collapse-1", "narration": "So is the tree just architecture astronomy? Could we collapse the levels and let one big model do everything in a prompt?", "reveal": ["tx-keep", "tx-collapse"], "focus": ["tx-collapse"]},
-        {"id": "stk-collapse-2", "narration": "Sometimes yes. For a single deterministic task, the four-layer agent is slower than a direct model call, because each level adds at least one round-trip. The internal benchmarks Anthropic published show agent loops at roughly two to ten times the latency of one-shot prompts.", "reveal": ["tx-risk-cost"], "focus": ["tx-risk-cost"]},
-        {"id": "stk-collapse-3", "narration": "But for any task you have to audit, repeat, or recover, you pay the cost of collapsing in a different currency. A prompt-only agent has no typed action surface. When it fails, you cannot tell what it tried. The hierarchy buys you debuggability — that is the trade-off the field made deliberately.", "reveal": ["tx-risk-audit"], "focus": ["tx-keep", "tx-risk-audit"], "pace": "hold"}
+        {
+          "id": "stk-collapse-1",
+          "narration": "So is the tree just architecture astronomy? Could we collapse the levels and let one big model do everything in a prompt?",
+          "reveal": [
+            "tx-keep",
+            "tx-collapse"
+          ],
+          "focus": [
+            "tx-collapse"
+          ]
+        },
+        {
+          "id": "stk-collapse-2",
+          "narration": "Sometimes yes. For a single deterministic task, the four-layer agent is slower than a direct model call, because each level adds at least one round-trip. The internal benchmarks Anthropic published show agent loops at roughly two to ten times the latency of one-shot prompts.",
+          "reveal": [
+            "tx-risk-cost"
+          ],
+          "focus": [
+            "tx-risk-cost"
+          ]
+        },
+        {
+          "id": "stk-collapse-3",
+          "narration": "But for any task you have to audit, repeat, or recover, you pay the cost of collapsing in a different currency. A prompt-only agent has no typed action surface. When it fails, you cannot tell what it tried. The hierarchy buys you debuggability — that is the trade-off the field made deliberately.",
+          "reveal": [
+            "tx-risk-audit"
+          ],
+          "focus": [
+            "tx-keep",
+            "tx-risk-audit"
+          ],
+          "pace": "hold"
+        }
       ]
     },
     {
       "id": "big-idea",
       "type": "big-idea",
-      "accent": "violet",
       "kicker": "// THE TAKEAWAY",
       "heading": "The hierarchy is the engineering",
       "statement": "An agent is the tree that makes a model's output auditable as a typed action.",
-      "anchor": {"kind": "glyph", "value": "⇡"},
+      "anchor": {
+        "kind": "glyph",
+        "value": "⇡"
+      },
       "beats": [
-        {"id": "stk-bigidea-1", "narration": "If you take one thing from this: an agent is not a model with a tool wrapper. It is the tree above the model — the levels are what turn an arbitrary string into a typed, audited action.", "reveal": 1},
-        {"id": "stk-bigidea-2", "narration": "The upward arrow is the load-bearing direction: constraint flows up the tree. Each level decides what the level above is allowed to ask.", "focus": ["anchor"], "pace": "hold", "shot": "push"}
+        {
+          "id": "stk-bigidea-1",
+          "narration": "If you take one thing from this: an agent is not a model with a tool wrapper. It is the tree above the model — the levels are what turn an arbitrary string into a typed, audited action.",
+          "reveal": 1
+        },
+        {
+          "id": "stk-bigidea-2",
+          "narration": "The upward arrow is the load-bearing direction: constraint flows up the tree. Each level decides what the level above is allowed to ask.",
+          "focus": [
+            "anchor"
+          ],
+          "pace": "hold",
+          "shot": "push"
+        }
       ]
     },
     {
       "id": "recap",
       "type": "recap",
-      "accent": "blue",
       "kicker": "// VERDICT",
       "heading": "What to carry forward",
       "points": [
@@ -154,10 +352,26 @@
         "The skepticism to carry — when a vendor calls something an agent, ask which level they mean. The word covers four very different objects, and the engineering decisions sit at different layers."
       ],
       "beats": [
-        {"id": "stk-recap-1", "narration": "The disposition. The four-layer hierarchy is sound for any agent you have to audit. For a one-shot task, calling the four-layer pattern an agent overstates the architecture.", "reveal": 1},
-        {"id": "stk-recap-2", "narration": "The single biggest weak point is the boundary between orchestrator and toolset. In practice, every framework lets the orchestrator invent tools at runtime, which means two of the four levels collapse on contact.", "reveal": 2},
-        {"id": "stk-recap-3", "narration": "And the skepticism to carry forward: when someone calls a thing an agent, ask which level they mean. The word covers four objects, and the work sits at different layers depending on which.", "reveal": 3, "pace": "hold"}
+        {
+          "id": "stk-recap-1",
+          "narration": "The disposition. The four-layer hierarchy is sound for any agent you have to audit. For a one-shot task, calling the four-layer pattern an agent overstates the architecture.",
+          "reveal": 1
+        },
+        {
+          "id": "stk-recap-2",
+          "narration": "The single biggest weak point is the boundary between orchestrator and toolset. In practice, every framework lets the orchestrator invent tools at runtime, which means two of the four levels collapse on contact.",
+          "reveal": 2
+        },
+        {
+          "id": "stk-recap-3",
+          "narration": "And the skepticism to carry forward: when someone calls a thing an agent, ask which level they mean. The word covers four objects, and the work sits at different layers depending on which.",
+          "reveal": 3,
+          "pace": "hold"
+        }
       ]
     }
-  ]
+  ],
+  "style": {
+    "preset": "neutral"
+  }
 }

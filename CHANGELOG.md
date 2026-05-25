@@ -6,6 +6,98 @@ The engine version reflects what the grammar covers — minor bumps add or
 remove primitives or contracts, patch bumps fix renderers or tooling.
 
 
+## v2.4.0 — legacy knob removal: the migration cliff that v2.2 actually owed
+
+> v2.2.0's release notes promised "Removed (migration cliff)" but only
+> rewired the renderers — the `palette`, `treatment`, `accent`, and
+> `register` fields kept living on `Scene` and `Meta` as ignored cruft.
+> Every gallery film still set them. v2.4.0 closes the loop: the fields
+> are gone from the type, gone from the schema, hard-fail at the
+> validator, and stripped from every film. The styling pipeline
+> (`FilmSpec.style: {preset, intent}`) is now the only authoring surface
+> for visual register.
+
+### Removed (migration cliff)
+
+- **`Scene.palette`** — `'cool' | 'warm' | 'signal' | 'mono'`. Removed from
+  `spec.ts`, removed from `schema/film.schema.json`, stripped from every
+  film under `films/`. The `paletteSceneHex` / `paletteAccentKey` /
+  `paletteGlowScale` helpers in `engine/knobs.ts` survive with their
+  signatures intact (they now take `PaletteName | undefined` instead of
+  `Scene['palette']`); every renderer callsite now passes `undefined`.
+- **`Scene.treatment`** — `'crisp' | 'sketch' | 'whiteboard'`. Removed from
+  spec, schema, films. The cross-treatment skin swap (structure-as-sketch,
+  tension-as-whiteboard) retired with the knob: `Film.tsx` now welds
+  `tension → TensionScene` and `structure → StructureScene` by type. The
+  in-renderer branches in `BigIdeaScene`, `LandscapeScene`, `TimelineScene`,
+  `VennScene`, `TensionScene` that read `scene.treatment` are pinned to
+  their default (`isWhiteboard = false`, `isSketch = false`) — the
+  branches stay so a future style-driven re-introduction does not
+  re-restructure the scenes.
+- **`Scene.accent`** — the per-scene accent KEY into the resolved-style
+  accent table. Removed from spec, schema, films. Every renderer that used
+  to call `accentOf(style, scene.accent)` now calls `accentOf(style,
+  undefined)` and resolves to the universal default (`'blue'`, which every
+  preset defines). Per-element accent overrides (`Node.accent`,
+  `Stage.accent`, `LandscapeSubject.accent`, `Metric.accent`,
+  `Series.accent`, `TreeNode.accent`) are unchanged — those are the
+  legitimate way for an author to highlight one element against the
+  preset's defaults.
+- **`Meta.register`** — `'grave' | 'neutral' | 'calm' | 'urgent' |
+  'playful'`. Removed from spec, schema, films. The film-mood-to-pace/cut
+  mapping (`registerDefaults`) is gone; `DEFAULT_PACE = 'normal'` and
+  `DEFAULT_CUT = 'dissolve'` are the new global defaults, overridable per
+  beat (`Beat.pace`) and per scene (`Scene.cut`). Mood is now part of
+  `FilmSpec.style.intent.tone`.
+
+### Validator — a single hard-fail rule
+
+- The four old per-knob enum checks in `cli/validate.ts` collapse into one
+  rule that emits a structured migration message when any spec carries
+  one of the removed fields:
+
+  ```
+  scenes[i].palette: removed in v2.4. Use FilmSpec.style {preset, intent}
+  — see packages/engine/src/style/ and `docent style list`.
+  ```
+
+  The renderer-side ignored these fields end-to-end after v2.2.0; this
+  rule prevents them from being authored going forward.
+
+### Migrated films (19/19)
+
+The full gallery now ships with no legacy knobs. `scripts/migrate-films.ts`
+extended to preserve existing `style` blocks (the four README films had
+already committed to presets in v2.2.0) and to strip `meta.register`.
+Per-film preset commitments (heuristic, then manually reviewed):
+
+- `arxiv-2512-14806`, `docent-self`, `lethal-trifecta-blog`,
+  `openclaw-ar` — existing preset preserved (paper / engineering /
+  editorial / engineering).
+- `euclid-primes` → `paper` (mathematical proof in explainer mode).
+- `linear-algebra` → `paper` (mathematical primitives explainer).
+- `stopping-by-woods` → `editorial` (lyric poem close-reading).
+- `kubernetes-pr` → `engineering` (PR review on a Go codebase).
+- `ai-lab-race` → `editorial` (warm palette mapped through the migrator).
+- `causal-loop-primer`, `docent-landscape`, `thermostat` → `analytical`
+  (sketch register mapped to the math/proof preset).
+- Remaining 7 films → `neutral` (no legacy knobs to anchor a different
+  choice; the migrator falls back to neutral, the byte-stable default).
+
+### Verified
+
+- `bunx tsc --noEmit` clean across `packages/engine`.
+- 19/19 films pass `validateSpec`.
+- Depthcheck unchanged on every film: the {ok, warn, fail, total}
+  tuple matches pre-migration exactly.
+- Hermetic gallery: 4/4 GREEN at `--scale 0.5` (linear-algebra,
+  kubernetes-pr, euclid-primes, stopping-by-woods).
+
+## v2.3.0 — Connector + truncateForSlot
+
+See git log `77b4604` for details — the Connector helper and
+`truncateForSlot` killed text-clobbering on edge labels.
+
 ## v2.2.0 — renderer migration: styling pipeline reaches the pixels
 
 > The styling pipeline shipped as inert infrastructure in v2.1.0. v2.2.0
@@ -51,6 +143,12 @@ the preset selections.
 - Text quality audit (FittedText helper + per-scene long-text strategies)
   — already complete on branch `text-quality-pass`, lands next as a
   focused merge.
+
+> NOTE (added in v2.4.0): the v2.2.0 release notes implied "legacy knob
+> removal" had landed, but only the renderer-side migration did. The
+> `Scene.palette`, `Scene.treatment`, `Scene.accent`, and `Meta.register`
+> fields kept living on the spec types as ignored cruft. v2.4.0 is the
+> actual removal — see its entry above.
 
 ## v2.1.1 — mechanism + venn + landscape, discriminator cleanup
 

@@ -8,14 +8,12 @@
     "fps": 30,
     "width": 1920,
     "height": 1080,
-    "voice": "af_heart",
-    "register": "calm"
+    "voice": "af_heart"
   },
   "scenes": [
     {
       "id": "frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "DOCENT // EXPLAINER",
       "title": "Euclid's Theorem",
       "tagline": "Primes do not run out because every finite list can be escaped",
@@ -41,7 +39,6 @@
     {
       "id": "escape",
       "type": "structure",
-      "accent": "cyan",
       "kicker": "01 // THE MOVE",
       "heading": "No finite list stays closed",
       "grid": {
@@ -250,7 +247,6 @@
     {
       "id": "cases",
       "type": "walkthrough",
-      "accent": "green",
       "kicker": "02 // THE BOUNDARY",
       "heading": "Why this proof is not a next-prime recipe",
       "actors": [
@@ -347,7 +343,6 @@
     {
       "id": "misread",
       "type": "compare",
-      "accent": "amber",
       "kicker": "03 // THE COMMON MISREAD",
       "heading": "What people retell versus what the page says",
       "columns": [
@@ -426,7 +421,6 @@
     {
       "id": "scale",
       "type": "quantities",
-      "accent": "violet",
       "kicker": "04 // HOW MUCH MORE",
       "heading": "Euclid proves existence; later theorems add location and density",
       "metrics": [
@@ -500,11 +494,9 @@
     {
       "id": "tension",
       "type": "tension",
-      "accent": "rose",
       "kicker": "05 // THE TRADE-OFF",
       "heading": "This proof chooses elegance over census power",
       "cut": "hold",
-      "treatment": "whiteboard",
       "grid": {
         "cols": 3,
         "rows": 3
@@ -600,7 +592,6 @@
     {
       "id": "recap",
       "type": "recap",
-      "accent": "blue",
       "kicker": "RECAP // THE VERDICT",
       "heading": "Euclid's theorem — an honest verdict",
       "points": [
@@ -639,5 +630,13 @@
         }
       ]
     }
-  ]
+  ],
+  "style": {
+    "preset": "paper",
+    "intent": {
+      "tone": "technical",
+      "audience": "technical"
+    },
+    "rationale": "Paper preset — a mathematical proof in explainer mode; the previous spec used treatment:whiteboard for the chalkboard skin, which v2.4 retires in favour of the paper preset's serif/marker register."
+  }
 }

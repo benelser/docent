@@ -47,8 +47,8 @@ export const MapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const {fps} = useVideoConfig();
   const scene = ts.scene;
   const {bg, ink} = style.tokens;
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
-  const glowScale = paletteGlowScale(scene.palette);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
+  const glowScale = paletteGlowScale(undefined);
   const layout: 'topology' | 'grid' = scene.layout ?? 'topology';
   // MapScene reads its OWN regions variant — MapRegion (with `pos`). The
   // spec union (MapRegion[] | VennRegion[]) is widened on Scene so the same

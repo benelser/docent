@@ -59,7 +59,7 @@ export const ChartScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const viz = style.visualization;
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
-  const accentHex = accentOf(scene.accent);
+  const accentHex = accentOf(undefined);
   // ChartScene reads its OWN axis variant — the numeric domain. Narrow the
   // widened `Axis | LandscapeAxis` via the `kind` discriminator; the
   // validator pins `kind === 'chart'` on every chart scene's axes.
