@@ -60,6 +60,25 @@ core before → after, what ripples, what could break, and a verdict.
    intent, rationale}` field. The depth-review judge fails the
    `style-committed` dimension if the spec ships without it.
 
+3b. **Commit to a scene set.** Same shape as the style commitment, one
+   layer down — the cognitive moves the film will make.
+
+   ```bash
+   bun packages/engine/cli/docent.ts scene-fit recommend <id>
+   ```
+
+   The recommender reads the survey and prints the top scene types with
+   rationales tying each to a specific survey finding. PR films almost
+   always include `diff` (the change) and `closeup` (the load-bearing
+   function annotated); `tension` is also load-bearing for the
+   trade-off. If the recommender returns `warningOnDefault: true`, the
+   survey collapsed to the default rut
+   (`frame`/`structure`/`compare`/`tension`/`recap`) — re-read the
+   triage and ask whether the load-bearing 5% actually wants
+   `mechanism`, `walkthrough`, `causal-loop`, `timeline`, or something
+   more specific. Pin the chosen scene set in the survey's
+   "Scene-set commitment" section.
+
 4. **Treatment.**
 
    ```bash

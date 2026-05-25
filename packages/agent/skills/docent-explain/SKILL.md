@@ -86,6 +86,28 @@ those only when the user explicitly wants to pause between stages.
    intent, rationale}` field. The depth-review judge will fail the
    `style-committed` dimension if the spec ships with the empty default.
 
+3b. **Commit to a scene set.** Same shape as the style commitment, one
+   layer down — the cognitive moves the film will make.
+
+   ```bash
+   bun packages/engine/cli/docent.ts scene-fit recommend <id>
+   ```
+
+   The recommender reads the survey and prints the top scene types
+   with rationales tying each to a specific survey finding. Explainer
+   films vary the most by subject — a `passage` for prose, a
+   `causal-loop` for a feedback dynamic, a `landscape` for a
+   trade-off plane, a `venn` for a set-intersection argument, a
+   `mechanism` for a working motion, an `epigraph` + `objection` for
+   a contested topic. If the recommender returns
+   `warningOnDefault: true`, the survey collapsed to the suspected
+   rut (`frame`/`structure`/`compare`/`tension`/`recap`) — re-read
+   the survey and ask whether the load-bearing idea is genuinely
+   about *components × trade-offs* or about something more specific.
+   The fix is almost always in the survey (a missing finding), not
+   the spec. Pin the chosen scene set in the survey's
+   "Scene-set commitment" section.
+
 4. **Treatment.**
 
    ```bash

@@ -121,6 +121,51 @@ The depth-review judge scores `style-committed` on the rendered spec: a film
 that ships with `style: {preset: "neutral"}` or no style block at all (and
 the survey could have named a better fit) fails this dimension.
 
+## § 2.6 Scene-set commitment  *(mandatory)*
+
+Before authoring the spec, commit to a **scene set** — the cognitive moves
+the film will make. Without this step, the agent reflex-defaults to the
+suspected rut (`frame` → `structure` → `compare` → `tension` → `recap`) on
+every film, regardless of whether the subject actually demands those
+primitives. Most non-code subjects want something else: a `passage` for
+prose, a `causal-loop` for a feedback dynamic, a `landscape` for a
+trade-off plane, an `epigraph` + `objection` for a contested topic.
+
+**Run the recommender** (rule-based; not an LLM call):
+
+```bash
+bun packages/engine/cli/docent.ts scene-fit recommend <id>
+```
+
+It reads this survey file (`analysis/<id>.md`), scores every cognitive
+signal it finds in the body against the 29-scene grammar, and prints the
+top scene types with one-line rationales tying each to a specific survey
+finding. If the recommender returns `warningOnDefault: true`, the survey
+collapsed to the default rut — re-read the survey and ask whether you
+actually surfaced the signals that would pull `causal-loop`, `landscape`,
+`timeline`, `tree`, `map`, `journey-map`, `venn`, `mechanism`, `passage`,
+`figure`, `probe`, `epigraph`, `concession`, `objection`, or `provocation`
+into the recommendation. The fix is almost always in the survey itself
+(a missing finding, vague language about "stages" or "components" instead
+of the specific cognitive move), not in the spec.
+
+**Pin the commitment.** Write the chosen scene set (in author order) plus
+a ONE-LINE rationale per scene. The rationale must tie to a *specific
+survey finding* — the same depth bar as the style commitment. Bad: "venn
+because the topic is about overlap". Good: "venn because § 1 establishes
+that A ∧ B alone leaks but cannot escape; only A ∧ B ∧ C composes the
+full attack chain — the intersection IS the argument."
+
+Format:
+
+```
+scenes:    [frame, <body picks>, big-idea, recap]
+rationale per scene: <one line per scene tying to a survey finding>
+```
+
+Treat the recommender's output as a default; override it ONLY when you
+can name a specific survey finding the recommender missed.
+
 ## 3. The hard parts of the idea
 
 This is where a film stops being a summary. For the load-bearing idea:
