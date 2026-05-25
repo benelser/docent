@@ -9,9 +9,11 @@ import {STAGE} from '../engine/layout';
 import {
   activeBeatIndex,
   type Beat,
+  type EmbeddedScene as EmbeddedSceneSpec,
   type SceneProps,
   type TreeNode,
 } from '../engine/spec';
+import {EmbeddedScene} from './EmbeddedScene';
 import {
   cadenceOffset,
   paletteAccentKey,
@@ -62,6 +64,9 @@ type LayoutNode = {
   order: number;
   // the node's parent id, or null for the root
   parent: string | null;
+  // Sprint B — compositional embed carried through layout. Root nodes do not
+  // get an embed (the schema disallows it); children may.
+  embed?: EmbeddedSceneSpec;
 };
 
 type LayoutEdge = {
@@ -135,6 +140,9 @@ const layoutTree = (root: TreeNode): Layout => {
       b,
       order: order++,
       parent,
+      // Sprint B — only non-root children carry an embed (the root is the
+      // tree's spine; embedding inside it would collide with the chrome).
+      embed: parent !== null ? n.embed : undefined,
     });
     if (parent !== null) {
       edges.push({id: `${parent}→${n.id}`, from: parent, to: n.id});
@@ -491,6 +499,44 @@ export const TreeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
             </div>
           );
         })}
+
+        {/* Sprint B — compositional embeds. Children that carry an embed
+            render a static tableau next to their node tile. Vertical trees
+            place embeds above the card (toward the root); horizontal trees
+            place embeds to the left (toward the root). */}
+        <svg
+          style={{position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none'}}
+          viewBox="0 0 1920 1080"
+        >
+          {placed.map((p) => {
+            if (!p.ln.embed) return null;
+            const enter = revealOf(p.ln.id);
+            const local = frame - enter;
+            if (local <= 0) return null;
+            const appear = spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+            const dim = hasFocus && !focusIds.has(p.ln.id);
+            const opacity = appear * (dim ? 0.34 : 1);
+            const embedW = Math.min(220, nodeW * 0.9);
+            const embedH = Math.min(150, nodeH * 1.4);
+            // Place opposite the depth-axis growth direction, off the card.
+            const cx = orientation === 'horizontal'
+              ? p.cx - nodeW / 2 - embedW / 2 - 12
+              : p.cx;
+            const cy = orientation === 'horizontal'
+              ? p.cy
+              : p.cy - nodeH / 2 - embedH / 2 - 12;
+            return (
+              <g key={`embed-${p.ln.id}`} opacity={opacity}>
+                <EmbeddedScene
+                  embed={p.ln.embed}
+                  bounds={{cx, cy, w: embedW, h: embedH}}
+                  inheritedStyle={style}
+                  parentAccent={nodeAccentHex(p.ln)}
+                />
+              </g>
+            );
+          })}
+        </svg>
       </AbsoluteFill>
 
       <Narration style={style} beats={ts.beats} />

@@ -14,6 +14,7 @@ import {
 import {parseTimelineDate, yearOf} from '../engine/time';
 import {paletteGlowScale, paletteSceneHex} from '../engine/knobs';
 import type {ResolvedStyle} from '../style';
+import {EmbeddedScene} from './EmbeddedScene';
 
 // A timeline: events plotted on a real date axis. Progression renders ordinal
 // stages — "first, then, then" — and cannot say *how far apart* two things
@@ -422,6 +423,38 @@ export const TimelineScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                     />
                   ) : null}
                 </div>
+                {/* Sprint B — compositional embed. A timeline event may carry
+                    a static sub-scene tableau, drawn beside the event card so
+                    it doesn't fight the drop line down to the axis. */}
+                {e.embed ? (() => {
+                  const embedW = 240;
+                  const embedH = 160;
+                  // Place the embed above the card if there's room, else
+                  // below. Lane geometry usually keeps the upper half open.
+                  const cardTop = y - 36;
+                  const above = cardTop - embedH / 2 - 10;
+                  const cy = above > 200 ? above : y + 60 + embedH / 2;
+                  return (
+                    <svg
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        pointerEvents: 'none',
+                        opacity,
+                      }}
+                      viewBox="0 0 1920 1080"
+                    >
+                      <EmbeddedScene
+                        embed={e.embed}
+                        bounds={{cx: x, cy, w: embedW, h: embedH}}
+                        inheritedStyle={style}
+                        parentAccent={accentHex}
+                      />
+                    </svg>
+                  );
+                })() : null}
               </React.Fragment>
             );
           })}

@@ -48,6 +48,7 @@ films/*
 !films/text-stress-diagrammatic.json
 !films/text-stress-narrative.json
 !films/rhetorical-primer.json
+!films/sprint-b-composition-demo.json
 analysis/*
 !analysis/linear-algebra.md
 !analysis/linear-algebra.source.md

@@ -24,6 +24,7 @@ import {
   paletteGlowScale,
   paletteSceneHex,
 } from '../engine/knobs';
+import {EmbeddedScene} from './EmbeddedScene';
 
 // Renders a node-and-edge diagram, revealed and focused beat by beat, with
 // optional flow pulses. This one template carries most architecture films.
@@ -254,6 +255,36 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       ))}
 
       {nodes.map((n, i) => renderNode(n, i))}
+
+      {/* Sprint B — compositional embeds. A structure node may carry a
+          static sub-scene tableau drawn over its card. The embed is sized
+          to the box and rendered on top of the Card (which the parent
+          owns); reveal/dim follows the host node's state. */}
+      <svg
+        style={{position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none'}}
+        viewBox="0 0 1920 1080"
+      >
+        {nodes.map((n) => {
+          if (!n.embed) return null;
+          const state = nodeState(n.id);
+          if (state === 'hidden') return null;
+          const opacity = state === 'dim' ? 0.36 : 1;
+          const box = boxes[n.id];
+          if (!box) return null;
+          // Inset slightly inside the card so the embed reads as
+          // "thing-within-a-thing" rather than overflowing.
+          return (
+            <g key={`embed-${n.id}`} opacity={opacity}>
+              <EmbeddedScene
+                embed={n.embed}
+                bounds={{cx: box.cx, cy: box.cy, w: box.w * 0.88, h: box.h * 0.7}}
+                inheritedStyle={style}
+                parentAccent={accentOf(nodeAccentKey(n, nodes.indexOf(n)))}
+              />
+            </g>
+          );
+        })}
+      </svg>
 
       {pulses.map(([f, t], i) => {
         if (!boxes[f] || !boxes[t]) return null;

@@ -91,6 +91,292 @@ export type ValidationIssue = {
   severity?: 'error' | 'warning';
 };
 
+// Sprint B — compositional grammar. The closed allowlist of which embed scene
+// types each parent slot accepts. The validator HARD-FAILS any embed whose
+// `type` is outside its slot's allowlist; new compositions must be added to
+// the table (and to the design doc) before any spec can use them.
+const EMBED_ALLOWLIST: Record<string, string[]> = {
+  'landscape.subjects': ['mechanism', 'venn', 'chart', 'quantities'],
+  'timeline.events': ['venn', 'quantities', 'compare', 'structure'],
+  'journey-map.stages': ['causal-loop', 'mechanism', 'compare'],
+  'tree.children': ['tree', 'compare', 'quantities'],
+  'structure.nodes': ['mechanism', 'chart', 'venn'],
+  'compare.cells': ['quantities', 'chart', 'venn'],
+};
+
+// The chrome fields an embedded scene must NOT carry — the parent owns them.
+const EMBED_FORBIDDEN_FIELDS = ['beats', 'kicker', 'heading', 'cut', 'cam', 'style'];
+
+// Max nesting depth — an embed may itself embed (depth 2), but no deeper.
+const EMBED_MAX_DEPTH = 2;
+
+// Validate one embedded scene at `path`. Enforces:
+//   - chrome fields (beats/kicker/heading/cut/cam/style) are absent
+//   - `type` is in the slot's allowlist
+//   - depth ≤ EMBED_MAX_DEPTH (1 = embed inside a top-level scene; 2 = embed
+//     inside an embed; 3+ = REJECTED)
+//   - the per-scene-type structural rules (axes, regions, parts, etc.) of
+//     the same shape the top-level scene check enforces — minus the body
+//     minimum-count requirements (an embed is a tableau, not a full scene)
+//   - recursive: nested embeds get the same treatment at depth+1
+const validateEmbed = (
+  embed: any,
+  slot: string,
+  parentPath: string,
+  depth: number,
+  issues: ValidationIssue[],
+): void => {
+  if (!embed || typeof embed !== 'object' || Array.isArray(embed)) {
+    issues.push({path: parentPath, message: 'embed must be an object {type, ...}'});
+    return;
+  }
+  // Depth gate — past EMBED_MAX_DEPTH, reject before any other check so the
+  // error is unambiguous (a nested embed past the cap is the only failure).
+  if (depth > EMBED_MAX_DEPTH) {
+    issues.push({
+      path: parentPath,
+      message: `embed nesting exceeds max depth ${EMBED_MAX_DEPTH} (an embed may itself embed once; deeper nesting is rejected)`,
+    });
+    return;
+  }
+  // Chrome — parent owns it; embed must not carry any of these fields.
+  for (const f of EMBED_FORBIDDEN_FIELDS) {
+    if (embed[f] !== undefined) {
+      issues.push({
+        path: `${parentPath}.${f}`,
+        message: `embed must not carry "${f}" — the parent scene owns chrome/beats/style/transitions`,
+      });
+    }
+  }
+  // Type allowlist for this slot.
+  const allowed = EMBED_ALLOWLIST[slot];
+  if (!allowed) {
+    issues.push({
+      path: parentPath,
+      message: `unknown embed slot "${slot}" — this should not happen (embed at a non-opt-in slot)`,
+    });
+    return;
+  }
+  if (typeof embed.type !== 'string' || !allowed.includes(embed.type)) {
+    issues.push({
+      path: `${parentPath}.type`,
+      message: `embed type "${embed.type ?? '(unset)'}" not allowed in ${slot} — one of: ${allowed.join(', ')}`,
+    });
+    return;
+  }
+  // Per-scene-type shape — re-run validateSpec on a synthetic spec that wraps
+  // the embed as the sole scene, with a stub beat that satisfies the
+  // first-beat-visual rule generically. Filter the result to keep only the
+  // structural errors (drop body-minimum and film-level contracts).
+  // The `__embed_synthetic` flag tells validateSpec NOT to recurse into the
+  // embed's own slot table — `validateEmbed` already calls `walkEmbedSlots`
+  // recursively below, so a duplicate walk would double-report.
+  const synthetic = {
+    __embed_synthetic: true,
+    meta: {
+      id: 'embed-check',
+      title: 'embed',
+      subject: 'embed',
+      prompt: 'embed',
+      fps: 30,
+      width: 1920,
+      height: 1080,
+    },
+    scenes: [
+      {
+        ...embed,
+        // Stub chrome so the validator's required keys (id, type, beats)
+        // are satisfied; we then strip any errors that touch beats/chrome.
+        id: '__embed__',
+        kicker: '__embed__',
+        beats: [
+          {
+            id: '__embed__beat',
+            narration: 'embed',
+            // Make the first-beat-visual check pass for any scene type.
+            reveal: ['__none__'],
+            focus: ['__none__'],
+            show: '__none__',
+          },
+        ],
+      },
+    ],
+  };
+  const synthIssues = validateSpec(synthetic);
+  // Filter: drop minimum-body messages and film-level contracts; rewrite paths
+  // from `scenes[0]` to `parentPath`.
+  const PATH_PREFIX = 'scenes[0]';
+  for (const iss of synthIssues) {
+    // Drop synthetic beat errors (the stub satisfies the contract; any
+    // residual error on beats came from our stub, not the embed).
+    if (iss.path === 'scenes[0].beats' || iss.path.startsWith('scenes[0].beats')) continue;
+    if (iss.path === 'scenes[0].kicker') continue;
+    if (iss.path === 'scenes[0].id') continue;
+    // Drop film-level contracts (AR-prior-art, big-idea) that fire when the
+    // meta prompt looks like 'architecture-review' / 'explain*'. Our synthetic
+    // uses 'embed' for prompt; defensive in case future strings overlap.
+    if (iss.path === 'scenes' && /architecture-review|big-idea|explainer/i.test(iss.message)) {
+      continue;
+    }
+    // Drop minimum-body messages — an embed is a tableau, not a full scene,
+    // so it is exempt from "needs at least N items" floors. The shape rules
+    // (axis kinds, region refs, polarity math, etc.) still apply.
+    if (iss.path === PATH_PREFIX && /requires at least|requires \d/.test(iss.message)) {
+      continue;
+    }
+    // Drop the chrome-on-embed messages we already raised above (avoid dups).
+    if (
+      EMBED_FORBIDDEN_FIELDS.some(
+        (f) => iss.path === `${PATH_PREFIX}.${f}` || iss.path.startsWith(`${PATH_PREFIX}.${f}.`),
+      )
+    ) {
+      continue;
+    }
+    // Rewrite path: scenes[0].foo → parentPath.foo
+    const newPath = iss.path === PATH_PREFIX
+      ? parentPath
+      : parentPath + iss.path.slice(PATH_PREFIX.length);
+    issues.push({path: newPath, message: iss.message, severity: iss.severity});
+  }
+
+  // Recurse — check the embed's own embed-able sub-records at depth+1.
+  // Only the slot-table entries are scanned; other fields are leaf.
+  walkEmbedSlots(embed, parentPath, depth + 1, issues);
+};
+
+// Walk a scene's (or embed's) sub-records and validate any `.embed` field
+// against the slot's allowlist. Called once at top level for each scene, and
+// recursively for nested embeds via validateEmbed.
+const walkEmbedSlots = (
+  sc: any,
+  parentPath: string,
+  depth: number,
+  issues: ValidationIssue[],
+): void => {
+  // landscape.subjects[].embed
+  if (sc?.type === 'landscape' && Array.isArray(sc.subjects)) {
+    sc.subjects.forEach((s: any, i: number) => {
+      if (s?.embed !== undefined) {
+        validateEmbed(
+          s.embed,
+          'landscape.subjects',
+          `${parentPath}.subjects[${i}].embed`,
+          depth,
+          issues,
+        );
+      }
+    });
+  }
+  // timeline.events[].embed
+  if (sc?.type === 'timeline' && Array.isArray(sc.events)) {
+    sc.events.forEach((e: any, i: number) => {
+      if (e?.embed !== undefined) {
+        validateEmbed(
+          e.embed,
+          'timeline.events',
+          `${parentPath}.events[${i}].embed`,
+          depth,
+          issues,
+        );
+      }
+    });
+  }
+  // journey-map.stages[].embed
+  if (sc?.type === 'journey-map' && Array.isArray(sc.journeyStages)) {
+    sc.journeyStages.forEach((js: any, i: number) => {
+      if (js?.embed !== undefined) {
+        validateEmbed(
+          js.embed,
+          'journey-map.stages',
+          `${parentPath}.journeyStages[${i}].embed`,
+          depth,
+          issues,
+        );
+      }
+    });
+  }
+  // tree.children[].embed — recursive walk over the tree, only checking
+  // *children*, not the root (root is the spine — embedding inside it would
+  // collide with the chrome the renderer owns).
+  if (sc?.type === 'tree' && sc.root && typeof sc.root === 'object') {
+    const walkTree = (n: any, p: string): void => {
+      if (Array.isArray(n.children)) {
+        n.children.forEach((c: any, i: number) => {
+          if (c?.embed !== undefined) {
+            validateEmbed(c.embed, 'tree.children', `${p}.children[${i}].embed`, depth, issues);
+          }
+          walkTree(c, `${p}.children[${i}]`);
+        });
+      }
+    };
+    walkTree(sc.root, `${parentPath}.root`);
+  }
+  // structure.nodes[].embed
+  if (sc?.type === 'structure' && Array.isArray(sc.nodes)) {
+    sc.nodes.forEach((n: any, i: number) => {
+      if (n?.embed !== undefined) {
+        validateEmbed(
+          n.embed,
+          'structure.nodes',
+          `${parentPath}.nodes[${i}].embed`,
+          depth,
+          issues,
+        );
+      }
+    });
+  }
+  // compare.cells[].embed — cells live inside rows[].
+  if (sc?.type === 'compare' && Array.isArray(sc.rows)) {
+    sc.rows.forEach((r: any, ri: number) => {
+      if (!Array.isArray(r?.cells)) return;
+      r.cells.forEach((c: any, ci: number) => {
+        if (c?.embed !== undefined) {
+          validateEmbed(
+            c.embed,
+            'compare.cells',
+            `${parentPath}.rows[${ri}].cells[${ci}].embed`,
+            depth,
+            issues,
+          );
+        }
+      });
+    });
+  }
+  // Every other scene type is leaf-only: an `.embed` field anywhere else
+  // is a sneak past the schema. Scan generic sub-arrays that the slot table
+  // does NOT name and reject any `.embed` there. This is the "don't let
+  // authors stuff embed into a passage" guard from the brief.
+  // The list of fields that ARE legit hosts above; everything else with an
+  // embed inside is wrong.
+  const LEGIT_HOSTS: Record<string, string[]> = {
+    landscape: ['subjects'],
+    timeline: ['events'],
+    'journey-map': ['journeyStages'],
+    tree: [],
+    structure: ['nodes'],
+    compare: ['rows'],
+  };
+  const legit = LEGIT_HOSTS[sc?.type] ?? [];
+  // Find any sub-array on the scene that carries an `embed` field but is not
+  // in the legit list — e.g. someone trying landscape.quadrants.embed (which
+  // is an object, not an array, but covered by the schema). Iterate all
+  // top-level fields generically.
+  for (const [key, val] of Object.entries(sc ?? {})) {
+    if (key === 'beats' || key === 'embed') continue;
+    if (legit.includes(key)) continue;
+    if (Array.isArray(val)) {
+      val.forEach((item: any, i: number) => {
+        if (item && typeof item === 'object' && 'embed' in item) {
+          issues.push({
+            path: `${parentPath}.${key}[${i}].embed`,
+            message: `scene type "${sc.type}" does not declare an embed slot at "${key}[]" — embed is rejected here`,
+          });
+        }
+      });
+    }
+  }
+};
+
 // Flag a knob whose value is outside its closed enum.
 const checkKnob = (
   obj: Record<string, any>,
@@ -2398,6 +2684,18 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         }
       }
     });
+
+    // Sprint B — compositional grammar. Walk this scene's slot table and
+    // validate any embedded sub-scene against the per-slot allowlist, the
+    // chrome-exclusion contract, and max-depth-2. Embeds at non-host scene
+    // types or at non-opt-in fields are rejected.
+    //
+    // Skip the walk when validating a synthetic embed wrapper: validateEmbed
+    // already walks the embed's sub-records recursively, so a second walk
+    // here would double-report.
+    if (!(s as Record<string, unknown>).__embed_synthetic) {
+      walkEmbedSlots(sc, at, 1, issues);
+    }
   });
 
   // AR-mode contract — every architecture-review film must carry exactly one

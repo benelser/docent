@@ -65,6 +65,38 @@ export type Beat = {
 
 export type Actor = {id: string; label: string; sub?: string};
 
+// EmbeddedScene — Sprint B compositional grammar. A scene that lives in a
+// host scene's sub-record slot (a landscape subject, a timeline event, a
+// journey stage, a tree child, a structure node, a compare cell). It is
+// structurally a `Scene` minus the fields the parent owns:
+//
+//  - `beats`     — the parent orchestrates time; the embed is a tableau.
+//  - `kicker`/`heading` — chrome belongs to the parent's SceneFrame.
+//  - `cut`/`cam` — no scene-level transitions or camera inside a slot.
+//  - `style`     — the embed inherits the parent's resolved style.
+//
+// `caption` is an optional ≤ 24-char label drawn under the embed inside
+// its slot. The render contract is STATIC: an embed renders one visual
+// state, not an animation; only one narration track plays at a time.
+//
+// Composition allowlists (enforced by validate.ts):
+//   landscape.subjects[].embed   → mechanism | venn | chart | quantities
+//   timeline.events[].embed      → venn | quantities | compare | structure
+//   journey-map.stages[].embed   → causal-loop | mechanism | compare
+//   tree.children[].embed        → tree (recursive) | compare | quantities
+//   structure.nodes[].embed      → mechanism | chart | venn
+//   compare.cells[].embed        → quantities | chart | venn
+//
+// Max nesting depth is 2 (an embed inside an embed is allowed; deeper is
+// rejected). The validator recursively re-runs the same per-scene-type
+// shape rules on the embed (sans body / chrome checks).
+export type EmbeddedScene = Omit<
+  Scene,
+  'beats' | 'kicker' | 'heading' | 'cut' | 'cam' | 'style'
+> & {
+  caption?: string;
+};
+
 // A node's *representation* — how its content is drawn inside its box. The
 // default, `box`, is today's Card (a labelled component card). `matrix` /
 // `vector` / `grid` draw `cells` as a grid of mono cells; `code` draws a
@@ -99,6 +131,10 @@ export type Node = {
   // computed, only set. Morphing one equation node into another (different
   // `expr`) yields a derivation step: the algebra rewrites on screen.
   expr?: string;
+  // Sprint B — compositional grammar. A structure node may carry an
+  // embedded scene rendered statically inside its card.
+  // Allowlist: mechanism, chart, venn.
+  embed?: EmbeddedScene;
 };
 
 // An edge between two nodes. `kind` types the *relationship the line asserts*:
@@ -133,7 +169,14 @@ export type Stage = {
 
 // compare scenes — options (columns) judged against criteria (rows).
 export type CompareColumn = {id: string; label: string; sub?: string};
-export type CompareCell = {text: string; verdict?: 'win' | 'lose' | 'neutral'};
+export type CompareCell = {
+  text: string;
+  verdict?: 'win' | 'lose' | 'neutral';
+  // Sprint B — compositional grammar. A compare cell may carry an embedded
+  // scene rendered statically inside its tile.
+  // Allowlist: quantities, chart, venn.
+  embed?: EmbeddedScene;
+};
 export type CompareRow = {id: string; label: string; cells: CompareCell[]};
 
 // prior-art scenes (AR mode) — the subject against 2-4 systems that occupy
@@ -225,6 +268,10 @@ export type LandscapeSubject = {
   x: number;  // 0..1 normalized
   y: number;  // 0..1 normalized
   accent?: string;  // optional override of scene accent
+  // Sprint B — compositional grammar. A landscape subject may carry an
+  // embedded scene that renders as a static visual tableau inside the
+  // marker's slot. Allowlist: mechanism, venn, chart, quantities.
+  embed?: EmbeddedScene;
 };
 
 export type LandscapeQuadrants = {
@@ -394,6 +441,10 @@ export type TreeNode = {
   sub?: string;
   children?: TreeNode[]; // recursive — the rooted hierarchy
   accent?: string; // per-node accent override; highlights one branch
+  // Sprint B — compositional grammar. A tree child may carry an embedded
+  // scene rendered statically inside its node tile.
+  // Allowlist: tree (recursive), compare, quantities.
+  embed?: EmbeddedScene;
 };
 
 // causal-loop scenes — the system-dynamics primitive. Variables drawn as
@@ -997,6 +1048,10 @@ export type TimelineEvent = {
   label: string;
   sub?: string;
   lane?: number;
+  // Sprint B — compositional grammar. A timeline event may carry an
+  // embedded scene rendered statically inside its event card.
+  // Allowlist: venn, quantities, compare, structure.
+  embed?: EmbeddedScene;
 };
 
 // A span is a horizontal bar between two dates — an era, a war, a treaty
@@ -1047,4 +1102,8 @@ export type JourneyStage = {
   // The emotion curve's y-value, normalized [0..1]: 1=top (best emotion),
   // 0=bottom. The author owns the shape; the engine smooths between stages.
   curveValue: number;
+  // Sprint B — compositional grammar. A journey-map stage may carry an
+  // embedded scene rendered statically inside its stage tile.
+  // Allowlist: causal-loop, mechanism, compare.
+  embed?: EmbeddedScene;
 };
