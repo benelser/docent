@@ -430,18 +430,22 @@ export type Scene = {
     | 'chart'
     | 'closeup'
     | 'compare'
+    | 'concession'
     | 'demonstrate'
     | 'diff'
+    | 'epigraph'
     | 'figure'
     | 'frame'
     | 'journey-map'
     | 'landscape'
     | 'map'
     | 'mechanism'
+    | 'objection'
     | 'passage'
     | 'prior-art'
     | 'probe'
     | 'progression'
+    | 'provocation'
     | 'quantities'
     | 'recap'
     | 'structure'
@@ -591,6 +595,50 @@ export type Scene = {
   variables?: CausalVariable[];
   causalEdges?: CausalEdge[];
   loops?: CausalLoop[];
+  // ----- rhetorical primitives — author's stance toward the subject -------
+  // These scene types render the *editorial commitment*, not the subject.
+  // Each is a quiet typographic scene; together they round out the
+  // rhetorical-move vocabulary `tension`/`big-idea`/`prior-art` already
+  // belong to. The position contracts (epigraph at index 0 or right after
+  // `frame`, concession before any claim scene, objection between claims and
+  // recap, provocation as the absolute last scene and mutually exclusive
+  // with `big-idea`) are enforced by validate.ts.
+  // epigraph — a cited authority opens the film. `quote` is the cited
+  // passage (≤ 60 words, the depthcheck floor); `attribution` names the
+  // source ('Karl Popper, 1934'); `epigraphTreatment` picks the layout
+  // (`block` = centered on its own panel; `pull` = inline-marginal with a
+  // leading rule). Field-namespaced because the top-level `treatment` knob
+  // already names the visual skin (crisp/sketch/whiteboard).
+  quote?: string;
+  attribution?: string;
+  epigraphTreatment?: 'block' | 'pull';
+  // concession — the film explicitly states what it does NOT cover. `scope`
+  // is the kept set (the verbatim section-0 frame); `outOfScope` is the set
+  // aside set; `reason` (optional) is the one-line WHY this cut was made.
+  // depthcheck requires `outOfScope.length >= 2` and non-tautological items.
+  scope?: string[];
+  outOfScope?: string[];
+  reason?: string;
+  // objection — the film argues against itself, then refutes. `claim` is
+  // what the film has been arguing; `objection` is the steelman against it
+  // (≥ 12 words, must not be evaluative); `evidence` is what the objection
+  // cites or implies; `refutation` is the film's response;
+  // `refutationStrength` is `partial` (admits the objection partly holds)
+  // or `full`.
+  claim?: string;
+  objection?: string;
+  evidence?: string[];
+  refutation?: string;
+  refutationStrength?: 'partial' | 'full';
+  // provocation — an incomplete closing that asks the viewer to extend.
+  // `unresolved` is the question the film deliberately doesn't answer
+  // (must be specific, not "more research is needed"); `why` is why the
+  // film leaves it open; `invitation` is what the viewer is invited to do
+  // with it. Mutually exclusive with `big-idea` — the film commits OR
+  // hands off, never both.
+  unresolved?: string;
+  why?: string;
+  invitation?: string;
   beats: Beat[];
 };
 

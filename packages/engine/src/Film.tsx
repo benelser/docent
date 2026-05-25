@@ -29,6 +29,10 @@ import {CausalLoopScene} from './scenes/CausalLoopScene';
 import {LandscapeScene} from './scenes/LandscapeScene';
 import {MechanismScene} from './scenes/MechanismScene';
 import {VennScene} from './scenes/VennScene';
+import {EpigraphScene} from './scenes/EpigraphScene';
+import {ConcessionScene} from './scenes/ConcessionScene';
+import {ObjectionScene} from './scenes/ObjectionScene';
+import {ProvocationScene} from './scenes/ProvocationScene';
 
 // `treatment` (a scene knob) — the visual *skin*, decoupled from scene type.
 // Today the hand-drawn chalkboard skin is welded to the `tension` type and the
@@ -137,6 +141,24 @@ export const Film: React.FC<{filmId: string}> = ({filmId}) => {
               <MechanismScene {...common} />
             ) : t === 'venn' ? (
               <VennScene {...common} />
+            ) : t === 'epigraph' ? (
+              // epigraph — a cited authority opens the film. The quiet
+              // typographic primitive — large serif quote, attribution
+              // beneath in mono. No diagrams.
+              <EpigraphScene {...common} />
+            ) : t === 'concession' ? (
+              // concession — what the film does NOT cover. Two columns:
+              // IN SCOPE (lit) / OUT OF SCOPE (dimmed, strike-through).
+              <ConcessionScene {...common} />
+            ) : t === 'objection' ? (
+              // objection — the film argues against itself, then refutes.
+              // Three stacked panels: claim → objection → refutation.
+              <ObjectionScene {...common} />
+            ) : t === 'provocation' ? (
+              // provocation — an incomplete closing that hands the question
+              // to the viewer. Quiet typography, the unresolved at display
+              // size with a trailing ellipsis.
+              <ProvocationScene {...common} />
             ) : t === 'tension' || t === 'structure' ? (
               // Skin chosen by `treatment`: sketch → chalkboard, whiteboard →
               // marker-on-paper (same rough.js renderer, light palette picked

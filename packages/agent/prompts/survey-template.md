@@ -280,3 +280,30 @@ regions is decoration; depthcheck enforces a minimum annotation density
   path is reinforcing (R, the cycle compounds); an odd number is balancing
   (B, the cycle self-corrects). The validator will reject a loop that lies
   about its kind.
+
+### Rhetorical primitives — when the film's *stance* is what's at issue
+
+These four scene types render the **author's stance** toward the subject, not
+the subject itself. They are the visual form of an editorial commitment —
+distinct from `tension` (the design trade-off the film chose), `big-idea`
+(the takeaway), and `prior-art` (the lineage). Reach for them when the
+film's argument needs a rhetorical move the other primitives don't carry.
+
+- **`epigraph`** — when the film should **anchor in a tradition**. A short
+  cited quote (≤ 60 words) opens the film, naming the authority the rest of
+  the argument will *argue with*, not merely decorate from. Position: at
+  index 0 or immediately after the `frame` scene; at most one per film.
+- **`concession`** — when the film argues something narrow and the surrounding
+  reader might assume more. Two columns: IN SCOPE / OUT OF SCOPE. Strengthens
+  every other claim by drawing the line; the move most films skip because
+  the author forgets to. Position: after `frame`, before any claim scene.
+- **`objection`** — when the film's argument has been **challenged in the
+  actual literature** and the film must answer it. Three panels — CLAIM /
+  OBJECTION / REFUTATION — the refutation overlaying but not deleting the
+  objection. Distinct from `tension`: tension is the trade-off the author
+  chose; objection is the intellectual counterattack the author *anticipates*.
+  Position: after at least one claim scene, before the closing.
+- **`provocation`** — when the right ending is *"and this is where we don't
+  know yet"*. A specific, question-shaped unresolved replaces the takeaway.
+  Mutually exclusive with `big-idea` — a film either COMMITS or HANDS OFF,
+  never both. Position: the absolute last scene.

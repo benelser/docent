@@ -69,6 +69,23 @@ type Spec = {
     xAxis?: {label?: string; lowLabel?: string; highLabel?: string};
     yAxis?: {label?: string; lowLabel?: string; highLabel?: string};
     subjects?: {id: string; label: string; x: number; y: number}[];
+    // Sprint C rhetorical-primitive fields — each present only on its
+    // namesake scene type. depthcheck reads them to score the per-scene
+    // depth rules (epigraph-on-point, concession-non-trivial,
+    // objection-steelmanned, provocation-specific).
+    quote?: string;
+    attribution?: string;
+    scope?: string[];
+    outOfScope?: string[];
+    reason?: string;
+    claim?: string;
+    objection?: string;
+    evidence?: string[];
+    refutation?: string;
+    refutationStrength?: 'partial' | 'full';
+    unresolved?: string;
+    why?: string;
+    invitation?: string;
   }[];
 };
 
@@ -543,10 +560,174 @@ export const runDepthCheck = (spec: Spec): DepthFinding[] => {
     });
   }
 
+  // ----- Sprint C — rhetorical-primitive depth contracts -----------------
+  // Four scene types render the *author's stance*; each carries a depth
+  // rule that catches the failure-mode the type exists to prevent. The
+  // contract triggers on the presence of the scene — a film that doesn't
+  // use the type skips the check entirely.
+
+  // epigraph-on-point — the quote must look like a quoted passage with a
+  // real attribution span. The regex floor: the attribution must carry a
+  // proper-noun-shaped source span (a Capitalized word, optionally followed
+  // by a year or work title). A bare attribution with no source span
+  // ('Anon.', 'A reader', 'Someone') is rejected. The judge (Layer 3)
+  // catches the harder case: does the rest of the film argue WITH the
+  // quote, or merely decorate FROM it.
+  const epigraphs = spec.scenes.filter((sc) => sc.type === 'epigraph');
+  for (const ep of epigraphs) {
+    const quote = (ep.quote ?? '').trim();
+    const attribution = (ep.attribution ?? '').trim();
+    // The attribution span — a Capitalized name or a Capitalized work
+    // title, optionally with a year. Examples that PASS:
+    //   "Karl Popper, 1934"
+    //   "Aristotle, Metaphysics"
+    //   "The Federalist Papers, 1788"
+    // Examples that FAIL:
+    //   "Anonymous"      (no proper noun span)
+    //   "A friend"       (no proper noun span)
+    //   "1934"           (year alone — no source)
+    const PROPER_SPAN = /\b[A-Z][a-zA-Z'’\-]{2,}/;
+    const YEAR = /\b\d{3,4}\b/;
+    const hasProperSpan = PROPER_SPAN.test(attribution);
+    const hasSomething = hasProperSpan || YEAR.test(attribution);
+    const quoteWords = quote.split(/\s+/).filter(Boolean).length;
+    const quoteOk = quote.length > 0 && quoteWords >= 4 && quoteWords <= 60;
+    const ok = quoteOk && hasSomething && hasProperSpan;
+    findings.push({
+      id: 'epigraph-on-point',
+      label:
+        'Epigraph on point — the quote is a real cited passage and the attribution names a source span',
+      status: ok ? 'ok' : 'fail',
+      detail: ok
+        ? `quote (${quoteWords} words) is attributed to "${attribution}" — the source span carries the citation`
+        : !quote
+          ? 'epigraph has no quote'
+          : quoteWords < 4
+            ? `quote is ${quoteWords} word(s) — too short to read as a cited passage; expand it or drop the epigraph`
+            : quoteWords > 60
+              ? `quote is ${quoteWords} words — keep epigraphs to ≤ 60 words (the typographic register is a small breath)`
+              : !hasProperSpan
+                ? `attribution "${attribution}" has no proper-noun source span — a bare attribution ("Anon.", "A reader") fails the depth contract; name the source`
+                : 'epigraph fails the depth contract',
+    });
+  }
+
+  // concession-non-trivial — outOfScope must be ≥ 2 items (the structural
+  // validator catches less than 2) AND must NOT be tautological. A
+  // tautological set-aside is one of the regex-shaped fillers that drains
+  // the concession of meaning ("not relevant", "out of scope", "anything
+  // else").
+  const concessions = spec.scenes.filter((sc) => sc.type === 'concession');
+  for (const con of concessions) {
+    const out = con.outOfScope ?? [];
+    // Tautological / filler patterns — each is a phrase that says "I am
+    // setting aside the things I am setting aside", not a concrete
+    // boundary line. The strong version names what is left out by NAME.
+    const TAUTOLOGICAL =
+      /^\s*(not\s+(relevant|relevant\s+here|in\s+scope|covered|discussed)|out\s+of\s+scope|anything\s+else|other\s+things|the\s+rest|everything\s+else|nothing\s+else|miscellaneous)\.?\s*$/i;
+    const tautologicalItems = out.filter((s) => TAUTOLOGICAL.test(s));
+    // Short items below ~3 words read as labels not boundaries.
+    const SHORT_LIMIT = 3;
+    const shortItems = out.filter((s) => s.trim().split(/\s+/).filter(Boolean).length < SHORT_LIMIT);
+    const ok = out.length >= 2 && tautologicalItems.length === 0 && shortItems.length === 0;
+    findings.push({
+      id: 'concession-non-trivial',
+      label:
+        'Concession non-trivial — at least 2 outOfScope items, none tautological ("not relevant" fails; "historical OS forks before 2018" passes)',
+      status: ok ? 'ok' : 'fail',
+      detail: ok
+        ? `${out.length} out-of-scope items, each names a concrete boundary`
+        : out.length < 2
+          ? `only ${out.length} out-of-scope item(s) — a single set-aside is a footnote; the cut needs to be visible as a cut`
+          : tautologicalItems.length > 0
+            ? `tautological item(s): ${tautologicalItems.map((x) => `"${x}"`).join(', ')} — name what is left out by NAME (e.g. "historical OS forks before 2018")`
+            : `item(s) shorter than ${SHORT_LIMIT} words: ${shortItems.map((x) => `"${x}"`).join(', ')} — a boundary needs more than a label`,
+    });
+  }
+
+  // objection-steelmanned — the objection must be ≥ 12 words AND not
+  // evaluative, AND the refutationStrength must match the refutation's
+  // rhetorical force. The structural validator owns the word-count and the
+  // evaluative-shape rejection; this depth rule layers an additional
+  // honesty check on the partial/full mismatch and surfaces it as a depth
+  // signal (the structural rule HARD-FAILs).
+  const objections = spec.scenes.filter((sc) => sc.type === 'objection');
+  for (const ob of objections) {
+    const objection = (ob.objection ?? '').trim();
+    const refutation = (ob.refutation ?? '').trim();
+    const strength = ob.refutationStrength;
+    const words = objection.split(/\s+/).filter(Boolean).length;
+    // The strong-version contract: the objection cites a MECHANISM
+    // (under-states / cost / fails / under-counts / overstates etc.), not
+    // a verdict adjective.
+    const EVALUATIVE_OBJECTION =
+      /\b(weak|bad|wrong|naive|simplistic|unconvincing|flawed|inadequate|insufficient|incorrect|fragile|untenable)\b/i;
+    const MECHANISM_HANDLE =
+      /\b(under[- ]?state|under[- ]?count|over[- ]?state|over[- ]?fit|miss(es)?|ignore|ignores|ignored|skip|elide|under[- ]?model|cost|trade[- ]?off|fails? to|cannot account|does not account|breaks? down|assumes?|conflates?|inflates?|deflates?|reduces?|collapses?|over[- ]?counts?|under[- ]?counts?|over[- ]?simplifies?|treats? as|equates? with|category error|status|substitutes? for|relies on|depends on|cannot|never)\b/i;
+    // partial refutation must visibly carry a concession word.
+    const HONESTY = /\b(partly|partial|to an extent|in part|some of this|this is true|grants?|concedes?|conceding|admit|admittedly|fair point|the objection holds|the critic is right|to that extent|insofar as)\b/i;
+    const wordsOk = words >= 12;
+    const mechanismOk = MECHANISM_HANDLE.test(objection) && !EVALUATIVE_OBJECTION.test(objection);
+    const strengthMatches =
+      strength === 'full' ? true :
+      strength === 'partial' ? HONESTY.test(refutation) : false;
+    const ok = wordsOk && mechanismOk && strengthMatches;
+    findings.push({
+      id: 'objection-steelmanned',
+      label:
+        'Objection steelmanned — ≥ 12 words, cites a mechanism (not an evaluative adjective), refutationStrength matches the refutation\'s force',
+      status: ok ? 'ok' : 'fail',
+      detail: ok
+        ? `objection (${words} words, refutationStrength=${strength}) names a mechanism and the refutation matches its declared strength`
+        : !wordsOk
+          ? `objection is ${words} words — a steelman is ≥ 12; shorter is a slogan`
+          : !mechanismOk
+            ? 'objection reads as evaluative ("this argument is weak") — restate as a mechanism the objection cites (under-states cost X, misses failure-mode Y)'
+            : 'refutationStrength is "partial" but the refutation reads as full — name what the objection gets right (use "partly", "in part", "concede") or set refutationStrength to "full"',
+    });
+  }
+
+  // provocation-specific — the unresolved must be a SPECIFIC question, not
+  // a vague gesture. Filler patterns ("more research is needed", "future
+  // work", "this needs more study") are rejected.
+  const provocations = spec.scenes.filter((sc) => sc.type === 'provocation');
+  for (const pr of provocations) {
+    const unresolved = (pr.unresolved ?? '').trim();
+    // Filler patterns — each is a gesture, not a question. The strong
+    // version names a specific operationally-shaped question.
+    const FILLER =
+      /^(more\s+research|future\s+work|this\s+(needs|requires|deserves|merits)|further\s+(work|study|investigation)|the\s+jury\s+is\s+still\s+out|time\s+will\s+tell|we\s+(don'?t|do\s+not)\s+(know|yet|fully)\s*$|stay\s+tuned|watch\s+this\s+space|to\s+be\s+continued|tbd|tbc)/i;
+    const isFiller = FILLER.test(unresolved);
+    const words = unresolved.split(/\s+/).filter(Boolean).length;
+    // A specific question reads as a question — opens with an
+    // interrogative or names a specific subject of the unresolved.
+    const QUESTION_SHAPE =
+      /^(whether|how|why|what|when|where|which|under what|to what extent|by how much|at what scale|in which|in what)\b/i;
+    const isQuestionShaped = QUESTION_SHAPE.test(unresolved);
+    const longEnough = words >= 8;
+    const ok = !isFiller && isQuestionShaped && longEnough;
+    findings.push({
+      id: 'provocation-specific',
+      label:
+        'Provocation specific — the unresolved is a SPECIFIC question ("Whether X under Y" passes; "More research is needed" fails)',
+      status: ok ? 'ok' : 'fail',
+      detail: ok
+        ? `unresolved is a specific, question-shaped ${words}-word question — the film hands off a real open problem`
+        : isFiller
+          ? `unresolved reads as a filler gesture — name the specific question instead (e.g. "Whether the cluster-wide rebalancer can be made incremental without sacrificing the latency invariant")`
+          : !isQuestionShaped
+            ? `unresolved does not read as a question — start with an interrogative (Whether / How / Why / What / Under what / To what extent)`
+            : `unresolved is only ${words} words — a specific open question needs more shape (≥ 8 words)`,
+    });
+  }
+
   // big-idea contract — the takeaway sentence the viewer should leave with.
   // Every NEW explainer ships exactly one. Grandfathered films skip the
-  // check (the brief forbids retrofitting them).
-  if (isExplainer(spec) && !BIG_IDEA_GRANDFATHERED.has(spec.meta.id ?? '')) {
+  // check (the brief forbids retrofitting them). A film that closes with a
+  // `provocation` is also exempt — provocation is mutually exclusive with
+  // big-idea (Sprint C contract: the film either COMMITS or HANDS OFF).
+  const hasProvocation = spec.scenes.some((sc) => sc.type === 'provocation');
+  if (isExplainer(spec) && !BIG_IDEA_GRANDFATHERED.has(spec.meta.id ?? '') && !hasProvocation) {
     const bigIdeas = spec.scenes.filter((sc) => sc.type === 'big-idea');
     if (bigIdeas.length !== 1) {
       findings.push({

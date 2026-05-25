@@ -102,6 +102,18 @@ const DEPTH_DIMENSIONS = [
   // quoted phrase, a quantity), not "this seems right". The preset must
   // match the film's `meta.register` and the survey's mode.
   {id: 'style-committed', label: 'Style is committed — the spec carries a non-default {preset, intent, rationale} block; the rationale ties to a specific survey finding; the preset matches the film\'s register'},
+  // ----- Sprint C — rhetorical-primitive judge dimensions -----------------
+  // Each rhetorical scene type carries its own judgement dimension. The
+  // depthcheck rules (Layer 2) catch the regex-shaped failures; these
+  // dimensions catch what only judgement can — a quote that decorates
+  // instead of arguing with, a concession the film sneaks back in, an
+  // objection the film invented to defeat, a provocation bolted on as
+  // generic "what's next". Films with no instance of the scene type mark
+  // the dimension n/a.
+  {id: 'epigraph-earned', label: 'Epigraph earned — the rest of the film ARGUES WITH the quote, not merely decorates from it'},
+  {id: 'scope-honest', label: 'Scope honest — the concession honestly narrows; the film does not sneak claims about out-of-scope items back in later'},
+  {id: 'objection-real', label: 'Objection real — the objection cites a real counterposition, not a weak opponent the film invented to defeat'},
+  {id: 'provocation-load-bearing', label: 'Provocation load-bearing — the unresolved question FOLLOWS FROM what the film argued; not bolted on as a generic "what\'s next"'},
 ] as const;
 
 // The structured verdict the judge writes to reviews/<id>.json. A score per
