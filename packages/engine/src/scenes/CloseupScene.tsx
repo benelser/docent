@@ -25,7 +25,7 @@ export const CloseupScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const scene = ts.scene;
-  const accentHex = accentOf(style, scene.accent);
+  const accentHex = accentOf(style, undefined);
   const code = (scene.code ?? '').replace(/\s+$/, '');
   const lineCount = code.split('\n').length;
 

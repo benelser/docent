@@ -247,7 +247,7 @@ export const TreeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const {bg, ink, accent: accentTokens} = style.tokens;
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const orientation = scene.orientation ?? 'vertical';
 
   // No root? Render the chrome and let the validator surface the error. (The
@@ -261,7 +261,7 @@ export const TreeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         heading={scene.heading}
         sceneIndex={sceneIndex}
         sceneCount={sceneCount}
-        glowScale={paletteGlowScale(scene.palette)}
+        glowScale={paletteGlowScale(undefined)}
       >
         <Narration style={style} beats={ts.beats} />
       </SceneFrame>
@@ -318,7 +318,7 @@ export const TreeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // Per-node accent: explicit per-node `accent` wins, else palette-spread
   // (cycle the family across declared order), else the scene accent.
   const nodeAccentHex = (ln: LayoutNode): string =>
-    accentOf(paletteAccentKey(scene.palette, scene.accent, ln.accent, ln.order));
+    accentOf(paletteAccentKey(undefined, undefined, ln.accent, ln.order));
 
   const cam = undefined; // tree has no follow-camera; the layout is self-framing
 
@@ -330,7 +330,7 @@ export const TreeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
       cam={cam}
-      glowScale={paletteGlowScale(scene.palette)}
+      glowScale={paletteGlowScale(undefined)}
     >
       {/* edges first, so nodes draw on top */}
       <AbsoluteFill>

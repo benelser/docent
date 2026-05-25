@@ -31,7 +31,7 @@ export const CompareScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // `palette` (a scene knob) re-selects the chrome accent over its family;
   // without a palette this is exactly `accent(scene.accent)`. paletteSceneHex
   // remains the resolver — it owns palette-family selection logic.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const columns = scene.columns ?? [];
   const rows = scene.rows ?? [];
 
@@ -66,7 +66,7 @@ export const CompareScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
-      glowScale={paletteGlowScale(scene.palette)}
+      glowScale={paletteGlowScale(undefined)}
     >
       <AbsoluteFill>
         {/* column headers */}

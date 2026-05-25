@@ -2,14 +2,13 @@
   "meta": {
     "id": "arxiv-2512-14806",
     "title": "Let the Barbarians In",
-    "subject": "Cheng et al., arXiv:2512.14806 \u2014 AI-Driven Research for Systems (ADRS), read as a conditional about where the loop actually closes",
+    "subject": "Cheng et al., arXiv:2512.14806 — AI-Driven Research for Systems (ADRS), read as a conditional about where the loop actually closes",
     "repo": "https://arxiv.org/abs/2512.14806",
     "prompt": "explainer",
     "fps": 30,
     "width": 1920,
     "height": 1080,
-    "voice": "af_heart",
-    "register": "neutral"
+    "voice": "af_heart"
   },
   "style": {
     "preset": "paper",
@@ -19,17 +18,16 @@
       "density": "comfortable",
       "emphasis": "insight-first"
     },
-    "rationale": "Paper preset \u2014 the subject is an arXiv preprint; academic register, paper-PDF aesthetic, serif body typography."
+    "rationale": "Paper preset — the subject is an arXiv preprint; academic register, paper-PDF aesthetic, serif body typography."
   },
   "scenes": [
     {
       "id": "frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "DOCENT // EXPLAINER",
       "title": "Let the Barbarians In",
-      "tagline": "An L-L-M wrote a load-balancer thirteen times faster than DeepSeek's own \u2014 the question is why, and where it stops",
-      "footnote": "arXiv 2512.14806v4 (Dec 2025), Cheng et al., UC Berkeley   \u00b7   ten case studies, three frameworks, one thesis tested against its own failures",
+      "tagline": "An L-L-M wrote a load-balancer thirteen times faster than DeepSeek's own — the question is why, and where it stops",
+      "footnote": "arXiv 2512.14806v4 (Dec 2025), Cheng et al., UC Berkeley   ·   ten case studies, three frameworks, one thesis tested against its own failures",
       "beats": [
         {
           "id": "frame-1",
@@ -52,7 +50,6 @@
     {
       "id": "misread",
       "type": "compare",
-      "accent": "amber",
       "kicker": "01 // KILL THE MISREAD",
       "heading": "Not the chatbot you were picturing",
       "columns": [
@@ -147,9 +144,8 @@
     {
       "id": "loop",
       "type": "structure",
-      "accent": "cyan",
       "kicker": "02 // THE LOOP",
-      "heading": "Generator, evaluator, selector \u2014 repeat",
+      "heading": "Generator, evaluator, selector — repeat",
       "grid": {
         "cols": 3,
         "rows": 3
@@ -270,9 +266,8 @@
     {
       "id": "numbers",
       "type": "quantities",
-      "accent": "green",
       "kicker": "03 // THE NUMBERS",
-      "heading": "Four headline wins \u2014 each against a published baseline",
+      "heading": "Four headline wins — each against a published baseline",
       "metrics": [
         {
           "id": "m-eplb",
@@ -281,7 +276,7 @@
           "row": 0,
           "bind": "eplb",
           "format": "int",
-          "unit": "\u00d7 DeepSeek SOTA",
+          "unit": "× DeepSeek SOTA",
           "accent": "rose"
         },
         {
@@ -301,7 +296,7 @@
           "row": 0,
           "bind": "sql",
           "format": "int",
-          "unit": "\u00d7 faster",
+          "unit": "× faster",
           "accent": "cyan"
         },
         {
@@ -363,7 +358,6 @@
     {
       "id": "failures",
       "type": "tension",
-      "accent": "rose",
       "kicker": "04 // WHERE IT FAILS",
       "heading": "Three negative results the paper publishes itself",
       "grid": {
@@ -373,8 +367,8 @@
       "nodes": [
         {
           "id": "cloudcast",
-          "label": "Cloudcast \u2014 no improvement at all",
-          "sub": "three frameworks \u00d7 two models \u00d7 ~100 iterations \u00d7 ~$15 budget",
+          "label": "Cloudcast — no improvement at all",
+          "sub": "three frameworks × two models × ~100 iterations × ~$15 budget",
           "col": 0,
           "row": 0,
           "accent": "rose",
@@ -401,7 +395,7 @@
         },
         {
           "id": "contamination",
-          "label": "Contamination tell \u2014 SMF",
+          "label": "Contamination tell — SMF",
           "sub": "TXN online \"discovered\" Shortest Makespan First, already in pretraining",
           "col": 0,
           "row": 3,
@@ -459,9 +453,8 @@
     {
       "id": "conditional",
       "type": "probe",
-      "accent": "amber",
       "kicker": "05 // THE CONDITIONAL",
-      "heading": "What the headline hides \u2014 break one precondition, the loop collapses",
+      "heading": "What the headline hides — break one precondition, the loop collapses",
       "baseline": {
         "label": "The loop runs",
         "outcome": "generator proposes, evaluator scores, selector keeps survivors -- thousands of cycles, hours of wall clock, tens of dollars"
@@ -535,13 +528,12 @@
     {
       "id": "big-idea",
       "type": "big-idea",
-      "accent": "violet",
       "kicker": "06 // THE BIG IDEA",
       "heading": "The sentence to leave with",
       "statement": "Cheap verifiers, not bigger models, close the loop that lets an LLM grind past human SOTA.",
       "anchor": {
         "kind": "equation",
-        "value": "Loop = Generator \u2192 Evaluator \u2192 Selector \u2192 Generator"
+        "value": "Loop = Generator → Evaluator → Selector → Generator"
       },
       "beats": [
         {
@@ -561,16 +553,15 @@
     {
       "id": "recap",
       "type": "recap",
-      "accent": "blue",
       "kicker": "RECAP // WHAT TO TAKE, WHAT TO DOUBT",
-      "heading": "Let the Barbarians In \u2014 an honest verdict",
+      "heading": "Let the Barbarians In — an honest verdict",
       "points": [
-        "Sound \u2014 where the verifier is cheap, reliable, and discriminative, AI now matches or beats published SOTA. The paper says so itself, and earns it.",
-        "Earned by the negatives \u2014 Cloudcast got no improvement; reward-hacking was caught in EPLB and Prism; the TXN 'discovery' of SMF was contamination. A paper this generous with failures is buying trust.",
-        "Carry it \u2014 where a cheap, reliable simulator exists, expect AI to match or beat the published SOTA within hours, for tens of dollars. Act on that.",
-        "Doubt it \u2014 every reported 'discovery' deserves the question: could the SOTA being beaten plausibly be in the model's training data? Offline TXN is the honest case; online TXN was not.",
-        "The fragility to remember \u2014 the simulator itself is still a human task; the forty-percent automation claim is the inner loop only, and the framing risks reading larger than it is.",
-        "Not adopted \u2014 the section seven forecast that ADRS reshapes the researcher's role. No experiment in the paper measures researcher-time-saved, so the film leaves that claim with the paper as an unsupported caveat."
+        "Sound — where the verifier is cheap, reliable, and discriminative, AI now matches or beats published SOTA. The paper says so itself, and earns it.",
+        "Earned by the negatives — Cloudcast got no improvement; reward-hacking was caught in EPLB and Prism; the TXN 'discovery' of SMF was contamination. A paper this generous with failures is buying trust.",
+        "Carry it — where a cheap, reliable simulator exists, expect AI to match or beat the published SOTA within hours, for tens of dollars. Act on that.",
+        "Doubt it — every reported 'discovery' deserves the question: could the SOTA being beaten plausibly be in the model's training data? Offline TXN is the honest case; online TXN was not.",
+        "The fragility to remember — the simulator itself is still a human task; the forty-percent automation claim is the inner loop only, and the framing risks reading larger than it is.",
+        "Not adopted — the section seven forecast that ADRS reshapes the researcher's role. No experiment in the paper measures researcher-time-saved, so the film leaves that claim with the paper as an unsupported caveat."
       ],
       "beats": [
         {

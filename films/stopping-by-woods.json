@@ -8,14 +8,12 @@
     "fps": 30,
     "width": 1920,
     "height": 1080,
-    "voice": "af_heart",
-    "register": "calm"
+    "voice": "af_heart"
   },
   "scenes": [
     {
       "id": "frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "DOCENT // EXPLAINER",
       "title": "Stopping by Woods on a Snowy Evening",
       "tagline": "A quiet winter scene that turns into a self-command",
@@ -41,7 +39,6 @@
     {
       "id": "pressures",
       "type": "structure",
-      "accent": "cyan",
       "kicker": "01 // THE SCENE",
       "heading": "One pause, ringed by pressure",
       "grid": {
@@ -220,7 +217,6 @@
     {
       "id": "stanzas",
       "type": "progression",
-      "accent": "green",
       "kicker": "02 // THE TURN",
       "heading": "Four stanzas, one tightening pause",
       "flow": "linear",
@@ -277,7 +273,6 @@
     {
       "id": "passage",
       "type": "passage",
-      "accent": "amber",
       "kicker": "03 // THE WORDS",
       "heading": "The hinge is written into the poem",
       "text": "Whose woods these are I think I know.\nHis house is in the village though;\nHe will not see me stopping here\nTo watch his woods fill up with snow.\n\nMy little horse must think it queer\nTo stop without a farmhouse near\nBetween the woods and frozen lake\nThe darkest evening of the year.\n\nHe gives his harness bells a shake\nTo ask if there is some mistake.\nThe only other sound's the sweep\nOf easy wind and downy flake.\n\nThe woods are lovely, dark and deep,\nBut I have promises to keep,\nAnd miles to go before I sleep,\nAnd miles to go before I sleep.",
@@ -366,7 +361,6 @@
     {
       "id": "form",
       "type": "quantities",
-      "accent": "violet",
       "kicker": "04 // THE FORM",
       "heading": "The form keeps walking",
       "metrics": [
@@ -451,7 +445,6 @@
     {
       "id": "probe",
       "type": "probe",
-      "accent": "green",
       "kicker": "05 // PUSH ON IT",
       "heading": "Which details are load-bearing?",
       "baseline": {
@@ -512,11 +505,9 @@
     {
       "id": "tension",
       "type": "tension",
-      "accent": "amber",
       "kicker": "06 // THE TRADE-OFF",
       "heading": "The page chooses proof over total allegory",
       "cut": "hold",
-      "treatment": "whiteboard",
       "grid": {
         "cols": 3,
         "rows": 3
@@ -613,7 +604,6 @@
     {
       "id": "recap",
       "type": "recap",
-      "accent": "blue",
       "kicker": "RECAP // THE VERDICT",
       "heading": "Stopping by Woods -- an honest verdict",
       "points": [
@@ -652,5 +642,13 @@
         }
       ]
     }
-  ]
+  ],
+  "style": {
+    "preset": "editorial",
+    "intent": {
+      "tone": "professional",
+      "audience": "general"
+    },
+    "rationale": "Editorial preset — a lyric poem explainer; the previous spec used treatment:whiteboard for a close-reading skin, which v2.4 retires in favour of the editorial preset's serif register."
+  }
 }

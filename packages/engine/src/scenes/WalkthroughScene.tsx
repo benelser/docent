@@ -24,7 +24,7 @@ export const WalkthroughScene: React.FC<SceneProps & {style: ResolvedStyle}> = (
   const {bg, ink, accent: accentTokens} = style.tokens;
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
-  const accentHex = accentOf(scene.accent);
+  const accentHex = accentOf(undefined);
   const actors = scene.actors ?? [];
 
   const lifeTop = 366;

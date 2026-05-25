@@ -941,11 +941,10 @@ export const TensionScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const {bg, accent: accentTokens} = style.tokens;
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
-  const accentHex = accentOf(scene.accent);
-  // Whiteboard treatment swaps the entire register: paper backdrop, dark ink,
-  // drop-shadow cards. Anything else (sketch, or no treatment on a tension
-  // scene) renders the dark contemplative register.
-  const isWhiteboard = scene.treatment === 'whiteboard';
+  const accentHex = accentOf(undefined);
+  // v2.4.0 — `scene.treatment` is gone. Tension always renders in the dark
+  // contemplative (sketch) register; the whiteboard skin retired with the knob.
+  const isWhiteboard = false;
   const reg = isWhiteboard ? WHITEBOARD : buildSketch(style.tokens);
 
   // The spec keeps its grid (we still honour `wide` collisions through
@@ -1080,7 +1079,7 @@ export const TensionScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         <LedgerCard
           key={slot.node.id}
           slot={slot}
-          accentHex={accentOf(slot.node.accent ?? scene.accent)}
+          accentHex={accentOf(slot.node.accent)}
           state={stateOf(slot.node.id)}
           enterFrame={revealOf(slot.node.id)}
           reg={reg}

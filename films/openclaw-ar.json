@@ -1,15 +1,14 @@
 {
   "meta": {
     "id": "openclaw-ar",
-    "title": "OpenClaw \u2014 one local daemon, twenty-two channels",
-    "subject": "openclaw/openclaw \u2014 a personal AI assistant that runs locally and reaches you on every channel you already use",
+    "title": "OpenClaw — one local daemon, twenty-two channels",
+    "subject": "openclaw/openclaw — a personal AI assistant that runs locally and reaches you on every channel you already use",
     "repo": "openclaw/openclaw",
     "prompt": "architecture-review",
     "fps": 30,
     "width": 1920,
     "height": 1080,
-    "voice": "af_heart",
-    "register": "neutral"
+    "voice": "af_heart"
   },
   "style": {
     "preset": "engineering",
@@ -19,17 +18,16 @@
       "density": "comfortable",
       "emphasis": "insight-first"
     },
-    "rationale": "Engineering preset \u2014 OpenClaw is a local daemon architecture; argument is about channel topology, queueing semantics, recovery paths."
+    "rationale": "Engineering preset — OpenClaw is a local daemon architecture; argument is about channel topology, queueing semantics, recovery paths."
   },
   "scenes": [
     {
       "id": "title",
       "type": "frame",
-      "accent": "blue",
       "kicker": "DOCENT // ARCHITECTURE REVIEW",
       "title": "OpenClaw",
       "tagline": "One brain, every channel you already use.",
-      "footnote": "openclaw/openclaw  \u00b7  22 messaging integrations  \u00b7  TypeScript 91.9%  \u00b7  latest release 2026.5.22 \u2014 the day before this survey ran",
+      "footnote": "openclaw/openclaw  ·  22 messaging integrations  ·  TypeScript 91.9%  ·  latest release 2026.5.22 — the day before this survey ran",
       "beats": [
         {
           "id": "t-1",
@@ -52,51 +50,50 @@
     {
       "id": "prior-art",
       "type": "prior-art",
-      "accent": "violet",
       "kicker": "01 // AGAINST THE PRIOR ART",
       "heading": "Where OpenClaw stands in the field",
       "systems": [
         {
           "id": "claude-code",
           "label": "Claude Code",
-          "sub": "Anthropic CLI agent \u2014 one terminal",
+          "sub": "Anthropic CLI agent — one terminal",
           "year": "2024"
         },
         {
           "id": "chatgpt",
           "label": "ChatGPT + custom GPTs",
-          "sub": "hosted assistant \u2014 one app",
+          "sub": "hosted assistant — one app",
           "year": "2023+"
         },
         {
           "id": "cursor",
           "label": "Cursor / Continue",
-          "sub": "editor-bound agents \u2014 one IDE",
+          "sub": "editor-bound agents — one IDE",
           "year": "2023+"
         },
         {
           "id": "errbot",
           "label": "Errbot / Mattermost-AI",
-          "sub": "self-hosted chat bots \u2014 pre-LLM era",
+          "sub": "self-hosted chat bots — pre-LLM era",
           "year": "Errbot 2012+"
         }
       ],
       "dimensions": [
         {
           "id": "brain-location",
-          "label": "Where the brain runs \u2014 local vs cloud"
+          "label": "Where the brain runs — local vs cloud"
         },
         {
           "id": "channel-surface",
-          "label": "Channel surface \u2014 one vs many"
+          "label": "Channel surface — one vs many"
         },
         {
           "id": "trust-model",
-          "label": "Trust model \u2014 per-tool prompt vs identity-level vs no host"
+          "label": "Trust model — per-tool prompt vs identity-level vs no host"
         },
         {
           "id": "agent-shape",
-          "label": "Agent-shape \u2014 L-L-M-native vs scripted bot"
+          "label": "Agent-shape — L-L-M-native vs scripted bot"
         }
       ],
       "cells": [
@@ -104,19 +101,19 @@
           "system": "claude-code",
           "dimension": "brain-location",
           "mark": "same",
-          "note": "local \u2014 agent loop runs in your shell"
+          "note": "local — agent loop runs in your shell"
         },
         {
           "system": "claude-code",
           "dimension": "channel-surface",
           "mark": "diverges",
-          "note": "one terminal \u2014 traded breadth for granularity"
+          "note": "one terminal — traded breadth for granularity"
         },
         {
           "system": "claude-code",
           "dimension": "trust-model",
           "mark": "diverges",
-          "note": "per-tool prompt \u2014 traded flow for per-call consent"
+          "note": "per-tool prompt — traded flow for per-call consent"
         },
         {
           "system": "claude-code",
@@ -128,19 +125,19 @@
           "system": "chatgpt",
           "dimension": "brain-location",
           "mark": "diverges",
-          "note": "hosted backend \u2014 the brain lives on OpenAI's servers"
+          "note": "hosted backend — the brain lives on OpenAI's servers"
         },
         {
           "system": "chatgpt",
           "dimension": "channel-surface",
           "mark": "diverges",
-          "note": "one app \u2014 traded breadth for zero install"
+          "note": "one app — traded breadth for zero install"
         },
         {
           "system": "chatgpt",
           "dimension": "trust-model",
           "mark": "diverges",
-          "note": "no host access \u2014 nothing to reach from a phone"
+          "note": "no host access — nothing to reach from a phone"
         },
         {
           "system": "chatgpt",
@@ -152,13 +149,13 @@
           "system": "cursor",
           "dimension": "brain-location",
           "mark": "same",
-          "note": "local \u2014 runs in your I-D-E process"
+          "note": "local — runs in your I-D-E process"
         },
         {
           "system": "cursor",
           "dimension": "channel-surface",
           "mark": "diverges",
-          "note": "editor only \u2014 traded breadth for code context"
+          "note": "editor only — traded breadth for code context"
         },
         {
           "system": "cursor",
@@ -176,13 +173,13 @@
           "system": "errbot",
           "dimension": "brain-location",
           "mark": "same",
-          "note": "self-hosted \u2014 same"
+          "note": "self-hosted — same"
         },
         {
           "system": "errbot",
           "dimension": "channel-surface",
           "mark": "same",
-          "note": "multi-channel \u2014 same shape, smaller list"
+          "note": "multi-channel — same shape, smaller list"
         },
         {
           "system": "errbot",
@@ -237,7 +234,6 @@
     {
       "id": "gateway",
       "type": "structure",
-      "accent": "cyan",
       "kicker": "02 // THE GATEWAY IS THE PRODUCT",
       "heading": "One daemon, one control plane",
       "grid": {
@@ -248,7 +244,7 @@
         {
           "id": "you",
           "label": "You",
-          "sub": "the only intended user \u2014 single operator",
+          "sub": "the only intended user — single operator",
           "col": 0,
           "row": 0,
           "accent": "blue"
@@ -256,7 +252,7 @@
         {
           "id": "channels",
           "label": "22 messaging channels",
-          "sub": "WhatsApp \u00b7 Telegram \u00b7 Slack \u00b7 Discord \u00b7 Signal \u00b7 iMessage \u00b7 IRC \u00b7 Teams \u00b7 Matrix \u00b7 Feishu \u00b7 LINE \u00b7 \u2026",
+          "sub": "WhatsApp · Telegram · Slack · Discord · Signal · iMessage · IRC · Teams · Matrix · Feishu · LINE · …",
           "col": 2,
           "row": 0,
           "accent": "amber",
@@ -265,7 +261,7 @@
         {
           "id": "sessions",
           "label": "Multi-agent routing",
-          "sub": "isolated agents per channel/account/peer \u2014 workspaces",
+          "sub": "isolated agents per channel/account/peer — workspaces",
           "col": 0,
           "row": 1,
           "accent": "violet"
@@ -273,7 +269,7 @@
         {
           "id": "gateway",
           "label": "Gateway daemon",
-          "sub": "the only control plane \u2014 sessions, channels, tools, events",
+          "sub": "the only control plane — sessions, channels, tools, events",
           "col": 1,
           "row": 1,
           "accent": "cyan",
@@ -283,7 +279,7 @@
         {
           "id": "apps",
           "label": "Companion apps",
-          "sub": "macOS menu bar \u00b7 iOS / Android nodes \u00b7 Voice Wake",
+          "sub": "macOS menu bar · iOS / Android nodes · Voice Wake",
           "col": 3,
           "row": 1,
           "accent": "green"
@@ -291,7 +287,7 @@
         {
           "id": "host",
           "label": "Host (main session)",
-          "sub": "tools run with full host access \u2014 the README's stated default",
+          "sub": "tools run with full host access — the README's stated default",
           "col": 0,
           "row": 2,
           "accent": "rose",
@@ -300,7 +296,7 @@
         {
           "id": "sandbox",
           "label": "Sandbox (opt-in, non-main)",
-          "sub": "Docker / S-S-H / OpenShell \u2014 only when sandbox.mode = non-main",
+          "sub": "Docker / S-S-H / OpenShell — only when sandbox.mode = non-main",
           "col": 2,
           "row": 2,
           "accent": "amber",
@@ -404,9 +400,8 @@
     {
       "id": "pairing",
       "type": "walkthrough",
-      "accent": "green",
       "kicker": "03 // PAIRING AS THE FRONT DOOR",
-      "heading": "How a DM becomes a tool call \u2014 or doesn't",
+      "heading": "How a DM becomes a tool call — or doesn't",
       "actors": [
         {
           "id": "uk",
@@ -426,7 +421,7 @@
         {
           "id": "ms",
           "label": "Main session",
-          "sub": "full host access \u2014 no per-tool prompt"
+          "sub": "full host access — no per-tool prompt"
         }
       ],
       "beats": [
@@ -436,7 +431,7 @@
           "message": {
             "from": "uk",
             "to": "gw",
-            "label": "DM \u2014 untrusted input",
+            "label": "DM — untrusted input",
             "kind": "forward"
           }
         },
@@ -446,7 +441,7 @@
           "message": {
             "from": "gw",
             "to": "uk",
-            "label": "dropped \u00b7 pairing code returned",
+            "label": "dropped · pairing code returned",
             "kind": "reply"
           }
         },
@@ -456,7 +451,7 @@
           "message": {
             "from": "ps",
             "to": "gw",
-            "label": "DM \u2014 paired, allowlisted",
+            "label": "DM — paired, allowlisted",
             "kind": "forward"
           }
         },
@@ -477,7 +472,7 @@
           "message": {
             "from": "ms",
             "to": "ms",
-            "label": "tool call \u00b7 no prompt \u00b7 runs on host",
+            "label": "tool call · no prompt · runs on host",
             "kind": "aside"
           },
           "pace": "hold",
@@ -488,10 +483,8 @@
     {
       "id": "accumulate",
       "type": "structure",
-      "accent": "rose",
       "kicker": "04 // WHAT TWENTY-TWO CHANNELS ACCUMULATE",
       "heading": "One process, every set of keys",
-      "palette": "warm",
       "grid": {
         "cols": 5,
         "rows": 3
@@ -532,7 +525,7 @@
         {
           "id": "im",
           "label": "iMessage",
-          "sub": "handles \u00b7 Mac-bound",
+          "sub": "handles · Mac-bound",
           "col": 4,
           "row": 0,
           "accent": "amber"
@@ -540,7 +533,7 @@
         {
           "id": "more",
           "label": "...and seventeen more",
-          "sub": "Discord \u00b7 IRC \u00b7 Teams \u00b7 Matrix \u00b7 Feishu \u00b7 LINE \u00b7 Mattermost \u00b7 Nextcloud Talk \u00b7 Nostr \u00b7 Synology Chat \u00b7 Tlon \u00b7 Twitch \u00b7 Zalo \u00b7 WeChat \u00b7 QQ \u00b7 WebChat",
+          "sub": "Discord · IRC · Teams · Matrix · Feishu · LINE · Mattermost · Nextcloud Talk · Nostr · Synology Chat · Tlon · Twitch · Zalo · WeChat · QQ · WebChat",
           "col": 0,
           "row": 1,
           "accent": "amber",
@@ -549,7 +542,7 @@
         {
           "id": "daemon",
           "label": "Gateway daemon",
-          "sub": "one process \u00b7 ~/.openclaw/workspace \u00b7 holds every paired credential",
+          "sub": "one process · ~/.openclaw/workspace · holds every paired credential",
           "col": 3,
           "row": 1,
           "accent": "cyan",
@@ -559,7 +552,7 @@
         {
           "id": "blast",
           "label": "Blast radius if reached",
-          "sub": "vulnerable extension \u00b7 leaked workstation \u00b7 malicious skill in ClawHub \u2192 keys to 22 platforms",
+          "sub": "vulnerable extension · leaked workstation · malicious skill in ClawHub → keys to 22 platforms",
           "col": 0,
           "row": 2,
           "kind": "risk",
@@ -568,7 +561,7 @@
         {
           "id": "rotate",
           "label": "Recovery cost",
-          "sub": "rotate tokens on 22 platforms \u2014 most do not make this easy",
+          "sub": "rotate tokens on 22 platforms — most do not make this easy",
           "col": 3,
           "row": 2,
           "kind": "risk",
@@ -693,11 +686,8 @@
     {
       "id": "strains",
       "type": "tension",
-      "accent": "amber",
       "kicker": "05 // WHERE THIS DESIGN STRAINS",
       "heading": "Three failure modes named honestly",
-      "palette": "warm",
-      "treatment": "sketch",
       "cut": "hold",
       "grid": {
         "cols": 4,
@@ -707,7 +697,7 @@
         {
           "id": "paired-compromise",
           "label": "Paired sender goes hostile",
-          "sub": "an allowlisted account compromised on any of 22 platforms reaches the main session \u2014 pairing defends introduction, not ongoing trust",
+          "sub": "an allowlisted account compromised on any of 22 platforms reaches the main session — pairing defends introduction, not ongoing trust",
           "col": 0,
           "row": 0,
           "kind": "risk",
@@ -716,7 +706,7 @@
         {
           "id": "host-default",
           "label": "Host execution by default",
-          "sub": "main session runs with full host access \u2014 no second-line defense when 'just you' stops being true",
+          "sub": "main session runs with full host access — no second-line defense when 'just you' stops being true",
           "col": 2,
           "row": 0,
           "kind": "risk",
@@ -734,7 +724,7 @@
         {
           "id": "rejected",
           "label": "What was rejected for flow",
-          "sub": "per-tool prompts (Claude Code's model) \u00b7 sandbox-by-default \u00b7 a hosted backend \u2014 each gave up something else",
+          "sub": "per-tool prompts (Claude Code's model) · sandbox-by-default · a hosted backend — each gave up something else",
           "col": 2,
           "row": 1,
           "kind": "rejected",
@@ -743,7 +733,7 @@
         {
           "id": "watch",
           "label": "What to watch post-install",
-          "sub": "outbound traffic from the Gateway \u00b7 ~/.openclaw/workspace \u00b7 `openclaw doctor` after every channel addition",
+          "sub": "outbound traffic from the Gateway · ~/.openclaw/workspace · `openclaw doctor` after every channel addition",
           "col": 1,
           "row": 2,
           "accent": "amber",
@@ -810,7 +800,6 @@
     {
       "id": "numbers",
       "type": "quantities",
-      "accent": "cyan",
       "kicker": "06 // THE NUMBERS BEHIND THE CLAIM",
       "heading": "The verdict's posture, as arithmetic",
       "metrics": [
@@ -942,18 +931,17 @@
     {
       "id": "verdict",
       "type": "recap",
-      "accent": "blue",
       "kicker": "VERDICT // THE SCORECARD",
-      "heading": "OpenClaw \u2014 approve with caveats, knowing what you signed up for",
+      "heading": "OpenClaw — approve with caveats, knowing what you signed up for",
       "points": [
-        "Disposition \u2014 approve with caveats. The architecture is coherent and the README hides nothing about its defaults; that honesty is itself an architectural property.",
-        "Strength \u2014 the local-brain bet is coherent: one local daemon for twenty-two messaging surfaces is genuinely new, and no other prior system occupies that intersection.",
-        "Strength \u2014 the README is honest about its defaults rather than hiding them. Host-execution for the main session, pairing-only trust, sandbox opt-in \u2014 all stated, all named.",
-        "Strength \u2014 `openclaw doctor` surfaces D-M policy drift the operator would otherwise miss. The architecture shipped its own canary.",
-        "Fragility \u2014 paired-sender account compromise on any one of 22 platforms reaches the main session, which inherits full host access. The single biggest residual risk in this review.",
-        "Fragility \u2014 host-execution by default concedes the second line of defense; the sandbox modes exist but the default does not turn them.",
-        "Fragility \u2014 the security-default tests cannot be cited from the public surface; the project asks you to trust by reputation, not by named evidence.",
-        "When not to choose this \u2014 anyone unwilling to be their own on-call for twenty-two channels' worth of credentials sitting on one host. OpenClaw is built for a single operator who will read `openclaw doctor` output and rotate tokens themselves."
+        "Disposition — approve with caveats. The architecture is coherent and the README hides nothing about its defaults; that honesty is itself an architectural property.",
+        "Strength — the local-brain bet is coherent: one local daemon for twenty-two messaging surfaces is genuinely new, and no other prior system occupies that intersection.",
+        "Strength — the README is honest about its defaults rather than hiding them. Host-execution for the main session, pairing-only trust, sandbox opt-in — all stated, all named.",
+        "Strength — `openclaw doctor` surfaces D-M policy drift the operator would otherwise miss. The architecture shipped its own canary.",
+        "Fragility — paired-sender account compromise on any one of 22 platforms reaches the main session, which inherits full host access. The single biggest residual risk in this review.",
+        "Fragility — host-execution by default concedes the second line of defense; the sandbox modes exist but the default does not turn them.",
+        "Fragility — the security-default tests cannot be cited from the public surface; the project asks you to trust by reputation, not by named evidence.",
+        "When not to choose this — anyone unwilling to be their own on-call for twenty-two channels' worth of credentials sitting on one host. OpenClaw is built for a single operator who will read `openclaw doctor` output and rotate tokens themselves."
       ],
       "beats": [
         {

@@ -14,52 +14,156 @@
     {
       "id": "frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "DOCENT // EXPLAINER",
       "title": "Auth Overlap",
       "tagline": "Three credentials. Three properties. One intersection earns the system.",
       "footnote": "HMAC  ·  signed JWT  ·  bearer API key",
       "beats": [
-        {"id": "af-1", "narration": "Three credentials show up over and over in service authentication. HMAC, signed JSON Web Tokens, and plain bearer API keys.", "show": "title"},
-        {"id": "af-2", "narration": "They look interchangeable in the docs -- a string in a header, a check on the server. They are not. The set of guarantees each one delivers is different, and the difference is the entire argument.", "show": "tagline"},
-        {"id": "af-3", "narration": "We will not rank them. We will show what only one specific intersection of properties earns -- and what the others quietly leave on the table.", "show": "footnote"}
+        {
+          "id": "af-1",
+          "narration": "Three credentials show up over and over in service authentication. HMAC, signed JSON Web Tokens, and plain bearer API keys.",
+          "show": "title"
+        },
+        {
+          "id": "af-2",
+          "narration": "They look interchangeable in the docs -- a string in a header, a check on the server. They are not. The set of guarantees each one delivers is different, and the difference is the entire argument.",
+          "show": "tagline"
+        },
+        {
+          "id": "af-3",
+          "narration": "We will not rank them. We will show what only one specific intersection of properties earns -- and what the others quietly leave on the table.",
+          "show": "footnote"
+        }
       ]
     },
     {
       "id": "properties",
       "type": "structure",
-      "accent": "cyan",
       "kicker": "01 // THE PROPERTIES",
       "heading": "Three properties the credential might prove",
-      "grid": {"cols": 3, "rows": 2},
+      "grid": {
+        "cols": 3,
+        "rows": 2
+      },
       "nodes": [
-        {"id": "p-auth", "label": "Authenticated", "sub": "the server can verify the caller holds a real secret", "col": 0, "row": 0, "accent": "cyan"},
-        {"id": "p-integrity", "label": "Per-request integrity", "sub": "the request body cannot be tampered without detection", "col": 1, "row": 0, "accent": "amber"},
-        {"id": "p-replay", "label": "Replay-protected", "sub": "an attacker who captures the wire bytes cannot re-send them later", "col": 2, "row": 0, "accent": "rose"}
+        {
+          "id": "p-auth",
+          "label": "Authenticated",
+          "sub": "the server can verify the caller holds a real secret",
+          "col": 0,
+          "row": 0,
+          "accent": "cyan"
+        },
+        {
+          "id": "p-integrity",
+          "label": "Per-request integrity",
+          "sub": "the request body cannot be tampered without detection",
+          "col": 1,
+          "row": 0,
+          "accent": "amber"
+        },
+        {
+          "id": "p-replay",
+          "label": "Replay-protected",
+          "sub": "an attacker who captures the wire bytes cannot re-send them later",
+          "col": 2,
+          "row": 0,
+          "accent": "rose"
+        }
       ],
       "edges": [],
       "beats": [
-        {"id": "ap-1", "narration": "A credential can prove the caller knows a secret -- authentication. That is the obvious one, the only one most people check for.", "reveal": ["p-auth"], "focus": ["p-auth"]},
-        {"id": "ap-2", "narration": "It can also prove that the request body has not been tampered with -- per-request integrity, signed alongside the body, not just the header.", "reveal": ["p-integrity"], "focus": ["p-integrity"]},
-        {"id": "ap-3", "narration": "And it can prove the wire bytes are fresh -- replay-protected, so an attacker who sniffs traffic cannot replay yesterday's call today. Three properties. Not every scheme carries all three.", "reveal": ["p-replay"], "focus": ["p-replay"]}
+        {
+          "id": "ap-1",
+          "narration": "A credential can prove the caller knows a secret -- authentication. That is the obvious one, the only one most people check for.",
+          "reveal": [
+            "p-auth"
+          ],
+          "focus": [
+            "p-auth"
+          ]
+        },
+        {
+          "id": "ap-2",
+          "narration": "It can also prove that the request body has not been tampered with -- per-request integrity, signed alongside the body, not just the header.",
+          "reveal": [
+            "p-integrity"
+          ],
+          "focus": [
+            "p-integrity"
+          ]
+        },
+        {
+          "id": "ap-3",
+          "narration": "And it can prove the wire bytes are fresh -- replay-protected, so an attacker who sniffs traffic cannot replay yesterday's call today. Three properties. Not every scheme carries all three.",
+          "reveal": [
+            "p-replay"
+          ],
+          "focus": [
+            "p-replay"
+          ]
+        }
       ]
     },
     {
       "id": "venn",
       "type": "venn",
-      "accent": "amber",
       "kicker": "02 // THE OVERLAP",
       "heading": "Which scheme earns which properties",
       "sets": [
-        {"id": "auth", "label": "Authenticated", "sub": "knows the secret"},
-        {"id": "integrity", "label": "Per-request integrity", "sub": "body cannot drift"},
-        {"id": "replay", "label": "Replay-protected", "sub": "wire bytes expire"}
+        {
+          "id": "auth",
+          "label": "Authenticated",
+          "sub": "knows the secret"
+        },
+        {
+          "id": "integrity",
+          "label": "Per-request integrity",
+          "sub": "body cannot drift"
+        },
+        {
+          "id": "replay",
+          "label": "Replay-protected",
+          "sub": "wire bytes expire"
+        }
       ],
       "regions": [
-        {"id": "r-key", "in": ["auth"], "label": "API key", "note": "proves possession of a secret, nothing more"},
-        {"id": "r-jwt", "in": ["auth", "replay"], "label": "signed JWT", "note": "authenticated + short-lived; body still unsigned"},
-        {"id": "r-sig", "in": ["auth", "integrity"], "label": "raw signature", "note": "signs the body but no clock"},
-        {"id": "r-hmac", "in": ["auth", "integrity", "replay"], "label": "HMAC with nonce + timestamp", "note": "the full move"}
+        {
+          "id": "r-key",
+          "in": [
+            "auth"
+          ],
+          "label": "API key",
+          "note": "proves possession of a secret, nothing more"
+        },
+        {
+          "id": "r-jwt",
+          "in": [
+            "auth",
+            "replay"
+          ],
+          "label": "signed JWT",
+          "note": "authenticated + short-lived; body still unsigned"
+        },
+        {
+          "id": "r-sig",
+          "in": [
+            "auth",
+            "integrity"
+          ],
+          "label": "raw signature",
+          "note": "signs the body but no clock"
+        },
+        {
+          "id": "r-hmac",
+          "in": [
+            "auth",
+            "integrity",
+            "replay"
+          ],
+          "label": "HMAC with nonce + timestamp",
+          "note": "the full move"
+        }
       ],
       "novelty": {
         "kind": "venn",
@@ -67,36 +171,134 @@
         "claim": "HMAC over body plus timestamp plus nonce is the only construction where the same bytes prove identity, prove the body, and expire in one verify step."
       },
       "beats": [
-        {"id": "av-1", "narration": "Put the three properties on a diagram. The plain API key sits in the leftmost slice -- it proves you hold the secret, and it proves nothing else. The body could be rewritten in flight; the bytes could be replayed an hour later. The key does not notice.", "reveal": ["auth", "integrity", "replay", "r-key"], "focus": ["r-key"]},
-        {"id": "av-2", "narration": "A signed JWT pushes one circle further. The short expiration adds replay protection. But the JWT signs its own payload, not the request body -- the body of the call still rides naked underneath. Authenticated and replay-protected, integrity still missing.", "reveal": ["r-jwt"], "focus": ["r-jwt"]},
-        {"id": "av-3", "narration": "A raw signature over the body picks up integrity instead -- the body cannot drift -- but without a clock or a nonce, the same signed request is replayable forever. Two properties, two different missing thirds.", "reveal": ["r-sig"], "focus": ["r-sig"]},
-        {"id": "av-4", "narration": "Now look at where all three circles overlap. HMAC over the body plus a timestamp plus a nonce is the only construction where one MAC verify proves identity, proves the body, and proves freshness -- a single check that closes all three properties at once. That is what the intersection earns.", "reveal": ["r-hmac"], "focus": ["r-hmac"], "pace": "settle"}
+        {
+          "id": "av-1",
+          "narration": "Put the three properties on a diagram. The plain API key sits in the leftmost slice -- it proves you hold the secret, and it proves nothing else. The body could be rewritten in flight; the bytes could be replayed an hour later. The key does not notice.",
+          "reveal": [
+            "auth",
+            "integrity",
+            "replay",
+            "r-key"
+          ],
+          "focus": [
+            "r-key"
+          ]
+        },
+        {
+          "id": "av-2",
+          "narration": "A signed JWT pushes one circle further. The short expiration adds replay protection. But the JWT signs its own payload, not the request body -- the body of the call still rides naked underneath. Authenticated and replay-protected, integrity still missing.",
+          "reveal": [
+            "r-jwt"
+          ],
+          "focus": [
+            "r-jwt"
+          ]
+        },
+        {
+          "id": "av-3",
+          "narration": "A raw signature over the body picks up integrity instead -- the body cannot drift -- but without a clock or a nonce, the same signed request is replayable forever. Two properties, two different missing thirds.",
+          "reveal": [
+            "r-sig"
+          ],
+          "focus": [
+            "r-sig"
+          ]
+        },
+        {
+          "id": "av-4",
+          "narration": "Now look at where all three circles overlap. HMAC over the body plus a timestamp plus a nonce is the only construction where one MAC verify proves identity, proves the body, and proves freshness -- a single check that closes all three properties at once. That is what the intersection earns.",
+          "reveal": [
+            "r-hmac"
+          ],
+          "focus": [
+            "r-hmac"
+          ],
+          "pace": "settle"
+        }
       ]
     },
     {
       "id": "tension",
       "type": "tension",
-      "accent": "rose",
       "kicker": "03 // WHAT IT COSTS",
       "heading": "The triple-overlap is not free",
-      "grid": {"cols": 3, "rows": 3},
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
       "nodes": [
-        {"id": "chosen", "label": "HMAC + ts + nonce", "sub": "the triple-property credential", "col": 1, "row": 0, "accent": "green", "weight": "hero"},
-        {"id": "clock", "label": "Clock skew bound", "sub": "needs a synced wall clock, both sides", "col": 0, "row": 2, "kind": "risk"},
-        {"id": "nonce", "label": "Nonce store", "sub": "the server must remember every nonce until it expires", "col": 2, "row": 2, "kind": "risk"},
-        {"id": "rejected", "label": "Bearer key alone", "sub": "smaller and cacheable -- and silent on integrity, replay", "col": 0, "row": 0, "kind": "rejected"}
+        {
+          "id": "chosen",
+          "label": "HMAC + ts + nonce",
+          "sub": "the triple-property credential",
+          "col": 1,
+          "row": 0,
+          "accent": "green",
+          "weight": "hero"
+        },
+        {
+          "id": "clock",
+          "label": "Clock skew bound",
+          "sub": "needs a synced wall clock, both sides",
+          "col": 0,
+          "row": 2,
+          "kind": "risk"
+        },
+        {
+          "id": "nonce",
+          "label": "Nonce store",
+          "sub": "the server must remember every nonce until it expires",
+          "col": 2,
+          "row": 2,
+          "kind": "risk"
+        },
+        {
+          "id": "rejected",
+          "label": "Bearer key alone",
+          "sub": "smaller and cacheable -- and silent on integrity, replay",
+          "col": 0,
+          "row": 0,
+          "kind": "rejected"
+        }
       ],
       "edges": [],
       "beats": [
-        {"id": "at-1", "narration": "The triple intersection is not free. A bearer API key is one cached lookup -- no clock, no state. We rejected that simpler path in favor of HMAC, and chose the triple over the single at the cost of two new failure modes.", "reveal": ["chosen", "rejected"], "focus": ["chosen"]},
-        {"id": "at-2", "narration": "First, the clock. The standard timestamp window is 300 seconds -- five minutes -- and any deployment with skew greater than that starts rejecting valid traffic. The trade-off is real: replay protection pays for itself with a synced wall clock as a hard dependency.", "reveal": ["clock"], "focus": ["clock"]},
-        {"id": "at-3", "narration": "Second, the nonce store. The server has to remember every nonce for the full window -- 5 minutes of state per accepted request -- or the same signed request can be replayed once inside that window. A property the diagram promises only holds if the server pays the storage bill.", "reveal": ["nonce"], "focus": ["nonce"]}
+        {
+          "id": "at-1",
+          "narration": "The triple intersection is not free. A bearer API key is one cached lookup -- no clock, no state. We rejected that simpler path in favor of HMAC, and chose the triple over the single at the cost of two new failure modes.",
+          "reveal": [
+            "chosen",
+            "rejected"
+          ],
+          "focus": [
+            "chosen"
+          ]
+        },
+        {
+          "id": "at-2",
+          "narration": "First, the clock. The standard timestamp window is 300 seconds -- five minutes -- and any deployment with skew greater than that starts rejecting valid traffic. The trade-off is real: replay protection pays for itself with a synced wall clock as a hard dependency.",
+          "reveal": [
+            "clock"
+          ],
+          "focus": [
+            "clock"
+          ]
+        },
+        {
+          "id": "at-3",
+          "narration": "Second, the nonce store. The server has to remember every nonce for the full window -- 5 minutes of state per accepted request -- or the same signed request can be replayed once inside that window. A property the diagram promises only holds if the server pays the storage bill.",
+          "reveal": [
+            "nonce"
+          ],
+          "focus": [
+            "nonce"
+          ]
+        }
       ]
     },
     {
       "id": "big-idea",
       "type": "big-idea",
-      "accent": "amber",
       "kicker": "TAKEAWAY",
       "heading": "The single line to carry away",
       "statement": "Pick the credential for the intersection of properties you actually need, not for the strongest property alone.",
@@ -105,13 +307,17 @@
         "value": "∩"
       },
       "beats": [
-        {"id": "ab-1", "narration": "The lesson is set-theoretic, not nominal. Pick the credential for the intersection of properties you actually need -- authentication, integrity, replay protection -- not for the strongest single property on offer.", "show": "statement", "pace": "hold"}
+        {
+          "id": "ab-1",
+          "narration": "The lesson is set-theoretic, not nominal. Pick the credential for the intersection of properties you actually need -- authentication, integrity, replay protection -- not for the strongest single property on offer.",
+          "show": "statement",
+          "pace": "hold"
+        }
       ]
     },
     {
       "id": "recap",
       "type": "recap",
-      "accent": "blue",
       "kicker": "RECAP // THE VERDICT",
       "heading": "Auth overlap — what to carry",
       "points": [
@@ -122,12 +328,35 @@
         "Carry: name the properties you need, then read the diagram, then choose."
       ],
       "beats": [
-        {"id": "ar-1", "narration": "The honest verdict. Three properties matter, and most credential choices are made by name -- pick a JWT, pick an API key -- not by which set of properties the scheme actually earns.", "reveal": 1},
-        {"id": "ar-2", "narration": "An API key proves identity and nothing else. A signed JWT adds replay protection but leaves the body unsigned. A raw signature picks up integrity but is replayable forever.", "reveal": 2},
-        {"id": "ar-3", "narration": "Only the HMAC construction with a timestamp and nonce sits at the triple intersection -- one verify proves all three.", "reveal": 3},
-        {"id": "ar-4", "narration": "The cost is real -- a synchronized clock and a nonce store. The triple is not free; it is paid for in coordination and storage.", "reveal": 4},
-        {"id": "ar-5", "narration": "So the durable move is the inversion. Name the set of properties the system genuinely needs, then read the diagram, then pick the scheme that sits in that intersection. The credential is a region, not a name.", "reveal": 5}
+        {
+          "id": "ar-1",
+          "narration": "The honest verdict. Three properties matter, and most credential choices are made by name -- pick a JWT, pick an API key -- not by which set of properties the scheme actually earns.",
+          "reveal": 1
+        },
+        {
+          "id": "ar-2",
+          "narration": "An API key proves identity and nothing else. A signed JWT adds replay protection but leaves the body unsigned. A raw signature picks up integrity but is replayable forever.",
+          "reveal": 2
+        },
+        {
+          "id": "ar-3",
+          "narration": "Only the HMAC construction with a timestamp and nonce sits at the triple intersection -- one verify proves all three.",
+          "reveal": 3
+        },
+        {
+          "id": "ar-4",
+          "narration": "The cost is real -- a synchronized clock and a nonce store. The triple is not free; it is paid for in coordination and storage.",
+          "reveal": 4
+        },
+        {
+          "id": "ar-5",
+          "narration": "So the durable move is the inversion. Name the set of properties the system genuinely needs, then read the diagram, then pick the scheme that sits in that intersection. The credential is a region, not a name.",
+          "reveal": 5
+        }
       ]
     }
-  ]
+  ],
+  "style": {
+    "preset": "neutral"
+  }
 }

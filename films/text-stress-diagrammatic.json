@@ -8,14 +8,12 @@
     "fps": 30,
     "width": 1920,
     "height": 1080,
-    "voice": "af_heart",
-    "register": "neutral"
+    "voice": "af_heart"
   },
   "scenes": [
     {
       "id": "s-frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "TEXT STRESS // DIAGRAMMATIC // FIXTURE FOR THE FITTED TEXT RENDERING PASS — A SLOT-BY-SLOT TORTURE TEST OF EVERY DIAGRAM PRIMITIVE",
       "title": "A Torture Test of Every Diagrammatic Text Slot in the docent Engine — Long Labels, Long Subs, Long Cells, Long Captions",
       "tagline": "Every label, every cell, every axis tick, every callout — each filled with a sentence two hundred and fifty characters long, so the renderer's text-fitting contract has to do real work and the depth-review eye can confirm no slot truncates ugly or overruns its container.",
@@ -36,28 +34,36 @@
     {
       "id": "s-structure",
       "type": "structure",
-      "accent": "cyan",
       "kicker": "TEXT STRESS // STRUCTURE — NODE LABELS, EDGE LABELS, AND SUB-LINES PUSHED PAST THEIR EXPECTED LENGTH",
       "heading": "structure scene — node labels, node sub-lines, and edge labels each carry prose long enough to force the renderer's fit logic to step down through every tier",
-      "grid": {"cols": 3, "rows": 2},
+      "grid": {
+        "cols": 3,
+        "rows": 2
+      },
       "nodes": [
         {
           "id": "n1",
           "label": "A Distributed Coordination Service That Maintains Quorum Across Three Availability Zones With Eventually-Consistent Read Replicas In Two Additional Regions",
           "sub": "The control plane lives here; every write goes through a Raft leader and every read can be served from any quorum member, which makes the latency profile asymmetric and the failure modes interesting to draw on a single edge.",
-          "col": 0, "row": 0, "accent": "blue"
+          "col": 0,
+          "row": 0,
+          "accent": "blue"
         },
         {
           "id": "n2",
           "label": "Edge Cache With An LRU Eviction Policy Tuned For The Long Tail Of Cold-Object Reads — Survives A Hot Origin Outage For Roughly Forty Minutes",
           "sub": "Reads it can serve cold from the LRU never reach the origin; reads it cannot serve are queued, dedup'd by request signature, and forwarded to the origin in a single batched fan-out per second.",
-          "col": 2, "row": 0, "accent": "green"
+          "col": 2,
+          "row": 0,
+          "accent": "green"
         },
         {
           "id": "n3",
           "label": "The Aggregator That Joins Per-Tenant Activity Streams With The Region-Level Billing Ledger Inside A Single Logical Window Of Five Wall-Clock Seconds",
           "sub": "When a tenant straddles two windows the aggregator double-counts at most once; when it straddles three the aggregator drops the late event silently — the very corner the risk node calls out below.",
-          "col": 1, "row": 1, "accent": "amber",
+          "col": 1,
+          "row": 1,
+          "accent": "amber",
           "weight": "hero"
         }
       ],
@@ -81,13 +87,22 @@
         {
           "id": "structure-1",
           "narration": "Three node labels and two edge labels are each over a hundred and twenty characters — long enough that the card's fitFont and the connector's fitFontSize both have to drop the font size while keeping the labels legible. We chose the auto-shrink strategy over truncation here so the reader can still read the whole label.",
-          "reveal": ["n1", "n2", "e12"]
+          "reveal": [
+            "n1",
+            "n2",
+            "e12"
+          ]
         },
         {
           "id": "structure-2",
           "narration": "The aggregator is the hero — and the failure mode it owns is a load-bearing trade-off; we accepted late-event loss instead of holding writes open indefinitely.",
-          "reveal": ["n3", "e13"],
-          "focus": ["n3"],
+          "reveal": [
+            "n3",
+            "e13"
+          ],
+          "focus": [
+            "n3"
+          ],
           "pace": "hold"
         }
       ]
@@ -95,7 +110,6 @@
     {
       "id": "s-walkthrough",
       "type": "walkthrough",
-      "accent": "green",
       "kicker": "TEXT STRESS // WALKTHROUGH — ACTOR LABELS WITH FULL DESCRIPTIVE NAMES AND MESSAGE LABELS THE LENGTH OF A COMMENT",
       "heading": "walkthrough scene — actor headers and message labels that stretch past their pill widths so the renderer has to wrap actors and shrink messages on the line",
       "actors": [
@@ -151,7 +165,6 @@
     {
       "id": "s-compare",
       "type": "compare",
-      "accent": "amber",
       "kicker": "TEXT STRESS // COMPARE — COLUMN HEADERS WITH FULL VENDOR NAMES AND CELLS WITH THE FULL PROSE OF A DESIGN-DOC TRADE-OFF",
       "heading": "compare scene — long column headers, long criterion rows, and cells filled with multi-clause sentences instead of one-word verdicts",
       "columns": [
@@ -176,27 +189,51 @@
           "id": "r1",
           "label": "Operational complexity per consensus event measured during a typical week",
           "cells": [
-            {"text": "Five operators on call across three regions; one playbook per failure class; a typical week sees two playbook executions, mostly benign."},
-            {"text": "Two operators on call; the failure modes are well understood and well drilled; a typical week sees zero playbook executions and most months see fewer than five.", "verdict": "win"},
-            {"text": "Unknown; this is a new system and the operational story is still being written, so the first six months would carry a real ops tax we cannot estimate.", "verdict": "lose"}
+            {
+              "text": "Five operators on call across three regions; one playbook per failure class; a typical week sees two playbook executions, mostly benign."
+            },
+            {
+              "text": "Two operators on call; the failure modes are well understood and well drilled; a typical week sees zero playbook executions and most months see fewer than five.",
+              "verdict": "win"
+            },
+            {
+              "text": "Unknown; this is a new system and the operational story is still being written, so the first six months would carry a real ops tax we cannot estimate.",
+              "verdict": "lose"
+            }
           ]
         },
         {
           "id": "r2",
           "label": "Time-to-first-meaningful-response under a regional partition that lasts thirty minutes",
           "cells": [
-            {"text": "Sub-second from the read replicas in the surviving region, but writes degrade to read-only until quorum is restored; a measured trade-off the team has lived with.", "verdict": "win"},
-            {"text": "Reads continue but writes block until the synchronous replication catches up — the worst case is the full duration of the partition.", "verdict": "lose"},
-            {"text": "Hot tier serves reads from the local region; writes can be served from the cold tier but the latency triples and the user-visible effect is unhappy.", "verdict": "lose"}
+            {
+              "text": "Sub-second from the read replicas in the surviving region, but writes degrade to read-only until quorum is restored; a measured trade-off the team has lived with.",
+              "verdict": "win"
+            },
+            {
+              "text": "Reads continue but writes block until the synchronous replication catches up — the worst case is the full duration of the partition.",
+              "verdict": "lose"
+            },
+            {
+              "text": "Hot tier serves reads from the local region; writes can be served from the cold tier but the latency triples and the user-visible effect is unhappy.",
+              "verdict": "lose"
+            }
           ]
         },
         {
           "id": "r3",
           "label": "Eventual consistency window across regional read replicas",
           "cells": [
-            {"text": "Bounded by the cross-region commit lag; ninety-ninth percentile around two seconds."},
-            {"text": "Synchronous replication guarantees zero drift; the cost is the write-latency picture above.", "verdict": "win"},
-            {"text": "Eventual; the cold tier can lag the hot tier by minutes during a sustained cross-region traffic spike."}
+            {
+              "text": "Bounded by the cross-region commit lag; ninety-ninth percentile around two seconds."
+            },
+            {
+              "text": "Synchronous replication guarantees zero drift; the cost is the write-latency picture above.",
+              "verdict": "win"
+            },
+            {
+              "text": "Eventual; the cold tier can lag the hot tier by minutes during a sustained cross-region traffic spike."
+            }
           ]
         }
       ],
@@ -216,7 +253,6 @@
     {
       "id": "s-quantities",
       "type": "quantities",
-      "accent": "cyan",
       "kicker": "TEXT STRESS // QUANTITIES — FIGURE CARDS WITH LONG LABELS AND VALUES THAT ARE NOT JUST INTEGERS",
       "heading": "quantities scene — figures with long uppercase captions, exponential-notation values, and full-sentence notes beneath the number",
       "figures": [
@@ -253,7 +289,6 @@
     {
       "id": "s-chart",
       "type": "chart",
-      "accent": "violet",
       "kicker": "TEXT STRESS // CHART — AXIS TITLES AND BAR LABELS THAT NEVER FIT AT THE BASE FONT SIZE",
       "heading": "chart scene — long axis titles and long bar-category labels exercising the SVG-text shrink-or-truncate path",
       "xAxis": {
@@ -276,10 +311,22 @@
           "kind": "bars",
           "accent": "violet",
           "data": [
-            {"label": "Quarter one — before the alert-routing rewrite", "value": 170},
-            {"label": "Quarter two — during the rewrite rollout phase", "value": 120},
-            {"label": "Quarter three — first full post-rewrite quarter", "value": 60},
-            {"label": "Quarter four — stable steady-state post-rewrite", "value": 42}
+            {
+              "label": "Quarter one — before the alert-routing rewrite",
+              "value": 170
+            },
+            {
+              "label": "Quarter two — during the rewrite rollout phase",
+              "value": 120
+            },
+            {
+              "label": "Quarter three — first full post-rewrite quarter",
+              "value": 60
+            },
+            {
+              "label": "Quarter four — stable steady-state post-rewrite",
+              "value": 42
+            }
           ]
         }
       ],
@@ -287,37 +334,45 @@
         {
           "id": "chart-1",
           "narration": "Each bar's category label is a full descriptive sentence about that quarter — far longer than a single word. The shrink-and-truncate path keeps each label inside its slot rather than letting two adjacent labels overlap.",
-          "reveal": ["bars"]
+          "reveal": [
+            "bars"
+          ]
         }
       ]
     },
     {
       "id": "s-tension",
       "type": "tension",
-      "accent": "amber",
       "kicker": "TEXT STRESS // TENSION — LEDGER CARDS WITH LONG LABELS AND LONGER SUB-LINES",
       "heading": "tension scene — chosen, rejected, and risk cards each filled with prose long enough to force the LedgerCard's fitFont to step down toward the floor",
       "cut": "hold",
-      "grid": {"cols": 3, "rows": 2},
+      "grid": {
+        "cols": 3,
+        "rows": 2
+      },
       "nodes": [
         {
           "id": "chosen",
           "label": "Centralizing the commit log inside a single Raft group across all regions",
           "sub": "default_max_turns.unwrap_or_default() — the commit log lives in one consensus group; every region defers to the leader for ordering, accepting the cross-region round-trip on every write.",
-          "col": 0, "row": 0, "accent": "green"
+          "col": 0,
+          "row": 0,
+          "accent": "green"
         },
         {
           "id": "rejected",
           "label": "Per-region commit logs reconciled by an eventually-consistent merge layer",
           "sub": "We rejected this in favour of strong global ordering — instead of a merge layer we pay the latency tax of cross-region consensus, which costs us a round trip per write at the worst geography.",
-          "col": 2, "row": 0,
+          "col": 2,
+          "row": 0,
           "kind": "rejected"
         },
         {
           "id": "risk",
           "label": "A regional partition lasting longer than the consensus timeout permanently demotes the partitioned region",
           "sub": "The partitioned region serves stale reads until the partition heals and the operator runs the manual rebalance procedure — a non-trivial cost that the runbook does not yet automate.",
-          "col": 1, "row": 1,
+          "col": 1,
+          "row": 1,
           "kind": "risk"
         }
       ],
@@ -326,13 +381,20 @@
         {
           "id": "tension-1",
           "narration": "We chose strong global ordering over per-region eventual consistency; the trade-off is the cross-region round trip on every write. That is the bill we pay for the consistency story above.",
-          "reveal": ["chosen", "rejected"]
+          "reveal": [
+            "chosen",
+            "rejected"
+          ]
         },
         {
           "id": "tension-2",
           "narration": "The residual risk is the partitioned-region case — the runbook covers it but does not automate it, and the on-call cost is real. We held this rather than fixing it because the failure rate is low.",
-          "reveal": ["risk"],
-          "focus": ["risk"],
+          "reveal": [
+            "risk"
+          ],
+          "focus": [
+            "risk"
+          ],
           "pace": "hold"
         }
       ]
@@ -340,7 +402,6 @@
     {
       "id": "s-recap",
       "type": "recap",
-      "accent": "green",
       "kicker": "TEXT STRESS // RECAP — BULLETS LONGER THAN ANY SLIDE-WARE EXPECTS",
       "heading": "recap scene — points that wrap to several lines, exercising the multi-line wrap and shrink-past-the-floor fallback",
       "points": [
@@ -357,5 +418,8 @@
         }
       ]
     }
-  ]
+  ],
+  "style": {
+    "preset": "neutral"
+  }
 }

@@ -8,8 +8,7 @@
     "fps": 30,
     "width": 1920,
     "height": 1080,
-    "voice": "af_heart",
-    "register": "neutral"
+    "voice": "af_heart"
   },
   "style": {
     "preset": "engineering",
@@ -19,17 +18,16 @@
       "density": "comfortable",
       "emphasis": "insight-first"
     },
-    "rationale": "Engineering preset \u2014 the subject IS a codebase (the docent engine itself); load-bearing work is architecture-level: closed grammar, scene types, cascade composition."
+    "rationale": "Engineering preset — the subject IS a codebase (the docent engine itself); load-bearing work is architecture-level: closed grammar, scene types, cascade composition."
   },
   "scenes": [
     {
       "id": "frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "DOCENT // ARCHITECTURE REVIEW",
       "title": "docent",
       "tagline": "An author. A typesetter. One document between them.",
-      "footnote": "5 gallery films  \u00b7  10 specs total  \u00b7  HEAD = 3964a58  \u00b7  the system reviews itself",
+      "footnote": "5 gallery films  ·  10 specs total  ·  HEAD = 3964a58  ·  the system reviews itself",
       "beats": [
         {
           "id": "self-frame-1",
@@ -51,7 +49,6 @@
     {
       "id": "prior-art",
       "type": "prior-art",
-      "accent": "violet",
       "kicker": "01 // AGAINST THE PRIOR ART",
       "heading": "Where docent stands against the field",
       "systems": [
@@ -236,7 +233,6 @@
     {
       "id": "vocab",
       "type": "structure",
-      "accent": "cyan",
       "kicker": "02 // THE CLOSED VOCABULARY",
       "heading": "Explanation has a finite set of moves",
       "grid": {
@@ -247,7 +243,7 @@
         {
           "id": "set-up",
           "label": "Set up",
-          "sub": "frame \u00b7 prior-art \u00b7 big-idea",
+          "sub": "frame · prior-art · big-idea",
           "col": 0,
           "row": 0,
           "accent": "blue"
@@ -255,7 +251,7 @@
         {
           "id": "layout",
           "label": "Lay out the parts",
-          "sub": "structure \u00b7 progression \u00b7 walkthrough",
+          "sub": "structure · progression · walkthrough",
           "col": 1,
           "row": 0,
           "accent": "cyan",
@@ -282,7 +278,7 @@
         {
           "id": "engine",
           "label": "Engine",
-          "sub": "Remotion \u00b7 5,648 LOC \u00b7 owns every pixel",
+          "sub": "Remotion · 5,648 LOC · owns every pixel",
           "col": 2,
           "row": 1,
           "accent": "green",
@@ -291,7 +287,7 @@
         {
           "id": "argue",
           "label": "Argue with the subject",
-          "sub": "compare \u00b7 quantities \u00b7 chart \u00b7 probe",
+          "sub": "compare · quantities · chart · probe",
           "col": 0,
           "row": 2,
           "accent": "amber",
@@ -299,8 +295,8 @@
         },
         {
           "id": "conclude",
-          "label": "Annotate \u00b7 conclude",
-          "sub": "closeup \u00b7 passage \u00b7 figure \u00b7 demonstrate \u00b7 tension \u00b7 recap \u00b7 diff",
+          "label": "Annotate · conclude",
+          "sub": "closeup · passage · figure · demonstrate · tension · recap · diff",
           "col": 2,
           "row": 2,
           "accent": "rose"
@@ -370,7 +366,6 @@
     {
       "id": "gates",
       "type": "progression",
-      "accent": "amber",
       "kicker": "03 // THREE GATES IN SERIES",
       "heading": "What a draft has to clear before it ships",
       "flow": "linear",
@@ -378,7 +373,7 @@
         {
           "id": "g-template",
           "label": "Layer 1 -- the template",
-          "sub": "survey-template.md \u00b7 every section forced filled",
+          "sub": "survey-template.md · every section forced filled",
           "gate": true
         },
         {
@@ -390,13 +385,13 @@
         {
           "id": "g-floor",
           "label": "Layer 2 -- the floor",
-          "sub": "depthcheck.ts \u00b7 264 lines \u00b7 5 to 9 regex tests",
+          "sub": "depthcheck.ts · 264 lines · 5 to 9 regex tests",
           "gate": true
         },
         {
           "id": "g-ceiling",
           "label": "Layer 3 -- the ceiling",
-          "sub": "judge.ts \u00b7 510 lines \u00b7 L-L-M \u00b7 6 dims \u00d7 5 pts = 30",
+          "sub": "judge.ts · 510 lines · L-L-M · 6 dims × 5 pts = 30",
           "gate": true
         },
         {
@@ -446,7 +441,6 @@
     {
       "id": "fork",
       "type": "compare",
-      "accent": "rose",
       "kicker": "04 // THE FORK REFUSED",
       "heading": "The free-form escape valve, and what closing it costs",
       "columns": [
@@ -544,11 +538,9 @@
     {
       "id": "strain",
       "type": "tension",
-      "accent": "amber",
       "kicker": "05 // WHERE IT STRAINS",
       "heading": "The live risks the architecture cannot detect",
       "cut": "hold",
-      "treatment": "sketch",
       "grid": {
         "cols": 4,
         "rows": 3
@@ -594,7 +586,7 @@
         {
           "id": "judge-drift",
           "label": "Risk -- the L-L-M judge silently degrades",
-          "sub": "model deprecation \u00b7 prompt drift \u00b7 cost-tuning -- the floor becomes the ceiling",
+          "sub": "model deprecation · prompt drift · cost-tuning -- the floor becomes the ceiling",
           "col": 0,
           "row": 2,
           "kind": "risk",
@@ -654,7 +646,6 @@
     {
       "id": "numbers",
       "type": "quantities",
-      "accent": "violet",
       "kicker": "06 // BY THE NUMBERS",
       "heading": "The arithmetic behind the verdict's posture",
       "metrics": [
@@ -772,7 +763,6 @@
     {
       "id": "verdict",
       "type": "recap",
-      "accent": "blue",
       "kicker": "RECAP // THE SCORECARD",
       "heading": "docent on docent -- approve with caveats",
       "points": [

@@ -8,7 +8,7 @@
 // renders byte-identically to before any of this existed.
 
 import {spring} from 'remotion';
-import type {Beat, Scene} from './spec';
+import type {Beat} from './spec';
 import {ACCENTS, type AccentKey} from '../theme';
 import type {ResolvedStyle} from '../style';
 
@@ -109,21 +109,23 @@ export const numericRevealMap = (
 
 // ----- palette — accent as meaning ------------------------------------------
 //
-// `palette` is a scene knob: it does not introduce colour, it *selects* over
-// the existing six accents and biases the glow intensity. Each family is an
-// ordered preference list over ACCENTS — when a scene declares a palette, its
-// elements draw from that family's accents, and its glows scale by the
-// family's `glowScale`.
-//   cool   — blue / cyan / violet, restrained glow.
-//   warm   — amber / rose, mid glow.
-//   signal — rose-forward, high glow (the alarm palette).
-//   mono   — a single accent, glow near-zero (the austere palette).
-// A scene with no `palette` is untouched: every accent resolves exactly as
-// `accent()` resolved it before this knob existed.
+// `palette` was a scene knob, removed in v2.4.0 with the rest of the Phase-1
+// intent-knob system (`Scene.palette`, `Scene.treatment`, `Scene.accent`,
+// `Meta.register`). Accent selection now flows from `FilmSpec.style` through
+// `ResolvedStyle.tokens.accent`; the helpers below survive as the engine's
+// preset-aware accent lookup, with their `palette` argument typed as the
+// closed enum (kept here as the source-of-truth name) but always called with
+// `undefined` from every renderer — the identity branch.
+//
+// Keeping the helper shape lets a future re-introduction of a palette knob
+// (or an equivalent style-intent dimension) plug back in without another
+// callsite migration. Today the runtime behaviour is `accent(key)` against
+// the preset's accent table — preset-aware, palette-blind.
+export type PaletteName = 'cool' | 'warm' | 'signal' | 'mono';
 
 type PaletteFamily = {accents: AccentKey[]; glowScale: number};
 
-const PALETTES: Record<NonNullable<Scene['palette']>, PaletteFamily> = {
+const PALETTES: Record<PaletteName, PaletteFamily> = {
   cool: {accents: ['blue', 'cyan', 'violet'], glowScale: 0.7},
   warm: {accents: ['amber', 'rose'], glowScale: 1.0},
   // signal — rose leads (the alarm colour), amber is the only secondary, so a
@@ -134,32 +136,32 @@ const PALETTES: Record<NonNullable<Scene['palette']>, PaletteFamily> = {
 };
 
 // The glow-intensity multiplier a scene's palette implies. 1 (the identity)
-// when no palette is set — so untouched scenes keep their exact glow.
-export const paletteGlowScale = (palette: Scene['palette']): number =>
+// when no palette is set — which, post-v2.4.0, is every caller.
+export const paletteGlowScale = (palette: PaletteName | undefined): number =>
   palette ? PALETTES[palette].glowScale : 1;
 
 // Resolve an accent *key* under a scene's palette. Without a palette this is
-// the identity — `key` (or the scene default) is returned unchanged, so the
-// caller's existing `accent()` lookup is byte-identical.
+// the identity — `ownAccent` (or the scene default, today always undefined →
+// `'blue'`) is returned unchanged.
 //
 // With a palette, the family biases selection. `index` lets a scene spread a
 // set of elements across the family (node 0 → family[0], node 1 → family[1],
-// …, wrapping); the scene's own declared accent still wins for index 0 when
-// it already falls inside the family, so an author's explicit choice is kept.
+// …, wrapping); the element's own declared accent still wins when it already
+// falls inside the family, so an author's explicit choice is kept.
 //
 // `style` is unused by this function (key resolution is preset-independent —
 // the palette family is itself a fixed list of accent KEYS) but is accepted
-// to keep the signature symmetric with paletteSceneHex; threading it from
-// callsites today lets the helper grow without another migration.
+// to keep the signature symmetric with paletteSceneHex.
 export const paletteAccentKey = (
-  palette: Scene['palette'],
-  sceneAccent: string,
+  palette: PaletteName | undefined,
+  sceneAccent: string | undefined,
   ownAccent: string | undefined,
   index = 0,
   _style?: ResolvedStyle,
 ): string => {
-  // No palette — identity: the element's own accent, else the scene's.
-  if (!palette) return ownAccent ?? sceneAccent;
+  // No palette — identity: the element's own accent, else the scene's, else
+  // the universal default (`'blue'`, which every preset defines).
+  if (!palette) return ownAccent ?? sceneAccent ?? 'blue';
   const fam = PALETTES[palette].accents;
   // An element that names its own in-family accent keeps it — authorial
   // intent is never overridden, the palette only fills the unset.
@@ -167,18 +169,18 @@ export const paletteAccentKey = (
   return fam[((index % fam.length) + fam.length) % fam.length];
 };
 
-// The resolved accent *hex* for the scene as a whole under its palette. Used
-// for the scene's chrome (SceneFrame light, kicker). Without a palette this is
-// exactly `accent(scene.accent)`.
+// The resolved accent *hex* for the scene as a whole. Used for the scene's
+// chrome (SceneFrame light, kicker). With no `palette` (the v2.4.0+ default
+// state of every caller) this is exactly `style.tokens.accent[sceneAccent
+// ?? 'blue']`.
 //
 // When `style` is supplied the lookup goes through `style.tokens.accent` —
 // the preset's accent table — so a preset that redefines `cyan` reaches every
-// scene that uses `palette: 'cool'`. When `style` is omitted the helper falls
-// back to the hardcoded `ACCENTS` map in theme.ts, preserving the pre-style
-// behaviour for any callsite the migration hasn't reached yet.
+// scene. When `style` is omitted the helper falls back to the hardcoded
+// `ACCENTS` map in theme.ts.
 export const paletteSceneHex = (
-  palette: Scene['palette'],
-  sceneAccent: string,
+  palette: PaletteName | undefined,
+  sceneAccent: string | undefined,
   style?: ResolvedStyle,
 ): string => {
   const key = paletteAccentKey(palette, sceneAccent, sceneAccent, 0);

@@ -32,9 +32,6 @@ import {paletteGlowScale, paletteSceneHex} from '../engine/knobs';
 // gutters hold the axis lowLabel/highLabel phrases.
 const PLOT = {x: 280, y: 308, w: 1360, h: 608};
 
-const sketchTreatment = (t?: string): boolean =>
-  t === 'sketch' || t === 'whiteboard';
-
 export const LandscapeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   ts,
   sceneIndex,
@@ -48,7 +45,7 @@ export const LandscapeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const viz = style.visualization;
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   // Narrow `Scene.xAxis`/`yAxis` (the widened `Axis | LandscapeAxis` union)
   // via the `kind` discriminator. The validator pins `kind === 'landscape'`
   // on every landscape scene's axes; this read is safe on any spec that
@@ -59,7 +56,9 @@ export const LandscapeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
     scene.yAxis?.kind === 'landscape' ? scene.yAxis : undefined;
   const subjects = scene.subjects ?? [];
   const quadrants = scene.quadrants;
-  const isSketch = sketchTreatment(scene.treatment);
+  // v2.4.0 — `treatment` is no longer authored; the sketch/whiteboard skin
+  // retired with the knob. Landscape renders in its crisp default.
+  const isSketch = false;
 
   // The whole frame fades in once.
   const intro = spring({frame, fps, config: {damping: 200}});
@@ -116,7 +115,7 @@ export const LandscapeScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
-      glowScale={paletteGlowScale(scene.palette)}
+      glowScale={paletteGlowScale(undefined)}
     >
       <AbsoluteFill>
         <svg

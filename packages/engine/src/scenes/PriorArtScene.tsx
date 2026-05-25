@@ -33,7 +33,7 @@ export const PriorArtScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   const {fps} = useVideoConfig();
   const scene = ts.scene;
   const {bg, ink} = style.tokens;
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const systems = scene.systems ?? [];
   const dimensions = scene.dimensions ?? [];
   const cells = scene.cells ?? [];
@@ -99,7 +99,7 @@ export const PriorArtScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
-      glowScale={paletteGlowScale(scene.palette)}
+      glowScale={paletteGlowScale(undefined)}
     >
       <AbsoluteFill>
         {/* column headers — one per prior system */}

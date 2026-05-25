@@ -14,125 +14,404 @@
     {
       "id": "frame",
       "type": "frame",
-      "accent": "blue",
       "kicker": "DOCENT // EXPLAINER",
       "title": "Linear Algebra",
       "tagline": "Complex operations are just simple ones, stacked",
       "footnote": "Module 1 of an applied deep-learning course   ·   grounded in Deep Learning, ch. 2   ·   surveyed past the recipe",
       "beats": [
-        {"id": "lf-1", "narration": "This is linear algebra -- not the whole field, but the spine of it, the way one knowledge base chose to teach it as the foundation of deep learning.", "show": "title"},
-        {"id": "lf-2", "narration": "That knowledge base makes one big claim, and the claim is what we are here to test: every complex operation is just simple operations, stacked. We will take it seriously -- and then push on it until it bends.", "show": "tagline"},
-        {"id": "lf-3", "narration": "Ten concept pages, all grounded in chapter 2 of the Deep Learning book. We read them not to relay them, but to find where the claim is earned -- and where it quietly is not.", "show": "footnote"}
+        {
+          "id": "lf-1",
+          "narration": "This is linear algebra -- not the whole field, but the spine of it, the way one knowledge base chose to teach it as the foundation of deep learning.",
+          "show": "title"
+        },
+        {
+          "id": "lf-2",
+          "narration": "That knowledge base makes one big claim, and the claim is what we are here to test: every complex operation is just simple operations, stacked. We will take it seriously -- and then push on it until it bends.",
+          "show": "tagline"
+        },
+        {
+          "id": "lf-3",
+          "narration": "Ten concept pages, all grounded in chapter 2 of the Deep Learning book. We read them not to relay them, but to find where the claim is earned -- and where it quietly is not.",
+          "show": "footnote"
+        }
       ]
     },
     {
       "id": "objects",
       "type": "progression",
-      "accent": "cyan",
       "kicker": "01 // THE OBJECTS",
       "heading": "One type — four ranks",
       "flow": "linear",
       "stages": [
-        {"id": "s-scalar", "label": "Scalar", "sub": "rank 0 — a single number", "duration": "+1 axis"},
-        {"id": "s-vector", "label": "Vector", "sub": "rank 1 — an ordered list", "duration": "+1 axis"},
-        {"id": "s-matrix", "label": "Matrix", "sub": "rank 2 — a grid", "duration": "+1 axis"},
-        {"id": "s-tensor", "label": "Tensor", "sub": "rank 3+ — a stack of grids"}
+        {
+          "id": "s-scalar",
+          "label": "Scalar",
+          "sub": "rank 0 — a single number",
+          "duration": "+1 axis"
+        },
+        {
+          "id": "s-vector",
+          "label": "Vector",
+          "sub": "rank 1 — an ordered list",
+          "duration": "+1 axis"
+        },
+        {
+          "id": "s-matrix",
+          "label": "Matrix",
+          "sub": "rank 2 — a grid",
+          "duration": "+1 axis"
+        },
+        {
+          "id": "s-tensor",
+          "label": "Tensor",
+          "sub": "rank 3+ — a stack of grids"
+        }
       ],
       "beats": [
-        {"id": "lp-1", "narration": "Before any operation, the nouns. Linear algebra represents the world as arrays of numbers -- and there is really only one kind of object. A scalar is rank zero: a single number.", "reveal": 1},
-        {"id": "lp-2", "narration": "Add an axis and you get a vector -- rank one, an ordered list. A house becomes the list 1800, 3, 12: square feet, bedrooms, age.", "reveal": 2},
-        {"id": "lp-3", "narration": "Add another axis: a matrix, rank two, a grid -- rows are examples, columns are features.", "reveal": 3},
-        {"id": "lp-4", "narration": "And a tensor is just rank three and up -- a stack of grids. Here is the first quiet insight: these are not four different things. They are one type, and the only thing that changes is rank -- how many axes you walk to reach a single number.", "reveal": 4, "focus": ["s-tensor"]}
+        {
+          "id": "lp-1",
+          "narration": "Before any operation, the nouns. Linear algebra represents the world as arrays of numbers -- and there is really only one kind of object. A scalar is rank zero: a single number.",
+          "reveal": 1
+        },
+        {
+          "id": "lp-2",
+          "narration": "Add an axis and you get a vector -- rank one, an ordered list. A house becomes the list 1800, 3, 12: square feet, bedrooms, age.",
+          "reveal": 2
+        },
+        {
+          "id": "lp-3",
+          "narration": "Add another axis: a matrix, rank two, a grid -- rows are examples, columns are features.",
+          "reveal": 3
+        },
+        {
+          "id": "lp-4",
+          "narration": "And a tensor is just rank three and up -- a stack of grids. Here is the first quiet insight: these are not four different things. They are one type, and the only thing that changes is rank -- how many axes you walk to reach a single number.",
+          "reveal": 4,
+          "focus": [
+            "s-tensor"
+          ]
+        }
       ]
     },
     {
       "id": "keystone",
       "type": "quantities",
-      "accent": "amber",
       "kicker": "02 // THE KEYSTONE",
       "heading": "The dot product — worked by hand",
       "figures": [
-        {"id": "q-a", "label": "First list", "value": "[2, 3]", "note": "your two stats"},
-        {"id": "q-b", "label": "Second list", "value": "[4, 5]", "note": "the points each is worth"},
-        {"id": "q-pair", "label": "Pair, then multiply", "value": "8 + 15", "note": "2×4, and 3×5"},
-        {"id": "q-dot", "label": "The dot product", "value": "23", "note": "the keystone — one number"}
+        {
+          "id": "q-a",
+          "label": "First list",
+          "value": "[2, 3]",
+          "note": "your two stats"
+        },
+        {
+          "id": "q-b",
+          "label": "Second list",
+          "value": "[4, 5]",
+          "note": "the points each is worth"
+        },
+        {
+          "id": "q-pair",
+          "label": "Pair, then multiply",
+          "value": "8 + 15",
+          "note": "2×4, and 3×5"
+        },
+        {
+          "id": "q-dot",
+          "label": "The dot product",
+          "value": "23",
+          "note": "the keystone — one number"
+        }
       ],
       "beats": [
-        {"id": "lq-1", "narration": "If the objects are the nouns, the dot product is the keystone verb -- and the whole claim of this knowledge base rests on it. Take a first list: 2 and 3.", "reveal": 1},
-        {"id": "lq-2", "narration": "Take a second list of the same length: 4 and 5.", "reveal": 2},
-        {"id": "lq-3", "narration": "Now pair the entries, multiply each pair, and hold the products: 2 times 4 is 8, and 3 times 5 is 15.", "reveal": 3},
-        {"id": "lq-4", "narration": "Add them. 8 plus 15 is 23 -- and that single number is the dot product. The wiki frames it well: a weighted total, exactly how a fantasy-sports score works, each stat times its value, summed. That framing is concrete, and it is earned.", "reveal": 4, "focus": ["q-dot"]}
+        {
+          "id": "lq-1",
+          "narration": "If the objects are the nouns, the dot product is the keystone verb -- and the whole claim of this knowledge base rests on it. Take a first list: 2 and 3.",
+          "reveal": 1
+        },
+        {
+          "id": "lq-2",
+          "narration": "Take a second list of the same length: 4 and 5.",
+          "reveal": 2
+        },
+        {
+          "id": "lq-3",
+          "narration": "Now pair the entries, multiply each pair, and hold the products: 2 times 4 is 8, and 3 times 5 is 15.",
+          "reveal": 3
+        },
+        {
+          "id": "lq-4",
+          "narration": "Add them. 8 plus 15 is 23 -- and that single number is the dot product. The wiki frames it well: a weighted total, exactly how a fantasy-sports score works, each stat times its value, summed. That framing is concrete, and it is earned.",
+          "reveal": 4,
+          "focus": [
+            "q-dot"
+          ]
+        }
       ]
     },
     {
       "id": "compounding",
       "type": "structure",
-      "accent": "green",
       "kicker": "03 // THE COMPOUNDING",
       "heading": "One keystone, restacked",
-      "grid": {"cols": 3, "rows": 3},
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
       "nodes": [
-        {"id": "dot", "label": "Dot product", "sub": "pair, multiply, sum", "col": 1, "row": 1, "accent": "amber", "emphasis": true, "wide": true},
-        {"id": "norm", "label": "Norm", "sub": "a vector dotted with itself", "col": 0, "row": 0, "accent": "cyan"},
-        {"id": "cosine", "label": "Cosine similarity", "sub": "a dot product, normalized", "col": 2, "row": 0, "accent": "violet"},
-        {"id": "matvec", "label": "Matrix × vector", "sub": "a stack of dot products", "col": 0, "row": 2, "accent": "green"},
-        {"id": "matmul", "label": "Matrix × matrix", "sub": "a grid of dot products", "col": 2, "row": 2, "accent": "rose"}
+        {
+          "id": "dot",
+          "label": "Dot product",
+          "sub": "pair, multiply, sum",
+          "col": 1,
+          "row": 1,
+          "accent": "amber",
+          "emphasis": true,
+          "wide": true
+        },
+        {
+          "id": "norm",
+          "label": "Norm",
+          "sub": "a vector dotted with itself",
+          "col": 0,
+          "row": 0,
+          "accent": "cyan"
+        },
+        {
+          "id": "cosine",
+          "label": "Cosine similarity",
+          "sub": "a dot product, normalized",
+          "col": 2,
+          "row": 0,
+          "accent": "violet"
+        },
+        {
+          "id": "matvec",
+          "label": "Matrix × vector",
+          "sub": "a stack of dot products",
+          "col": 0,
+          "row": 2,
+          "accent": "green"
+        },
+        {
+          "id": "matmul",
+          "label": "Matrix × matrix",
+          "sub": "a grid of dot products",
+          "col": 2,
+          "row": 2,
+          "accent": "rose"
+        }
       ],
       "edges": [
-        {"id": "e-dn", "from": "dot", "to": "norm"},
-        {"id": "e-dc", "from": "dot", "to": "cosine"},
-        {"id": "e-dv", "from": "dot", "to": "matvec"},
-        {"id": "e-dm", "from": "dot", "to": "matmul"},
-        {"id": "e-vm", "from": "matvec", "to": "matmul"}
+        {
+          "id": "e-dn",
+          "from": "dot",
+          "to": "norm"
+        },
+        {
+          "id": "e-dc",
+          "from": "dot",
+          "to": "cosine"
+        },
+        {
+          "id": "e-dv",
+          "from": "dot",
+          "to": "matvec"
+        },
+        {
+          "id": "e-dm",
+          "from": "dot",
+          "to": "matmul"
+        },
+        {
+          "id": "e-vm",
+          "from": "matvec",
+          "to": "matmul"
+        }
       ],
       "beats": [
-        {"id": "ls-1", "narration": "Here is where the claim either pays off or collapses. The misconception this knowledge base must kill is the one most learners arrive with: that linear algebra is a bag of unrelated formulas, one to memorize per operation.", "reveal": ["dot"], "focus": ["dot"]},
-        {"id": "ls-2", "narration": "It is not. A norm -- the length of a vector -- is just that vector dotted with itself, then square-rooted. Cosine similarity, the alignment of two vectors, is just a dot product divided by two lengths. Both are the keystone, wearing a costume.", "reveal": ["norm", "cosine", "e-dn", "e-dc"], "focus": ["norm", "cosine"]},
-        {"id": "ls-3", "narration": "And it climbs. Matrix times vector is a stack of dot products, one per row. Matrix times matrix is a whole grid of them. The wiki demonstrates this on the page, rather than asserting it -- and that is the strongest part of the account. Complexity here genuinely is simplicity, restacked.", "reveal": ["matvec", "matmul", "e-dv", "e-dm", "e-vm"], "focus": ["matvec", "matmul"]}
+        {
+          "id": "ls-1",
+          "narration": "Here is where the claim either pays off or collapses. The misconception this knowledge base must kill is the one most learners arrive with: that linear algebra is a bag of unrelated formulas, one to memorize per operation.",
+          "reveal": [
+            "dot"
+          ],
+          "focus": [
+            "dot"
+          ]
+        },
+        {
+          "id": "ls-2",
+          "narration": "It is not. A norm -- the length of a vector -- is just that vector dotted with itself, then square-rooted. Cosine similarity, the alignment of two vectors, is just a dot product divided by two lengths. Both are the keystone, wearing a costume.",
+          "reveal": [
+            "norm",
+            "cosine",
+            "e-dn",
+            "e-dc"
+          ],
+          "focus": [
+            "norm",
+            "cosine"
+          ]
+        },
+        {
+          "id": "ls-3",
+          "narration": "And it climbs. Matrix times vector is a stack of dot products, one per row. Matrix times matrix is a whole grid of them. The wiki demonstrates this on the page, rather than asserting it -- and that is the strongest part of the account. Complexity here genuinely is simplicity, restacked.",
+          "reveal": [
+            "matvec",
+            "matmul",
+            "e-dv",
+            "e-dm",
+            "e-vm"
+          ],
+          "focus": [
+            "matvec",
+            "matmul"
+          ]
+        }
       ]
     },
     {
       "id": "probe",
       "type": "probe",
-      "accent": "rose",
       "kicker": "04 // PUSH ON IT",
       "heading": "Does stacking always compound?",
-      "baseline": {"label": "One linear transformation", "outcome": "space moves once — rotate, scale, shear"},
+      "baseline": {
+        "label": "One linear transformation",
+        "outcome": "space moves once — rotate, scale, shear"
+      },
       "variations": [
-        {"id": "v-two", "label": "Stack two linear maps", "change": "compose A, then B", "outcome": "collapses into one matrix — no new power", "flips": false},
-        {"id": "v-ten", "label": "Stack 10 linear layers", "change": "a deep linear network", "outcome": "still exactly one linear transformation", "flips": false},
-        {"id": "v-relu", "label": "Insert a nonlinearity", "change": "a ReLU between the layers", "outcome": "a genuinely new function class — depth finally pays", "flips": true}
+        {
+          "id": "v-two",
+          "label": "Stack two linear maps",
+          "change": "compose A, then B",
+          "outcome": "collapses into one matrix — no new power",
+          "flips": false
+        },
+        {
+          "id": "v-ten",
+          "label": "Stack 10 linear layers",
+          "change": "a deep linear network",
+          "outcome": "still exactly one linear transformation",
+          "flips": false
+        },
+        {
+          "id": "v-relu",
+          "label": "Insert a nonlinearity",
+          "change": "a ReLU between the layers",
+          "outcome": "a genuinely new function class — depth finally pays",
+          "flips": true
+        }
       ],
       "beats": [
-        {"id": "lpr-1", "narration": "Now we push. If complexity is simplicity stacked, then stacking should always buy more. Take one linear transformation -- a matrix that moves space -- and stack a second on top. Intuition says: more layers, more power. The wiki's own pages say otherwise. Two matrices compose into a single matrix. The stack collapses, and the outcome holds -- you gained nothing.", "reveal": 1, "focus": ["v-two"]},
-        {"id": "lpr-2", "narration": "Make it worse: stack 10 linear layers. Still nothing -- the whole tower is provably equal to one linear transformation. This is exactly where stacked simplicity breaks. Stacking the simple operation does not compound at all.", "reveal": 2, "focus": ["v-ten"]},
-        {"id": "lpr-3", "narration": "What finally flips it? Slipping a nonlinearity -- a ReLU -- between the layers. Only then does depth become a genuinely new function class. And a nonlinearity is precisely the thing linear algebra cannot express. The foundation, on its own, is not enough -- and the wiki's own practitioner notes admit it.", "reveal": 3, "focus": ["v-relu"]}
+        {
+          "id": "lpr-1",
+          "narration": "Now we push. If complexity is simplicity stacked, then stacking should always buy more. Take one linear transformation -- a matrix that moves space -- and stack a second on top. Intuition says: more layers, more power. The wiki's own pages say otherwise. Two matrices compose into a single matrix. The stack collapses, and the outcome holds -- you gained nothing.",
+          "reveal": 1,
+          "focus": [
+            "v-two"
+          ]
+        },
+        {
+          "id": "lpr-2",
+          "narration": "Make it worse: stack 10 linear layers. Still nothing -- the whole tower is provably equal to one linear transformation. This is exactly where stacked simplicity breaks. Stacking the simple operation does not compound at all.",
+          "reveal": 2,
+          "focus": [
+            "v-ten"
+          ]
+        },
+        {
+          "id": "lpr-3",
+          "narration": "What finally flips it? Slipping a nonlinearity -- a ReLU -- between the layers. Only then does depth become a genuinely new function class. And a nonlinearity is precisely the thing linear algebra cannot express. The foundation, on its own, is not enough -- and the wiki's own practitioner notes admit it.",
+          "reveal": 3,
+          "focus": [
+            "v-relu"
+          ]
+        }
       ]
     },
     {
       "id": "tension",
       "type": "tension",
-      "accent": "amber",
       "kicker": "05 // WHAT IT COSTS",
       "heading": "The mechanic before the meaning",
-      "grid": {"cols": 3, "rows": 3},
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
       "nodes": [
-        {"id": "mechanic", "label": "Teach the mechanic", "sub": "sums and code, worked by hand", "col": 0, "row": 0, "accent": "green"},
-        {"id": "geometry", "label": "Teach the meaning first", "sub": "angle and space before arithmetic", "col": 2, "row": 0, "kind": "rejected"},
-        {"id": "iou", "label": "The keystone's why is an IOU", "sub": "the dot product's meaning, parked at D3", "col": 1, "row": 1, "kind": "risk"},
-        {"id": "forward", "label": "Stacked simplicity is forward-only", "sub": "un-transforming space does not stack", "col": 1, "row": 2, "kind": "risk"}
+        {
+          "id": "mechanic",
+          "label": "Teach the mechanic",
+          "sub": "sums and code, worked by hand",
+          "col": 0,
+          "row": 0,
+          "accent": "green"
+        },
+        {
+          "id": "geometry",
+          "label": "Teach the meaning first",
+          "sub": "angle and space before arithmetic",
+          "col": 2,
+          "row": 0,
+          "kind": "rejected"
+        },
+        {
+          "id": "iou",
+          "label": "The keystone's why is an IOU",
+          "sub": "the dot product's meaning, parked at D3",
+          "col": 1,
+          "row": 1,
+          "kind": "risk"
+        },
+        {
+          "id": "forward",
+          "label": "Stacked simplicity is forward-only",
+          "sub": "un-transforming space does not stack",
+          "col": 1,
+          "row": 2,
+          "kind": "risk"
+        }
       ],
       "edges": [],
       "beats": [
-        {"id": "lt-1", "narration": "So what does this account cost? Every way of teaching trades something away. The wiki chose the mechanic over the meaning -- arithmetic, code, every operation worked by hand. It rejected a geometry-first course, the kind that teaches angle and space before sums.", "reveal": ["mechanic", "geometry"], "focus": ["mechanic"]},
-        {"id": "lt-2", "narration": "That choice has a real defense -- the learner is an engineer, and code is the most concrete handhold there is. But here is the bill. The dot product's geometric meaning -- why it measures alignment, that length times length times the cosine of the angle -- sits at a depth the wiki's own tracker marks as not yet climbed. Cosine similarity is already taught leaning on that unclimbed idea. The meaning is an IOU.", "reveal": ["iou"], "focus": ["iou"]},
-        {"id": "lt-3", "narration": "And the thesis has an edge of its own. Complex things are simple things stacked -- but only going forward. Un-transforming space, the matrix inverse, the wiki's very next lesson, is not built by stacking dot products forward, and not every matrix can be inverted at all. The slogan fails the moment you try to run the machine backward.", "reveal": ["forward"], "focus": ["forward"]}
+        {
+          "id": "lt-1",
+          "narration": "So what does this account cost? Every way of teaching trades something away. The wiki chose the mechanic over the meaning -- arithmetic, code, every operation worked by hand. It rejected a geometry-first course, the kind that teaches angle and space before sums.",
+          "reveal": [
+            "mechanic",
+            "geometry"
+          ],
+          "focus": [
+            "mechanic"
+          ]
+        },
+        {
+          "id": "lt-2",
+          "narration": "That choice has a real defense -- the learner is an engineer, and code is the most concrete handhold there is. But here is the bill. The dot product's geometric meaning -- why it measures alignment, that length times length times the cosine of the angle -- sits at a depth the wiki's own tracker marks as not yet climbed. Cosine similarity is already taught leaning on that unclimbed idea. The meaning is an IOU.",
+          "reveal": [
+            "iou"
+          ],
+          "focus": [
+            "iou"
+          ]
+        },
+        {
+          "id": "lt-3",
+          "narration": "And the thesis has an edge of its own. Complex things are simple things stacked -- but only going forward. Un-transforming space, the matrix inverse, the wiki's very next lesson, is not built by stacking dot products forward, and not every matrix can be inverted at all. The slogan fails the moment you try to run the machine backward.",
+          "reveal": [
+            "forward"
+          ],
+          "focus": [
+            "forward"
+          ]
+        }
       ]
     },
     {
       "id": "recap",
       "type": "recap",
-      "accent": "blue",
       "kicker": "RECAP // THE VERDICT",
       "heading": "Linear algebra — an honest verdict",
       "points": [
@@ -143,12 +422,40 @@
         "Carry it — learn the dot product cold, and most of the module is free."
       ],
       "beats": [
-        {"id": "lr-1", "narration": "The honest verdict. The central claim -- complex operations are stacks of simple ones -- is sound. It is the right spine for the subject, and it kills the bag-of-formulas misconception that learners arrive with.", "reveal": 1},
-        {"id": "lr-2", "narration": "And it is earned, not merely asserted. Matrix multiplication really is the dot product restacked, and the wiki demonstrates that on the page rather than waving at it.", "reveal": 2},
-        {"id": "lr-3", "narration": "But carry two caveats. The first: stacking the simple operation buys nothing on its own -- depth pays only once a nonlinearity, which linear algebra cannot express, sits between the layers.", "reveal": 3},
-        {"id": "lr-4", "narration": "The second, and the real weak point: the keystone's geometric meaning -- why the dot product measures alignment -- is still an IOU. Module 1 stops at the eighth-grade rung, and cosine similarity already borrows against a depth not yet climbed.", "reveal": 4},
-        {"id": "lr-5", "narration": "So the durable sentence is this: learn the dot product cold, and most of this module falls out for free. But stay skeptical of stacked simplicity as a law. It is the forward grammar of linear algebra -- and the most interesting half of deep learning lives in exactly what that grammar leaves out.", "reveal": 5}
+        {
+          "id": "lr-1",
+          "narration": "The honest verdict. The central claim -- complex operations are stacks of simple ones -- is sound. It is the right spine for the subject, and it kills the bag-of-formulas misconception that learners arrive with.",
+          "reveal": 1
+        },
+        {
+          "id": "lr-2",
+          "narration": "And it is earned, not merely asserted. Matrix multiplication really is the dot product restacked, and the wiki demonstrates that on the page rather than waving at it.",
+          "reveal": 2
+        },
+        {
+          "id": "lr-3",
+          "narration": "But carry two caveats. The first: stacking the simple operation buys nothing on its own -- depth pays only once a nonlinearity, which linear algebra cannot express, sits between the layers.",
+          "reveal": 3
+        },
+        {
+          "id": "lr-4",
+          "narration": "The second, and the real weak point: the keystone's geometric meaning -- why the dot product measures alignment -- is still an IOU. Module 1 stops at the eighth-grade rung, and cosine similarity already borrows against a depth not yet climbed.",
+          "reveal": 4
+        },
+        {
+          "id": "lr-5",
+          "narration": "So the durable sentence is this: learn the dot product cold, and most of this module falls out for free. But stay skeptical of stacked simplicity as a law. It is the forward grammar of linear algebra -- and the most interesting half of deep learning lives in exactly what that grammar leaves out.",
+          "reveal": 5
+        }
       ]
     }
-  ]
+  ],
+  "style": {
+    "preset": "paper",
+    "intent": {
+      "tone": "technical",
+      "audience": "technical"
+    },
+    "rationale": "Paper preset — a mathematical-primitives explainer; v2.4 retired the per-scene treatment knob, so the typesetting register that used to come from scattered treatment:whiteboard/sketch tags now comes from one preset commitment."
+  }
 }

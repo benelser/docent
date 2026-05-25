@@ -94,7 +94,7 @@ export const MechanismScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // palette this is exactly `accent(scene.accent)`. With `style` threaded
   // through, the hex resolves against the preset's accent table, so a
   // preset-redefined cyan reaches a `palette: 'cool'` scene.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const parts: MechanismPart[] = scene.parts ?? [];
   const motion = scene.motion;
   const ink = style.tokens.ink;
@@ -220,7 +220,7 @@ export const MechanismScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // to the scene accent. Resolved against the style tokens' accent map so a
   // preset that redefines a hue is honoured.
   const partAccentHex = (p: MechanismPart, order: number): string => {
-    const key = paletteAccentKey(scene.palette, scene.accent, undefined, order);
+    const key = paletteAccentKey(undefined, undefined, undefined, order);
     return accentMap[key] ?? accentMap.blue;
   };
 

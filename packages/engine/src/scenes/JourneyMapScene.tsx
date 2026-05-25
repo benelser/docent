@@ -89,7 +89,7 @@ export const JourneyMapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
     emotionPalette[e]?.hex ?? ink.low;
   // `palette` (a scene knob) re-selects the chrome accent; without a palette
   // this is exactly `accent(scene.accent)`.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const stages = scene.journeyStages ?? [];
 
   // `cadence` (a beat knob) shapes how a batch of stages enters; the numeric
@@ -156,7 +156,7 @@ export const JourneyMapScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
-      glowScale={paletteGlowScale(scene.palette)}
+      glowScale={paletteGlowScale(undefined)}
     >
       <AbsoluteFill>
         <svg

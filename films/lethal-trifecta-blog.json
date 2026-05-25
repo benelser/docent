@@ -8,8 +8,7 @@
     "fps": 30,
     "width": 1920,
     "height": 1080,
-    "voice": "af_heart",
-    "register": "grave"
+    "voice": "af_heart"
   },
   "style": {
     "preset": "editorial",
@@ -19,17 +18,16 @@
       "density": "comfortable",
       "emphasis": "insight-first"
     },
-    "rationale": "Editorial preset \u2014 Simon Willison's essay is prose, not code; close-reading register, with the passage scene rendering quoted text in serif."
+    "rationale": "Editorial preset — Simon Willison's essay is prose, not code; close-reading register, with the passage scene rendering quoted text in serif."
   },
   "scenes": [
     {
       "id": "frame",
       "type": "frame",
-      "accent": "rose",
       "kicker": "DOCENT // EXPLAINER",
       "title": "The Lethal Trifecta",
-      "tagline": "Three innocent capabilities \u2014 combine them in one agent and you have built an exfiltration weapon",
-      "footnote": "Simon Willison   \u00b7   16 June 2025   \u00b7   the post that names the rule and refuses every workaround",
+      "tagline": "Three innocent capabilities — combine them in one agent and you have built an exfiltration weapon",
+      "footnote": "Simon Willison   ·   16 June 2025   ·   the post that names the rule and refuses every workaround",
       "beats": [
         {
           "id": "lt-frame-1",
@@ -52,10 +50,8 @@
     {
       "id": "trifecta",
       "type": "structure",
-      "accent": "rose",
       "kicker": "01 // THE RULE",
       "heading": "Three necessary causes, one inevitable effect",
-      "palette": "warm",
       "grid": {
         "cols": 3,
         "rows": 3
@@ -170,10 +166,8 @@
     {
       "id": "mechanism",
       "type": "passage",
-      "accent": "cyan",
       "kicker": "02 // THE MECHANISM",
       "heading": "Why the model cannot simply be told to refuse",
-      "treatment": "whiteboard",
       "text": "LLMs are unable to reliably distinguish the importance of instructions based on where they came from. Everything eventually gets glued together into a sequence of tokens and fed to the model.",
       "marks": [
         {
@@ -245,7 +239,6 @@
     {
       "id": "email",
       "type": "walkthrough",
-      "accent": "amber",
       "kicker": "03 // THE ATTACK",
       "heading": "The single email that empties your inbox",
       "actors": [
@@ -312,7 +305,7 @@
           "message": {
             "from": "gmail",
             "to": "agent",
-            "label": "inbox contents \u2014 attacker's instructions in the same token stream",
+            "label": "inbox contents — attacker's instructions in the same token stream",
             "kind": "reply"
           }
         },
@@ -343,7 +336,6 @@
     {
       "id": "bodycount",
       "type": "quantities",
-      "accent": "amber",
       "kicker": "04 // THE BODY COUNT",
       "heading": "An industry-wide failure, at a steady drumbeat",
       "metrics": [
@@ -443,7 +435,6 @@
     {
       "id": "mitigations",
       "type": "compare",
-      "accent": "amber",
       "kicker": "05 // WHY MITIGATIONS WILL NOT",
       "heading": "What the industry sells, against what Simon's reading reveals",
       "columns": [
@@ -553,11 +544,8 @@
     {
       "id": "strain",
       "type": "tension",
-      "accent": "amber",
       "kicker": "06 // WHERE THE RULE STRAINS",
       "heading": "The honest critique the film owes the viewer",
-      "palette": "warm",
-      "treatment": "sketch",
       "grid": {
         "cols": 3,
         "rows": 3
@@ -650,10 +638,8 @@
     {
       "id": "big-idea",
       "type": "big-idea",
-      "accent": "rose",
       "kicker": "07 // THE BIG IDEA",
       "heading": "One sentence to carry off the page",
-      "treatment": "whiteboard",
       "statement": "Tokens carry no provenance, so an agent with all three capabilities is one email away from exfiltration.",
       "anchor": {
         "kind": "equation",
@@ -677,16 +663,15 @@
     {
       "id": "verdict",
       "type": "recap",
-      "accent": "blue",
       "kicker": "RECAP // THE VERDICT",
-      "heading": "The lethal trifecta \u2014 sound diagnosis, unsatisfying prescription",
+      "heading": "The lethal trifecta — sound diagnosis, unsatisfying prescription",
       "points": [
-        "Sound diagnosis \u2014 LLMs cannot tell trusted from untrusted tokens, and the body count is industry-wide, not the quirk of any one vendor.",
-        "Earned by frequency \u2014 14 named systems compromised across 22 months, with 3 more in the weeks before publication.",
-        "Earned rejections \u2014 95% guardrails are a failing grade in security, and prompt-level resistance is a probabilistic defense against an unbounded attack surface.",
-        "The big caveat \u2014 \"avoid the combination\" assumes the combination is avoidable; in 2025 the trifecta is the default agent configuration, and the post offers no path back.",
-        "The unproved step \u2014 \"two-of-three is safe\" is asserted, never proved; the cited lemma is stricter, and untrusted-plus-outbound alone can corrupt what the agent writes outward.",
-        "Carry it forward \u2014 believe the mechanism, mistrust anyone selling \"safe with our magic\", and watch for the next paper that turns the prohibition into a protocol."
+        "Sound diagnosis — LLMs cannot tell trusted from untrusted tokens, and the body count is industry-wide, not the quirk of any one vendor.",
+        "Earned by frequency — 14 named systems compromised across 22 months, with 3 more in the weeks before publication.",
+        "Earned rejections — 95% guardrails are a failing grade in security, and prompt-level resistance is a probabilistic defense against an unbounded attack surface.",
+        "The big caveat — \"avoid the combination\" assumes the combination is avoidable; in 2025 the trifecta is the default agent configuration, and the post offers no path back.",
+        "The unproved step — \"two-of-three is safe\" is asserted, never proved; the cited lemma is stricter, and untrusted-plus-outbound alone can corrupt what the agent writes outward.",
+        "Carry it forward — believe the mechanism, mistrust anyone selling \"safe with our magic\", and watch for the next paper that turns the prohibition into a protocol."
       ],
       "beats": [
         {

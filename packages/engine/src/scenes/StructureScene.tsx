@@ -50,7 +50,7 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // The scene's chrome accent. `palette` (a scene knob), when set, re-selects
   // it over the palette family; without a palette this is exactly
   // `accent(scene.accent)` — byte-identical to before the knob existed.
-  const accentHex = paletteSceneHex(scene.palette, scene.accent, style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const cols = scene.grid?.cols ?? 3;
   const rows = scene.grid?.rows ?? 3;
   // Resolve any wide-flag collisions before computing boxes — the layout-level
@@ -90,7 +90,7 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // accent it did before. With a palette, a node's unset accent is filled
   // from the family, spread across nodes by declared order.
   const nodeAccentKey = (n: Node, order: number): string =>
-    paletteAccentKey(scene.palette, scene.accent, n.accent, order);
+    paletteAccentKey(undefined, undefined, n.accent, order);
 
   const active = activeBeatIndex(ts.beats, frame);
   const beat = ts.beats[active];
@@ -177,7 +177,7 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
     // Accent resolution mirrors the original `def.accent ?? scene.accent`,
     // with `palette` (when set) re-selecting an unset accent over the family.
     const reprAccentOf = (def: Node): string =>
-      accentOf(paletteAccentKey(scene.palette, scene.accent, def.accent, order));
+      accentOf(paletteAccentKey(undefined, undefined, def.accent, order));
     const repr = (def: Node, opacity: number): React.ReactNode => {
       if (opacity <= 0) return null;
       const as = def.as ?? 'box';
@@ -223,7 +223,7 @@ export const StructureScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
       cam={cam}
-      glowScale={paletteGlowScale(scene.palette)}
+      glowScale={paletteGlowScale(undefined)}
     >
       <AbsoluteFill
         style={{
