@@ -20,11 +20,15 @@ Carve docent into:
 
 - **`@docent/kit`** — the framework. Zero opinions, zero implementations.
   Owns the plugin protocols, the registry, the spec validator, the cascade
-  orchestrator, the Remotion bindings, the agent-facing CLI surface.
-- **`@docent/core`** — the default implementation. The 29 scenes, 6 presets,
-  the Kokoro TTS adapter, the default narration feature, the default audio
-  rhythm. Depends on `@docent/kit` and registers everything through the
-  framework's public API. There is no private path.
+  orchestrator, the Remotion bindings, the agent-facing CLI surface, **and
+  the depthcheck + judge contract that every scene (built-in or third-party)
+  must honor**.
+- **`@docent/core`** — the default implementation. **29 canonical reference
+  scenes**, 6 presets, the Kokoro TTS adapter, the default narration feature,
+  the default audio rhythm. Depends on `@docent/kit` and registers everything
+  through the framework's public API. There is no private path. **The 29 are
+  the opinionated default — the framework supports any scene that honors the
+  contract.**
 - **`@docent/cli`** — a thin shell that wires `docent` subcommands to engine
   methods.
 - **`@docent/agent`** — the existing skill / survey / prompt layer (no
@@ -35,6 +39,12 @@ Carve docent into:
 The framework/implementation split is load-bearing. If `@docent/core` ever
 has to reach into private `@docent/kit` internals to register a scene, the
 API is wrong — fix the API, not the workaround.
+
+**The scene library is open; the rendering discipline stays closed.**
+Anyone can register a scene type via the plugin protocol. What enforces
+quality is the depthcheck + judge contract every scene must declare — not
+membership in a curated list. See §11.5 for the explicit list of what's
+open vs. what's closed.
 
 This plan rip-and-replaces the engine. Every file under `packages/engine/`
 either moves into one of the new packages or is deleted. No legacy parallel
@@ -513,6 +523,16 @@ consumer of the new public CLI surface; the CLI surface stays coherent.
 **User-facing surfaces are preserved.** The implementation rip-and-replace
 happens behind these contracts:
 
+- **The depthcheck + judge contract.** Every scene — built-in or
+  third-party — declares its `depthRules` and `judgeDimensions`. The
+  framework refuses to render anything that doesn't honor the contract.
+  This is what enforces quality across the open library; it is the
+  thing docent owns most strongly.
+- **The cognitive-cluster taxonomy.** Connection / Time / Flow & Process /
+  Comparison & Measurement / Categorization & Boundaries / Human
+  Experience / Narrative & Commitment. Every scene plugin declares
+  which cluster it belongs to from this closed list — the recommender's
+  mental model is stable even as the scene library grows.
 - **The film spec JSON shape.** Every existing film in `films/` validates
   against the computed schema. Specs are byte-comparable except for the
   removal of the already-deprecated v2.4 legacy knobs (which are already
@@ -612,6 +632,91 @@ hermetic gallery is the safety net at each phase.
 
 ---
 
+## 11.5. What's open vs. what's closed
+
+This is the decision that determines what docent IS after this build —
+the line between platform and product. Lock it explicitly so future PRs
+can't blur it.
+
+### What's open (the scene library and what extends it)
+
+- **The set of registered scene types.** Anyone can register a scene type
+  via the plugin protocol. The 29 we ship in `@docent/core` are the
+  opinionated default, not the closed universe.
+- **The set of registered presets.** Anyone can ship a preset pack
+  (`@brand/docent-preset-*`).
+- **The set of registered TTS providers.** Anyone can publish
+  `@org/docent-tts-*` against the same protocol.
+- **The set of registered features.** Cross-cutting concerns (captions,
+  watermarks, music, lower-thirds, intro/outro stings) ship as third-party
+  feature plugins or stay in `@docent/core` — the protocol is identical.
+- **Which scenes belong to which cognitive cluster** (within the closed
+  taxonomy below). A community scene declares its cluster from the closed
+  list.
+
+### What's closed (the discipline that enforces quality)
+
+- **The plugin protocol** — `PluginBase`, `ScenePlugin`, `PresetPlugin`,
+  `TtsProviderPlugin`, `FeaturePlugin`, `ModifierRegistry`. Breaking any
+  of these is a major version bump.
+- **The depthcheck + judge contract.** Every scene declares its
+  `depthRules` and `judgeDimensions`. The framework refuses to render
+  anything that doesn't. **This contract is what enforces quality across
+  the open library — not membership in a curated list.**
+- **The rendering pipeline.** No freeform CSS, no freeform animation, no
+  `--engine` swap. The Remotion-based pipeline IS the value; we don't
+  open it for substitution.
+- **The cognitive-cluster taxonomy.** Connection / Time / Flow & Process /
+  Comparison & Measurement / Categorization & Boundaries / Human Experience
+  / Narrative & Commitment. Plugins declare their cluster from this closed
+  list. The taxonomy is what makes the recommender (`docent scene-fit`)
+  deterministic even as the library grows.
+- **The film spec JSON top-level shape.** `meta`, `scenes`, `style`,
+  `tts`. Plugins add scene-type *branches*, not restructure the spec.
+- **The CLI surface.** Every existing subcommand stays. New subcommands
+  add; they don't replace.
+
+### The headline trade
+
+Today: "we picked the 29 right cognitive moves and rendered them well."
+
+Tomorrow: **"we defined the standard for what a cognitive-explanation
+scene is, we ship a reference implementation of 29 of them, and we judge
+every film — built-in or third-party — against the same contract."**
+
+The first is a polished product. The second is a platform with a polished
+default. We are choosing platform.
+
+### The bets we're making
+
+| Bet | Failure mode if wrong |
+|---|---|
+| The contract is strong enough to enforce quality without us being the gate | Ecosystem fills with mediocre scenes; the "principled" reputation erodes |
+| Domain-specific verticals matter more than every-film-looks-the-same | Brand fragments; "a docent film" stops being recognizable as a category |
+| LLM authors can navigate a dynamic vocabulary using recommender + taxonomy + IDE schema | Agents default to the canonical 29 anyway; the open library mostly goes unused |
+| "Honors the contract" is a strong-enough quality signal | People honor the contract syntactically but ship low-quality scenes anyway |
+| A platform is more valuable than an opinionated tool | The build cost was wasted; nobody actually extends |
+
+### Failure-mode insurance
+
+If the open-library decision turns out wrong, we have escape valves:
+
+- **Verification, layered on top.** We can add an opt-in `@docent/verified`
+  registry where the core team marks scene types they've reviewed. The
+  recommender breaks ties toward verified scenes. Third-party scenes work
+  without verification; verification is a quality signal, never a gate.
+- **`engine.lockToCanonical()`.** For safety-critical use cases (regulated
+  industries, brand-strict deployments), a config flag that makes the
+  engine ignore non-canonical plugins.
+- **Tightening the contract.** We can add required fields to `ScenePlugin`
+  in future versions — a breaking change but a recoverable one.
+
+What we *can't* recover from: shipping with the grammar open, then trying
+to go back to closed-grammar membership. That breaks every third-party
+plugin published in the meantime. **The open/closed decision is one-way.**
+
+---
+
 ## 12. What this rules out (permanently)
 
 Shipping this locks in the following decisions. Going back is a major
@@ -626,6 +731,10 @@ version bump (we'd have to re-ship the whole architecture).
 - **The framework/implementation split.** No private path from
   `@docent/core` into `@docent/kit` internals. The day someone proposes
   one is the day the discipline dies.
+- **The open scene library.** Going back to closed-grammar membership
+  breaks every third-party plugin published in the meantime. The
+  open/closed decision is one-way. Verification, if it ships, is layered
+  on top as a quality signal — never as a gate.
 
 These are intentional. The whole point of the rip-and-replace is to
 commit to the new architecture — there is no fallback.
@@ -685,7 +794,12 @@ We commit to:
 - Every existing film still renders.
 - Every existing CLI subcommand still works.
 - The agent layer (`packages/agent/`) consumes the new public surface.
-- `@example/docent-scifi` is the public proof that the split is real.
+- `@example/docent-scifi` is the public proof that the split is real —
+  a third-party scene type, registered through the same public protocol
+  `@docent/core` uses, rendering through the same hermetic harness.
+- **The open-library model.** The scene library is extensible by anyone
+  who honors the depthcheck + judge contract. Verification, if it ever
+  ships, is a quality signal layered on top — never a gate.
 - R3, R4, R6 land later through the forward-compat hooks shipped here —
   never by breaking the protocols in §4.
 
