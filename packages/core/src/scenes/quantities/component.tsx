@@ -4,54 +4,49 @@
 // cards whose number is a *tweened* value that counts up across beats. Items
 // reveal progressively.
 //
-// MIGRATED VERBATIM from `packages/engine/src/scenes/QuantitiesScene.tsx`.
-// Behaviour is unchanged. The only diff vs the engine source is:
-//   - `ResolvedStyle` resolves through `@docent/kit` (the canonical home
-//     for the protocol type), via the engine's `style/index.ts` re-export
-//     shimmed in `engine-shims.d.ts`.
-//   - Engine-private runtime utilities (`SceneFrame`, `Narration`,
-//     `BoundValue`, `FittedText`, `theme.glow`, `fonts.*`, `engine/spec`,
-//     `engine/knobs`) continue to be sourced from `packages/engine/src/...`
-//     via deep relative paths and ambient module shims, because those
-//     utilities have not yet been migrated into `@docent/core`. The engine's
-//     OWN copy of the component continues to work against the same source.
-//
-// When the supporting utilities migrate, the import block at the top of
-// this file is the only thing that changes — the JSX body stays as-is.
+// MIGRATED from `packages/engine/src/scenes/QuantitiesScene.tsx`. Behaviour
+// is preserved; the only diffs vs the engine source are:
+//   - Props now use the kit's `SceneRenderProps<Scene>` envelope: `scene`
+//     (the per-type spec) + `common: {ts, sceneIndex, sceneCount, meta,
+//     style}`. The engine's prior `SceneProps & {style}` bag is gone.
+//   - Chrome (SceneFrame, Narration, FittedText, BoundValue) and the
+//     palette/cadence/numeric-reveal helpers are sourced from
+//     `@docent/core/_shared`. There is no path back into `packages/engine/`.
 
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {glow} from '@docent-engine-bridge/theme';
-import type {ResolvedStyle} from '@docent/kit';
-import {interFamily, monoFamily} from '@docent-engine-bridge/fonts';
-import {SceneFrame} from '@docent-engine-bridge/components/SceneFrame';
-import {Narration} from '@docent-engine-bridge/components/Narration';
-import {BoundValue} from '@docent-engine-bridge/components/BoundValue';
-import {FittedText} from '@docent-engine-bridge/components/FittedText';
-import {activeBeatIndex, type SceneProps} from '@docent-engine-bridge/engine/spec';
+import type {Scene, SceneRenderProps} from '@docent/kit';
+
 import {
+  BoundValue,
+  FittedText,
+  Narration,
+  SceneFrame,
+  activeBeatIndex,
   cadenceOffset,
   cadenceSpringConfig,
+  glow,
+  interFamily,
+  monoFamily,
   numericRevealMap,
   paletteAccentKey,
   paletteGlowScale,
   paletteSceneHex,
   type RevealEntry,
-} from '@docent-engine-bridge/engine/knobs';
+} from '../../_shared';
 
 // Magnitudes. A grid of big-number figure cards (a large mono value, unit, a
 // small label above, a note below), a worked numeric matrix (row and column
 // labels around a filled grid), or `metrics` — figure cards whose number is a
 // *tweened* value that counts up across beats. Items reveal progressively.
-export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
-  ts,
-  sceneIndex,
-  sceneCount,
-  style,
+export const QuantitiesScene: React.FC<SceneRenderProps<Scene>> = ({
+  scene,
+  common,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const scene = ts.scene;
+  const {ts, sceneIndex, sceneCount, style} = common;
+  const sc = scene as Record<string, unknown>;
   const {bg, ink, accent: accentTokens} = style.tokens;
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
@@ -59,12 +54,35 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
   // without a palette this is exactly `accent(scene.accent)`.
   const accentHex = paletteSceneHex(undefined, undefined, style);
   const glowScale = paletteGlowScale(undefined);
-  const figures = scene.figures ?? [];
-  const matrix = scene.matrix;
-  const metrics = scene.metrics ?? [];
+  const figures = (sc.figures as Array<{
+    id: string;
+    label: string;
+    value: string | number;
+    unit?: string;
+    note?: string;
+  }> | undefined) ?? [];
+  const matrix = sc.matrix as
+    | {rowLabels?: string[]; colLabels?: string[]; cells?: string[][]}
+    | undefined;
+  const metrics = (sc.metrics as Array<{
+    id: string;
+    col: number;
+    row: number;
+    label: string;
+    bind: string;
+    format?: 'int' | 'float1' | 'percent';
+    unit?: string;
+    accent?: string;
+  }> | undefined) ?? [];
+
+  const kicker = (sc.kicker as string | undefined) ?? '';
+  const heading = sc.heading as string | undefined;
 
   const active = activeBeatIndex(ts.beats, frame);
-  const focusIds = new Set(ts.beats[active]?.focus ?? []);
+  const activeBeat = ts.beats[active]?.beat as
+    | {focus?: string[]}
+    | undefined;
+  const focusIds = new Set(activeBeat?.focus ?? []);
   const hasFocus = focusIds.size > 0;
 
   // `cadence` (a beat knob) shapes how the set of items a beat reveals
@@ -80,13 +98,26 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
       : spring({frame: local, fps, config: cadenceSpringConfig(r?.cadence)});
   };
 
+  // Adapt kit's BeatTimelineSlot[] (`startFrame`/`frames`/`beat`) to the
+  // {from, reveal, cadence} shape `numericRevealMap` reads.
+  const beatsForReveal = ts.beats.map((slot) => {
+    const b = slot.beat as {reveal?: number | readonly string[]; cadence?: 'cascade' | 'together' | 'snap'};
+    return {
+      from: slot.startFrame,
+      reveal: b.reveal,
+      cadence: b.cadence,
+    };
+  });
+
+  const headingProp = heading !== undefined ? {heading} : {};
+
   // ----- metrics: figure cards whose number is a tweened, counting value -----
   // Reuses the figure-card visual shell; the number comes from <BoundValue>,
   // placed on a col/row grid. A metric card appears with the first beat that
   // sets its bound value.
   if (!matrix && metrics.length > 0) {
-    const cols = Math.max(1, ...metrics.map((m: {col: number}) => m.col + 1));
-    const rows = Math.max(1, ...metrics.map((m: {row: number}) => m.row + 1));
+    const cols = Math.max(1, ...metrics.map((m) => m.col + 1));
+    const rows = Math.max(1, ...metrics.map((m) => m.row + 1));
     const cardW = 392;
     const cardH = 268;
     const gap = 34;
@@ -98,25 +129,31 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
     // `{from: <first set beat>, cadence: undefined, order: 0}`.
     const metricRevealOf = (mIndex: number): RevealEntry => {
       const bind = metrics[mIndex].bind;
-      const b = ts.beats.find((bt: {set?: Record<string, unknown>}) => bt.set && bind in bt.set);
-      if (!b) return {from: 0, cadence: undefined, order: 0};
+      const slot = ts.beats.find((s) => {
+        const b = s.beat as {set?: Record<string, unknown>};
+        return b.set && bind in b.set;
+      });
+      if (!slot) return {from: 0, cadence: undefined, order: 0};
       // The metric's order within this beat's batch: how many earlier metrics
       // are also first-set by this same beat.
       let order = 0;
       for (let j = 0; j < mIndex; j++) {
-        const earlier = ts.beats.find(
-          (bt: {set?: Record<string, unknown>}) => bt.set && metrics[j].bind in bt.set,
-        );
-        if (earlier === b) order++;
+        const earlier = ts.beats.find((s) => {
+          const b = s.beat as {set?: Record<string, unknown>};
+          return b.set && metrics[j].bind in b.set;
+        });
+        if (earlier === slot) order++;
       }
-      return {from: b.from, cadence: b.cadence, order};
+      const cad = (slot.beat as {cadence?: 'cascade' | 'together' | 'snap'}).cadence;
+      return {from: slot.startFrame, cadence: cad, order};
     };
 
     return (
       <SceneFrame
-        style={style}        accentHex={accentHex}
-        kicker={scene.kicker}
-        heading={scene.heading}
+        style={style}
+        accentHex={accentHex}
+        kicker={kicker}
+        {...headingProp}
         sceneIndex={sceneIndex}
         sceneCount={sceneCount}
         glowScale={glowScale}
@@ -131,16 +168,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
               marginTop: 40,
             }}
           >
-            {metrics.map((m: {
-              id: string;
-              col: number;
-              row: number;
-              label: string;
-              bind: string;
-              format?: string;
-              unit?: string;
-              accent?: string;
-            }, mi: number) => {
+            {metrics.map((m, mi) => {
               const a = appearWith(metricRevealOf(mi));
               if (a <= 0) return null;
               const focused = focusIds.has(m.id);
@@ -249,13 +277,14 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
     const cardH = 268;
     const gap = 34;
     // `cadence` shapes how the figures a beat reveals enter.
-    const figureReveals = numericRevealMap(ts.beats, figures.length);
+    const figureReveals = numericRevealMap(beatsForReveal, figures.length);
 
     return (
       <SceneFrame
-        style={style}        accentHex={accentHex}
-        kicker={scene.kicker}
-        heading={scene.heading}
+        style={style}
+        accentHex={accentHex}
+        kicker={kicker}
+        {...headingProp}
         sceneIndex={sceneIndex}
         sceneCount={sceneCount}
         glowScale={glowScale}
@@ -271,19 +300,13 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
               marginTop: 40,
             }}
           >
-            {figures.map((f: {
-              id: string;
-              label: string;
-              value: string | number;
-              unit?: string;
-              note?: string;
-            }, i: number) => {
+            {figures.map((f, i) => {
               const a = appearWith(figureReveals[i]);
               if (a <= 0) return null;
               const focused = focusIds.has(f.id);
               const dim = hasFocus && !focused;
               const opacity = a * (dim ? 0.34 : 1);
-              const scale = interpolate(a, [0, 1], [0.88, 1]);
+              const cardScale = interpolate(a, [0, 1], [0.88, 1]);
               const breathe = focused ? 0.5 + 0.5 * Math.sin((frame / fps) * 3.2) : 0;
 
               return (
@@ -293,7 +316,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                     width: cardW,
                     height: cardH,
                     opacity,
-                    transform: `scale(${scale})`,
+                    transform: `scale(${cardScale})`,
                     borderRadius: 18,
                     background: focused
                       ? `radial-gradient(120% 140% at 0% 0%, ${glow(accentHex, 0.14)} 0%, ${bg.panelHi} 44%, ${bg.panel} 100%)`
@@ -407,24 +430,26 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
 
   // Cells reveal in row-major order. `cadence` shapes how the cells a beat
   // reveals enter — the numeric-reveal map is built over the cell count.
-  const cellIndex = (ri: number, ci: number): number => ri * Math.max(1, colLabels.length) + ci;
+  const cellIndex = (ri: number, ci: number): number =>
+    ri * Math.max(1, colLabels.length) + ci;
   const cellReveals = numericRevealMap(
-    ts.beats,
+    beatsForReveal,
     rowLabels.length * Math.max(1, colLabels.length),
   );
 
   return (
     <SceneFrame
-      style={style}      accentHex={accentHex}
-      kicker={scene.kicker}
-      heading={scene.heading}
+      style={style}
+      accentHex={accentHex}
+      kicker={kicker}
+      {...headingProp}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
       glowScale={glowScale}
     >
       <AbsoluteFill>
         {/* column labels — single line, auto-shrink. */}
-        {colLabels.map((cl: string, ci: number) => (
+        {colLabels.map((cl, ci) => (
           <div
             key={`col-${ci}`}
             style={{
@@ -459,7 +484,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
         ))}
 
         {/* rows */}
-        {rowLabels.map((rl: string, ri: number) => (
+        {rowLabels.map((rl, ri) => (
           <React.Fragment key={`row-${ri}`}>
             {/* row label — right-aligned in the gutter; wrap to 2 lines. */}
             <div
@@ -495,7 +520,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
             </div>
 
             {/* cells */}
-            {colLabels.map((_cl: string, ci: number) => {
+            {colLabels.map((_cl, ci) => {
               const idx = cellIndex(ri, ci);
               const a = appearWith(cellReveals[idx]);
               if (a <= 0) return null;
@@ -503,7 +528,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
               const focused = focusIds.has(id) || focusIds.has(rowLabels[ri]);
               const dim = hasFocus && !focused;
               const opacity = a * (dim ? 0.32 : 1);
-              const scale = interpolate(a, [0, 1], [0.85, 1]);
+              const cellScale = interpolate(a, [0, 1], [0.85, 1]);
               return (
                 <div
                   key={id}
@@ -514,7 +539,7 @@ export const QuantitiesScene: React.FC<SceneProps & {style: ResolvedStyle}> = ({
                     width: colW - 14,
                     height: cellH - 14,
                     opacity,
-                    transform: `scale(${scale})`,
+                    transform: `scale(${cellScale})`,
                     borderRadius: 11,
                     background: focused
                       ? `linear-gradient(158deg, ${glow(accentHex, 0.15)}, ${glow(accentHex, 0.05)})`
