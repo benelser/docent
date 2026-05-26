@@ -29,9 +29,12 @@ import {audioRhythmFeature} from './features/audio-rhythm';
 // @docent/tts-* packages in a later release)
 import {kokoroTtsPlugin} from './tts/kokoro';
 
-// Scenes (21 of 29 so far — migrations land additively as agents return)
+// Scenes (27 of 29 so far — migrations land additively as agents return)
 import {bigIdeaPlugin} from './scenes/big-idea';
 import {causalLoopPlugin} from './scenes/causal-loop';
+import {chartPlugin} from './scenes/chart';
+import {closeupPlugin} from './scenes/closeup';
+import {comparePlugin} from './scenes/compare';
 import {concessionPlugin} from './scenes/concession';
 import {demonstratePlugin} from './scenes/demonstrate';
 import diffPlugin from './scenes/diff';
@@ -39,6 +42,7 @@ import {epigraphPlugin} from './scenes/epigraph';
 import {figurePlugin} from './scenes/figure';
 import {framePlugin} from './scenes/frame';
 import {journeyMapPlugin} from './scenes/journey-map';
+import {landscapePlugin} from './scenes/landscape';
 import {mapPlugin} from './scenes/map';
 import {mechanismPlugin} from './scenes/mechanism';
 import {objectionPlugin} from './scenes/objection';
@@ -48,8 +52,10 @@ import {probePlugin} from './scenes/probe';
 import {progressionPlugin} from './scenes/progression';
 import {provocationPlugin} from './scenes/provocation';
 import {quantitiesPlugin} from './scenes/quantities';
+import {recapPlugin} from './scenes/recap';
 import {tensionPlugin} from './scenes/tension';
 import {timelinePlugin} from './scenes/timeline';
+import {vennPlugin} from './scenes/venn';
 import {walkthroughPlugin} from './scenes/walkthrough';
 
 // Re-exports for callers that want named imports.
@@ -81,9 +87,12 @@ export const corePlugins: readonly Plugin[] = [
   audioRhythmFeature,
   // TTS (1)
   kokoroTtsPlugin,
-  // Scenes (21 of 29)
+  // Scenes (27 of 29)
   bigIdeaPlugin,
   causalLoopPlugin,
+  chartPlugin,
+  closeupPlugin,
+  comparePlugin,
   concessionPlugin,
   demonstratePlugin,
   diffPlugin,
@@ -91,6 +100,7 @@ export const corePlugins: readonly Plugin[] = [
   figurePlugin,
   framePlugin,
   journeyMapPlugin,
+  landscapePlugin,
   mapPlugin,
   mechanismPlugin,
   objectionPlugin,
@@ -100,8 +110,10 @@ export const corePlugins: readonly Plugin[] = [
   progressionPlugin,
   provocationPlugin,
   quantitiesPlugin,
+  recapPlugin,
   tensionPlugin,
   timelinePlugin,
+  vennPlugin,
   walkthroughPlugin,
 ];
 
