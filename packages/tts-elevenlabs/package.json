@@ -1,0 +1,34 @@
+{
+  "name": "@docent/tts-elevenlabs",
+  "version": "3.0.0-pre.0",
+  "description": "The ElevenLabs TTS provider plugin for docent. Wraps the `elevenlabs` npm package's `convertWithTimestamps` for native character-level alignment, folded into word-level alignment for the engine.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/benelser/docent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benelser/docent.git",
+    "directory": "packages/tts-elevenlabs"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": ["src", "README.md"],
+  "dependencies": {
+    "@docent/kit": "workspace:*"
+  },
+  "peerDependencies": {
+    "elevenlabs": "^1.59.0"
+  },
+  "peerDependenciesMeta": {
+    "elevenlabs": {
+      "optional": false
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "elevenlabs": "^1.59.0",
+    "typescript": "^6.0.3"
+  }
+}
