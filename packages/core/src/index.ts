@@ -29,8 +29,9 @@ import {audioRhythmFeature} from './features/audio-rhythm';
 // @docent/tts-* packages in a later release)
 import {kokoroTtsPlugin} from './tts/kokoro';
 
-// Scenes (17 of 29 so far — migrations land additively as agents return)
+// Scenes (21 of 29 so far — migrations land additively as agents return)
 import {bigIdeaPlugin} from './scenes/big-idea';
+import {causalLoopPlugin} from './scenes/causal-loop';
 import {concessionPlugin} from './scenes/concession';
 import {demonstratePlugin} from './scenes/demonstrate';
 import diffPlugin from './scenes/diff';
@@ -43,9 +44,12 @@ import {mechanismPlugin} from './scenes/mechanism';
 import {objectionPlugin} from './scenes/objection';
 import {passagePlugin} from './scenes/passage';
 import {priorArtPlugin} from './scenes/prior-art';
+import {probePlugin} from './scenes/probe';
 import {progressionPlugin} from './scenes/progression';
 import {provocationPlugin} from './scenes/provocation';
 import {quantitiesPlugin} from './scenes/quantities';
+import {tensionPlugin} from './scenes/tension';
+import {timelinePlugin} from './scenes/timeline';
 import {walkthroughPlugin} from './scenes/walkthrough';
 
 // Re-exports for callers that want named imports.
@@ -77,8 +81,9 @@ export const corePlugins: readonly Plugin[] = [
   audioRhythmFeature,
   // TTS (1)
   kokoroTtsPlugin,
-  // Scenes (17 of 29)
+  // Scenes (21 of 29)
   bigIdeaPlugin,
+  causalLoopPlugin,
   concessionPlugin,
   demonstratePlugin,
   diffPlugin,
@@ -91,9 +96,12 @@ export const corePlugins: readonly Plugin[] = [
   objectionPlugin,
   passagePlugin,
   priorArtPlugin,
+  probePlugin,
   progressionPlugin,
   provocationPlugin,
   quantitiesPlugin,
+  tensionPlugin,
+  timelinePlugin,
   walkthroughPlugin,
 ];
 
