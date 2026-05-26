@@ -24,12 +24,18 @@ import {executivePreset} from './presets/executive';
 import {narrationFeature} from './features/narration';
 import {audioRhythmFeature} from './features/audio-rhythm';
 
+// TTS providers (1 — Kokoro; OpenAI/ElevenLabs/compatible stay in engine
+// for now and migrate when Build A's TS providers split into separate
+// @docent/tts-* packages in a later release)
+import {kokoroTtsPlugin} from './tts/kokoro';
+
 // Re-exports for callers that want named imports.
 export {
   neutralPreset, engineeringPreset, editorialPreset,
   paperPreset, analyticalPreset, executivePreset,
 };
 export {narrationFeature, audioRhythmFeature};
+export {kokoroTtsPlugin};
 
 /**
  * The set of plugins shipped with `@docent/core` — the opinionated default
@@ -50,6 +56,8 @@ export const corePlugins: readonly Plugin[] = [
   // Features (2)
   narrationFeature,
   audioRhythmFeature,
+  // TTS (1)
+  kokoroTtsPlugin,
 ];
 
 export default corePlugins;
