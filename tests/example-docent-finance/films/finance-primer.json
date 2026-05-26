@@ -1,0 +1,178 @@
+{
+  "meta": {
+    "id": "finance-primer",
+    "title": "Reading the Tape",
+    "subject": "How a finance vertical extends docent — and what an OHLC chart is actually saying",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "kicker": "DOCENT // FINANCE PACK",
+      "title": "Reading the Tape",
+      "tagline": "Two scenes a domain-specific pack contributes — `ohlc` and `candlestick`",
+      "footnote": "Loaded from @example/docent-finance  ·  zero edits to @docent/core",
+      "beats": [
+        {
+          "id": "fp-frame-1",
+          "narration": "Open the panel. The finance pack adds two scene types to docent — one shows the arc of a market across days, the other zooms into a single bar to close-read what it says.",
+          "show": "title"
+        },
+        {
+          "id": "fp-frame-2",
+          "narration": "Both ship through the same plugin protocol the docent core scenes use. The framework slash implementation split makes verticals like this possible without forking the engine.",
+          "show": "tagline"
+        }
+      ]
+    },
+    {
+      "id": "rally",
+      "type": "ohlc",
+      "kicker": "01 // THE ARC",
+      "title": "Ten sessions, one rally",
+      "subtitle": "Each bar is one trading day — wick is the high-low range, body is open to close",
+      "yLabel": "$/share",
+      "bars": [
+        {"label": "Mon", "open": 184.2, "high": 186.1, "low": 183.4, "close": 185.8, "volume": 42},
+        {"label": "Tue", "open": 185.9, "high": 187.6, "low": 184.5, "close": 184.7, "volume": 51},
+        {"label": "Wed", "open": 184.6, "high": 188.9, "low": 184.0, "close": 188.4, "volume": 73},
+        {"label": "Thu", "open": 188.5, "high": 191.2, "low": 187.8, "close": 190.9, "volume": 68},
+        {"label": "Fri", "open": 191.0, "high": 192.5, "low": 189.0, "close": 189.6, "volume": 55},
+        {"label": "Mon", "open": 189.7, "high": 193.4, "low": 189.1, "close": 193.1, "volume": 82},
+        {"label": "Tue", "open": 193.2, "high": 195.0, "low": 192.0, "close": 194.7, "volume": 71},
+        {"label": "Wed", "open": 194.8, "high": 197.2, "low": 194.0, "close": 196.8, "volume": 89},
+        {"label": "Thu", "open": 196.9, "high": 198.4, "low": 195.5, "close": 197.9, "volume": 64},
+        {"label": "Fri", "open": 198.0, "high": 200.5, "low": 197.6, "close": 200.2, "volume": 95}
+      ],
+      "beats": [
+        {
+          "id": "fp-ohlc-1",
+          "narration": "Ten sessions, plotted as Open-High-Low-Close. The arc is the argument — the trend climbs from 184 on the first Monday to 200 on the second Friday, an 8 percent move over two weeks."
+        },
+        {
+          "id": "fp-ohlc-2",
+          "narration": "Read the shape, not the bars. The decline on Tuesday and the consolidation on Friday were noise. The signal is the rally — eight up sessions out of ten, volume rising into the move."
+        }
+      ]
+    },
+    {
+      "id": "engulf",
+      "type": "candlestick",
+      "kicker": "02 // CLOSE-READ",
+      "title": "The bar that broke the trend",
+      "subtitle": "One session, one bar — and what the wick and body tell us",
+      "pattern": "Bearish engulfing",
+      "patternNote": "the body opens above the prior close and closes below the prior open — a full reversal of the prior session's gain.",
+      "bar": {
+        "label": "Wed · session of interest",
+        "open": 201.5,
+        "high": 201.8,
+        "low": 192.1,
+        "close": 193.0,
+        "volume": 142
+      },
+      "beats": [
+        {
+          "id": "fp-cs-1",
+          "narration": "Now the close-up. One bar. The body is red — close below open by eight and a half dollars. The wick on top is tiny; the wick on the bottom is the whole story."
+        },
+        {
+          "id": "fp-cs-2",
+          "narration": "This is a bearish engulfing pattern. The open is above the prior session's close, the close is below the prior session's open — one bar erases two days of gains. The wick tells you the lows were tested but not bought."
+        }
+      ]
+    },
+    {
+      "id": "tension",
+      "type": "tension",
+      "kicker": "03 // THE TRADE-OFF",
+      "heading": "Arc versus close-read",
+      "cut": "hold",
+      "grid": {"cols": 3, "rows": 2},
+      "nodes": [
+        {
+          "id": "arc",
+          "label": "OHLC — the arc",
+          "sub": "5 to 20 bars · the shape of a trend",
+          "col": 0,
+          "row": 0,
+          "accent": "cyan",
+          "weight": "primary",
+          "wide": true
+        },
+        {
+          "id": "close",
+          "label": "Candlestick — the close-up",
+          "sub": "1 bar · the structure of a session",
+          "col": 0,
+          "row": 1,
+          "accent": "amber",
+          "weight": "primary",
+          "wide": true
+        }
+      ],
+      "beats": [
+        {
+          "id": "fp-tension-1",
+          "narration": "Two scenes, two cognitive moves. The OHLC scene shows the arc — five to twenty bars, the shape of a trend. Use it when the argument is the direction.",
+          "reveal": 1
+        },
+        {
+          "id": "fp-tension-2",
+          "narration": "The candlestick scene shows the close-up — one bar, the structure of a session. Use it when the argument is what that one bar means.",
+          "reveal": 2,
+          "pace": "settle"
+        }
+      ]
+    },
+    {
+      "id": "big",
+      "type": "big-idea",
+      "kicker": "04 // THE BIG IDEA",
+      "heading": "A vertical is two scene types and a depth rule",
+      "statement": "The finance pack adds 2 scene types. Each ships ONE depthcheck rule. The contract is the wall.",
+      "anchor": {"kind": "glyph", "value": "2 + 2"},
+      "beats": [
+        {
+          "id": "fp-big-1",
+          "narration": "Here is the structural claim. A docent vertical is small. The finance pack is two scene types and two depth rules — `ohlc-arc-load-bearing` and `candlestick-close-read`.",
+          "show": "statement"
+        },
+        {
+          "id": "fp-big-2",
+          "narration": "Each rule is a question the depth checker asks of every scene of that type. The OHLC chart is decoration if no beat names the trend. The candlestick is wasted if no beat names the wick.",
+          "focus": ["statement"]
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "kicker": "05 // THE VERDICT",
+      "heading": "A vertical, through the same protocol",
+      "points": [
+        "OHLC for the arc — the trend across 5 to 20 bars.",
+        "Candlestick for the close-up — one bar, one close-read.",
+        "Both ship through @docent/kit's ScenePlugin protocol. No fork."
+      ],
+      "beats": [
+        {
+          "id": "fp-recap-1",
+          "narration": "Two scene types. One protocol. The finance pack ships them through the same plugin contract the core 29 use — and the depth and judge rules travel with them.",
+          "reveal": 1
+        },
+        {
+          "id": "fp-recap-2",
+          "narration": "Verticals like this are the bet. Anyone can extend the library. The contract is the wall that holds the discipline.",
+          "reveal": 3,
+          "pace": "hold"
+        }
+      ]
+    }
+  ]
+}

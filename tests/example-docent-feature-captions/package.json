@@ -1,0 +1,19 @@
+{
+  "name": "@example/docent-feature-captions",
+  "version": "0.1.0",
+  "description": "A feature plugin — emits an SRT subtitle sidecar alongside the rendered mp4. Demonstrates `FeaturePlugin.afterRender` as the post-render hook for sidecar writers.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": ["src", "films"],
+  "dependencies": {
+    "@docent/kit": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "typescript": "^6.0.3"
+  }
+}

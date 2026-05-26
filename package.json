@@ -12,7 +12,10 @@
     "packages/tts-openai",
     "packages/tts-elevenlabs",
     "packages/tts-compatible",
-    "tests/example-docent-scifi"
+    "tests/example-docent-scifi",
+    "tests/example-docent-finance",
+    "tests/example-docent-preset-brand",
+    "tests/example-docent-feature-captions"
   ],
   "scripts": {
     "docent": "bun packages/engine/cli/docent.ts"

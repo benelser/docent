@@ -875,6 +875,52 @@ export interface RenderContext {
 }
 
 /**
+ * Per-beat record handed to {@link FeaturePlugin.afterRender}. Mirrors the
+ * subset of the TTS stage manifest a side-output feature (captions,
+ * transcript sidecar) actually needs.
+ *
+ * `seconds` is the clip's measured duration; `text` is the beat's narration
+ * (or empty when the beat carries none). `sceneId` + `beatId` survive when
+ * the spec author set them; otherwise the integer indices are the keys.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.5
+ */
+export interface AfterRenderBeat {
+  readonly sceneIndex: number;
+  readonly beatIndex: number;
+  readonly sceneId?: string;
+  readonly beatId?: string;
+  readonly seconds: number;
+  readonly text: string;
+}
+
+/**
+ * Context passed to {@link FeaturePlugin.afterRender}. The render has
+ * completed (`outPath` is the mp4 or still on disk); features that want to
+ * write sidecars (captions, transcripts, chapter manifests) consume the
+ * per-beat TTS timings and the spec narration here.
+ *
+ * `ttsProviderId` is `'skipped'` when `--skip-tts` was on — the cascade
+ * synthesizes estimated per-beat seconds from word count so sidecar
+ * generation still works end-to-end without audio.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.5
+ */
+export interface AfterRenderContext {
+  readonly filmSpec: FilmSpec;
+  /** Absolute path of the rendered mp4 (or still). */
+  readonly outPath: string;
+  /** Output directory the render landed in — sidecars typically write here. */
+  readonly outputDir: string;
+  /** Resolved style — features may surface tokens in their sidecars. */
+  readonly style: ResolvedStyle;
+  /** Per-beat record: scene index, beat index, seconds, narration text. */
+  readonly beats: ReadonlyArray<AfterRenderBeat>;
+  /** TTS provider id the render used (or `'skipped'` when --skip-tts). */
+  readonly ttsProviderId: string;
+}
+
+/**
  * Props the kit passes to a {@link FeaturePlugin.wrapsScenes} component.
  * The composition mounts the component inside each scene's `<Sequence>`,
  * alongside the scene's own renderer; the feature decides what to layer
@@ -979,6 +1025,22 @@ export interface FeaturePlugin extends PluginBase {
    * composition without composition.tsx depending on `@docent/core`.
    */
   readonly wrapsScenes?: React.ComponentType<SceneFeatureProps>;
+
+  /**
+   * Post-render side-effect hook. Called by the cascade orchestrator AFTER
+   * `runRenderStage` returns and the mp4 (or still) has landed on disk.
+   * Receives the per-beat TTS timings + the spec's narration text, so a
+   * feature can write captions (SRT/VTT), transcripts, chapter markers, or
+   * any other sidecar that pairs the rendered video with text.
+   *
+   * Multiple features can register `afterRender` — the orchestrator calls
+   * them in feature-registration order. A throw is surfaced as a render
+   * error; a feature that wants to be lenient should catch its own errors.
+   *
+   * Additive (Wave E2): pre-existing plugins that don't implement this hook
+   * are unaffected.
+   */
+  afterRender?(ctx: AfterRenderContext): void | Promise<void>;
 
   /**
    * **R6 forward-compat.** Pre-process the spec BEFORE schema validation

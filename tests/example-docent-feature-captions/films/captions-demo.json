@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "id": "captions-demo",
+    "title": "Captions, as a Sidecar",
+    "subject": "How a feature plugin writes an SRT file alongside the rendered mp4",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "kicker": "DOCENT // FEATURE PACK",
+      "title": "Captions, as a Sidecar",
+      "tagline": "One plugin, one hook — an SRT file next to every mp4",
+      "footnote": "Loaded from @example/docent-feature-captions  ·  uses FeaturePlugin.afterRender",
+      "beats": [
+        {
+          "id": "cd-frame-1",
+          "narration": "Open the panel. This film is rendered the way every docent film is rendered — but a feature plugin watches the render finish and writes an SRT subtitle file next to the mp4."
+        },
+        {
+          "id": "cd-frame-2",
+          "narration": "The point is the protocol. A feature plugin can ship side-effects through the same hooks the engine already exposes — no fork, no monkeypatch."
+        }
+      ]
+    },
+    {
+      "id": "big",
+      "type": "big-idea",
+      "kicker": "01 // THE BIG IDEA",
+      "heading": "afterRender is the sidecar hook",
+      "statement": "Every feature plugin can register an afterRender — the protocol's slot for sidecar writers like captions, transcripts, chapter markers.",
+      "anchor": {"kind": "glyph", "value": ".srt"},
+      "beats": [
+        {
+          "id": "cd-big-1",
+          "narration": "The headline. The kit exposes one hook, afterRender, called by the orchestrator the moment the render stage returns. The hook receives the per-beat TTS timings and the spec's narration.",
+          "show": "statement"
+        },
+        {
+          "id": "cd-big-2",
+          "narration": "An SRT writer needs exactly those two inputs — when each beat played, what each beat said. The feature pack consumes them and writes the file. That is the entire integration.",
+          "focus": ["statement"]
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "kicker": "02 // THE VERDICT",
+      "heading": "A feature plugin is one hook and one file",
+      "points": [
+        "afterRender fires once the mp4 lands on disk.",
+        "It receives per-beat seconds + narration text in one record.",
+        "The plugin builds the SRT and writes it next to the video. Done."
+      ],
+      "beats": [
+        {
+          "id": "cd-recap-1",
+          "narration": "The takeaway. The afterRender hook fires once the mp4 lands. The plugin receives per-beat timings and narration text. It writes the SRT next to the video.",
+          "reveal": 1
+        },
+        {
+          "id": "cd-recap-2",
+          "narration": "Look in the output directory. The captions-demo.srt next to captions-demo.mp4 is the proof.",
+          "reveal": 3,
+          "pace": "hold"
+        }
+      ]
+    }
+  ]
+}

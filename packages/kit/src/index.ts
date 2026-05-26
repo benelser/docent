@@ -55,6 +55,8 @@ export type {
   SceneOutput,
   RenderContext,
   SceneFeatureProps,
+  AfterRenderBeat,
+  AfterRenderContext,
 
   // Modifier (R3 forward-compat)
   ModifierTier,

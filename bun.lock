@@ -7,7 +7,7 @@
     },
     "packages/agent": {
       "name": "@docent/agent",
-      "version": "2.0.3",
+      "version": "3.0.0-pre.0",
     },
     "packages/cli": {
       "name": "@docent/cli",
@@ -155,6 +155,46 @@
         "openai": "^6.39.0",
       },
     },
+    "tests/example-docent-feature-captions": {
+      "name": "@example/docent-feature-captions",
+      "version": "0.1.0",
+      "dependencies": {
+        "@docent/kit": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "^25.0.0",
+        "typescript": "^6.0.3",
+      },
+    },
+    "tests/example-docent-finance": {
+      "name": "@example/docent-finance",
+      "version": "0.1.0",
+      "dependencies": {
+        "@docent/kit": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "^25.0.0",
+        "@types/react": "^18.3.29",
+        "react": "^18.3.1",
+        "remotion": "^4.0.464",
+        "typescript": "^6.0.3",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0 || ^19.0.0",
+        "remotion": "^4.0.0",
+      },
+    },
+    "tests/example-docent-preset-brand": {
+      "name": "@example/docent-preset-brand",
+      "version": "0.1.0",
+      "dependencies": {
+        "@docent/kit": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "^25.0.0",
+        "typescript": "^6.0.3",
+      },
+    },
     "tests/example-docent-scifi": {
       "name": "@example/docent-scifi",
       "version": "0.1.0",
@@ -256,6 +296,12 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.28.0", "", { "os": "win32", "cpu": "ia32" }, "sha512-zF3ag/gfiCe6U2iczcRzSYJKH1DCI+ByzSENHlM2FcDbEeo5Zd2C86Aq0tKUYAJJ1obRP84ymxIAksZUcdztHA=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.28.0", "", { "os": "win32", "cpu": "x64" }, "sha512-pEl1bO9mfAmIC+tW5btTmrKaujg3zGtUmWNdCw/xs70FBjwAL3o9OEKNHvNmnyylD6ubxUERiEhdsL0xBQ9efw=="],
+
+    "@example/docent-feature-captions": ["@example/docent-feature-captions@workspace:tests/example-docent-feature-captions"],
+
+    "@example/docent-finance": ["@example/docent-finance@workspace:tests/example-docent-finance"],
+
+    "@example/docent-preset-brand": ["@example/docent-preset-brand@workspace:tests/example-docent-preset-brand"],
 
     "@example/docent-scifi": ["@example/docent-scifi@workspace:tests/example-docent-scifi"],
 

@@ -1,0 +1,119 @@
+{
+  "meta": {
+    "id": "acme-quarterly",
+    "title": "Acme Q3 — The Quarter in Four Frames",
+    "subject": "How a brand preset reskins the docent core scenes without forking the engine",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "style": {
+    "preset": "acme"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "kicker": "ACME // Q3 BRIEFING",
+      "title": "The Quarter in Four Frames",
+      "tagline": "What a brand preset is — and what it isn't",
+      "footnote": "Preset: acme  ·  loaded from @example/docent-preset-brand  ·  every scene below is a canonical docent core scene",
+      "beats": [
+        {
+          "id": "aq-frame-1",
+          "narration": "Welcome to Acme's quarterly briefing. The look is ours — the deep navy, the gold accent, the corporate breathing room. But every scene you are about to see is a docent core scene, unchanged.",
+          "show": "title"
+        },
+        {
+          "id": "aq-frame-2",
+          "narration": "What changed is the preset. One file of tokens. The frame, the quantities, the recap — same components, brand register applied.",
+          "show": "tagline"
+        }
+      ]
+    },
+    {
+      "id": "quarter-numbers",
+      "type": "quantities",
+      "kicker": "01 // BY THE NUMBERS",
+      "heading": "Q3, in three figures",
+      "figures": [
+        {
+          "id": "rev",
+          "label": "Revenue",
+          "value": "$248M",
+          "note": "+18% YoY"
+        },
+        {
+          "id": "users",
+          "label": "Active users",
+          "value": "12.4M",
+          "note": "+9% QoQ"
+        },
+        {
+          "id": "margin",
+          "label": "Gross margin",
+          "value": "71%",
+          "note": "+200 bps"
+        }
+      ],
+      "beats": [
+        {
+          "id": "aq-num-1",
+          "narration": "Three numbers tell the quarter. Revenue at 248 million, up eighteen percent year over year. Active users at 12.4 million, up nine percent quarter over quarter. Gross margin at 71 percent, up two hundred basis points.",
+          "reveal": 3
+        },
+        {
+          "id": "aq-num-2",
+          "narration": "Notice how the gold carries the emphasis. The brand preset routes every accent through the corporate gold — one colour, the whole register.",
+          "pace": "settle"
+        }
+      ]
+    },
+    {
+      "id": "headline",
+      "type": "big-idea",
+      "kicker": "02 // THE HEADLINE",
+      "heading": "Margin held while we grew",
+      "statement": "The story of Q3 is that we added 1.0 million users without losing margin. Operational leverage is real.",
+      "anchor": {"kind": "glyph", "value": "+200 bps"},
+      "beats": [
+        {
+          "id": "aq-head-1",
+          "narration": "Here is the headline to leave with. We added a million users this quarter, and the gross margin moved up two hundred basis points anyway.",
+          "show": "statement"
+        },
+        {
+          "id": "aq-head-2",
+          "narration": "Operational leverage is not theoretical. It is what we just shipped. The next quarter's bar is to hold it.",
+          "focus": ["statement"]
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "kicker": "03 // THE TAKEAWAY",
+      "heading": "Brand register, applied to the same scene grammar",
+      "points": [
+        "Three numbers — revenue, users, margin — all up.",
+        "Operational leverage held while we grew the user base.",
+        "And every scene above is a docent core scene under an Acme preset."
+      ],
+      "beats": [
+        {
+          "id": "aq-recap-1",
+          "narration": "The takeaway. Three numbers up. Leverage held. A growth quarter that did not cost margin.",
+          "reveal": 1
+        },
+        {
+          "id": "aq-recap-2",
+          "narration": "And structurally — every frame you just watched is a docent core scene with one preset applied. The brand is the tokens. The argument is the script.",
+          "reveal": 3,
+          "pace": "hold"
+        }
+      ]
+    }
+  ]
+}

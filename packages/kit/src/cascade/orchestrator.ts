@@ -23,13 +23,18 @@
 // exercisable the instant its own predecessors land, even if downstream
 // peers haven't yet.
 
+import {dirname} from 'node:path';
+
 import type {Engine} from '../engine';
 import type {
+  AfterRenderBeat,
+  AfterRenderContext,
   FilmSpec,
   Issue,
   RenderOptions,
   RenderResult,
 } from '../protocols';
+import type {Beat, Scene} from '../types/spec';
 import type {ResolvedStyle} from '../types/style';
 import {runTtsStage, type TtsStageManifest} from './tts-stage';
 import {runRenderStage} from './render-stage';
@@ -210,6 +215,93 @@ export const runCascade = async (
   });
   const seconds = (performance.now() - t0) / 1000;
   stages.push({name: 'render', seconds});
+
+  // ─── 5. afterRender — feature side-effects ───────────────────────────
+  // Every registered FeaturePlugin that declares an `afterRender` hook is
+  // called here, in registration order. This is the slot for sidecar
+  // writers — SRT captions, transcripts, chapter markers — that pair the
+  // rendered mp4 with text. The hook receives per-beat TTS timings + the
+  // spec's narration so a feature can build text-with-timestamps without
+  // re-running TTS.
+  const features = engine.features.all();
+  const hasAfterRender = features.some((f) => typeof f.afterRender === 'function');
+  if (hasAfterRender) {
+    // Build the per-beat record once and pass it to every hook.
+    const beatRecords: AfterRenderBeat[] = [];
+    const beatTextLookup = new Map<string, string>();
+    const sceneIdLookup = new Map<number, string | undefined>();
+    const scenes: Scene[] = spec.scenes ?? [];
+    for (let si = 0; si < scenes.length; si++) {
+      const sc = scenes[si];
+      sceneIdLookup.set(si, sc?.id);
+      if (!sc || !Array.isArray(sc.beats)) continue;
+      const sceneBeats = sc.beats as Beat[];
+      for (let bi = 0; bi < sceneBeats.length; bi++) {
+        const b = sceneBeats[bi];
+        if (!b) continue;
+        beatTextLookup.set(`${si}-${bi}`, b.narration ?? '');
+      }
+    }
+    // Walk the TTS manifest first — that's the authoritative source for
+    // clip duration. Beats with no narration / no TTS skip silently.
+    if (ttsManifest.beats.length > 0) {
+      for (const b of ttsManifest.beats) {
+        const key = `${b.sceneIndex}-${b.beatIndex}`;
+        const text = beatTextLookup.get(key) ?? '';
+        const record: AfterRenderBeat = {
+          sceneIndex: b.sceneIndex,
+          beatIndex: b.beatIndex,
+          seconds: b.clipSeconds,
+          text,
+          ...(sceneIdLookup.get(b.sceneIndex) !== undefined
+            ? {sceneId: sceneIdLookup.get(b.sceneIndex)!}
+            : {}),
+          ...(b.beatId !== undefined ? {beatId: b.beatId} : {}),
+        };
+        beatRecords.push(record);
+        beatTextLookup.delete(key);
+      }
+    } else {
+      // No TTS ran (--skip-tts, or all beats silent). Synthesize estimated
+      // timings from the narration text alone so captions still render:
+      // ~150 wpm = 2.5 wps, with a 1s floor per beat. This is the same
+      // policy the engine's narration overlay uses when audio is missing.
+      for (let si = 0; si < scenes.length; si++) {
+        const sc = scenes[si];
+        if (!sc || !Array.isArray(sc.beats)) continue;
+        const sceneBeats = sc.beats as Beat[];
+        for (let bi = 0; bi < sceneBeats.length; bi++) {
+          const b = sceneBeats[bi];
+          if (!b) continue;
+          const text = b.narration ?? '';
+          const words = text.trim().split(/\s+/).filter(Boolean).length;
+          const estimated = Math.max(1, words / 2.5);
+          beatRecords.push({
+            sceneIndex: si,
+            beatIndex: bi,
+            seconds: Number(estimated.toFixed(3)),
+            text,
+            ...(sc.id !== undefined ? {sceneId: sc.id} : {}),
+            ...(b.id !== undefined ? {beatId: b.id} : {}),
+          });
+        }
+      }
+    }
+
+    const outputDir = opts.outputDir ?? dirname(result.outPath);
+    const ctx: AfterRenderContext = {
+      filmSpec: spec,
+      outPath: result.outPath,
+      outputDir,
+      style,
+      beats: beatRecords,
+      ttsProviderId: ttsManifest.providerId,
+    };
+    for (const f of features) {
+      if (typeof f.afterRender !== 'function') continue;
+      await f.afterRender(ctx);
+    }
+  }
 
   // Surface tts metrics in the result so the CLI can print a summary.
   return {
