@@ -77,3 +77,7 @@ apm_modules/
 
 # we use bun, not npm — keep the dead lockfile from coming back
 package-lock.json
+
+# Per-render entry scripts the CLI generates under .docent/tmp/.
+# These are throwaway — regenerated on every `docent build`.
+.docent/

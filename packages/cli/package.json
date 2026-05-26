@@ -1,0 +1,33 @@
+{
+  "name": "@docent/cli",
+  "version": "3.0.0-pre.0",
+  "description": "docent's thin CLI shell. Subcommand routing on top of @docent/kit's public Engine surface; loads @docent/core and any user docent.config.ts plugins.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/benelser/docent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benelser/docent.git",
+    "directory": "packages/cli"
+  },
+  "bin": {
+    "docent": "./src/index.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": ["src", "README.md"],
+  "dependencies": {
+    "@docent/core": "workspace:*",
+    "@docent/kit": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "typescript": "^6.0.3"
+  }
+}

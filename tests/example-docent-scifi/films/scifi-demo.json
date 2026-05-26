@@ -1,0 +1,164 @@
+{
+  "meta": {
+    "id": "scifi-demo",
+    "title": "Holodeck Audit",
+    "subject": "What a third-party scene plugin can carry — without forking @docent/core",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "style": {
+    "preset": "scifi-noir"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "kicker": "DOCENT // ACCEPTANCE",
+      "title": "Holodeck Audit",
+      "tagline": "A third-party scene type, registered through the same protocol @docent/core uses",
+      "footnote": "Loaded from @example/docent-scifi  ·  preset: scifi-noir  ·  zero edits to @docent/core",
+      "beats": [
+        {
+          "id": "sf-frame-1",
+          "narration": "Open the panel. This film is the architectural proof — a custom scene type and a custom preset rendered by the same engine that ships the docent default twenty-nine.",
+          "show": "title"
+        },
+        {
+          "id": "sf-frame-2",
+          "narration": "If the next minute renders without forking the core package, the framework slash implementation split is real.",
+          "show": "tagline"
+        }
+      ]
+    },
+    {
+      "id": "holo-1",
+      "type": "holodeck",
+      "kicker": "01 // THIRD-PARTY SCENE",
+      "title": "Custom scene type",
+      "subtitle": "holodeckPlugin lives in @example/docent-scifi — yet engine.scenes.get('holodeck') returns it",
+      "beats": [
+        {
+          "id": "sf-holo1-1",
+          "narration": "This scene is not in the docent core library. It is a holodeck — invented by a third-party package, registered through the same plugin protocol the default twenty-nine use."
+        },
+        {
+          "id": "sf-holo1-2",
+          "narration": "The engine sniffed its kind, routed it to the scene registry, and the cascade dispatched its component without knowing where it came from."
+        }
+      ]
+    },
+    {
+      "id": "tension",
+      "type": "tension",
+      "kicker": "02 // THE TRADE-OFF",
+      "heading": "Closed grammar, open library",
+      "cut": "hold",
+      "grid": {"cols": 3, "rows": 3},
+      "nodes": [
+        {
+          "id": "closed",
+          "label": "Plugin protocol",
+          "sub": "closed — breaking it is a major bump",
+          "col": 0,
+          "row": 0,
+          "accent": "cyan",
+          "weight": "hero",
+          "wide": true
+        },
+        {
+          "id": "open",
+          "label": "Scene library",
+          "sub": "open — anyone can register a sceneType",
+          "col": 0,
+          "row": 1,
+          "accent": "violet",
+          "weight": "primary",
+          "wide": true
+        },
+        {
+          "id": "judge",
+          "label": "depthcheck + judge",
+          "sub": "the contract that enforces quality",
+          "col": 0,
+          "row": 2,
+          "accent": "amber",
+          "weight": "primary",
+          "wide": true
+        }
+      ],
+      "beats": [
+        {
+          "id": "sf-tension-1",
+          "narration": "The bet is structural. The plugin protocol is closed — break it and every third-party plugin breaks. The scene library itself is open — anyone can register a new cognitive move.",
+          "reveal": 1
+        },
+        {
+          "id": "sf-tension-2",
+          "narration": "And what enforces quality across the open library is not curation. It is the depthcheck and judge contract every scene must honor — built-in or third-party, same bar.",
+          "reveal": 3,
+          "pace": "settle"
+        }
+      ]
+    },
+    {
+      "id": "big",
+      "type": "big-idea",
+      "kicker": "03 // THE BIG IDEA",
+      "heading": "The platform bet, made concrete",
+      "statement": "The 29 reference scenes are an opinionated default. The scene library is open. The contract is the wall.",
+      "anchor": {"kind": "glyph", "value": "29+N"},
+      "beats": [
+        {
+          "id": "sf-big-1",
+          "narration": "Here is the line to leave with. Twenty-nine reference scenes are the opinionated default — they are not the closed universe.",
+          "show": "statement"
+        },
+        {
+          "id": "sf-big-2",
+          "narration": "The library extends by N — by however many third-party scenes the protocol can carry — and the contract every scene honors is what holds the discipline.",
+          "focus": ["statement"]
+        }
+      ]
+    },
+    {
+      "id": "holo-2",
+      "type": "holodeck",
+      "kicker": "04 // PROOF",
+      "title": "Acceptance: GREEN",
+      "subtitle": "If this frame renders, the rip-and-replace has cleared its hardest test",
+      "beats": [
+        {
+          "id": "sf-holo2-1",
+          "narration": "This second holodeck panel is the same plugin, rendered again. The engine resolved it from the same registry, painted it with the same custom preset, and threaded it into the timeline."
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "kicker": "05 // THE VERDICT",
+      "heading": "Framework, implementation, third-party — three packages, one protocol",
+      "points": [
+        "@docent/kit owns the protocol and the registry — zero opinions.",
+        "@docent/core registers the 29 default scenes through that same public API.",
+        "@example/docent-scifi adds a 30th — without touching @docent/core."
+      ],
+      "beats": [
+        {
+          "id": "sf-recap-1",
+          "narration": "Three packages, one protocol. The kit owns the rules. The core ships the reference twenty-nine. A third party adds the thirtieth — through the same door, never around it.",
+          "reveal": 1
+        },
+        {
+          "id": "sf-recap-2",
+          "narration": "The architecture is done when this film renders. It just rendered.",
+          "reveal": 3,
+          "pace": "hold"
+        }
+      ]
+    }
+  ]
+}

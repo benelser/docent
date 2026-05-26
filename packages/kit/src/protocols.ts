@@ -581,6 +581,20 @@ export interface RenderOptions {
   concurrency?: number;
   /** Path to the cache directory the cascade may write to. */
   cacheDir?: string;
+  /** Override the output directory (default: <cwd>/out). */
+  outputDir?: string;
+  /**
+   * Absolute path to the Remotion entry script the render shell-out invokes.
+   * The kit ships a helper (`registerKitRoot`) but does NOT statically know
+   * which plugins to load; the invoker (CLI) generates a per-render entry
+   * that statically imports the required plugins and passes that path here.
+   * If omitted, the render stage hard-fails with a clear error.
+   */
+  entryPath?: string;
+  /** Optional Remotion `--public-dir` pass-through. */
+  publicDir?: string;
+  /** Path to the `remotion` bin. Defaults to a walked-up node_modules lookup. */
+  remotionBin?: string;
 }
 
 export interface RenderResult {

@@ -9,6 +9,25 @@
       "name": "@docent/agent",
       "version": "2.0.3",
     },
+    "packages/cli": {
+      "name": "@docent/cli",
+      "version": "3.0.0-pre.0",
+      "bin": {
+        "docent": "./src/index.ts",
+      },
+      "dependencies": {
+        "@docent/core": "workspace:*",
+        "@docent/kit": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "^25.0.0",
+        "typescript": "^6.0.3",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0 || ^19.0.0",
+        "remotion": "^4.0.0",
+      },
+    },
     "packages/core": {
       "name": "@docent/core",
       "version": "3.0.0-pre.0",
@@ -80,6 +99,7 @@
       },
       "devDependencies": {
         "@types/json-schema": "^7.0.15",
+        "@types/node": "^25.0.0",
         "@types/react": "^18.3.29",
         "react": "^18.3.1",
         "remotion": "^4.0.464",
@@ -94,6 +114,23 @@
         "@remotion/transitions",
       ],
     },
+    "tests/example-docent-scifi": {
+      "name": "@example/docent-scifi",
+      "version": "0.1.0",
+      "dependencies": {
+        "@docent/kit": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/react": "^18.3.29",
+        "react": "^18.3.1",
+        "remotion": "^4.0.464",
+        "typescript": "^6.0.3",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0 || ^19.0.0",
+        "remotion": "^4.0.0",
+      },
+    },
   },
   "packages": {
     "@babel/helper-string-parser": ["@babel/helper-string-parser@7.27.1", "", {}, "sha512-qMlSxKbpRlAridDExk92nSobyDdpPijUq2DW6oDnUqd0iOGxmQjyqhMIihI9+zv4LPyZdRje2cavWPbCbWm3eA=="],
@@ -105,6 +142,8 @@
     "@babel/types": ["@babel/types@7.24.0", "", { "dependencies": { "@babel/helper-string-parser": "^7.23.4", "@babel/helper-validator-identifier": "^7.22.20", "to-fast-properties": "^2.0.0" } }, "sha512-+j7a5c253RfKh8iABBhywc8NSfP5LURe7Uh4qpsh6jc+aLJguvmIUBdjSdEMQv2bENrCR5MfRdjGo7vzS/ob7w=="],
 
     "@docent/agent": ["@docent/agent@workspace:packages/agent"],
+
+    "@docent/cli": ["@docent/cli@workspace:packages/cli"],
 
     "@docent/core": ["@docent/core@workspace:packages/core"],
 
@@ -169,6 +208,8 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.28.0", "", { "os": "win32", "cpu": "ia32" }, "sha512-zF3ag/gfiCe6U2iczcRzSYJKH1DCI+ByzSENHlM2FcDbEeo5Zd2C86Aq0tKUYAJJ1obRP84ymxIAksZUcdztHA=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.28.0", "", { "os": "win32", "cpu": "x64" }, "sha512-pEl1bO9mfAmIC+tW5btTmrKaujg3zGtUmWNdCw/xs70FBjwAL3o9OEKNHvNmnyylD6ubxUERiEhdsL0xBQ9efw=="],
+
+    "@example/docent-scifi": ["@example/docent-scifi@workspace:tests/example-docent-scifi"],
 
     "@huggingface/jinja": ["@huggingface/jinja@0.5.9", "", {}, "sha512-uWTG+l3VJRsl7EXxYizuL3P+cCPoc3cRqbWWRcQN0FhejRfbdq0RNhCmbY/YDtnTcz9icdLYuLDjsnz4d8JMuw=="],
 
