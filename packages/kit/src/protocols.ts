@@ -174,6 +174,14 @@ export interface BeatTimelineSlot {
   readonly frames: number;
   /** The beat's own data, narrowed by the scene's beat type. */
   readonly beat: Beat;
+  /**
+   * Public-folder-relative path to a synthesized audio clip for this beat,
+   * when one was produced by the TTS stage and threaded into the schedule
+   * (e.g. `audio/<filmId>/beat-0-1.wav`). Consumed by the narration feature
+   * via Remotion's `staticFile()`. `null` (or undefined) means no clip — the
+   * feature renders nothing for that beat.
+   */
+  readonly audio?: string | null;
 }
 
 /** Issue surfaced by per-scene structural validation. */
@@ -519,6 +527,28 @@ export interface RenderContext {
 }
 
 /**
+ * Props the kit passes to a feature plugin's `wrapsScenes` component. The
+ * composition mounts the component inside each scene's `<Sequence>`,
+ * alongside the scene's own renderer; the feature decides what to layer.
+ *
+ * Per-beat slots carry the beat data + (optionally) the path to a
+ * synthesized audio clip — see `BeatTimelineSlot.audio`. The feature
+ * resolves the URL via Remotion's `staticFile()`.
+ */
+export interface SceneFeatureProps {
+  /** The slot occupied by the host scene in the film timeline. */
+  readonly ts: TimelineSlot;
+  /** 0-based scene index in the film. */
+  readonly sceneIndex: number;
+  /** Total scene count. */
+  readonly sceneCount: number;
+  /** Film meta block. */
+  readonly meta: FilmMeta;
+  /** Resolved style bundle. */
+  readonly style: ResolvedStyle;
+}
+
+/**
  * The FeaturePlugin — cross-cutting concerns that touch multiple registries
  * (captions, watermarks, music, lower-thirds, narration overlay).
  *
@@ -548,6 +578,18 @@ export interface FeaturePlugin extends PluginBase {
 
   /** Wrap or post-process a scene's rendered output. */
   wrapRender?(rendered: SceneOutput, ctx: RenderContext): SceneOutput;
+
+  /**
+   * Optional component the composition mounts INSIDE every scene's
+   * `<Sequence>` alongside the scene's own renderer. The feature decides
+   * what to layer (audio overlay, captions, watermark, …). Receives the
+   * scene's timeline slot — per-beat audio paths arrive on
+   * `ts.beats[].audio` when the TTS stage persisted them.
+   *
+   * The narration feature ships this to thread per-beat `<Audio>` into the
+   * composition without composition.tsx depending on `@docent/core`.
+   */
+  readonly wrapsScenes?: React.ComponentType<SceneFeatureProps>;
 
   /**
    * **R6 forward-compat.** Pre-process the spec BEFORE schema validation
@@ -591,7 +633,12 @@ export interface RenderOptions {
    * If omitted, the render stage hard-fails with a clear error.
    */
   entryPath?: string;
-  /** Optional Remotion `--public-dir` pass-through. */
+  /**
+   * Optional Remotion `--public-dir` pass-through. ALSO used by the TTS stage
+   * to determine where to persist per-beat audio bytes (under
+   * `<publicDir>/audio/<filmId>/`). The narration feature reads these via
+   * Remotion's `staticFile()` to overlay `<Audio>` during render.
+   */
   publicDir?: string;
   /** Path to the `remotion` bin. Defaults to a walked-up node_modules lookup. */
   remotionBin?: string;
@@ -610,6 +657,20 @@ export interface RenderOptions {
    * dir), set this to the repo root so the config is picked up.
    */
   renderCwd?: string;
+  /**
+   * Optional hook the orchestrator calls AFTER the TTS stage finishes
+   * persisting per-beat audio + manifest. Lets the caller (typically
+   * @docent/cli) regenerate the Remotion entry script so it can statically
+   * `import` the freshly-written per-film audio manifest. Returns the entry
+   * path to use for the render — if it returns the same path, the orchestrator
+   * uses it unchanged. Surfaced as a hook (rather than re-running entry
+   * generation inside the kit) because picking plugins and writing entry
+   * scripts is a CLI concern, not a kit concern.
+   */
+  onTtsComplete?: (info: {
+    readonly publicDir: string | undefined;
+    readonly filmId: string;
+  }) => Promise<string> | string;
 }
 
 export interface RenderResult {

@@ -12,8 +12,13 @@
 //      minutes.
 //   4. For each beat in `spec.scenes[].beats`: calls `provider.synth(text)`
 //      and records per-beat metrics (clipSeconds, wpm, alignment source).
-//   5. Returns a manifest in memory. Persisting it to disk is the caller's
-//      responsibility — the kit stays renderer-agnostic and filesystem-light.
+//   5. If `publicDir` + `filmId` are supplied: writes each beat's audio bytes
+//      to `<publicDir>/audio/<filmId>/beat-<sceneIndex>-<beatIndex>.<ext>`
+//      and a per-film manifest at `<publicDir>/audio/<filmId>/manifest.json`
+//      mapping `<sceneIndex>-<beatIndex>` → `{file, seconds, beatId?}`. The
+//      narration feature reads this manifest via Remotion's `staticFile()`
+//      so per-beat `<Audio>` overlays attach during render.
+//   6. Returns the manifest in memory regardless of persistence.
 //
 // Per-beat silence trim (the legacy `pipeline/tts.py` behaviour) lives in
 // the kokoro provider's `synth()` itself; other providers ship un-trimmed
@@ -25,6 +30,9 @@
 // every beat. A future feature plugin (or the CLI itself) layers caching
 // on top by inspecting the spec and short-circuiting beats that already
 // have a fresh audio file.
+
+import {mkdirSync, writeFileSync, renameSync} from 'node:fs';
+import {join} from 'node:path';
 
 import type {Engine} from '../engine';
 import type {FilmSpec, Beat, Scene} from '../types/spec';
@@ -43,7 +51,26 @@ export interface TtsStageOptions {
   cacheDir?: string;
   /** Override the env passed to the provider (defaults to `process.env`). */
   env?: Readonly<Record<string, string | undefined>>;
+  /**
+   * Absolute path of the project's Remotion `public/` directory. When set
+   * together with `filmId`, the stage persists per-beat audio bytes under
+   * `<publicDir>/audio/<filmId>/` and writes a per-film manifest there. When
+   * omitted the stage runs in memory only (callers can persist
+   * `manifest.beats[].synth.audio` themselves).
+   */
+  publicDir?: string;
+  /** Required for persistence — the film id used to scope the audio dir. */
+  filmId?: string;
 }
+
+/** Map a media type to a filesystem extension. */
+const fileExtensionForMediaType = (mediaType: string): string => {
+  if (mediaType === 'audio/mpeg') return 'mp3';
+  if (mediaType === 'audio/wav') return 'wav';
+  if (mediaType === 'audio/pcm') return 'pcm';
+  const m = mediaType.match(/audio\/(\w+)/);
+  return m ? m[1]! : 'bin';
+};
 
 /** Per-beat result row returned in the manifest. */
 export interface TtsBeatResult {
@@ -63,6 +90,13 @@ export interface TtsBeatResult {
   readonly alignmentSource: 'native' | 'aligner' | 'none';
   /** The raw provider result — opaque, surfaced so a caller can persist it. */
   readonly synth: TtsSynthesisResult;
+  /**
+   * Public-folder-relative path to the persisted audio file (e.g.
+   * `audio/<filmId>/beat-0-1.wav`). Present only when the stage was given a
+   * `publicDir` + `filmId` and successfully wrote bytes; consumed by the
+   * narration feature via Remotion's `staticFile()`.
+   */
+  readonly file?: string;
 }
 
 /** The manifest the stage returns. */
@@ -71,6 +105,38 @@ export interface TtsStageManifest {
   readonly voice: string;
   readonly totalSeconds: number;
   readonly beats: ReadonlyArray<TtsBeatResult>;
+  /**
+   * Absolute filesystem path to the persisted per-film manifest. Set only
+   * when the stage persisted bytes (i.e. caller supplied `publicDir` +
+   * `filmId`).
+   */
+  readonly manifestPath?: string;
+}
+
+/**
+ * On-disk shape of the per-film manifest the tts stage writes. The render
+ * entry reads this (statically, via the CLI generator) so the narration
+ * feature can attach a per-beat `<Audio>` overlay in the composition.
+ *
+ * Indexed by `<sceneIndex>-<beatIndex>` so a beat's slot is always
+ * recoverable from the schedule, even when `Beat.id` is absent.
+ */
+export interface TtsPersistedManifest {
+  readonly filmId: string;
+  readonly providerId: string;
+  readonly voice: string;
+  readonly totalSeconds: number;
+  readonly beats: Readonly<Record<string, TtsPersistedBeat>>;
+}
+
+export interface TtsPersistedBeat {
+  readonly sceneIndex: number;
+  readonly beatIndex: number;
+  readonly beatId?: string;
+  /** Public-folder-relative path (`audio/<filmId>/beat-N-M.wav`). */
+  readonly file: string;
+  readonly seconds: number;
+  readonly mediaType: string;
 }
 
 /**
@@ -145,8 +211,22 @@ export const runTtsStage = async (
     );
   }
 
+  // Persistence target — when both supplied, the stage writes per-beat
+  // audio bytes + a per-film manifest. Done outside the loop so a single
+  // mkdirSync is enough; per-beat writes only flush bytes.
+  const persistEnabled = !!(opts.publicDir && opts.filmId);
+  const filmId = opts.filmId ?? '';
+  const audioDirRel = `audio/${filmId}`;
+  const audioDirAbs = persistEnabled
+    ? join(opts.publicDir!, 'audio', filmId)
+    : '';
+  if (persistEnabled) {
+    mkdirSync(audioDirAbs, {recursive: true});
+  }
+
   const beats: TtsBeatResult[] = [];
   let totalSeconds = 0;
+  const persisted: Record<string, TtsPersistedBeat> = {};
 
   try {
     const scenes: Scene[] = spec.scenes ?? [];
@@ -176,6 +256,26 @@ export const runTtsStage = async (
           m?.clipSeconds ?? (result.durationMs > 0 ? result.durationMs / 1000 : 0);
         const wpm = m?.wpm ?? null;
 
+        // Persist the bytes if we have a destination. Filename uses
+        // sceneIndex/beatIndex so it's stable even when `Beat.id` is absent.
+        let fileRel: string | undefined;
+        if (persistEnabled) {
+          const ext = fileExtensionForMediaType(result.mediaType);
+          const fname = `beat-${sceneIndex}-${beatIndex}.${ext}`;
+          const fullPath = join(audioDirAbs, fname);
+          writeFileSync(fullPath, result.audio);
+          fileRel = `${audioDirRel}/${fname}`;
+          const persistedRow: TtsPersistedBeat = {
+            sceneIndex,
+            beatIndex,
+            file: fileRel,
+            seconds: Number(clipSeconds.toFixed(3)),
+            mediaType: result.mediaType,
+            ...(beat.id !== undefined ? {beatId: beat.id} : {}),
+          };
+          persisted[`${sceneIndex}-${beatIndex}`] = persistedRow;
+        }
+
         const row: TtsBeatResult = {
           sceneIndex,
           beatIndex,
@@ -185,6 +285,7 @@ export const runTtsStage = async (
           alignmentSource: result.alignmentSource,
           synth: result,
           ...(beat.id !== undefined ? {beatId: beat.id} : {}),
+          ...(fileRel !== undefined ? {file: fileRel} : {}),
         };
         beats.push(row);
         totalSeconds += clipSeconds;
@@ -201,10 +302,28 @@ export const runTtsStage = async (
     }
   }
 
+  // Write the per-film manifest (atomic via tmp + rename) so a partially-
+  // written file is never observed by the render entry.
+  let manifestPath: string | undefined;
+  if (persistEnabled) {
+    const manifestOut: TtsPersistedManifest = {
+      filmId,
+      providerId,
+      voice,
+      totalSeconds: Number(totalSeconds.toFixed(3)),
+      beats: persisted,
+    };
+    manifestPath = join(audioDirAbs, 'manifest.json');
+    const tmp = `${manifestPath}.tmp`;
+    writeFileSync(tmp, JSON.stringify(manifestOut, null, 2) + '\n');
+    renameSync(tmp, manifestPath);
+  }
+
   return {
     providerId,
     voice,
     totalSeconds: Number(totalSeconds.toFixed(3)),
     beats,
+    ...(manifestPath !== undefined ? {manifestPath} : {}),
   };
 };

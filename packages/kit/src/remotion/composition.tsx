@@ -80,6 +80,9 @@ const toTimelineSlot = (entry: SceneSchedule): TimelineSlot => {
     startFrame: b.startFrame,
     frames: b.frames,
     beat: b.beat,
+    // Threaded through so a feature plugin (e.g. narration) can attach a
+    // per-beat `<Audio>` overlay via Remotion's `staticFile()`.
+    ...(b.audio !== undefined ? {audio: b.audio} : {}),
   }));
   return {
     startFrame: entry.startFrame,
@@ -136,10 +139,31 @@ const RenderedScene: React.FC<{
  * frame. Returns an `<AbsoluteFill>` so a feature plugin can layer audio,
  * captions, watermarks, lower-thirds, etc. over the scene track.
  */
-export const DocentFilm: React.FC<DocentFilmProps> = ({spec, engine, style}) => {
-  const schedule = buildFrameSchedule(spec, engine);
+export interface DocentFilmInternalProps extends DocentFilmProps {
+  /**
+   * Optional per-beat audio map produced by the TTS stage. Indexed by
+   * `<sceneIndex>-<beatIndex>`. When set the schedule attaches the file path
+   * to each `BeatTimelineSlot` so the narration feature can mount per-beat
+   * `<Audio>` overlays. When absent the film renders silently.
+   */
+  readonly ttsAudio?: import('./schedule').TtsAudioMap;
+}
+
+export const DocentFilm: React.FC<DocentFilmInternalProps> = ({
+  spec,
+  engine,
+  style,
+  ttsAudio,
+}) => {
+  const schedule = buildFrameSchedule(spec, engine, ttsAudio);
   const resolvedStyle = style ?? fallbackStyle();
   const sceneCount = schedule.scenes.length;
+
+  // Collect every feature that wants to mount alongside scenes (audio
+  // overlay, captions, watermark, …). Held outside the loop so a plugin's
+  // component identity is stable across scenes — React reconciliation needs
+  // the same type to avoid remounting on every scene boundary.
+  const sceneFeatures = engine.features.all().filter((f) => !!f.wrapsScenes);
 
   return (
     <AbsoluteFill>
@@ -166,6 +190,19 @@ export const DocentFilm: React.FC<DocentFilmProps> = ({spec, engine, style}) => 
               plugin={plugin}
               common={common}
             />
+            {sceneFeatures.map((feature) => {
+              const FeatureComponent = feature.wrapsScenes!;
+              return (
+                <FeatureComponent
+                  key={`feature-${feature.name}-${entry.sceneIndex}`}
+                  ts={ts}
+                  sceneIndex={entry.sceneIndex}
+                  sceneCount={sceneCount}
+                  meta={spec.meta}
+                  style={resolvedStyle}
+                />
+              );
+            })}
           </Sequence>
         );
       })}

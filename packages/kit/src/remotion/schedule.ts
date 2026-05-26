@@ -63,6 +63,25 @@ export interface BeatSchedule {
   readonly beat: Beat;
   readonly startFrame: number;
   readonly frames: number;
+  /**
+   * Public-folder-relative path to the synthesized audio clip for this beat,
+   * when the TTS stage persisted one (e.g. `audio/<filmId>/beat-0-1.wav`).
+   * Threaded into the schedule from a pre-built tts manifest. `undefined`
+   * means no clip — the narration feature renders nothing for this beat.
+   */
+  readonly audio?: string | null;
+}
+
+/**
+ * Shape of the per-beat audio map a caller can thread into the schedule.
+ * Indexed by `<sceneIndex>-<beatIndex>` so a beat's clip is recoverable
+ * even when `Beat.id` is absent.
+ */
+export interface TtsAudioMap {
+  readonly [key: `${number}-${number}`]: {
+    readonly file: string;
+    readonly seconds?: number;
+  };
 }
 
 /** One scene's slot inside the film's timeline. Absolute frames. */
@@ -138,6 +157,7 @@ const beatsOf = (scene: Scene): ReadonlyArray<Beat> =>
 export const buildFrameSchedule = (
   spec: FilmSpec,
   engine: Engine,
+  ttsAudio?: TtsAudioMap,
 ): FrameSchedule => {
   const res = spec.meta.resolution;
   const fps = res?.fps ?? DEFAULT_FPS;
@@ -170,7 +190,9 @@ export const buildFrameSchedule = (
           })
         : rawBeat;
       const pace: BeatPace = beat.pace ?? 'normal';
-      const clipSeconds = estimateBeatSeconds(beat);
+      // Real clip seconds when TTS persisted one; otherwise estimate from text.
+      const audioEntry = ttsAudio?.[`${sceneIndex}-${beatIndex}`];
+      const clipSeconds = audioEntry?.seconds ?? estimateBeatSeconds(beat);
       const tail = TAIL_SECONDS * PACE_MULTIPLIER[pace];
       const frames = Math.max(1, Math.round((clipSeconds + tail) * fps));
       beatSlots.push({
@@ -178,6 +200,7 @@ export const buildFrameSchedule = (
         beat,
         startFrame: beatCursor,
         frames,
+        ...(audioEntry ? {audio: audioEntry.file} : {}),
       });
       beatCursor += frames;
     });

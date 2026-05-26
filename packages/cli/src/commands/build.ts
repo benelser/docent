@@ -91,14 +91,25 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
     log(`\x1b[33m⚠ ${issues.length} validation warning(s)\x1b[0m`);
   }
 
+  // Where Remotion looks for `remotion.config.ts`: the dir owning the
+  // public/ folder we persist audio into. Walk up from the project root
+  // looking for one — same call below; computed early so the entry
+  // generator can read the per-film tts manifest if the TTS stage already
+  // wrote one (cache hits, or a separate `tts` pre-run).
+  const remotionRootEarly = findRemotionRoot(projectRoot) ?? projectRoot;
+  const publicDir = join(remotionRootEarly, 'public');
+
   // Generate a fresh entry script. Lives under <projectRoot>/.docent/tmp/;
-  // overwritten on each render.
+  // overwritten on each render. The generator inlines the per-film tts
+  // manifest (if present at `<publicDir>/audio/<filmId>/manifest.json`) so
+  // the narration feature attaches per-beat `<Audio>` during render.
   const entryPath = await generateRenderEntry({
     specPath,
     configPath,
     filmId: args.filmId,
     projectRoot,
     userPlugins,
+    publicDir,
   });
 
   log(`  entry: ${entryPath}`);
@@ -107,7 +118,7 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
   // remotion.config.ts. Walk up from the project root looking for one;
   // fall back to projectRoot if we can't find it (the user can still drop
   // a config at projectRoot).
-  const remotionRoot = findRemotionRoot(projectRoot) ?? projectRoot;
+  const remotionRoot = remotionRootEarly;
   if (remotionRoot !== projectRoot) {
     log(`  remotion-config: ${join(remotionRoot, 'remotion.config.*')}`);
   }
@@ -117,6 +128,21 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
       entryPath,
       outputDir: args.outputDir ?? join(projectRoot, 'out'),
       renderCwd: remotionRoot,
+      publicDir,
+      // Post-TTS hook — regenerate the entry so it can `import` the freshly-
+      // written per-film tts manifest. Without this the narration feature
+      // sees no audio paths (the manifest is written by the TTS stage that
+      // runs INSIDE engine.render).
+      onTtsComplete: async ({filmId}) => {
+        return generateRenderEntry({
+          specPath,
+          configPath,
+          filmId,
+          projectRoot,
+          userPlugins,
+          publicDir,
+        });
+      },
       ...(args.scale !== undefined ? {scale: args.scale} : {}),
       ...(args.concurrency !== undefined ? {concurrency: args.concurrency} : {}),
       ...(args.still !== undefined ? {still: args.still} : {}),
