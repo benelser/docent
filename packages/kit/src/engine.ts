@@ -44,7 +44,80 @@ import {
   assertPluginBase,
   assertScenePluginShape,
 } from './validation/plugin';
+import {runCascade} from './cascade/orchestrator';
+import type {DesignTokens} from './types/design-tokens';
+import type {VisualizationStyle} from './types/visualization-style';
+import type {StyleIntent} from './types/style';
+import {StyleValidationError} from './types/style';
 import type {JSONSchema7} from 'json-schema';
+
+// Neutral floor tokens — the baseline every preset composes over. Mirrors
+// the engine's legacy `neutralTokens` shape (see
+// `packages/engine/src/style/styleTokens.ts`) so v2.x preset data drops
+// in unchanged when `@docent/core` migrates.
+//
+// The kit ships these because `resolveStyle()` must return a complete
+// `DesignTokens` even when NO preset is registered (the absolute-zero
+// build, useful for kit-level tests). When a preset *is* registered, its
+// tokens shadow these field-by-field.
+const NEUTRAL_TOKENS: DesignTokens = Object.freeze({
+  bg: {
+    void: '#000000',
+    base: '#0a0a0a',
+    panel: '#141414',
+    panelHi: '#1c1c1c',
+    line: '#262626',
+    lineHi: '#3a3a3a',
+  },
+  ink: {
+    hi: '#f5f5f5',
+    mid: '#bdbdbd',
+    low: '#7a7a7a',
+    faint: '#4a4a4a',
+  },
+  accent: {
+    blue: '#4f9cf9',
+    cyan: '#4fd1c5',
+    green: '#5bc97a',
+    amber: '#e8b150',
+    rose: '#e87878',
+    violet: '#a880f0',
+  },
+  typography: {
+    family: {
+      sans: 'Inter, system-ui, sans-serif',
+      serif: 'Charter, Georgia, serif',
+      mono: 'JetBrains Mono, ui-monospace, monospace',
+    },
+    size: {
+      micro: 12,
+      small: 14,
+      body: 16,
+      label: 18,
+      heading: 32,
+      display: 56,
+    },
+    weight: {
+      body: 400,
+      label: 500,
+      heading: 600,
+      display: 700,
+    },
+    lineHeight: 1.4,
+    letterSpacing: 0,
+  },
+  spacing: {xs: 4, sm: 8, md: 16, lg: 24, xl: 40, gutter: 32},
+  radius: {sm: 4, md: 8, lg: 16},
+  stroke: {hairline: 0.5, thin: 1, regular: 2, bold: 4},
+}) as DesignTokens;
+
+const NEUTRAL_VISUALIZATION: Required<VisualizationStyle> = Object.freeze({
+  legendPosition: 'right',
+  gridLines: true,
+  axisLabels: true,
+  maxLabelsPerSeries: 8,
+  treatmentLock: null,
+}) as Required<VisualizationStyle>;
 
 /**
  * The Engine. One instance per process. Constructed empty; populated via
@@ -182,35 +255,161 @@ export class Engine {
   /**
    * Resolve a film spec's style to a frozen `ResolvedStyle`.
    *
-   * **Phase A.7 fills this in.** The pipeline:
-   *   - neutralTokens (registered baseline preset)
-   *   - → matched PresetPlugin.tokens
-   *   - → PresetPlugin.intent[currentIntent]
-   *   - → PresetPlugin.sceneOverrides[scene.type] (per-scene)
-   *   - → film-level style.tokens
-   *   - → scene-level style overrides
-   *   - → FeaturePlugin.injectStyleTokens
-   *   - → validate / normalize / accessibility
+   * **This is the A.7 SIMPLE resolver — neutral baseline composition.**
+   * The full pipeline (R4 preset composition, scene-level overrides,
+   * `FeaturePlugin.injectStyleTokens`, accessibility checks) is deferred
+   * to a follow-on sprint. The shape returned is the final one; what's
+   * deferred is the *richness* of the composition, not the protocol.
    *
-   * Throws `not implemented` in this build.
+   * Today's pipeline:
+   *   1. Start with the registered preset (looked up by name from
+   *      `spec.style.preset`, defaulting to `'neutral'`).
+   *   2. If found: use its tokens + visualization as the base.
+   *      If not found: fall back to the kit's NEUTRAL_TOKENS floor.
+   *   3. Shallowly apply `spec.style.tokens` overrides (top-level token
+   *      categories only — `bg`, `ink`, `accent`, …).
+   *   4. Shallowly apply `spec.style.visualization` overrides.
+   *   5. Freeze and return.
+   *
+   * Throws `StyleValidationError` if the spec names a preset that is
+   * neither registered nor the well-known `'neutral'` fallback.
    */
-  resolveStyle(_spec: FilmSpec): ResolvedStyle {
-    throw new Error(
-      '[@docent/kit] Engine.resolveStyle() — not implemented (phase A.7). ' +
-        'This will run the style resolution cascade.',
-    );
+  resolveStyle(spec: FilmSpec): ResolvedStyle {
+    const styleInput = spec.style ?? {};
+    const presetName = styleInput.preset ?? 'neutral';
+    const intent: StyleIntent = styleInput.intent ?? {};
+
+    const presetPlugin = this.presets.get(presetName);
+
+    // The preset is *missing*. Two cases:
+    //   - presetName === 'neutral': fall back to the kit's NEUTRAL floor.
+    //     The neutral preset is conventionally the engine's baseline; if
+    //     no presets at all are registered (a bare-engine test), this
+    //     still resolves cleanly.
+    //   - presetName !== 'neutral': hard-fail. A spec that names
+    //     `engineering` against an engine with no engineering preset is
+    //     a contract failure the caller needs to see.
+    if (!presetPlugin && presetName !== 'neutral') {
+      const known = this.presets
+        .all()
+        .map((p) => p.presetName)
+        .sort();
+      throw new StyleValidationError([
+        {
+          code: 'unknown_preset',
+          path: 'style.preset',
+          value: presetName,
+          message: `preset "${presetName}" is not registered`,
+          expected: known.length > 0 ? `one of: ${known.join(', ')}` : '(no presets registered)',
+        },
+      ]);
+    }
+
+    // Compose the tokens. The neutral floor is the starting point; the
+    // preset's tokens shadow per category; the spec's `style.tokens`
+    // overrides shadow on top of that.
+    const tokens: DesignTokens = {
+      bg: {...NEUTRAL_TOKENS.bg, ...presetPlugin?.tokens?.bg, ...styleInput.tokens?.bg},
+      ink: {...NEUTRAL_TOKENS.ink, ...presetPlugin?.tokens?.ink, ...styleInput.tokens?.ink},
+      accent: {
+        ...NEUTRAL_TOKENS.accent,
+        ...presetPlugin?.tokens?.accent,
+        ...styleInput.tokens?.accent,
+      },
+      typography: {
+        family: {
+          ...NEUTRAL_TOKENS.typography.family,
+          ...presetPlugin?.tokens?.typography?.family,
+          ...styleInput.tokens?.typography?.family,
+        },
+        size: {
+          ...NEUTRAL_TOKENS.typography.size,
+          ...presetPlugin?.tokens?.typography?.size,
+          ...styleInput.tokens?.typography?.size,
+        },
+        weight: {
+          ...NEUTRAL_TOKENS.typography.weight,
+          ...presetPlugin?.tokens?.typography?.weight,
+          ...styleInput.tokens?.typography?.weight,
+        },
+        lineHeight:
+          styleInput.tokens?.typography?.lineHeight ??
+          presetPlugin?.tokens?.typography?.lineHeight ??
+          NEUTRAL_TOKENS.typography.lineHeight,
+        letterSpacing:
+          styleInput.tokens?.typography?.letterSpacing ??
+          presetPlugin?.tokens?.typography?.letterSpacing ??
+          NEUTRAL_TOKENS.typography.letterSpacing,
+      },
+      spacing: {
+        ...NEUTRAL_TOKENS.spacing,
+        ...presetPlugin?.tokens?.spacing,
+        ...styleInput.tokens?.spacing,
+      },
+      radius: {
+        ...NEUTRAL_TOKENS.radius,
+        ...presetPlugin?.tokens?.radius,
+        ...styleInput.tokens?.radius,
+      },
+      stroke: {
+        ...NEUTRAL_TOKENS.stroke,
+        ...presetPlugin?.tokens?.stroke,
+        ...styleInput.tokens?.stroke,
+      },
+    };
+
+    // Compose the visualization knobs. Same shadow order.
+    const visualization: Required<VisualizationStyle> = {
+      legendPosition:
+        styleInput.visualization?.legendPosition ??
+        presetPlugin?.visualization?.legendPosition ??
+        NEUTRAL_VISUALIZATION.legendPosition,
+      gridLines:
+        styleInput.visualization?.gridLines ??
+        presetPlugin?.visualization?.gridLines ??
+        NEUTRAL_VISUALIZATION.gridLines,
+      axisLabels:
+        styleInput.visualization?.axisLabels ??
+        presetPlugin?.visualization?.axisLabels ??
+        NEUTRAL_VISUALIZATION.axisLabels,
+      maxLabelsPerSeries:
+        styleInput.visualization?.maxLabelsPerSeries ??
+        presetPlugin?.visualization?.maxLabelsPerSeries ??
+        NEUTRAL_VISUALIZATION.maxLabelsPerSeries,
+      treatmentLock:
+        styleInput.visualization?.treatmentLock !== undefined
+          ? styleInput.visualization.treatmentLock
+          : presetPlugin?.visualization?.treatmentLock !== undefined
+            ? presetPlugin.visualization.treatmentLock!
+            : NEUTRAL_VISUALIZATION.treatmentLock,
+    };
+
+    const resolved: ResolvedStyle = Object.freeze({
+      preset: presetName,
+      intent,
+      tokens: Object.freeze(tokens) as DesignTokens,
+      visualization: Object.freeze(visualization) as Required<VisualizationStyle>,
+      provenance: Object.freeze({
+        preset: presetName,
+        intent,
+        hasTokenOverrides: !!styleInput.tokens,
+        hasUserOverrides: !!styleInput.user,
+      }),
+    });
+    return resolved;
   }
 
   /**
-   * Render a film spec to an MP4 (or still). The full cascade:
-   *   validate → resolveStyle → synth audio → schedule frames → render.
+   * Render a film spec to an MP4 (or still). Runs the full cascade:
+   *   validate → resolveStyle → synth audio → render frames.
    *
-   * **Phase A.7 + A.9 fill this in.** Throws `not implemented`.
+   * **Phase A.7 wires this through to the orchestrator. The render
+   * stage itself depends on A.9 (Remotion bindings) and throws "not
+   * implemented" until that lands** — but `validate`, `resolveStyle`,
+   * and the `tts` stage all run, so a caller exercising the cascade
+   * head observes real behaviour up to that point.
    */
-  render(_spec: FilmSpec, _opts?: RenderOptions): Promise<RenderResult> {
-    throw new Error(
-      '[@docent/kit] Engine.render() — not implemented (phase A.7 / A.9). ' +
-        'This will run the cascade orchestrator.',
-    );
+  render(spec: FilmSpec, opts: RenderOptions = {}): Promise<RenderResult> {
+    return runCascade(spec, this, opts);
   }
 }
