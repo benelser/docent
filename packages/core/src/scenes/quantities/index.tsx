@@ -9,9 +9,7 @@
 //
 // What ships here:
 //   - The ScenePlugin export (`quantitiesPlugin`).
-//   - The component (preserved verbatim from the engine's
-//     `QuantitiesScene.tsx`, with engine-private utilities shimmed until
-//     they are migrated in their own Phase B tasks).
+//   - The component (the kit-shaped renderer in `./component.tsx`).
 //   - The schema fragment (the per-scene fields `figures`, `matrix`,
 //     `metrics`, lifted from `packages/engine/schema/film.schema.json`).
 //   - The structural validator (the `requiredBody.quantities` rule lifted
@@ -20,22 +18,12 @@
 //     scene-specific depthcheck rules or judge dimensions in v2.5.x; the
 //     arrays are slots for future rules.
 //
-// The component-prop adapter (`Component`) bridges the kit's protocol shape
-// (`SceneRenderProps<Scene>`, with `scene` + `common: {ts, sceneIndex,
-// sceneCount, meta, style}`) to the engine's existing component shape
-// (`SceneProps & {style}`, with `ts.scene` and flat `sceneIndex` /
-// `sceneCount` / `style`). Phase D rewires `Film.tsx` to dispatch through
-// `engine.scenes.get(type).component` with the kit-shaped props; the
-// adapter is what makes the verbatim-copy component speak that protocol.
+// The component speaks the kit's `SceneRenderProps<Scene>` envelope
+// directly — no adapter needed. Wave B2 of the v3.0 stabilization sprint
+// retired the `@docent-engine-bridge/*` back-channel and the engine-shaped
+// `ts: TimedScene` prop bag that depended on it.
 
-import React from 'react';
-
-import type {
-  CognitiveCluster,
-  ScenePlugin,
-  Scene,
-  SceneRenderProps,
-} from '@docent/kit';
+import type {CognitiveCluster, ScenePlugin, Scene} from '@docent/kit';
 
 import {QuantitiesScene} from './component';
 import {schema} from './schema';
@@ -45,32 +33,6 @@ import {judgeDimensions} from './judge-dimensions';
 
 const cluster: CognitiveCluster = 'comparison';
 
-// Adapter: kit's `SceneRenderProps<Scene>` → engine's `SceneProps & {style}`.
-// The kit passes `{scene, common: {ts, sceneIndex, sceneCount, meta, style}}`.
-// The migrated component expects `{ts, sceneIndex, sceneCount, style}` with
-// `ts.scene` carrying the spec. We compose the engine-shaped `ts` from the
-// kit-shaped `common.ts` plus the scene spec.
-const Component: React.ComponentType<SceneRenderProps<Scene>> = (props) => {
-  const {scene, common} = props;
-  const engineTs = {...(common.ts as object), scene};
-  // The engine component uses a wider runtime shape than the kit's protocol
-  // types; the conversion at this seam is intentional and limited to v1.
-  const ScenePropsAny = QuantitiesScene as unknown as React.FC<{
-    ts: unknown;
-    sceneIndex: number;
-    sceneCount: number;
-    style: unknown;
-  }>;
-  return (
-    <ScenePropsAny
-      ts={engineTs}
-      sceneIndex={common.sceneIndex}
-      sceneCount={common.sceneCount}
-      style={common.style}
-    />
-  );
-};
-
 export const quantitiesPlugin: ScenePlugin<Scene> = {
   kind: 'scene',
   name: 'quantities',
@@ -78,7 +40,7 @@ export const quantitiesPlugin: ScenePlugin<Scene> = {
   sceneType: 'quantities',
   cluster,
   schema,
-  component: Component,
+  component: QuantitiesScene,
   validate,
   depthRules,
   judgeDimensions,

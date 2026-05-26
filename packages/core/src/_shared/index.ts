@@ -20,6 +20,7 @@ export {
 } from './fitted-text';
 export {Narration} from './narration';
 export {SceneFrame, type CameraState} from './scene-frame';
+export {BoundValue, formatValue} from './bound-value';
 export {
   ACCENTS,
   CASCADE_STEP,
@@ -33,7 +34,11 @@ export {
   paletteGlowScale,
   paletteSceneHex,
   theme,
+  tweenValue,
   type AccentKey,
+  type Metric,
+  type MetricFormat,
   type PaletteName,
   type RevealEntry,
+  type Tween,
 } from './helpers';

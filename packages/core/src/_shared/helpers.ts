@@ -12,7 +12,7 @@
 // (or an equivalent style-intent dimension) plugs back in without callsite
 // migration.
 
-import {spring} from 'remotion';
+import {interpolate, spring} from 'remotion';
 import type {Beat, BeatCadence, ResolvedStyle} from '@docent/kit';
 
 // ---------------------------------------------------------------------------
@@ -263,4 +263,148 @@ export const paletteSceneHex = (
   const key = paletteAccentKey(palette, sceneAccent, sceneAccent, 0);
   const table = (style?.tokens.accent ?? ACCENTS) as Record<string, string>;
   return table[key] ?? table.blue ?? ACCENTS.blue;
+};
+
+// ---------------------------------------------------------------------------
+// tweenValue — the engine's named-value resolver, ported to BeatTimelineSlot.
+//
+// Mirrors `packages/engine/src/engine/spec.ts:tweenValue` exactly, but reads
+// over the kit's `BeatTimelineSlot[]` (`startFrame` / `frames` / `beat`)
+// rather than the engine's runtime `TimedBeat[]` (`from` /
+// `durationInFrames` / inline).
+//
+// The chart scene's bar-height and point-marker x, and the quantities
+// scene's `BoundValue` count-up, both read through this. A beat's `set`
+// directive drives the value, easing across the beat's frame span.
+//
+// The kit's structural `Beat` type doesn't model `set: Record<string,
+// number | Tween>` — but the runtime data flowing into scene components
+// still carries the engine's wider runtime shape via Beat's open index
+// signature. We read through narrow casts at the seam.
+// ---------------------------------------------------------------------------
+
+/** A tween: the targeted value of a beat's `set` directive. */
+export type Tween = {
+  to: number;
+  from?: number;
+  ease?: 'linear' | 'spring' | 'accelerate' | 'settle';
+};
+
+/** Output format for a tweened number. */
+export type MetricFormat = 'int' | 'float1' | 'percent';
+
+/**
+ * A metric — a figure card whose displayed number IS a tweened value.
+ * `bind` names a value driven by beats' `set` directives; the engine
+ * projects it at the current frame. `col`/`row` place it on a grid.
+ *
+ * Mirrors `packages/engine/src/engine/spec.ts:Metric` exactly.
+ */
+export type Metric = {
+  id: string;
+  label: string;
+  col: number;
+  row: number;
+  bind: string;
+  format?: MetricFormat;
+  unit?: string;
+  accent?: string;
+};
+
+type BeatRuntime = {
+  readonly startFrame: number;
+  readonly frames: number;
+  readonly beat: {readonly set?: Record<string, number | Tween>};
+};
+
+const asTween = (v: number | Tween): Tween =>
+  typeof v === 'number' ? {to: v} : v;
+
+const easeProgress = (
+  ease: NonNullable<Tween['ease']>,
+  local: number,
+  duration: number,
+  fps: number,
+): number => {
+  if (local <= 0) return 0;
+  if (local >= duration) return 1;
+  switch (ease) {
+    case 'linear':
+      return local / duration;
+    case 'accelerate':
+      return interpolate(local / duration, [0, 1], [0, 1], {
+        easing: (t) => t * t,
+      });
+    case 'settle':
+      return spring({frame: local, fps, config: {damping: 200, mass: 1.4}});
+    case 'spring':
+    default:
+      return spring({frame: local, fps, config: {damping: 200, mass: 1.1}});
+  }
+};
+
+/**
+ * The resolved value of a named tweened key at a given (scene-relative)
+ * frame. A pure read over the kit's `BeatTimelineSlot[]` — deterministic,
+ * with no state. Finds the most recent beat at or before `frame` whose
+ * inner `beat.set` includes `key`, then eases from the value the prior
+ * set-beat held (or this tween's `from`, or 0) toward the target.
+ */
+export const tweenValue = (
+  beats: ReadonlyArray<{
+    readonly startFrame: number;
+    readonly frames: number;
+    readonly beat: unknown;
+  }>,
+  key: string,
+  frame: number,
+  fps: number,
+): number => {
+  // Narrow each slot to the runtime shape via the open index signature on Beat.
+  const setBeats = beats.filter((b): b is BeatRuntime => {
+    const inner = (b as BeatRuntime).beat;
+    if (!inner || typeof inner !== 'object') return false;
+    const s = (inner as {set?: unknown}).set;
+    return Boolean(s) && typeof s === 'object' && key in (s as object);
+  });
+  if (setBeats.length === 0) return 0;
+
+  // The most recent set-beat at or before `frame`.
+  let active = -1;
+  for (let i = setBeats.length - 1; i >= 0; i--) {
+    const b = setBeats[i];
+    if (b && frame >= b.startFrame) {
+      active = i;
+      break;
+    }
+  }
+  // Before the first set-beat — rest at that beat's start value.
+  if (active < 0) {
+    const first = asTween(
+      (setBeats[0].beat.set as Record<string, number | Tween>)[key],
+    );
+    return first.from ?? 0;
+  }
+
+  const activeBeat = setBeats[active];
+  const tw = asTween(
+    (activeBeat.beat.set as Record<string, number | Tween>)[key],
+  );
+  // The value the timeline held entering this beat: the previous set-beat's
+  // target, else this tween's explicit `from`, else 0.
+  const start =
+    active > 0
+      ? asTween(
+          (setBeats[active - 1].beat.set as Record<string, number | Tween>)[key],
+        ).to
+      : (tw.from ?? 0);
+
+  const local = frame - activeBeat.startFrame;
+  const p = easeProgress(
+    tw.ease ?? 'spring',
+    local,
+    activeBeat.frames,
+    fps,
+  );
+  return interpolate(p, [0, 1], [start, tw.to]);
 };

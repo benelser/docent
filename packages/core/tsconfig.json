@@ -14,8 +14,7 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
-      "@docent/kit": ["../kit/src/index.ts"],
-      "@docent-engine-bridge/*": ["../engine/src/*"]
+      "@docent/kit": ["../kit/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

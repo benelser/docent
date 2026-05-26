@@ -7,12 +7,11 @@
 //
 //   - Imports from @docent/kit for the plugin prop contract (SceneRenderProps,
 //     CommonSceneProps, ResolvedStyle).
-//   - Shared primitives (SceneFrame, Narration, FittedText) are still imported
-//     from the engine package via relative paths — they have not been migrated
-//     to @docent/core yet, and the Phase B brief explicitly scopes this agent
-//     to the objection scene only.
+//   - Chrome (SceneFrame, Narration, FittedText) and the `glow` /
+//     `activeBeatIndex` helpers are sourced from `@docent/core/_shared`.
+//     There is no path back into `packages/engine/`.
 //
-// In v2.5.x these arrived as a flat `SceneProps & {style}` bag with
+// In v2.5.x props arrived as a flat `SceneProps & {style}` bag with
 // `ts.scene`, `ts.beats`, and top-level `sceneIndex/sceneCount/meta/style`.
 // The kit flattens this into `scene` (per-type spec) + `common` (ts, style,
 // meta, sceneIndex, sceneCount). Pixel-for-pixel parity is preserved by
@@ -39,15 +38,13 @@ import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 
 import type {ResolvedStyle, Scene, SceneRenderProps} from '@docent/kit';
 
-// Shared primitives still live in the engine package during the rip-and-replace.
-// Importing through relative paths (not via the engine's package export) keeps
-// this migration self-contained: we do not modify packages/engine/.
-import {glow} from '../../../../engine/src/theme';
-import {SceneFrame} from '../../../../engine/src/components/SceneFrame';
-import {Narration} from '../../../../engine/src/components/Narration';
-import {FittedText} from '../../../../engine/src/components/FittedText';
-import {activeBeatIndex, type TimedBeat} from '../../../../engine/src/engine/spec';
-import type {ResolvedStyle as EngineResolvedStyle} from '../../../../engine/src/style';
+import {
+  FittedText,
+  Narration,
+  SceneFrame,
+  activeBeatIndex,
+  glow,
+} from '../../_shared';
 
 /**
  * The objection scene's spec. Plugin-owned fields layered on the kit's
@@ -139,16 +136,10 @@ export const ObjectionSceneComponent: React.FC<SceneRenderProps<ObjectionSpec>> 
   const refutation = scene.refutation ?? '';
   const strength: 'partial' | 'full' = scene.refutationStrength ?? 'full';
 
-  // Engine's `TimedBeat` carries `from` (and other timing fields) — fields
-  // the kit's structural `Beat` type doesn't model but the engine's
-  // schedule populates at runtime. The cascade hands us beats already in
-  // that shape; the cast surfaces the contract.
-  const timedBeats = ts.beats.map((slot) => slot.beat) as unknown as TimedBeat[];
-
   // Each panel arrives on its own beat (claim → objection → refutation). The
   // dimming of the objection ties to the refutation's arrival, so the
   // visual rhetoric — refutation overlays objection — is animation-led.
-  const beatStart = (i: number): number => timedBeats[i]?.from ?? 1e9;
+  const beatStart = (i: number): number => ts.beats[i]?.startFrame ?? 1e9;
   const rise = (start: number) => {
     const local = frame - start;
     return local <= 0
@@ -160,11 +151,11 @@ export const ObjectionSceneComponent: React.FC<SceneRenderProps<ObjectionSpec>> 
   // author shipped fewer than 3 beats we degrade gracefully (everything
   // arrives on the first beat).
   const claimAt = beatStart(0);
-  const objectionAt = timedBeats.length >= 2 ? beatStart(1) : claimAt;
+  const objectionAt = ts.beats.length >= 2 ? beatStart(1) : claimAt;
   const refutationAt =
-    timedBeats.length >= 3
+    ts.beats.length >= 3
       ? beatStart(2)
-      : timedBeats.length === 2
+      : ts.beats.length === 2
         ? beatStart(1)
         : claimAt;
 
@@ -177,7 +168,7 @@ export const ObjectionSceneComponent: React.FC<SceneRenderProps<ObjectionSpec>> 
   // refutation overlays it).
   const objectionDim = interpolate(refutationA, [0, 1], [1, 0.5]);
 
-  const active = activeBeatIndex(timedBeats, frame);
+  const active = activeBeatIndex(ts.beats, frame);
   void active;
 
   const SLOT_W = 1480;
@@ -259,13 +250,6 @@ export const ObjectionSceneComponent: React.FC<SceneRenderProps<ObjectionSpec>> 
     </div>
   );
 
-  // SceneFrame and Narration are still typed against the engine's
-  // ResolvedStyle. The kit's ResolvedStyle is structurally compatible
-  // (same tokens shape, same visualization shape); the cast bridges the
-  // nominal type identity until SceneFrame/Narration are themselves
-  // migrated into @docent/core.
-  const engineStyle = style as unknown as EngineResolvedStyle;
-
   // `heading` is optional on SceneFrame; under exactOptionalPropertyTypes
   // we must only spread the prop when it's defined (passing `undefined`
   // explicitly is disallowed). Build the optional prop bag conditionally.
@@ -273,7 +257,7 @@ export const ObjectionSceneComponent: React.FC<SceneRenderProps<ObjectionSpec>> 
 
   return (
     <SceneFrame
-      style={engineStyle}
+      style={style}
       accentHex={accentHex}
       kicker={scene.kicker ?? ''}
       {...headingProp}
@@ -335,7 +319,7 @@ export const ObjectionSceneComponent: React.FC<SceneRenderProps<ObjectionSpec>> 
           rightChip={<StrengthChip />}
         />
       </div>
-      <Narration style={engineStyle} beats={timedBeats} />
+      <Narration style={style} beats={ts.beats} />
     </SceneFrame>
   );
 };
