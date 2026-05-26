@@ -13,23 +13,38 @@
 // they don't perform a cognitive move — they bracket the film.
 
 /**
- * The 7 closed cognitive clusters. Every `ScenePlugin` declares which one
- * it belongs to (or `null` for chrome-only scenes).
+ * The 7 closed cognitive clusters. Every {@link ScenePlugin} declares
+ * which one it belongs to (or `null` for chrome-only scenes like `frame`
+ * and `recap` that bracket the film but perform no cognitive move).
  *
+ * The taxonomy is CLOSED — adding a cluster is a major release of
+ * `@docent/kit` and a new mental model for every existing plugin.
+ *
+ * Cluster semantics, one example each:
  * - **connection** — relationships, dependencies, links between entities.
- *   The "structure" cluster: how the parts relate (graph, tree, dependency).
- * - **time** — temporal sequencing, before/after, progressions, timelines,
- *   epochs, phases.
+ *   The "structure" cluster: how the parts relate (graph, tree,
+ *   dependency). *Example: a `structure` scene of a microservice mesh.*
+ * - **time** — temporal sequencing, before/after, progressions,
+ *   timelines, epochs, phases. *Example: a `progression` scene tracing
+ *   adoption stages.*
  * - **flow** — control flow, data flow, state transitions, pipelines,
- *   cycles, feedback loops, processes.
+ *   cycles, feedback loops, processes. *Example: a `walkthrough` of a
+ *   request lifecycle.*
  * - **comparison** — side-by-side options, trade-offs, scoring, ranking,
- *   measurements, quantified claims, charts on real axes.
+ *   measurements, quantified claims, charts on real axes. *Example: a
+ *   `compare` of three database engines on latency.*
  * - **categorization** — taxonomies, set membership, boundaries between
- *   kinds, matrices, classification grids.
+ *   kinds, matrices, classification grids. *Example: a `structure` scene
+ *   of a 2×2 risk matrix.*
  * - **experience** — the human angle: a journey, a perception, an
  *   experiential walk through what it feels like to encounter something.
+ *   *Example: a `passage` reading of a primary source.*
  * - **narrative** — story, argument, commitment, the rhetorical "we
- *   chose X because of Y". Where the film makes a stand.
+ *   chose X because of Y". Where the film makes a stand. *Example: a
+ *   `tension` scene framing the irreversible trade-off.*
+ *
+ * @see docs/design/plugin-architecture-strategy.md §8
+ * @see docs/design/plugin-architecture-strategy.md §11.5
  */
 export type CognitiveCluster =
   | 'connection'

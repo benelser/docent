@@ -21,11 +21,20 @@ import type {Engine} from '../engine';
 import type {JudgeDimension} from '../protocols';
 
 /**
- * Collect every `JudgeDimension` contributed by every registered ScenePlugin.
+ * Collect every {@link JudgeDimension} contributed by every registered
+ * {@link ScenePlugin}. The judge surface (lives in `@docent/agent`) calls
+ * this to compose its grading rubric.
  *
  * Order is: scenes in registration order, dimensions in declaration order
  * within each scene plugin. Callers that want a stable order across runs
  * should sort by `id` themselves.
+ *
+ * Duplicates (two plugins declaring the same `id`) are NOT deduped here
+ * — unlike `sceneType` / `presetName` / `providerId`, a dimension id
+ * collision is a soft conflict (different plugins may legitimately grade
+ * against the same concept). The agent layer decides how to render.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
  */
 export function collectJudgeDimensions(engine: Engine): JudgeDimension[] {
   const dimensions: JudgeDimension[] = [];

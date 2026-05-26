@@ -15,12 +15,19 @@ const VALID_KINDS: readonly PluginKind[] = [
 ] as const;
 
 /**
- * Validate that an unknown value is a `PluginBase`. Throws on misshape.
- * Returns the value, narrowed to `PluginBase`, on success.
+ * Validate that an unknown value is a {@link PluginBase}. Throws with a
+ * pointed error on misshape; narrows `value` to {@link Plugin} on success.
  *
- * Strictly checks the THREE mandatory fields. Per-kind extra fields
- * (`sceneType`, `presetName`, etc.) are checked by the matching registry's
- * `register()` (they're branded into the type system there).
+ * Strictly checks the THREE mandatory fields (`name`, `version`, `kind`).
+ * Per-kind extra fields (`sceneType`, `presetName`, etc.) are checked by
+ * the matching registry's `register()` — they're branded into the type
+ * system there.
+ *
+ * Used internally by `Engine.use()` to refuse non-object input and
+ * malformed plugins before they reach a registry. Exposed for test
+ * harnesses and doctor surfaces.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.1
  */
 export function assertPluginBase(value: unknown): asserts value is Plugin {
   if (value === null || typeof value !== 'object') {
@@ -57,9 +64,16 @@ export function assertPluginBase(value: unknown): asserts value is Plugin {
 }
 
 /**
- * Validate a `ScenePlugin`'s additional surface (sceneType + cluster +
- * component + schema). Throws on misshape. The cluster check is in the
- * scene registry; this fires earlier.
+ * Validate a {@link ScenePlugin}'s additional surface (sceneType +
+ * cluster + component + schema). Throws on misshape. The cluster
+ * value-check (must be one of the 7 closed taxonomy values, or `null`)
+ * runs in the scene registry; this fires earlier and catches
+ * structurally-wrong shapes (e.g. `sceneType` missing or non-string).
+ *
+ * Used internally by `Engine.use()` after `assertPluginBase`. Exposed so
+ * test harnesses can assert their fixtures match the kit's expectations.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
  */
 export function assertScenePluginShape(plugin: PluginBase): void {
   const v = plugin as unknown as Record<string, unknown>;

@@ -26,8 +26,15 @@ import type {RenderStyleInput} from './style';
 
 /**
  * Film-level metadata. The pace knob is a film-wide default that any beat
- * can override (per `Beat.pace`). The `register` knob is the overall mood —
- * see the docent grammar doc for semantics.
+ * can override (per {@link Beat.pace}). The `register` knob is the overall
+ * mood — see the docent grammar doc for semantics.
+ *
+ * Authored by the spec author; consumed by the engine at multiple stages:
+ * the schedule resolver reads `resolution` and `fps`; the TTS stage reads
+ * `voice` and `tts`; the chrome scenes read `title` / `subtitle` /
+ * `author`.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
  */
 export interface FilmMeta {
   /** Stable id used as the filename and the Remotion composition id. */
@@ -63,7 +70,12 @@ export interface FilmMeta {
   subsystem?: string;
 }
 
-/** The film-level mood knob. Defaults to 'neutral'. */
+/**
+ * The film-level mood knob. Defaults to `'neutral'`. Biases scene defaults
+ * (pace, cadence, palette) at schedule-resolution time.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
+ */
 export type FilmRegister =
   | 'grave'
   | 'neutral'
@@ -72,13 +84,17 @@ export type FilmRegister =
   | 'playful';
 
 /**
- * TTS configuration carried on `meta.tts`. `provider` matches a registered
- * `TtsProviderPlugin.providerId`. `strict: true` makes capability mismatches
- * hard-fail rather than warn.
+ * TTS configuration carried on `meta.tts` (preferred) or top-level
+ * `spec.tts` (legacy). The resolver merges; `meta.tts` wins on conflict.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
  */
 export interface FilmTtsConfig {
+  /** Matches a registered {@link TtsProviderPlugin}'s `providerId`. */
   provider?: string;
+  /** Provider-specific model id (e.g. `'tts-1-hd'`). */
   model?: string;
+  /** Pass-through provider-specific options. */
   providerOptions?: Record<string, unknown>;
   /**
    * When `true`, an unsatisfied `ScenePlugin.requiresTtsCapabilities` causes
@@ -91,13 +107,15 @@ export interface FilmTtsConfig {
 
 /**
  * The minimum shape every scene honours. `type` is the registry key. Every
- * other per-scene-type field is owned by the registered `ScenePlugin` and
- * validated by its `schema` / `validate` hooks.
+ * other per-scene-type field is owned by the registered {@link ScenePlugin}
+ * and validated by its `schema` / `validate` hooks.
  *
  * The `[key: string]: unknown` index signature is deliberate: plugins
  * contribute open shape; the kit refuses to bake in per-type fields. The
  * top-level shape stays stable forever; the union of scene branches grows
  * as plugins register.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2 (ScenePlugin)
  */
 export interface Scene {
   /** Discriminator value. Must match a registered `ScenePlugin.sceneType`. */
@@ -118,14 +136,16 @@ export interface Scene {
 // ----- beats ---------------------------------------------------------------
 
 /**
- * The beat-level shape every scene's beats honour. Like `Scene`, plugin-owned
- * fields are opaque to the kit. The optional `set` and `transform` directives
- * are the engine's animated-values surface (per the docent grammar): `set`
- * drives a quantities metric, `transform` re-binds a structure node's
- * representation.
+ * The beat-level shape every scene's beats honour. Like {@link Scene},
+ * plugin-owned fields are opaque to the kit. The optional `set` and
+ * `transform` directives are the engine's animated-values surface (per the
+ * docent grammar): `set` drives a quantities metric, `transform` re-binds
+ * a structure node's representation.
  *
  * `pace` and `shot` are the rhythm/camera knobs the engine reads at frame
  * schedule time.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
  */
 export interface Beat {
   /** Stable id used by depthcheck rules and the agent layer. */
@@ -151,27 +171,57 @@ export interface Beat {
   [key: string]: unknown;
 }
 
+/**
+ * Beat-level pace knob — drives trailing-silence trim and dwell time.
+ * - `'hold'` — let the beat *land*; longest dwell.
+ * - `'settle'` — gentle dwell.
+ * - `'normal'` — default.
+ * - `'brisk'` — rush through; shortest dwell.
+ */
 export type BeatPace = 'hold' | 'settle' | 'normal' | 'brisk';
+
+/**
+ * Beat-level camera verb — read by the scene component if it honors camera.
+ * - `'wide'` — survey the whole diagram.
+ * - `'follow'` — lean toward the focus.
+ * - `'push'` — decisive close-in.
+ * - `'hold'` — dead-still emphasis frame.
+ */
 export type BeatShot = 'wide' | 'follow' | 'push' | 'hold';
+
+/**
+ * Beat-level cadence — how revealed items enter.
+ * - `'together'` — all at once.
+ * - `'cascade'` — staggered, in declared order.
+ * - `'snap'` — sharp and fast.
+ */
 export type BeatCadence = 'together' | 'cascade' | 'snap';
 
 /**
- * Drive a metric (or any numeric value) toward a target. The engine tweens.
- * `to` is the target value; `path` is the dot-delimited address of the metric
- * inside the scene spec.
+ * Drive a metric (or any numeric value) toward a target. The engine tweens
+ * from the previous value to the target over the beat's duration.
+ *
+ * Authored on a `quantities` scene's beat — the metric counts up to its
+ * target rather than cutting to it. The "earn a number on screen" move.
  */
 export interface BeatSetDirective {
+  /** Dot-delimited address of the metric inside the scene spec. */
   path: string;
+  /** Target value — the tween's endpoint. */
   to: number | string;
   /** Optional duration override in frames. Defaults to the beat's own. */
   durationFrames?: number;
 }
 
-/** Re-bind a structure node's representation. The engine morphs old → new. */
+/**
+ * Re-bind a `structure` node's representation. The engine morphs old → new
+ * across the beat's duration — a vector becoming a matrix, one equation
+ * rewriting into the next.
+ */
 export interface BeatTransformDirective {
   /** The node id (in `structure.nodes`) to re-bind. */
   nodeId: string;
-  /** New representation. */
+  /** New representation the node morphs into. */
   as: 'box' | 'matrix' | 'vector' | 'grid' | 'code' | 'equation';
   /** Optional duration override in frames. */
   durationFrames?: number;
@@ -180,17 +230,23 @@ export interface BeatTransformDirective {
 // ----- film spec -----------------------------------------------------------
 
 /**
- * The top-level film spec. The shape every film validates against.
+ * The top-level film spec — the shape every film validates against.
  *
  * Per the strategy doc §11.5, the *top-level* keys are CLOSED: `meta`,
  * `scenes`, `style`, `tts`. Plugins add scene-type branches via
- * `scenes[].type` discriminators, not new top-level fields.
+ * `scenes[].type` discriminators, not new top-level fields. The closure
+ * is what lets the kit's schema and validator stay stable across version
+ * bumps.
  *
  * Note: `tts` here is the legacy mirror of `meta.tts`; new specs put TTS
  * under `meta`. Both are accepted; the resolver normalizes.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §11.5
  */
 export interface FilmSpec {
+  /** Film-level metadata (id, title, voice, resolution, register, …). */
   meta: FilmMeta;
+  /** The ordered list of scenes — each one validated by its plugin's schema. */
   scenes: Scene[];
   /** Film-level style input — preset, intent, token overrides. */
   style?: RenderStyleInput;

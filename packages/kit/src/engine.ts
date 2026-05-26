@@ -131,24 +131,60 @@ const NEUTRAL_VISUALIZATION: Required<VisualizationStyle> = Object.freeze({
 }) as Required<VisualizationStyle>;
 
 /**
- * The Engine. One instance per process. Constructed empty; populated via
- * `engine.use(plugin)`; driven by `validate / render`.
+ * The Engine — the public face of `@docent/kit` and the only constructor
+ * external callers need.
+ *
+ * Lifecycle: one instance per process. Constructed empty; populated via
+ * `engine.use(plugin)` once per plugin; then driven by
+ * `validate / schema / resolveStyle / render`.
+ *
+ * The five public registries — {@link scenes}, {@link presets}, {@link tts},
+ * {@link features}, {@link modifiers} — are also exposed as `readonly`
+ * fields. Consumers that want to introspect (a doctor surface, a custom
+ * lint) can iterate them directly without going through `use()`.
  *
  * @example
- *   import {Engine} from '@docent/kit';
- *   import core from '@docent/core';
+ * ```ts
+ * import {Engine} from '@docent/kit';
+ * import core from '@docent/core';
+ * import scifi from '@example/docent-scifi';
  *
- *   const engine = new Engine().use(core);
- *   const issues = engine.validate(spec);
- *   if (issues.length === 0) await engine.render(spec, {scale: 0.5});
+ * // Construct and register plugins. `use()` is chainable.
+ * const engine = new Engine().use(core).use(scifi);
+ *
+ * // Validate a candidate spec — returns Issue[].
+ * const issues = engine.validate(spec);
+ * if (issues.some((i) => i.severity === 'error')) {
+ *   process.exit(1);
+ * }
+ *
+ * // Render the film. Throws on Remotion failures.
+ * const result = await engine.render(spec, {scale: 0.5});
+ * console.log('rendered to', result.outPath);
+ * ```
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
  */
 export class Engine {
+  /** The scene-plugin registry. Discriminator: `ScenePlugin.sceneType`. */
   readonly scenes: SceneRegistry;
+  /** The preset-plugin registry. Discriminator: `PresetPlugin.presetName`. */
   readonly presets: PresetRegistry;
+  /** The TTS-provider registry. Discriminator: `TtsProviderPlugin.providerId`. */
   readonly tts: TtsRegistry;
+  /** The feature-plugin registry. Discriminator: `FeaturePlugin.name`. */
   readonly features: FeatureRegistry;
+  /**
+   * **R3 forward-compat.** The modifier registry, populated via feature
+   * plugins' `registerModifiers` hooks. Empty in this build; the resolver
+   * does not consult it. Surfaced today so R3 lands non-breaking.
+   */
   readonly modifiers: ModifierRegistry;
 
+  /**
+   * Construct an empty engine. The 5 registries are initialised to empty.
+   * Plugins are added via `use()`.
+   */
   constructor() {
     this.scenes = new SceneRegistryImpl();
     this.presets = new PresetRegistryImpl();
@@ -158,19 +194,44 @@ export class Engine {
   }
 
   /**
-   * The polymorphic dispatch — sniff `plugin.kind`, route to the right
-   * registry. Accepts a single plugin or an array (so a bundle pack can
-   * export `export const corePlugins: Plugin[] = [...]` and a caller does
+   * Register one or more plugins with the engine. Modeled on Marpit's
+   * `marpit.use()` — sniffs `plugin.kind` and routes to the matching
+   * registry. The single public mutation surface of the engine.
+   *
+   * Accepts a single plugin or an array (so a bundle pack can export
+   * `export const corePlugins: Plugin[] = [...]` and a caller does
    * `engine.use(corePlugins)`).
    *
-   * Throws on:
-   *   - non-object input (`assertPluginBase`)
-   *   - missing/empty `name` or `version`
-   *   - unknown `kind` (in particular: `'modifier'` is NOT a plugin kind)
-   *   - registry conflict (two plugins claim the same sceneType / preset /
-   *     providerId / feature name)
+   * When the plugin is a {@link FeaturePlugin}, the feature's lifecycle
+   * hooks fire immediately: `registerScenes`, `registerPresets`,
+   * `registerTtsProviders`, `registerModifiers`. This means a feature's
+   * children are available before subsequent `use()` calls — useful for
+   * ordering-sensitive setups.
    *
-   * Returns `this` for chaining: `new Engine().use(a).use(b).use(c)`.
+   * Throws on:
+   *   - non-object input (via `assertPluginBase`).
+   *   - missing/empty `name` or `version`.
+   *   - unknown `kind` (in particular: `'modifier'` is NOT a plugin kind —
+   *     register modifiers through a `FeaturePlugin`).
+   *   - registry conflict (two plugins claim the same `sceneType` /
+   *     `presetName` / `providerId` / feature `name`) — throws
+   *     {@link RegistryConflictError} with BOTH plugin names surfaced.
+   *
+   * @returns `this` for chaining: `new Engine().use(a).use(b).use(c)`.
+   *
+   * @example
+   * ```ts
+   * // Single plugin.
+   * engine.use(framePlugin);
+   *
+   * // Bundle of plugins.
+   * engine.use([framePlugin, structurePlugin, captionsFeature]);
+   *
+   * // Chained.
+   * new Engine().use(corePlugins).use(scifiPlugins);
+   * ```
+   *
+   * @see docs/design/plugin-architecture-strategy.md §4.7
    */
   use(plugin: PluginBase | PluginBase[]): this {
     const plugins = Array.isArray(plugin) ? plugin : [plugin];
@@ -232,12 +293,20 @@ export class Engine {
    * Compute the union film schema from the registered scenes.
    *
    * The shape is: a `oneOf` discriminated union over `scene.type` literals,
-   * each branch the registered plugin's schema. Top-level `meta`, optional
-   * `style`, optional `tts` come from `@docent/kit`'s own meta schema.
+   * each branch the registered plugin's schema (narrowed by its
+   * `sceneType`). Top-level `meta`, optional `style`, optional `tts` come
+   * from `@docent/kit`'s own meta schema.
    *
-   * Implementation delegates to `computeSchema(this)` in
-   * `./schema/from-registry.ts`. Pure: depends only on the active scene
-   * registry, safe to call from anywhere after `use()`.
+   * The schema is pure — depends only on the active scene registry, safe
+   * to call from anywhere after `use()`. Feed it to AJV (or any JSON
+   * Schema validator) for runtime validation; or write it to disk for
+   * tooling.
+   *
+   * Implementation delegates to {@link computeSchema}.
+   *
+   * @returns A `JSONSchema7` ready for AJV.
+   *
+   * @see docs/design/plugin-architecture-strategy.md §4.7
    */
   schema(): JSONSchema7 {
     return computeSchema(this);
@@ -246,42 +315,59 @@ export class Engine {
   /**
    * Validate a candidate film spec against the active engine.
    *
-   * Delegates to `validateSpec(spec, this)` in `./frameworks/validate.ts`.
+   * Delegates to {@link validateSpec}. The structural validator: walks the
+   * spec, dispatches each scene to its registered plugin's `validate?`
+   * hook, aggregates the returned per-scene issues into a flat list.
+   *
    * Flow:
-   *   1. Film-level structural checks (meta/scenes shape).
+   *   1. Film-level structural checks (`meta`, `scenes` shape).
    *   2. For each scene: confirm `type` is a registered `sceneType`.
    *   3. For each scene whose plugin declares `validate?`, run it and
-   *      aggregate its per-scene `SceneIssue[]` into the flat `Issue[]`.
+   *      aggregate its per-scene {@link SceneIssue}s into the flat
+   *      {@link Issue} list (re-rooting paths to `scenes[<i>].…`).
    *
-   * AJV schema-validation (against `this.schema()`) and FeaturePlugin
-   * `preprocessSpec` (R6) are deferred to the cascade orchestrator (Phase
-   * A.7) which composes them around this pure structural validator.
+   * AJV schema-validation (against `this.schema()`) and
+   * `FeaturePlugin.preprocessSpec` (R6) are deferred to the cascade
+   * orchestrator (Phase A.7) which composes them around this pure
+   * structural validator.
+   *
+   * @param spec An unknown value — the validator confirms it's an object first.
+   * @returns A flat `Issue[]`. Empty array = clean. Severity `'error'`
+   * means the spec is unsafe to render; `'warning'` means it renders but
+   * the author should look.
+   *
+   * @see docs/design/plugin-architecture-strategy.md §4.7
    */
   validate(spec: unknown): Issue[] {
     return validateSpec(spec, this);
   }
 
   /**
-   * Resolve a film spec's style to a frozen `ResolvedStyle`.
+   * Resolve a film spec's style to a frozen {@link ResolvedStyle}.
    *
    * **This is the A.7 SIMPLE resolver — neutral baseline composition.**
    * The full pipeline (R4 preset composition, scene-level overrides,
-   * `FeaturePlugin.injectStyleTokens`, accessibility checks) is deferred
-   * to a follow-on sprint. The shape returned is the final one; what's
-   * deferred is the *richness* of the composition, not the protocol.
+   * {@link FeaturePlugin}.`injectStyleTokens`, accessibility checks) is
+   * deferred to a follow-on sprint. The shape returned is the final one;
+   * what's deferred is the *richness* of the composition, not the protocol.
    *
    * Today's pipeline:
    *   1. Start with the registered preset (looked up by name from
    *      `spec.style.preset`, defaulting to `'neutral'`).
    *   2. If found: use its tokens + visualization as the base.
-   *      If not found: fall back to the kit's NEUTRAL_TOKENS floor.
+   *      If not found: fall back to the kit's `NEUTRAL_TOKENS` floor.
    *   3. Shallowly apply `spec.style.tokens` overrides (top-level token
    *      categories only — `bg`, `ink`, `accent`, …).
    *   4. Shallowly apply `spec.style.visualization` overrides.
    *   5. Freeze and return.
    *
-   * Throws `StyleValidationError` if the spec names a preset that is
-   * neither registered nor the well-known `'neutral'` fallback.
+   * @param spec The film spec — `spec.style` may be absent, in which case
+   * the resolver returns the neutral baseline.
+   * @returns A frozen, complete {@link ResolvedStyle}.
+   * @throws {@link StyleValidationError} when the spec names a preset that
+   * is neither registered nor the well-known `'neutral'` fallback.
+   *
+   * @see docs/design/plugin-architecture-strategy.md §4.7
    */
   resolveStyle(spec: FilmSpec): ResolvedStyle {
     const styleInput = spec.style ?? {};
@@ -412,11 +498,17 @@ export class Engine {
    * Render a film spec to an MP4 (or still). Runs the full cascade:
    *   validate → resolveStyle → synth audio → render frames.
    *
-   * **Phase A.7 wires this through to the orchestrator. The render
-   * stage itself depends on A.9 (Remotion bindings) and throws "not
-   * implemented" until that lands** — but `validate`, `resolveStyle`,
-   * and the `tts` stage all run, so a caller exercising the cascade
-   * head observes real behaviour up to that point.
+   * Node-only: dynamically imports the renderer module via a runtime
+   * specifier (`./engine-render`) so the browser/chromium bundle can omit
+   * the Node-only modules (`node:fs`, `node:child_process`, Remotion's
+   * render API). Webpack's static analyser cannot follow the dynamic
+   * specifier into this path — by design.
+   *
+   * @param spec The film to render. Should be pre-validated.
+   * @param opts See {@link RenderOptions}.
+   * @returns A {@link RenderResult} pointing at the produced MP4 (or still).
+   *
+   * @see docs/design/plugin-architecture-strategy.md §4.7
    */
   async render(
     spec: FilmSpec,

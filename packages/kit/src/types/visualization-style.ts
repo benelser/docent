@@ -6,8 +6,14 @@
 //
 // Mirrors `packages/engine/src/style/styleSchema.ts` for v2.x compatibility.
 
+/**
+ * Where charts and diagrams put their legend block. `'none'` suppresses
+ * the legend entirely (executive presets sometimes do this when the legend
+ * is redundant with the axis labels).
+ */
 export type LegendPosition = 'top' | 'bottom' | 'left' | 'right' | 'none';
 
+/** Runtime list of every {@link LegendPosition} value, in canonical order. */
 export const LEGEND_POSITIONS: readonly LegendPosition[] = [
   'top',
   'bottom',
