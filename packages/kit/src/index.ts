@@ -177,3 +177,15 @@ export {
   assertPluginBase,
   assertScenePluginShape,
 } from './validation/plugin';
+
+// ---------- Framework hooks (Phase A.4 / A.5 / A.6 / A.8) -------------------
+//
+// The Engine's own `validate / schema` methods delegate to these. They're
+// re-exported as standalone functions so a third-party tool (a doctor surface,
+// a linter, a custom CI gate) can call them directly without going through
+// the Engine — pure, side-effect-free given a constructed Engine.
+
+export {validateSpec} from './frameworks/validate';
+export {depthCheck} from './frameworks/depthcheck';
+export {collectJudgeDimensions} from './frameworks/judge';
+export {computeSchema} from './schema/from-registry';
