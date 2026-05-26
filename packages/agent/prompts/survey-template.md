@@ -349,3 +349,26 @@ film's argument needs a rhetorical move the other primitives don't carry.
   know yet"*. A specific, question-shaped unresolved replaces the takeaway.
   Mutually exclusive with `big-idea` — a film either COMMITS or HANDS OFF,
   never both. Position: the absolute last scene.
+
+### Narration provider — `meta.tts` (optional)
+
+Every spec narrates through Kokoro by default — local, free, no credentials.
+For most films, do nothing: omit `meta.tts` and the engine resolves to
+Kokoro. If the **distribution context** warrants a paid voice, declare it.
+
+- **A quick local explainer, a PR film, a draft**: stay on Kokoro. The
+  default. Omit `meta.tts` entirely.
+- **A paid film for a client, a high-stakes external deliverable**: consider
+  setting `meta.tts.provider: "elevenlabs"` for the character-level
+  alignment and broader voice catalog. Requires `ELEVENLABS_API_KEY` in
+  the environment; do NOT put credentials in the spec.
+- **A film whose `passage` scenes argue from per-word emphasis** —
+  close-readings, scripture studies, code review with line-level callouts:
+  pin a provider whose `nativeAlignment` is `word` or `character`
+  (ElevenLabs today). The capability check at spec-resolution time will
+  warn if you skip this; set `meta.tts.strict: true` to make the
+  mismatch a hard fail.
+
+Run `docent tts list-providers` to see what is registered and what
+capabilities each declares.
+

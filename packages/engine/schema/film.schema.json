@@ -19,7 +19,35 @@
         "fps": {"type": "number", "exclusiveMinimum": 0},
         "width": {"type": "number", "exclusiveMinimum": 0},
         "height": {"type": "number", "exclusiveMinimum": 0},
-        "voice": {"type": "string"}
+        "voice": {"type": "string"},
+        "tts": {
+          "type": "object",
+          "description": "Optional TTS provider configuration. When absent the engine defaults to the kokoro provider (local, no credentials). The Rig-shaped contract in docs/design/plugin-architecture.md §6.3.",
+          "additionalProperties": false,
+          "properties": {
+            "provider": {
+              "type": "string",
+              "description": "Provider id — must match a registered TtsProviderPlugin.providerId (e.g. 'kokoro', 'openai', 'elevenlabs', 'openai-compatible')."
+            },
+            "model": {
+              "type": "string",
+              "description": "Provider-scoped model id (e.g. 'tts-1-hd' for openai, 'eleven_multilingual_v2' for elevenlabs)."
+            },
+            "voice": {
+              "type": "string",
+              "description": "Provider-scoped voice id. Overrides meta.voice when set."
+            },
+            "strict": {
+              "type": "boolean",
+              "description": "When true, capability mismatches (a scene requires a capability the provider does not have) become hard failures. Default: warn-only."
+            },
+            "providerOptions": {
+              "type": "object",
+              "description": "Rig-shaped escape hatch — provider-specific knobs passed verbatim into the provider's create() and synth() calls.",
+              "additionalProperties": true
+            }
+          }
+        }
       }
     },
     "scenes": {

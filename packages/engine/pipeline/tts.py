@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
-"""docent TTS stage — render every beat's narration to speech with Kokoro.
+"""DEPRECATED — docent TTS stage (Python sidecar). Kept for one release.
+
+The default TTS path NOW runs through the TS-native kokoro-js provider,
+registered in ``packages/engine/src/tts/providers/kokoro.ts`` and invoked
+by ``packages/engine/cli/tts-stage.ts``. The cascade no longer calls this
+script. It remains in tree for one release as a deprecated fallback for
+users on the legacy path; it will be removed in the next major.
+
+To use the legacy Python path explicitly: ``uv run python pipeline/tts.py
+--film <id>`` still works as before. New work should use the new pipeline.
+
+Below: the original docstring, for reference.
+
+------------------------------------------------------------------------
+docent TTS stage — render every beat's narration to speech with Kokoro.
 
 This stage is deliberately decoupled from rendering (the lesson from v1, where
 manim-voiceover coupled the two and deadlocked under concurrency). It writes

@@ -29,6 +29,8 @@ import {runStyle} from './style';
 import {hermeticStyle} from './hermetic-style';
 import {runSceneFit} from './scene-fit';
 import {hermeticSceneFit} from './hermetic-scene-fit';
+import {runTts} from './tts';
+import {hermeticTts} from './hermetic-tts';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];
@@ -281,6 +283,17 @@ const main = async (): Promise<number> => {
       // needle. All green or none.
       return hermeticSceneFit({json: flag('json')});
 
+    case 'tts':
+      // `docent tts list-providers | list-voices | synth` — the agent-facing
+      // introspection surface over the TTS adapter layer. Mirrors style /
+      // scene-fit. Delegates to ./tts.ts.
+      return runTts(argv.slice(1));
+
+    case 'hermetic-tts':
+      // Per-provider smoke gallery. Kokoro green by default; the paid
+      // providers skip cleanly when their credentials are absent.
+      return hermeticTts({json: flag('json')});
+
     case 'preflight':
       return preflight();
 
@@ -299,6 +312,7 @@ const main = async (): Promise<number> => {
       console.log('  docent depthcheck <film>          the depth contract over a spec');
       console.log('  docent style <list|resolve|recommend>  styling-resolver introspection (agent-facing)');
       console.log('  docent scene-fit <list|recommend> scene-grammar introspection — which scenes fit this subject');
+      console.log('  docent tts <list-providers|list-voices|synth>  TTS adapter introspection');
       console.log('  docent env                        resolved paths and versions');
       console.log('');
       console.log('  internal-test commands (not part of the user-facing surface):');
@@ -307,6 +321,7 @@ const main = async (): Promise<number> => {
       console.log('    docent hermetic --explain <url> full skill cascade per agent host [--target all]');
       console.log('    docent hermetic-style           style-recommendation fixture sweep (3 synthetic surveys + resolve)');
       console.log('    docent hermetic-scene-fit       scene-fit fixture sweep (10 synthetic surveys, one per cluster)');
+      console.log('    docent hermetic-tts             TTS provider smoke gallery (kokoro green; paid providers skip without creds)');
       console.log('    docent preflight                aggregate Go Live readiness check');
       return cmd ? 1 : 0;
   }

@@ -428,3 +428,23 @@ the other primitives don't carry.
   question-shaped unresolved replaces the takeaway. Mutually exclusive
   with `big-idea` — the film either COMMITS or HANDS OFF, never both.
   Position: the absolute last scene.
+
+### Narration provider — `meta.tts` (optional)
+
+Every explainer narrates through Kokoro by default — local, free, no
+credentials. For a typical idea-explainer, omit `meta.tts` entirely.
+
+Two reasons to override the default in an explainer film:
+
+- **The explainer is a paid deliverable** (a client video, a film with a
+  broad audience): consider `meta.tts.provider: "elevenlabs"` for the
+  richer voice catalog and character-level alignment. Requires
+  `ELEVENLABS_API_KEY` in env.
+- **The explainer leans heavily on `passage` scenes** — a close reading,
+  a verse-by-verse argument, a primary-source unpacking. `passage`
+  benefits from word-level alignment (per-word highlight as narration
+  plays). Pin an aligning provider for the polish; or accept the
+  warn-by-default behaviour with the Kokoro defaults.
+
+`docent tts list-providers` enumerates the registered providers.
+

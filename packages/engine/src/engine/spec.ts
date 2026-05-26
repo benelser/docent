@@ -733,6 +733,34 @@ export type MapConnection = {
   kind?: 'route' | 'transmission' | 'supply';
 };
 
+/**
+ * Optional per-film TTS configuration. Lives on `meta.tts` so the spec stays
+ * declarative — a film picks a provider with one knob; credentials live in
+ * the environment, never in the spec. Mirrors the Rig-shaped contract in
+ * `docs/design/plugin-architecture.md` §6.3.
+ *
+ *   { provider: 'kokoro' }                    — explicit default (also implicit).
+ *   { provider: 'openai', model: 'tts-1-hd' } — paid client film.
+ *   { provider: 'elevenlabs', voice: '...' }  — picks ElevenLabs for character alignment.
+ *   { provider: 'openai-compatible' }         — uses DOCENT_TTS_BASE_URL.
+ *
+ * `strict: true` flips capability-mismatch from a warning into a hard fail —
+ * a `passage` scene against a provider with `nativeAlignment: 'none'` will
+ * refuse to render.
+ */
+export interface FilmTtsConfig {
+  /** Defaults to `kokoro`. Must match a registered TtsProviderPlugin.providerId. */
+  provider?: string;
+  /** Provider-scoped model id (e.g. `tts-1-hd` for openai, `eleven_multilingual_v2` for elevenlabs). */
+  model?: string;
+  /** Provider-scoped voice id. Overrides `meta.voice` when set. */
+  voice?: string;
+  /** When true, capability mismatches become hard failures rather than warnings. */
+  strict?: boolean;
+  /** The Rig-shaped escape hatch — provider-specific knobs that don't belong in the shared schema. */
+  providerOptions?: Record<string, unknown>;
+}
+
 export type FilmSpec = {
   meta: {
     id: string;
@@ -747,6 +775,11 @@ export type FilmSpec = {
     // NOTE: `register` (a film-mood knob) was removed in v2.4.0. The mood is
     // now part of the resolved style — set `FilmSpec.style.intent.tone`
     // instead. The validator hard-fails any spec that still carries it.
+    /**
+     * Optional TTS provider configuration. When absent, defaults to the
+     * kokoro provider (local, no credentials). See `FilmTtsConfig`.
+     */
+    tts?: FilmTtsConfig;
   };
   scenes: Scene[];
   /**
