@@ -29,7 +29,7 @@ import {audioRhythmFeature} from './features/audio-rhythm';
 // @docent/tts-* packages in a later release)
 import {kokoroTtsPlugin} from './tts/kokoro';
 
-// Scenes (28 of 29 so far — migrations land additively as agents return)
+// Scenes (29 of 29 ✓ so far — migrations land additively as agents return)
 import {bigIdeaPlugin} from './scenes/big-idea';
 import {causalLoopPlugin} from './scenes/causal-loop';
 import {chartPlugin} from './scenes/chart';
@@ -53,6 +53,7 @@ import {progressionPlugin} from './scenes/progression';
 import {provocationPlugin} from './scenes/provocation';
 import {quantitiesPlugin} from './scenes/quantities';
 import {recapPlugin} from './scenes/recap';
+import {structurePlugin} from './scenes/structure';
 import {tensionPlugin} from './scenes/tension';
 import {timelinePlugin} from './scenes/timeline';
 import {treePlugin} from './scenes/tree';
@@ -88,7 +89,7 @@ export const corePlugins: readonly Plugin[] = [
   audioRhythmFeature,
   // TTS (1)
   kokoroTtsPlugin,
-  // Scenes (28 of 29)
+  // Scenes (29 of 29 ✓)
   bigIdeaPlugin,
   causalLoopPlugin,
   chartPlugin,
@@ -112,6 +113,7 @@ export const corePlugins: readonly Plugin[] = [
   provocationPlugin,
   quantitiesPlugin,
   recapPlugin,
+  structurePlugin,
   tensionPlugin,
   timelinePlugin,
   treePlugin,
