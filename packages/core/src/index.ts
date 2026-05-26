@@ -29,13 +29,20 @@ import {audioRhythmFeature} from './features/audio-rhythm';
 // @docent/tts-* packages in a later release)
 import {kokoroTtsPlugin} from './tts/kokoro';
 
-// Scenes (6 of 29 so far — migrations land additively as agents return)
+// Scenes (13 of 29 so far — migrations land additively as agents return)
+import {concessionPlugin} from './scenes/concession';
+import {demonstratePlugin} from './scenes/demonstrate';
 import diffPlugin from './scenes/diff';
 import {epigraphPlugin} from './scenes/epigraph';
+import {figurePlugin} from './scenes/figure';
+import {framePlugin} from './scenes/frame';
 import {mechanismPlugin} from './scenes/mechanism';
 import {objectionPlugin} from './scenes/objection';
+import {passagePlugin} from './scenes/passage';
 import {priorArtPlugin} from './scenes/prior-art';
+import {provocationPlugin} from './scenes/provocation';
 import {quantitiesPlugin} from './scenes/quantities';
+import {walkthroughPlugin} from './scenes/walkthrough';
 
 // Re-exports for callers that want named imports.
 export {
@@ -66,13 +73,20 @@ export const corePlugins: readonly Plugin[] = [
   audioRhythmFeature,
   // TTS (1)
   kokoroTtsPlugin,
-  // Scenes (6 of 29)
+  // Scenes (13 of 29)
+  concessionPlugin,
+  demonstratePlugin,
   diffPlugin,
   epigraphPlugin,
+  figurePlugin,
+  framePlugin,
   mechanismPlugin,
   objectionPlugin,
+  passagePlugin,
   priorArtPlugin,
+  provocationPlugin,
   quantitiesPlugin,
+  walkthroughPlugin,
 ];
 
 export default corePlugins;
