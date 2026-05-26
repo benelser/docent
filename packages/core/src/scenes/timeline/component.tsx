@@ -35,17 +35,19 @@ import {
 import type {SceneRenderProps} from '@docent/kit';
 
 import {EmbeddedScene} from './_embedded-scene';
-import {FittedText, fitFontSize, truncateForSlot} from './_fitted-text';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
-import {parseTimelineDate, yearOf} from './_time';
 import {
-  STAGE,
+  FittedText,
+  Narration,
+  SceneFrame,
   activeBeatIndex,
+  fitFontSize,
   glow,
   paletteGlowScale,
-  sceneAccentHex,
-} from './_helpers';
+  paletteSceneHex,
+  truncateForSlot,
+} from '../../_shared';
+import {parseTimelineDate, yearOf} from './_time';
+import {STAGE} from './_helpers';
 import type {
   TimelineEvent,
   TimelineScene as TimelineSceneSpec,
@@ -73,7 +75,7 @@ export const TimelineSceneComponent: React.FC<
   // paletteSceneHex reads the resolved-style accent table (or falls back to
   // theme.ts ACCENTS when style is undefined). Threading `style` makes a
   // preset's accent overrides reach this scene.
-  const accentHex = sceneAccentHex(style);
+  const accentHex = paletteSceneHex(undefined, undefined, style);
   const events: TimelineEvent[] = scene.events ?? [];
   const spans: TimelineSpan[] = scene.spans ?? [];
   const axis = scene.axis;
@@ -187,7 +189,7 @@ export const TimelineSceneComponent: React.FC<
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
-      glowScale={paletteGlowScale()}
+      glowScale={paletteGlowScale(undefined)}
     >
       <AbsoluteFill>
         <svg

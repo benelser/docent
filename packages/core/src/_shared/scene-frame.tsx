@@ -1,24 +1,24 @@
-// Local SceneFrame — the parallaxed chrome every scene sits in.
+// SceneFrame — the parallaxed chrome every scene sits in.
 //
-// MIRROR of packages/engine/src/components/SceneFrame.tsx. The v3.0
-// fan-out moves each scene into its own directory; shared component
-// infrastructure (SceneFrame, Narration, FittedText, fonts) will be
-// migrated by a separate agent and reconciled by the integrator at merge
-// time. Inlining a verbatim copy here keeps the venn scene's worktree
-// self-contained and `tsc --noEmit` clean.
+// MIRROR of `packages/engine/src/components/SceneFrame.tsx`, adapted to live
+// inside `@docent/core` (resolves `ResolvedStyle` through `@docent/kit`,
+// and carries its own minimal `CameraState` interface so it does not reach
+// back into the engine for the camera-state shape).
 //
-// At integration, the integrator replaces this file with `import
-// {SceneFrame} from '@docent/core/_shared/scene-frame'` (or whatever the
-// shared path lands as) and deletes this file. The venn component reads
-// SceneFrame through `./_scene-frame` so the swap is one import.
+// The shell every scene sits in: a deep, living, parallaxed space — and the
+// kicker, heading, and progress as a fixed UI overlay above it.
+//
+// `glowScale` (set by the `palette` knob) scales the volumetric accent light:
+// `mono` flattens it toward zero, `signal` lifts it. It defaults to 1, the
+// identity — so a scene with no palette renders byte-identically.
 
 import React, {useMemo} from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {ResolvedStyle} from '@docent/kit';
 
-import {FittedText} from './_fitted-text';
-import {glow} from './_helpers';
-import {interFamily, monoFamily} from './_fonts';
+import {FittedText} from './fitted-text';
+import {glow} from './helpers';
+import {interFamily, monoFamily} from './fonts';
 
 // Seeded RNG so the starfield is identical every render.
 const rng = (seed: number) => () => {
@@ -47,13 +47,19 @@ const MOTES = (() => {
   }));
 })();
 
+/**
+ * Camera-state shape SceneFrame reads. Mirrors the engine's `CameraState`
+ * (tx/ty pixel offsets, scale 1.0 = identity). Re-declared locally so
+ * `@docent/core` does not import from the engine.
+ */
 export interface CameraState {
   tx: number;
   ty: number;
   scale: number;
 }
 
-// A parallax layer: shifts a fraction of the camera move.
+// A parallax layer: shifts a fraction of the camera move, so far layers lag
+// near ones — real depth as the camera travels.
 const par = (cam: CameraState | undefined, depth: number): string => {
   if (!cam) return 'none';
   return `translate(${cam.tx * depth}px, ${cam.ty * depth}px) scale(${1 + (cam.scale - 1) * depth})`;
@@ -67,6 +73,11 @@ export const SceneFrame: React.FC<{
   sceneCount: number;
   cam?: CameraState | undefined;
   glowScale?: number | undefined;
+  // When a caller paints its own backdrop *behind* SceneFrame (e.g. the
+  // whiteboard/sketch BigIdeaScene), SceneFrame must NOT paint its dark
+  // theme color over that backdrop. Set transparentBackdrop=true and the
+  // outer fill goes transparent — caller's backdrop shows through, and
+  // the chrome (kicker/heading/progress/wordmark) still draws on top.
   transparentBackdrop?: boolean | undefined;
   style: ResolvedStyle;
   children?: React.ReactNode;
@@ -108,6 +119,7 @@ export const SceneFrame: React.FC<{
         fontFamily: interFamily,
       }}
     >
+      {/* deep starfield — the farthest layer, barely parallaxes */}
       <AbsoluteFill style={{transformOrigin: '50% 50%', transform: par(cam, 0.1)}}>
         <svg width="100%" height="100%" viewBox="0 0 1920 1080">
           {STARS.map((s, i) => (
@@ -116,6 +128,7 @@ export const SceneFrame: React.FC<{
         </svg>
       </AbsoluteFill>
 
+      {/* dotted grid — mid layer */}
       <AbsoluteFill
         style={{
           transformOrigin: '50% 50%',
@@ -126,6 +139,7 @@ export const SceneFrame: React.FC<{
         }}
       />
 
+      {/* accent light — volumetric glow, scaled by the palette's glowScale */}
       <div
         style={{
           position: 'absolute',
@@ -149,6 +163,7 @@ export const SceneFrame: React.FC<{
         }}
       />
 
+      {/* drifting motes — the nearest ambient layer */}
       <AbsoluteFill style={{transformOrigin: '50% 50%', transform: par(cam, 0.46)}}>
         <svg width="100%" height="100%" viewBox="0 0 1920 1080">
           {motes.map((m, i) => (
@@ -165,6 +180,7 @@ export const SceneFrame: React.FC<{
         </svg>
       </AbsoluteFill>
 
+      {/* vignette */}
       <AbsoluteFill
         style={{
           background: `radial-gradient(ellipse 74% 66% at 50% 44%, transparent 38%, ${bg.void}e0 100%)`,
@@ -173,6 +189,7 @@ export const SceneFrame: React.FC<{
 
       {children}
 
+      {/* header — fixed UI overlay, above the parallax */}
       <div
         style={{
           position: 'absolute',
@@ -192,6 +209,10 @@ export const SceneFrame: React.FC<{
               boxShadow: `0 0 14px ${accentHex}`,
             }}
           />
+          {/* kicker — single-line auto-shrink with a hard cap. 4-px tracking
+              makes "ARCHITECTURE REVIEW · DOCENT" the longest realistic
+              kicker; if a film stretches it past the safe band the
+              helper falls back to ellipsis rather than overflowing. */}
           <FittedText
             text={kicker}
             maxWidth={1480}
@@ -208,6 +229,13 @@ export const SceneFrame: React.FC<{
           />
         </div>
         {heading ? (
+          // Heading: the safe band is 120→1800px (1680 wide). The legacy
+          // step-down handled lengths up to ~80 chars cleanly. FittedText
+          // adds a hard cap at 2 lines — past that the trailing line
+          // ellipses with a real U+2026 rather than spilling into the
+          // chrome below. The tiered base size keeps short headings at
+          // 54px (the design intent) and steps to a more-room font for
+          // long ones, so the auto-shrink doesn't degrade the common case.
           <FittedText
             text={heading}
             maxWidth={1680}
@@ -235,6 +263,7 @@ export const SceneFrame: React.FC<{
         ) : null}
       </div>
 
+      {/* progress */}
       <div style={{position: 'absolute', left: 122, bottom: 66, display: 'flex', gap: 9}}>
         {Array.from({length: sceneCount}).map((_, i) => (
           <div

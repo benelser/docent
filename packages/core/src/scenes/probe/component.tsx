@@ -20,27 +20,36 @@
 // at a time.
 
 import React from 'react';
-import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {Beat, BeatTimelineSlot, SceneRenderProps} from '@docent/kit';
+import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
+import type {Beat, BeatCadence, BeatTimelineSlot, SceneRenderProps} from '@docent/kit';
 
 import {
   ACCENTS,
+  FittedText,
+  Narration,
+  SceneFrame,
   activeBeatIndex,
   cadenceOffset,
   cadenceSpringConfig,
   glow,
+  interFamily,
+  monoFamily,
   numericRevealMap,
   paletteGlowScale,
   paletteSceneHex,
-  spring,
   theme,
-  type Cadence,
-  type RevealBeat,
-} from './_helpers';
-import {interFamily, monoFamily} from './_fonts';
-import {FittedText} from './_fitted-text';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
+} from '../../_shared';
+
+// Local helper type — the projected beat shape `numericRevealMap` reads. Each
+// element carries the beat's scene-relative start frame, its numeric `reveal`
+// (or undefined / a string[] for non-numeric reveal forms — both of which are
+// skipped by the map), and its cadence.
+type Cadence = BeatCadence | undefined;
+type RevealBeat = {
+  from: number;
+  reveal?: number | readonly string[] | undefined;
+  cadence?: Cadence;
+};
 import type {ProbeScene as ProbeSceneSpec} from './validate';
 
 // Read the open-index-signature beat fields the engine's ProbeScene used:

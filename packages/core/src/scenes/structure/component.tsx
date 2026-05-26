@@ -29,23 +29,27 @@ import {Card, type CardState} from './_card';
 import {Connector, type EdgeState} from './_connector';
 import {EmbeddedScene} from './_embedded-scene';
 import {
+  Narration,
+  SceneFrame,
   activeBeatIndex,
   cadenceOffset,
-  hasTransform,
-  morphTimeline,
   paletteAccentKey,
   paletteGlowScale,
   paletteSceneHex,
+} from '../../_shared';
+import type {Beat} from '@docent/kit';
+import {
+  hasTransform,
+  morphTimeline,
   resolveMorph,
-  type Cadence,
 } from './_helpers';
 import {nodeBox, resolveLayout, type Box} from './_layout';
 import {resolveCamera} from './_camera';
-import {Narration} from './_narration';
 import {NodeRepresentation} from './_node-repr';
 import {Pulse} from './_pulse';
-import {SceneFrame} from './_scene-frame';
 import type {StructureNode, StructureScene} from './_types';
+
+type Cadence = Beat['cadence'];
 
 export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>> = ({
   scene,

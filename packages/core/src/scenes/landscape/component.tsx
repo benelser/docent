@@ -44,16 +44,17 @@ import {AbsoluteFill, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {Beat, ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
 import {
+  Narration,
+  SceneFrame,
   activeBeatIndex,
   fitFontSize,
   glow,
+  interFamily,
+  monoFamily,
   paletteGlowScale,
   paletteSceneHex,
   truncateForSlot,
-} from './_helpers';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
-import {interFamily, monoFamily} from './_fonts';
+} from '../../_shared';
 import type {LandscapeScene as LandscapeSceneSpec, LandscapeSubjectSpec} from './validate';
 
 // The plot rectangle inside the 1920×1080 stage. Pulled in from the

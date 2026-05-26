@@ -33,10 +33,7 @@ import {
 } from 'remotion';
 import type {ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
-import {FittedText} from './_fitted-text';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
-import {glow} from './_helpers';
+import {FittedText, Narration, SceneFrame, glow} from '../../_shared';
 import type {DemonstrateScene as DemonstrateSceneSpec} from './validate';
 
 const accentOf = (style: ResolvedStyle, key?: string): string => {

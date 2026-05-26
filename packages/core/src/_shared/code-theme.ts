@@ -1,6 +1,9 @@
-// Prism theme for the structure scene's code-representation nodes
-// (`node.as === 'code'`). Mirrors packages/engine/src/components/code-theme.ts
-// exactly.
+// Prism token-colour map for the scenes that render syntax-highlighted code
+// (diff, closeup, and structure's `code` representation nodes).
+//
+// Mirrors `packages/engine/src/components/code-theme.ts` exactly — tuned to
+// the dark-console palette: muted comments, violet keywords, green strings,
+// amber literals, blue function names, cyan classes, rose attributes.
 
 import type {PrismTheme} from 'prism-react-renderer';
 

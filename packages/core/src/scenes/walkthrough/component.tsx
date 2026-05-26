@@ -29,11 +29,15 @@ import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
-import {activeBeatIndex, glow} from './_helpers';
-import {FittedText} from './_fitted-text';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
-import {interFamily, monoFamily} from './_fonts';
+import {
+  FittedText,
+  Narration,
+  SceneFrame,
+  activeBeatIndex,
+  glow,
+  interFamily,
+  monoFamily,
+} from '../../_shared';
 import type {WalkthroughScene as WalkthroughSceneSpec} from './validate';
 
 // Mirror of packages/engine/src/engine/layout.ts:STAGE — the central

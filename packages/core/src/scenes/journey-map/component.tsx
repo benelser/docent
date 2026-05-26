@@ -34,18 +34,19 @@ import {
 import type {DesignTokens, ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
 import {
+  FittedText,
+  Narration,
+  SceneFrame,
   activeBeatIndex,
   cadenceOffset,
   cadenceSpringConfig,
   glow,
+  interFamily,
+  monoFamily,
   numericRevealMap,
   paletteGlowScale,
   paletteSceneHex,
-} from './_helpers';
-import {FittedText} from './_fitted-text';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
-import {interFamily, monoFamily} from './_fonts';
+} from '../../_shared';
 import type {JourneyEmotion, JourneyMapScene as JourneyMapSceneSpec} from './validate';
 
 // The closed allowlist of journey emotions, paired with a colour and a
@@ -116,8 +117,16 @@ export const JourneyMapSceneComponent: React.FC<
   // `cadence` (a beat knob) shapes how a batch of stages enters; the
   // numeric reveal map gives, per stage index, the revealing beat's frame,
   // cadence, and within-batch order. A knob-free scene is byte-identical
-  // with the pre-cadence behaviour.
-  const reveals = numericRevealMap(ts.beats, stages.length);
+  // with the pre-cadence behaviour. The shared helper reads a flat
+  // `{from, reveal, cadence}` shape; we project the BeatTimelineSlot[]
+  // inline so this scene reads the same `numericRevealMap` every other
+  // list scene does.
+  const revealBeats = ts.beats.map((b) => ({
+    from: b.startFrame,
+    reveal: typeof b.beat.reveal === 'number' ? b.beat.reveal : undefined,
+    cadence: b.beat.cadence,
+  }));
+  const reveals = numericRevealMap(revealBeats, stages.length);
   const revealFrameFor = (i: number): number => reveals[i]?.from ?? 0;
   const stageEnterFor = (i: number): number => {
     const r = reveals[i];

@@ -33,10 +33,10 @@ import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from
 
 import type {Beat, BeatTimelineSlot, SceneRenderProps} from '@docent/kit';
 
-import {FittedText} from './_fitted-text';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
 import {
+  FittedText,
+  Narration,
+  SceneFrame,
   activeBeatIndex,
   cadenceOffset,
   cadenceSpringConfig,
@@ -44,7 +44,7 @@ import {
   numericRevealMap,
   paletteGlowScale,
   paletteSceneHex,
-} from './_helpers';
+} from '../../_shared';
 import type {ProgressionScene as ProgressionSceneSpec, ProgressionStage} from './validate';
 
 // The kit's Beat carries `reveal`, `cadence`, and the per-scene `focus`

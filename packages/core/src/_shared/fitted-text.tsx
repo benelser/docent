@@ -1,10 +1,39 @@
-// Local FittedText — single-line / wrap text fitter, plus the SVG sizing
-// helpers (`fitFontSize`, `truncateForSlot`) used for tick labels and span
-// bar labels inside the timeline's <svg>.
+// FittedText — the canonical "make this text fit its slot" primitive.
 //
-// MIRROR of packages/engine/src/components/FittedText.tsx. At integration,
-// the integrator replaces this file with an import from the shared infra
-// location.
+// Every scene renderer has the same problem: a slot of fixed width (a card,
+// a cell, a label tag) and a string whose length is unknown until render.
+// The naive default is wrong in two opposite directions: a fixed font size
+// either lets long text overflow (uglier than truncation), or pre-emptively
+// shrinks short text down to make the worst case fit (the common case looks
+// timid). The right answer is *bound* the slot and let the helper decide:
+// hold the base size while it fits, step down through tiers as text grows,
+// and if even the floor would overflow, wrap to a bounded line count and
+// (only as the very last fallback) ellipsis with a proper U+2026 character.
+//
+// This is the long-text-strategy chooser: one helper, three modes.
+//
+//   - `mode: 'shrink-single'` (default) — single-line. fontSize steps down
+//     toward `floorPx`; if still too wide, `text-overflow: ellipsis` kicks
+//     in. Suited to known-bounded slots: axis labels, metric values, node
+//     labels, file paths in window chrome.
+//
+//   - `mode: 'shrink-wrap'` — up to `maxLines` (default 2). Each line gets
+//     its share of `maxWidth`; if the *total* text is too long to fit at
+//     base size across that many lines, fontSize steps down toward
+//     `floorPx`; if the floor would still overflow, the trailing line
+//     ellipses via `-webkit-line-clamp`. Suited to prose-shaped slots:
+//     taglines, narration notes, bullet points, ledger sub-lines.
+//
+//   - `mode: 'wrap'` — no shrink, just controlled line wrap. The text uses
+//     `maxLines` of room at the base size, with the trailing-line ellipsis
+//     for any overflow past that. Use when the slot has been sized
+//     generously (a passage panel, a recap point); the eye wants a steady
+//     visual cadence at one fontSize.
+//
+// MIRROR of `packages/engine/src/components/FittedText.tsx`. The two
+// numerical helpers below (`fitFontSize`, `truncateForSlot`) are for SVG
+// `<text>` callers — SVG can't host `-webkit-line-clamp`, so the best
+// strategy there is single-line shrink-or-truncate.
 
 import React from 'react';
 
@@ -24,6 +53,10 @@ export interface FittedTextProps {
   title?: string;
 }
 
+// The font size that fits `text` on `lines` lines inside `maxWidth` at
+// `charAdvance` per character. Steps down geometrically rather than per-tier
+// so the result is smooth across the input length distribution. Floored at
+// `floorPx`.
 const fitFont = (
   text: string,
   basePx: number,

@@ -1,152 +1,22 @@
-// Inlined helpers for the structure scene.
+// Structure scene–local helpers — the morph timeline / morph resolver /
+// transform-detector. The shared chrome (glow, activeBeatIndex, the cadence
+// helpers, the palette resolvers, ACCENTS, SceneFrame, Narration,
+// FittedText, fonts, code-theme) now imports from `@docent/core/_shared`.
 //
-// These mirror the v2.5.x engine's shared utilities (`theme.ts`'s `glow` /
-// `ACCENTS`, `engine/spec.ts`'s `activeBeatIndex` / `morphTimeline` /
-// `resolveMorph` / `hasTransform`, and `engine/knobs.ts`'s cadence /
-// palette helpers) — colocated so the structure plugin builds clean against
-// `@docent/kit` alone, no `@docent/engine` import.
-//
-// At integration, when the shared-infra migration lands, the structure
-// scene will swap these for shared imports and this file goes away. The
-// brief's "inlined helpers" pattern (see the diff scene) is the contract.
+// These three helpers — `morphTimeline`, `resolveMorph`, `hasTransform` —
+// implement cross-beat object identity: a structure node can be re-bound by
+// a later beat's `transform` directive (box → matrix, vector → matrix,
+// equation → equation). The helpers resolve, at a given frame, which
+// definition the node is in and how far it has eased between the
+// bracketing pair. Pure reads over the beat timeline; deterministic,
+// no state. The engine implements the same morph timeline in
+// `packages/engine/src/scenes/StructureScene.tsx`; this is the kit-adapted
+// port (walks `BeatTimelineSlot[]` rather than the legacy `TimedBeat[]`).
 
 import {spring} from 'remotion';
-import type {Beat, BeatTimelineSlot, ResolvedStyle} from '@docent/kit';
+import type {Beat, BeatTimelineSlot} from '@docent/kit';
 
 import type {StructureNode, StructureTransform} from './_types';
-
-// ---------------------------------------------------------------------------
-// Theme — `glow` and the fallback ACCENTS map.
-//
-// Mirrors packages/engine/src/theme.ts exactly. ACCENTS is the byte-identical
-// hardcoded fallback the engine uses when `style.tokens.accent` is absent; in
-// the plugin world `style` is always supplied, but we keep the literal map so
-// `accent('blue')` resolves the same hex with or without a style bundle.
-// ---------------------------------------------------------------------------
-
-export const ACCENTS = {
-  blue: '#5cb6ff',
-  cyan: '#3fe0d0',
-  green: '#5fe8a4',
-  amber: '#ffc24d',
-  rose: '#ff7d97',
-  violet: '#b69cff',
-} as const;
-
-export type AccentKey = keyof typeof ACCENTS;
-
-/** Translucent accent fills, for glows and panel washes. */
-export const glow = (hex: string, alpha: number): string => {
-  const a = Math.round(Math.max(0, Math.min(1, alpha)) * 255)
-    .toString(16)
-    .padStart(2, '0');
-  return `${hex}${a}`;
-};
-
-// ---------------------------------------------------------------------------
-// activeBeatIndex — the kit-shaped variant.
-//
-// The v2.5.x engine's `activeBeatIndex(TimedBeat[], frame)` walked beats
-// whose `from` was the scene-relative start frame. The kit's
-// `BeatTimelineSlot` exposes `startFrame` instead. The behaviour is
-// identical; only the field name changes.
-// ---------------------------------------------------------------------------
-
-export const activeBeatIndex = (
-  beats: ReadonlyArray<{readonly startFrame: number}>,
-  frame: number,
-): number => {
-  for (let i = beats.length - 1; i >= 0; i--) {
-    const b = beats[i];
-    if (b && frame >= b.startFrame) return i;
-  }
-  return 0;
-};
-
-// ---------------------------------------------------------------------------
-// Cadence — the rhythm with which a beat's revealed items enter.
-//
-// Mirrors `packages/engine/src/engine/knobs.ts` exactly. The structure scene
-// reads:
-//   - `cadenceOffset(cadence, order)` — the per-item entrance-frame offset
-//     for cascade (or 0 for together/snap/undefined).
-//   - `cadenceSpringConfig(cadence)` — the spring config a revealed item's
-//     entrance uses (sharper for snap; the default {damping: 200, mass: 0.7}
-//     otherwise).
-// ---------------------------------------------------------------------------
-
-/** frames of stagger between cascaded items. */
-export const CASCADE_STEP = 5;
-
-export type Cadence = 'cascade' | 'together' | 'snap' | undefined;
-
-export const cadenceOffset = (cadence: Cadence, order: number): number =>
-  cadence === 'cascade' ? Math.max(0, order) * CASCADE_STEP : 0;
-
-export const cadenceSpringConfig = (
-  cadence: Cadence,
-): {damping: number; mass: number} =>
-  cadence === 'snap' ? {damping: 200, mass: 0.42} : {damping: 200, mass: 0.7};
-
-// ---------------------------------------------------------------------------
-// Palette — `palette` (a scene knob) was removed in v2.4.0. The helpers
-// survive as the engine's preset-aware accent lookup; their `palette`
-// argument is always called with `undefined` from every renderer (the
-// identity branch).
-//
-// `paletteAccentKey(undefined, undefined, ownAccent, order)` is the identity
-// — `ownAccent ?? 'blue'`. `paletteSceneHex(undefined, undefined, style)`
-// reads the scene accent off the preset's accent table; with no
-// scene-declared accent (every spec post-v2.4.0) that's `style.accent.blue`.
-// `paletteGlowScale(undefined)` is `1`.
-// ---------------------------------------------------------------------------
-
-export type PaletteName = 'cool' | 'warm' | 'signal' | 'mono';
-
-type PaletteFamily = {accents: AccentKey[]; glowScale: number};
-
-const PALETTES: Record<PaletteName, PaletteFamily> = {
-  cool: {accents: ['blue', 'cyan', 'violet'], glowScale: 0.7},
-  warm: {accents: ['amber', 'rose'], glowScale: 1.0},
-  signal: {accents: ['rose', 'amber'], glowScale: 1.35},
-  mono: {accents: ['blue'], glowScale: 0.12},
-};
-
-export const paletteGlowScale = (palette: PaletteName | undefined): number =>
-  palette ? PALETTES[palette].glowScale : 1;
-
-export const paletteAccentKey = (
-  palette: PaletteName | undefined,
-  sceneAccent: string | undefined,
-  ownAccent: string | undefined,
-  index = 0,
-): string => {
-  if (!palette) return ownAccent ?? sceneAccent ?? 'blue';
-  const fam = PALETTES[palette].accents;
-  if (ownAccent && (fam as readonly string[]).includes(ownAccent)) return ownAccent;
-  return fam[((index % fam.length) + fam.length) % fam.length];
-};
-
-export const paletteSceneHex = (
-  palette: PaletteName | undefined,
-  sceneAccent: string | undefined,
-  style?: ResolvedStyle,
-): string => {
-  const key = paletteAccentKey(palette, sceneAccent, sceneAccent, 0);
-  const table = (style?.tokens.accent ?? ACCENTS) as Record<string, string>;
-  return table[key] ?? table.blue ?? ACCENTS.blue;
-};
-
-// ---------------------------------------------------------------------------
-// Morph — cross-beat object identity.
-//
-// A node's definition can be redefined by a later beat's `transform`. These
-// helpers resolve, at a given frame, which definition the node is in and how
-// far it has eased between the bracketing pair. Pure reads over the beat
-// timeline; deterministic, no state. Mirrors the engine's morphTimeline /
-// resolveMorph / hasTransform — adapted to walk the kit's BeatTimelineSlot[]
-// rather than the legacy TimedBeat[].
-// ---------------------------------------------------------------------------
 
 export type MorphState = {fromFrame: number; node: StructureNode};
 

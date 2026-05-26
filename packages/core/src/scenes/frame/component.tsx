@@ -26,8 +26,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {Beat, BeatTimelineSlot, ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
+import {Narration, SceneFrame} from '../../_shared';
 import type {FrameScene as FrameSceneSpec} from './validate';
 
 // Style-driven accent resolution — reads the closed accent palette off the
