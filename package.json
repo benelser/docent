@@ -9,6 +9,9 @@
     "packages/agent",
     "packages/core",
     "packages/cli",
+    "packages/tts-openai",
+    "packages/tts-elevenlabs",
+    "packages/tts-compatible",
     "tests/example-docent-scifi"
   ],
   "scripts": {

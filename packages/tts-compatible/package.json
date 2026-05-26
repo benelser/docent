@@ -1,0 +1,25 @@
+{
+  "name": "@docent/tts-compatible",
+  "version": "3.0.0-pre.0",
+  "description": "The OpenAI-compatible TTS provider plugin for docent. A generic adapter for any endpoint that speaks the OpenAI `/v1/audio/speech` wire shape — LiteLLM proxies, self-hosted Kokoro-FastAPI, vLLM TTS servers, alternative providers. Uses `fetch`; no SDK peerDependency.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/benelser/docent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benelser/docent.git",
+    "directory": "packages/tts-compatible"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": ["src", "README.md"],
+  "dependencies": {
+    "@docent/kit": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "typescript": "^6.0.3"
+  }
+}
