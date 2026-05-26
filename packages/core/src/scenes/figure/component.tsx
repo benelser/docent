@@ -34,10 +34,7 @@ import {
 } from 'remotion';
 import type {Beat, ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
-import {activeBeatIndex, glow} from './_helpers';
-import {FittedText} from './_fitted-text';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
+import {FittedText, Narration, SceneFrame, activeBeatIndex, glow} from '../../_shared';
 import type {FigureCallout, FigureScene as FigureSceneSpec} from './validate';
 
 const accentOf = (style: ResolvedStyle, key?: string): string => {

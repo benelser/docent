@@ -22,7 +22,7 @@
 import React from 'react';
 import type {ResolvedStyle} from '@docent/kit';
 
-import {glow} from './_helpers';
+import {glow} from '../../_shared';
 import type {EmbeddedSceneSpec} from './validate';
 
 export type EmbedBounds = {cx: number; cy: number; w: number; h: number};

@@ -27,16 +27,16 @@ import {evolvePath} from '@remotion/paths';
 import type {ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
 import {
-  STAGE,
+  Narration,
+  SceneFrame,
   activeBeatIndex,
   fitFontSize,
   glow,
+  interFamily,
+  monoFamily,
   truncateForSlot,
-  tweenValue,
-} from './_helpers';
-import {interFamily, monoFamily} from './_fonts';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
+} from '../../_shared';
+import {STAGE, tweenValue} from './_helpers';
 import type {
   ChartAxis as Axis,
   ChartScene as ChartSceneSpec,

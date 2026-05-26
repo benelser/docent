@@ -9,12 +9,12 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {evolvePath} from '@remotion/paths';
-import type {ResolvedStyle} from '@docent/kit';
+import type {Beat, ResolvedStyle} from '@docent/kit';
 
-import {glow, type Cadence} from './_helpers';
-import {monoFamily} from './_fonts';
+import {fitFontSize, glow, monoFamily, truncateForSlot} from '../../_shared';
 import {connectorPath, curvedPath, type Box} from './_layout';
-import {fitFontSize, truncateForSlot} from './_fitted-text';
+
+type Cadence = Beat['cadence'];
 
 export type EdgeState = 'hidden' | 'normal' | 'dim' | 'focus';
 

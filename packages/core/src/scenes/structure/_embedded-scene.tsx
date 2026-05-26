@@ -14,8 +14,7 @@
 import React from 'react';
 import type {ResolvedStyle} from '@docent/kit';
 
-import {fitFontSize, truncateForSlot} from './_fitted-text';
-import {glow, paletteSceneHex} from './_helpers';
+import {fitFontSize, glow, paletteSceneHex, truncateForSlot} from '../../_shared';
 
 export type EmbedBounds = {cx: number; cy: number; w: number; h: number};
 

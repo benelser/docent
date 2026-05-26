@@ -48,10 +48,15 @@ import {
 
 import type {DesignTokens, ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
-import {activeBeatIndex, glow, resolveLayout, STAGE, type Node} from './_helpers';
-import {interFamily, monoFamily} from './_fonts';
-import {FittedText} from './_fitted-text';
-import {Narration} from './_narration';
+import {
+  FittedText,
+  Narration,
+  activeBeatIndex,
+  glow,
+  interFamily,
+  monoFamily,
+} from '../../_shared';
+import {resolveLayout, STAGE, type Node} from './_helpers';
 import type {TensionScene as TensionSceneSpec} from './validate';
 
 // ----- register palette -----------------------------------------------------

@@ -32,19 +32,20 @@ import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from
 import type {ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
 import {EmbeddedScene} from './_embedded-scene';
-import {FittedText} from './_fitted-text';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
-import {interFamily, monoFamily} from './_fonts';
 import {
+  FittedText,
+  Narration,
+  SceneFrame,
   activeBeatIndex,
   cadenceOffset,
   cadenceSpringConfig,
   glow,
+  interFamily,
+  monoFamily,
   numericRevealMap,
   paletteGlowScale,
   paletteSceneHex,
-} from './_helpers';
+} from '../../_shared';
 import type {CompareScene as CompareSceneSpec} from './validate';
 
 export const CompareSceneComponent: React.FC<SceneRenderProps<CompareSceneSpec>> = ({

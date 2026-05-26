@@ -10,11 +10,12 @@
 
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {ResolvedStyle} from '@docent/kit';
+import type {Beat, ResolvedStyle} from '@docent/kit';
 
-import {cadenceSpringConfig, glow, type Cadence} from './_helpers';
-import {interFamily, monoFamily} from './_fonts';
+import {cadenceSpringConfig, glow, interFamily, monoFamily} from '../../_shared';
 import type {Box} from './_layout';
+
+type Cadence = Beat['cadence'];
 
 export type CardState = 'hidden' | 'normal' | 'focus' | 'dim';
 export type CardWeight = 'hero' | 'primary' | 'normal' | 'recede';

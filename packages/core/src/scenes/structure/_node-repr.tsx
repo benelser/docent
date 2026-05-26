@@ -10,9 +10,7 @@ import React from 'react';
 import {Highlight} from 'prism-react-renderer';
 import type {ResolvedStyle} from '@docent/kit';
 
-import {glow} from './_helpers';
-import {monoFamily} from './_fonts';
-import {codeTheme} from './_code-theme';
+import {codeTheme, glow, monoFamily} from '../../_shared';
 import type {Box} from './_layout';
 import type {NodeRepr as Repr, StructureNode} from './_types';
 

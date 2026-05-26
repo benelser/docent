@@ -44,18 +44,19 @@ import type {Beat, SceneRenderProps} from '@docent/kit';
 
 import {EmbeddedScene} from './_embedded-scene';
 import type {EmbeddedSceneSpec} from './_embedded-scene';
-import {interFamily, monoFamily} from './_fonts';
 import {
-  STAGE,
+  Narration,
+  SceneFrame,
   activeBeatIndex,
   cadenceOffset,
   glow,
+  interFamily,
+  monoFamily,
   paletteAccentKey,
   paletteGlowScale,
   paletteSceneHex,
-} from './_helpers';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
+} from '../../_shared';
+import {STAGE} from './_helpers';
 import type {TreeNodeSpec, TreeScene as TreeSceneSpec} from './validate';
 
 // ----- layout: a depth-2 walk of the tree ----------------------------------

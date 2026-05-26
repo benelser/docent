@@ -40,11 +40,18 @@ import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {Beat, ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
-import {FittedText, fitFontSize, truncateForSlot} from './_fitted-text';
-import {interFamily, monoFamily} from './_fonts';
-import {STAGE, activeBeatIndex, glow} from './_helpers';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
+import {
+  FittedText,
+  Narration,
+  SceneFrame,
+  activeBeatIndex,
+  fitFontSize,
+  glow,
+  interFamily,
+  monoFamily,
+  truncateForSlot,
+} from '../../_shared';
+import {STAGE} from './_helpers';
 import type {
   MapConnection,
   MapMarker,

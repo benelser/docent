@@ -1,33 +1,29 @@
-// Inlined helpers for the tension scene.
+// Tension scene–local helpers — only the bits not consolidated into
+// `../../_shared`. The shared chrome (glow, activeBeatIndex, FittedText,
+// Narration, fonts) is now imported from `@docent/core/_shared`. Tension
+// does NOT use SceneFrame — its whiteboard / sketch registers paint their
+// own chrome and starfield (see component.tsx).
 //
-// These mirror the v2.5.x engine's `glow` utility, the `STAGE` rectangle, the
-// `resolveLayout` grid resolver, the `Node` shape, and the `activeBeatIndex`
-// reader exactly. The v3.0 fan-out moves each scene into its own directory in
-// @docent/core; the shared component infrastructure (SceneFrame, Narration,
-// FittedText, glow, layout helpers, fonts) will be migrated by separate
-// agents and reconciled by the integrator at merge time. For now we colocate
-// the minimum the tension scene needs so the per-scene worktree builds clean
-// without a dependency on `@docent/engine`.
-//
-// When the shared-infra migration lands, the tension scene will import these
-// from @docent/core/_shared (or equivalent) and this file goes away.
-
-/**
- * Translucent accent fills, for glows and panel washes. Mirrors
- * packages/engine/src/theme.ts:glow exactly.
- */
-export const glow = (hex: string, alpha: number): string => {
-  const a = Math.round(Math.max(0, Math.min(1, alpha)) * 255)
-    .toString(16)
-    .padStart(2, '0');
-  return `${hex}${a}`;
-};
+// `STAGE` (the diagram rectangle), `Node` (the v2.5 engine grid-node shape
+// the tension scene reads), `NodeRepr` (the closed list of node
+// representations), and `resolveLayout` (the grid resolver) stay scoped to
+// tension — they describe the engine's grid-layout contract this scene
+// honours; other scenes use the same STAGE constant but the rest of the
+// surface is tension-only.
 
 /**
  * The stage: the rectangle within the 1920x1080 frame where diagrams live.
- * Mirrors packages/engine/src/engine/layout.ts:STAGE exactly.
+ * Mirrors `packages/engine/src/engine/layout.ts:STAGE` exactly.
  */
 export const STAGE = {x: 235, y: 338, w: 1450, h: 560};
+
+/**
+ * Node representation enum — the closed list of visual primitives a
+ * structure node renders as. Tension reads this for parity at the engine
+ * spec boundary (a tension spec carrying a `structure`-style payload should
+ * not trip type errors).
+ */
+export type NodeRepr = 'box' | 'matrix' | 'vector' | 'grid' | 'code' | 'equation';
 
 /**
  * A grid node, in the v2.5.x engine spec shape. The tension scene reads
@@ -38,8 +34,6 @@ export const STAGE = {x: 235, y: 338, w: 1450, h: 560};
  * spec that *also* carries a structure/compare-style payload doesn't trip
  * type errors at the boundary.
  */
-export type NodeRepr = 'box' | 'matrix' | 'vector' | 'grid' | 'code' | 'equation';
-
 export interface Node {
   id: string;
   label: string;
@@ -60,7 +54,7 @@ export interface Node {
 
 /**
  * Resolve a node grid against a hard overlap guarantee. Mirrors
- * packages/engine/src/engine/layout.ts:resolveLayout exactly.
+ * `packages/engine/src/engine/layout.ts:resolveLayout` exactly.
  *
  * Each node claims its primary cell (col, row); a wide one *requests* the
  * next cell over, but yields its `wide` flag if the request collides or
@@ -84,21 +78,4 @@ export const resolveLayout = (nodes: Node[], cols: number): Node[] => {
     }
     return n;
   });
-};
-
-/**
- * Which beat is on screen at a given (scene-relative) frame. Mirrors the
- * v2.5.x engine's `activeBeatIndex`, adapted to walk the kit's
- * BeatTimelineSlot[] (which exposes `startFrame` rather than the legacy
- * `from`).
- */
-export const activeBeatIndex = (
-  beats: ReadonlyArray<{readonly startFrame: number}>,
-  frame: number,
-): number => {
-  for (let i = beats.length - 1; i >= 0; i--) {
-    const b = beats[i];
-    if (b && frame >= b.startFrame) return i;
-  }
-  return 0;
 };

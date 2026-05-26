@@ -32,11 +32,15 @@ import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
-import {activeBeatIndex, glow} from './_helpers';
-import {FittedText} from './_fitted-text';
-import {Narration} from './_narration';
-import {SceneFrame} from './_scene-frame';
-import {interFamily, monoFamily} from './_fonts';
+import {
+  FittedText,
+  Narration,
+  SceneFrame,
+  activeBeatIndex,
+  glow,
+  interFamily,
+  monoFamily,
+} from '../../_shared';
 import type {VennNovelty, VennRegion, VennScene as VennSceneSpec} from './validate';
 
 // Circle geometry — STAGE coordinates (1920×1080). Diagrams sit in the

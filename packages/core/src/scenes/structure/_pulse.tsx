@@ -6,7 +6,7 @@
 import React from 'react';
 import type {ResolvedStyle} from '@docent/kit';
 
-import {glow} from './_helpers';
+import {glow} from '../../_shared';
 import {edgePoint, type Box} from './_layout';
 
 export const Pulse: React.FC<{
