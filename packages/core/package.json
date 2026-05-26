@@ -19,6 +19,10 @@
     "./tts/*": "./src/tts/*/index.ts"
   },
   "files": ["src", "README.md"],
+  "scripts": {
+    "gen:manifest": "bun scripts/gen-manifest.ts",
+    "gen:manifest:check": "bun scripts/gen-manifest.ts && git diff --exit-code -- src/index.generated.ts"
+  },
   "dependencies": {
     "@docent/kit": "workspace:*",
     "kokoro-js": "^1.2.1",
