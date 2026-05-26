@@ -6,11 +6,35 @@
 // lands under <cwd>/out/<id>.mp4.
 
 import {existsSync, readFileSync} from 'node:fs';
-import {join, resolve} from 'node:path';
+import {dirname, join, resolve} from 'node:path';
 
 import {createEngine} from '../engine-factory';
 import {generateRenderEntry} from '../render-entry';
 import type {FilmSpec} from '@docent/kit';
+
+/**
+ * Walk up from `start` to find the dir containing a `remotion.config.{ts,js,mjs}`.
+ * Remotion's CLI uses cwd to locate this file; we run the render subprocess
+ * with cwd set to wherever the config lives so the webpack overrides
+ * (.js → .tsx alias, node externals) apply uniformly across packages.
+ */
+const findRemotionRoot = (start: string): string | null => {
+  let dir = resolve(start);
+  for (let i = 0; i < 12; i++) {
+    for (const name of [
+      'remotion.config.ts',
+      'remotion.config.tsx',
+      'remotion.config.js',
+      'remotion.config.mjs',
+    ]) {
+      if (existsSync(join(dir, name))) return dir;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+  return null;
+};
 
 export interface BuildArgs {
   /** Film id (the basename of films/<id>.json). */
@@ -79,10 +103,20 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
 
   log(`  entry: ${entryPath}`);
 
+  // The remotion render subprocess needs cwd set to the dir owning
+  // remotion.config.ts. Walk up from the project root looking for one;
+  // fall back to projectRoot if we can't find it (the user can still drop
+  // a config at projectRoot).
+  const remotionRoot = findRemotionRoot(projectRoot) ?? projectRoot;
+  if (remotionRoot !== projectRoot) {
+    log(`  remotion-config: ${join(remotionRoot, 'remotion.config.*')}`);
+  }
+
   try {
     const result = await engine.render(spec, {
       entryPath,
       outputDir: args.outputDir ?? join(projectRoot, 'out'),
+      renderCwd: remotionRoot,
       ...(args.scale !== undefined ? {scale: args.scale} : {}),
       ...(args.concurrency !== undefined ? {concurrency: args.concurrency} : {}),
       ...(args.still !== undefined ? {still: args.still} : {}),

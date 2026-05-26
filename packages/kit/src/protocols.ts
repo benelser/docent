@@ -602,6 +602,14 @@ export interface RenderOptions {
    * engine cascade. Useful for fast iteration on visuals.
    */
   skipTts?: boolean;
+  /**
+   * Working directory passed to the `remotion render` subprocess. Remotion
+   * finds `remotion.config.ts` by walking up from cwd to the closest
+   * `package.json`. If your project's remotion.config.ts lives at the repo
+   * root but you're invoking from a subpackage (e.g. an acceptance-test
+   * dir), set this to the repo root so the config is picked up.
+   */
+  renderCwd?: string;
 }
 
 export interface RenderResult {

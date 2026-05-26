@@ -117,6 +117,18 @@ export const runRenderStage = async (
   const remotionBin = opts.remotionBin ?? defaultRemotionBin(cwd);
   const entryPath = resolve(opts.entryPath);
 
+  // Where Remotion looks for `remotion.config.ts`: it walks up from cwd
+  // looking for the closest package.json (its "remotion root"). If we let
+  // it run from a subdir like `tests/example-docent-scifi/`, it finds that
+  // package.json and never sees the root `remotion.config.ts` where the
+  // webpack overrides (.js → .tsx, node externals, etc.) live.
+  //
+  // The invoker (CLI) passes `renderCwd` pointing to the dir that owns
+  // remotion.config.ts (typically the repo root). Defaults to the current
+  // process cwd.
+  const renderCwd =
+    (opts as RenderOptions & {renderCwd?: string}).renderCwd ?? cwd;
+
   const env: Record<string, string | undefined> = {...process.env};
 
   const args: string[] = [];
@@ -139,7 +151,7 @@ export const runRenderStage = async (
   }
 
   const t0 = performance.now();
-  await runChild(remotionBin, args, env, cwd);
+  await runChild(remotionBin, args, env, renderCwd);
   const durationMs = performance.now() - t0;
 
   return {
