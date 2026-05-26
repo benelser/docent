@@ -121,7 +121,17 @@ The cross-bind exists in the protocol; no plugin actually declares `requiresTtsC
 Per strategic plan §3, the agent package was supposed to be normalized to the `@docent/` scope. Resolved in Wave C3: `packages/agent/package.json` `name` is `@docent/agent` and `version` is `3.0.0-pre.0`, aligning with the other v3 packages. The directory stays at `packages/agent/` so skill-cascade discovery continues to work; only the npm-package identity changed.
 
 #### D14. Kokoro byte-equivalence
-`kokoro-js` (ONNX) and Python Kokoro (PyTorch) produce ~10% audio size delta, sample correlation 0.09. We accepted this as "duration + format checks pass." If anyone cares about byte parity (a corner case), this is a known divergence.
+`kokoro-js` (ONNX) and Python Kokoro (PyTorch) produce ~10% audio size delta, sample correlation 0.09.
+
+**Decision (2026-05-26):** ✅ accepted as a known divergence. The hermetic
+harness verifies *behavior* — duration within tolerance, format (WAV /
+PCM16 / 24kHz / mono), and that audio actually plays. Byte parity is the
+wrong bar for a cross-runtime port: ONNX and PyTorch use different
+floating-point kernels, so identical sample-level output across runtimes
+isn't a realistic invariant. If a downstream consumer ever needs literal
+PyTorch-output parity, they can plug in `@docent/tts-compatible` against a
+Python Kokoro endpoint; for the in-process Node default, we standardize
+on `kokoro-js` and the divergence stays here on record.
 
 ### 🟦 DEVELOPER EXPERIENCE — what we owe external builders
 
@@ -238,7 +248,7 @@ When every checkbox below is ✅, this file gets the rename
 - [x] D11 — zod version pinned to 4.3.6 (`f8dd4f9`)
 - [ ] D12 — `requiresTtsCapabilities` declared on at least passage
 - [x] D13 — packages/agent normalized to @docent/agent (C3)
-- [ ] D14 — Kokoro byte-equivalence (decision: accept or fix)
+- [x] D14 — Kokoro byte-equivalence (decision: ✅ accept; behavior parity, not byte parity)
 - [x] D15 — README plugin-authoring guide (E1)
 - [x] D16 — Example packs beyond scifi (E2 → `6390517`: finance + brand + captions)
 - [x] D17 — Public type JSDoc (E3)
