@@ -29,6 +29,14 @@ import {audioRhythmFeature} from './features/audio-rhythm';
 // @docent/tts-* packages in a later release)
 import {kokoroTtsPlugin} from './tts/kokoro';
 
+// Scenes (6 of 29 so far — migrations land additively as agents return)
+import diffPlugin from './scenes/diff';
+import {epigraphPlugin} from './scenes/epigraph';
+import {mechanismPlugin} from './scenes/mechanism';
+import {objectionPlugin} from './scenes/objection';
+import {priorArtPlugin} from './scenes/prior-art';
+import {quantitiesPlugin} from './scenes/quantities';
+
 // Re-exports for callers that want named imports.
 export {
   neutralPreset, engineeringPreset, editorialPreset,
@@ -58,6 +66,13 @@ export const corePlugins: readonly Plugin[] = [
   audioRhythmFeature,
   // TTS (1)
   kokoroTtsPlugin,
+  // Scenes (6 of 29)
+  diffPlugin,
+  epigraphPlugin,
+  mechanismPlugin,
+  objectionPlugin,
+  priorArtPlugin,
+  quantitiesPlugin,
 ];
 
 export default corePlugins;
