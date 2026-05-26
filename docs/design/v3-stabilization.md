@@ -118,7 +118,7 @@ Remotion logs warning every render: installed 4.4.3, expected 4.3.6. Non-blockin
 The cross-bind exists in the protocol; no plugin actually declares `requiresTtsCapabilities`. Karaoke-style passage scenes would legitimately need `nativeAlignment: 'word'`. **Not blocking** but worth filling in for at least `passage` so the cross-bind is exercised end-to-end.
 
 #### D13. packages/agent/ not normalized to @docent/agent
-Per strategic plan §3, the agent package was supposed to be normalized to the `@docent/` scope. It's still `packages/agent/`. Skill cascades work; namespace is inconsistent.
+Per strategic plan §3, the agent package was supposed to be normalized to the `@docent/` scope. Resolved in Wave C3: `packages/agent/package.json` `name` is `@docent/agent` and `version` is `3.0.0-pre.0`, aligning with the other v3 packages. The directory stays at `packages/agent/` so skill-cascade discovery continues to work; only the npm-package identity changed.
 
 #### D14. Kokoro byte-equivalence
 `kokoro-js` (ONNX) and Python Kokoro (PyTorch) produce ~10% audio size delta, sample correlation 0.09. We accepted this as "duration + format checks pass." If anyone cares about byte parity (a corner case), this is a known divergence.
@@ -237,7 +237,7 @@ When every checkbox below is ✅, this file gets the rename
 - [ ] D10 — public/audio/manifest.json stub removed (follows D6)
 - [ ] D11 — zod version pinned
 - [ ] D12 — `requiresTtsCapabilities` declared on at least passage
-- [ ] D13 — packages/agent normalized to @docent/agent
+- [x] D13 — packages/agent normalized to @docent/agent
 - [ ] D14 — Kokoro byte-equivalence (decision: accept or fix)
 - [ ] D15 — README plugin-authoring guide
 - [ ] D16 — Example packs beyond scifi
