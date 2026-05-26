@@ -1,34 +1,55 @@
 // @docent/core — the default implementation of @docent/kit.
 //
-// This file is assembled at integration time. Each plugin (scene, preset,
-// feature, TTS) lives in its own subdirectory and is migrated independently
-// during the Phase B fan-out. The integrator (main session) re-exports each
-// plugin from here once it lands.
+// Plugin manifest. Each plugin lives in its own subdirectory and is
+// migrated independently during the Phase B fan-out. The integrator
+// re-exports each plugin from here as it lands.
 //
-// The pattern:
+// Loading:
 //
-//   import {framePlugin} from './scenes/frame';
-//   import {neutralPreset} from './presets/neutral';
-//   import {narrationFeature} from './features/narration';
-//   import {kokoroTtsPlugin} from './tts/kokoro';
-//
-//   export const corePlugins = [
-//     framePlugin, /* ... */,
-//     neutralPreset, /* ... */,
-//     narrationFeature, /* ... */,
-//     kokoroTtsPlugin,
-//   ];
-//
-//   export default corePlugins;
-//
-// Per the strategic plan, this manifest is the SINGLE merge-conflict-prone
-// point of the fan-out — kept manual on purpose so the integrator owns it.
+//   import {Engine} from '@docent/kit';
+//   import {corePlugins} from '@docent/core';
+//   const engine = new Engine().use(corePlugins);
 
 import type {Plugin} from '@docent/kit';
 
-// Phase B agents register their plugins below as they complete. The
-// integrator merges each branch one at a time, adding to this array.
+// Presets (6)
+import {neutralPreset} from './presets/neutral';
+import {engineeringPreset} from './presets/engineering';
+import {editorialPreset} from './presets/editorial';
+import {paperPreset} from './presets/paper';
+import {analyticalPreset} from './presets/analytical';
+import {executivePreset} from './presets/executive';
 
-export const corePlugins: Plugin[] = [];
+// Features (2)
+import {narrationFeature} from './features/narration';
+import {audioRhythmFeature} from './features/audio-rhythm';
+
+// Re-exports for callers that want named imports.
+export {
+  neutralPreset, engineeringPreset, editorialPreset,
+  paperPreset, analyticalPreset, executivePreset,
+};
+export {narrationFeature, audioRhythmFeature};
+
+/**
+ * The set of plugins shipped with `@docent/core` — the opinionated default
+ * implementation. Loading order is irrelevant; the engine's `use()` sniffs
+ * plugin.kind and dispatches to the right registry.
+ *
+ * This manifest grows additively as Phase B agents return. Wave 1 + Wave 2
+ * are in flight; entries land here when their worktrees merge.
+ */
+export const corePlugins: readonly Plugin[] = [
+  // Presets (6)
+  neutralPreset,
+  engineeringPreset,
+  editorialPreset,
+  paperPreset,
+  analyticalPreset,
+  executivePreset,
+  // Features (2)
+  narrationFeature,
+  audioRhythmFeature,
+];
 
 export default corePlugins;
