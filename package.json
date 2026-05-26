@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.0.0",
   "description": "Turn a codebase or a pull request into a narrated, animated explainer.",
-  "workspaces": ["packages/engine", "packages/agent"],
+  "workspaces": ["packages/kit", "packages/engine", "packages/agent"],
   "scripts": {
     "docent": "bun packages/engine/cli/docent.ts"
   },
