@@ -535,37 +535,54 @@ const CHECKS: Check[] = [
   }),
   {
     id: 'pyenv',
-    label: 'Python env (Kokoro)',
+    label: 'Python env (Kokoro, deprecated fallback)',
     stage: 'tts',
-    required: true,
+    // Default TTS now runs through kokoro-js (TS-native). The Python sidecar
+    // is no longer required — kept as an optional fallback for users on the
+    // legacy path and for the manim/clips pipeline.
+    required: false,
     install: installUvSync,
     run: async () => {
-      // `uv sync` materialises .venv AND fetches kokoro + torch. The model
-      // weights are checked by the next step (kokoro-weights).
       return existsSync(join(REPO_ROOT, '.venv'))
         ? {status: 'ok', detail: '.venv present'}
-        : {status: 'fail', detail: '.venv missing', remediation: 'run: uv sync'};
+        : {status: 'warn', detail: '.venv missing — optional (clips pipeline needs it)', remediation: 'run: uv sync (only if you use manim inserts)'};
     },
   },
   {
     id: 'kokoro-weights',
-    label: 'Kokoro voice weights',
+    label: 'Kokoro voice weights (deprecated Python path)',
     stage: 'tts',
-    required: true,
+    // Default TTS now downloads ONNX weights via @huggingface/transformers on
+    // first kokoro-js use; the Python-side Kokoro cache is no longer required.
+    required: false,
     install: installKokoroWeights,
     run: async () => {
-      // Without warm weights the *first* film renders fine, but its first
-      // beat blocks on a ~300 MB download. Surfacing this as a required
-      // check makes the cost visible up-front instead of on the user's
-      // critical path.
       return existsSync(KOKORO_CACHE)
-        ? {status: 'ok', detail: 'hexgrad/Kokoro-82M cached'}
+        ? {status: 'ok', detail: 'hexgrad/Kokoro-82M cached (legacy Python path)'}
         : {
-            status: 'fail',
-            detail: 'voice weights not yet downloaded',
+            status: 'warn',
+            detail: 'legacy Python weights not cached — default TTS uses kokoro-js (ONNX) instead',
             remediation:
-              'run: uv run python -c "from kokoro import KPipeline; KPipeline(lang_code=\'a\')"',
+              'no action needed — the kokoro-js path downloads weights via @huggingface/transformers on first synth',
           };
+    },
+  },
+  {
+    id: 'kokoro-js',
+    label: 'kokoro-js (default TTS provider)',
+    stage: 'tts',
+    required: true,
+    run: async () => {
+      try {
+        await import('kokoro-js');
+        return {status: 'ok', detail: 'kokoro-js npm package present'};
+      } catch (e) {
+        return {
+          status: 'fail',
+          detail: 'kokoro-js not installed',
+          remediation: 'run: bun add kokoro-js',
+        };
+      }
     },
   },
   // ---- clips (optional) ----

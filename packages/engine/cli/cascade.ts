@@ -7,8 +7,10 @@ import {existsSync, mkdirSync} from 'node:fs';
 import {join} from 'node:path';
 import {ENGINE_ROOT, REPO_ROOT, paths} from './paths';
 import {validateSpec} from './validate';
+import {validateTts} from './validate-tts';
 import {runDepthCheck, depthSummary} from './depthcheck';
 import {resolveStyle, StyleValidationError} from '../src/style';
+import {runTtsStage} from './tts-stage';
 
 const cascadeEnv = {...process.env, DOCENT_ROOT: REPO_ROOT};
 
@@ -121,8 +123,29 @@ export const runCascade = async (opts: CascadeOpts): Promise<CascadeResult> => {
   const stages: {name: string; seconds: number}[] = [];
 
   if (!opts.skipTts) {
-    const {seconds} = await step('narration · Kokoro TTS', async () => {
-      await $`uv run python ${paths.ttsScript} --film ${film}`.cwd(REPO_ROOT).env(cascadeEnv);
+    // TTS validation — registry-aware. Hard-fail on unknown provider /
+    // unknown voice; warn (or hard-fail in strict mode) on capability
+    // mismatches. The structural validation above caught shape problems on
+    // meta.tts; this catches "the provider id you named doesn't exist".
+    const ttsValid = await validateTts(spec);
+    if (ttsValid.issues.length > 0) {
+      throw new Error(
+        `spec films/${film}.json fails the TTS contract:\n` +
+          ttsValid.issues.map((i) => `  ✗ ${i.path || '(root)'}: ${i.message}`).join('\n'),
+      );
+    }
+    if (ttsValid.warnings.length > 0) {
+      process.stderr.write(
+        `\x1b[33m⚠ ${ttsValid.warnings.length} TTS capability warning(s):\x1b[0m\n` +
+          ttsValid.warnings
+            .map((w) => `  \x1b[33m⚠\x1b[0m ${w.path || '(root)'}: ${w.message}`)
+            .join('\n') +
+          '\n',
+      );
+    }
+    const label = `narration · ${ttsValid.providerId} TTS`;
+    const {seconds} = await step(label, async () => {
+      await runTtsStage({film});
     });
     stages.push({name: 'tts', seconds});
   }

@@ -420,6 +420,28 @@ export const validateSpec = (spec: unknown): ValidationIssue[] => {
         issues.push({path: `meta.${k}`, message: removalMessage(`meta.${k}`)});
       }
     }
+    // meta.tts — schema-driven shape check. The deep validation (provider id
+    // is registered, voice belongs to the provider) runs in `validateTts`
+    // below, called from the cascade where the registry is in scope.
+    if (s.meta.tts !== undefined) {
+      const t = s.meta.tts;
+      if (!t || typeof t !== 'object' || Array.isArray(t)) {
+        issues.push({path: 'meta.tts', message: 'tts must be an object'});
+      } else {
+        for (const k of ['provider', 'model', 'voice']) {
+          if (t[k] !== undefined && (typeof t[k] !== 'string' || !t[k].trim())) {
+            issues.push({path: `meta.tts.${k}`, message: 'must be a non-empty string when present'});
+          }
+        }
+        if (t.strict !== undefined && typeof t.strict !== 'boolean') {
+          issues.push({path: 'meta.tts.strict', message: 'strict must be a boolean when present'});
+        }
+        if (t.providerOptions !== undefined &&
+            (typeof t.providerOptions !== 'object' || t.providerOptions === null || Array.isArray(t.providerOptions))) {
+          issues.push({path: 'meta.tts.providerOptions', message: 'providerOptions must be an object when present'});
+        }
+      }
+    }
   }
 
   // scenes
