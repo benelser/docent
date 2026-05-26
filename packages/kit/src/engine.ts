@@ -40,6 +40,8 @@ import {ModifierRegistryImpl} from './registries/modifier';
 import {PresetRegistryImpl} from './registries/preset';
 import {SceneRegistryImpl} from './registries/scene';
 import {TtsRegistryImpl} from './registries/tts';
+import {validateSpec} from './frameworks/validate';
+import {computeSchema} from './schema/from-registry';
 import {
   assertPluginBase,
   assertScenePluginShape,
@@ -147,36 +149,34 @@ export class Engine {
   /**
    * Compute the union film schema from the registered scenes.
    *
-   * **Phase A.8 fills this in.** The shape is: a `oneOf` discriminated
-   * union over `scene.type` literals, each branch the registered plugin's
-   * schema. Top-level `meta`, optional `style`, optional `tts` come from
-   * `@docent/kit`'s own meta schema (which Phase A.8 also defines).
+   * The shape is: a `oneOf` discriminated union over `scene.type` literals,
+   * each branch the registered plugin's schema. Top-level `meta`, optional
+   * `style`, optional `tts` come from `@docent/kit`'s own meta schema.
    *
-   * Throws `not implemented` in this build.
+   * Implementation delegates to `computeSchema(this)` in
+   * `./schema/from-registry.ts`. Pure: depends only on the active scene
+   * registry, safe to call from anywhere after `use()`.
    */
   schema(): JSONSchema7 {
-    throw new Error(
-      '[@docent/kit] Engine.schema() — not implemented (phase A.8). ' +
-        'This will compute the union schema from the registered scenes.',
-    );
+    return computeSchema(this);
   }
 
   /**
    * Validate a candidate film spec against the active engine.
    *
-   * **Phase A.4 fills this in.** The flow:
-   *   1. Run every `FeaturePlugin.preprocessSpec` (R6 hook) over the spec.
-   *   2. Validate against `this.schema()` (AJV).
-   *   3. For each scene, call the registered ScenePlugin's `validate` hook.
-   *   4. Aggregate issues; return.
+   * Delegates to `validateSpec(spec, this)` in `./frameworks/validate.ts`.
+   * Flow:
+   *   1. Film-level structural checks (meta/scenes shape).
+   *   2. For each scene: confirm `type` is a registered `sceneType`.
+   *   3. For each scene whose plugin declares `validate?`, run it and
+   *      aggregate its per-scene `SceneIssue[]` into the flat `Issue[]`.
    *
-   * Throws `not implemented` in this build.
+   * AJV schema-validation (against `this.schema()`) and FeaturePlugin
+   * `preprocessSpec` (R6) are deferred to the cascade orchestrator (Phase
+   * A.7) which composes them around this pure structural validator.
    */
-  validate(_spec: unknown): Issue[] {
-    throw new Error(
-      '[@docent/kit] Engine.validate() — not implemented (phase A.4). ' +
-        'This will validate the spec against the computed schema + per-plugin validators.',
-    );
+  validate(spec: unknown): Issue[] {
+    return validateSpec(spec, this);
   }
 
   /**
