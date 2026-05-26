@@ -1,14 +1,36 @@
 # docent
 
-> **Point it at anything. Get back a narrated, animated film that argues for what it explains.**
+> **A visualization rendering engine for explanation itself.**
 >
-> Codebases. Pull requests. Essays. Wiki articles. PDFs. arXiv papers. Any
-> subject. Five minutes. A real film, not a tour.
+> A closed grammar of cognitive moves — `frame`, `structure`, `tension`,
+> `quantities`, `recap` — rendered by a deterministic Remotion pipeline.
+> You author a JSON film spec. The engine renders an HD MP4 that *argues*
+> for what it explains.
+>
+> **v3.0 is the framework/implementation split.** `@docent/kit` is the
+> framework. `@docent/core` is the 29-scene default implementation. A
+> third party can ship `@theirorg/docent-*` plugins against the same
+> public protocol `@docent/core` uses — no fork.
 
 [![release](https://img.shields.io/github/v/release/benelser/docent?label=release&color=32d287)](https://github.com/benelser/docent/releases)
-[![corpus](https://img.shields.io/badge/corpus-5%2F5%20PASS-32d287)](#what-it-can-actually-do)
-[![distribution](https://img.shields.io/badge/install-APM%20%2F%20Codex-6ea8fe)](#install)
+[![corpus](https://img.shields.io/badge/corpus-5%2F5%20PASS-32d287)](#the-corpus)
+[![architecture](https://img.shields.io/badge/architecture-v3.0%20framework%2Fimpl-6ea8fe)](#the-architecture)
 [![license](https://img.shields.io/badge/license-MIT-c0c5cf)](LICENSE)
+
+## Table of contents
+
+- [Watch docent on four real subjects](#watch-docent-on-four-real-subjects)
+- [What changed in v3.0](#what-changed-in-v30)
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Plugin authoring](#plugin-authoring) — *ship `@theirorg/docent-*`*
+- [The architecture](#the-architecture)
+- [The 29 canonical scenes](#the-29-canonical-scenes)
+- [CLI reference](#cli-reference)
+- [Versioning](#versioning)
+- [Contributing](#contributing)
+
+---
 
 ## Watch docent on four real subjects
 
@@ -30,102 +52,531 @@ Each film went **survey → treatment → spec → judge → render** through
 the same engine. The grammar is what's shared. The argument is what
 each film commits to.
 
+> **Note on v3.0 re-renders.** The mp4s linked above were rendered through
+> the v2.5.x monolithic engine. v3.0 is the rip-and-replace into
+> `@docent/kit` + `@docent/core`. The acceptance test (the `scifi-demo`
+> film rendered through a third-party plugin pack) is green. README films
+> re-rendered through `@docent/cli` will replace these URLs as part of
+> the v3.0 release tag; see [`docs/design/v3-stabilization.md`](docs/design/v3-stabilization.md)
+> D3 for the tracking item.
+
 ---
 
-## Why "docent"?
+## What changed in v3.0
 
-A **docent** is the guide at a museum or gallery who walks you through the
-exhibits. They don't just *describe* what's on the wall — they pick what's
-worth your attention, explain the *why* behind each piece, name the
-trade-off the artist made, and leave you with one idea to carry out the
-door. They're authored. They argue. They commit.
+`v2.5.x` was a monolithic Remotion app: one `packages/engine/`, a 29-arm
+switch in `Film.tsx`, a hand-written `film.schema.json`, every TTS
+provider and preset hard-coded inside the bin.
 
-That's the role the tool plays. A coding agent reads the subject end to
-end, finds the load-bearing 5%, picks the angle, commits to a takeaway,
-and walks you through it. Not a tour. A docent.
+`v3.0` carves that monolith into:
 
-## The idea in 60 seconds
+- **`@docent/kit`** — the framework. Zero opinions, zero implementations.
+  Owns the plugin protocols (`ScenePlugin`, `PresetPlugin`, `FeaturePlugin`,
+  `TtsProviderPlugin`), the registries, the spec validator, the cascade
+  orchestrator, the Remotion bindings, **and the depthcheck + judge
+  contract every scene must honor**.
+- **`@docent/core`** — the default implementation. The 29 canonical scene
+  plugins, 6 presets, the Kokoro TTS adapter, the default narration and
+  audio-rhythm features. Depends on `@docent/kit` and registers every
+  default through the framework's public API. **There is no private
+  path.** A third-party plugin pack has exactly the same powers and
+  constraints as `@docent/core`.
+- **`@docent/cli`** — the thin `docent` binary. Loads `@docent/core` by
+  default plus any `docent.config.ts` your project ships.
+- **`@docent/agent`** — the existing skill / survey / prompt layer
+  (consumer of the new public CLI surface; no architectural change).
+- **`@docent/tts-*`** — per-provider TTS plugins (Kokoro local, OpenAI,
+  ElevenLabs, OpenAI-compatible). Each ships as a separate npm package
+  with `peerDependencies` on the underlying SDK — you only pay (in
+  bundle, install time, code) for what you install.
 
-Most "explainer" tools either record a screen or arrange slides. docent does
-neither. It treats explanation itself as a **closed grammar** — fifteen
-scene types (`frame`, `structure`, `tension`, `big-idea`, `recap`, …), eight
-intent knobs, three motion primitives — and gives a coding agent the brief
-to render any idea into that grammar.
+The acceptance test (rendered, green): `tests/example-docent-scifi/` is
+a third-party plugin pack that adds a custom `holodeck` scene type and
+a custom `scifi-noir` preset, registered via `docent.config.ts`, and
+renders end-to-end through `docent build` without touching
+`@docent/core`. The framework/implementation split is real.
 
-You hand it a subject. The agent surveys it, names what's load-bearing,
-commits to a single takeaway, gets graded by an adversarial sub-agent
-before it ships, and renders an HD MP4 that *argues* — not narrates.
+**The scene library is open; the rendering discipline stays closed.**
+Anyone can register a scene type. What enforces quality is the
+depthcheck + judge contract every scene must declare — not membership
+in a curated list. See [§11.5 of the strategy doc](docs/design/plugin-architecture-strategy.md)
+for the explicit list of what's open vs. closed.
 
-The engine is deterministic and owns every pixel. The agent is the author.
-The grammar is the contract between them.
+---
 
-## Try it — three commands
+## Install
 
 ```bash
-# 1. Install the agent layer into your coding host
-apm install -t claude benelser/docent/packages/agent#v2.4.0
-# OR for Codex:
-codex plugin marketplace add github.com/benelser/docent
-codex plugin add docent-agent@docent
+bun add @docent/kit @docent/core @docent/cli
 ```
 
-```
-# 2. Inside Claude Code (or Codex), first-run bootstrap:
-/docent-doctor
+Or with npm:
 
-# 3. Make a film about anything:
-/docent-explain https://arxiv.org/abs/1706.03762
+```bash
+npm install @docent/kit @docent/core @docent/cli
 ```
 
-`/docent-doctor` clones the engine into `~/.local/share/docent/engine`,
-installs the cascade (uv, ffmpeg, Python env, Kokoro voice weights,
-Remotion), and puts the `docent` CLI on your PATH. You only run it once.
+The only mandatory peer is `bun` (or Node ≥ 22). Remotion handles its own
+runtime. Kokoro voice weights download on first synth.
 
-> **Only prerequisite is `bun`.** Don't have it? `curl -fsSL https://bun.sh/install | bash`, then `exec $SHELL -l`. docent's doctor handles the rest.
+Paid TTS providers ship separately — install on demand:
 
-## The four skills
+```bash
+bun add @docent/tts-openai openai                      # peer: openai SDK
+bun add @docent/tts-elevenlabs @elevenlabs/elevenlabs-js  # peer: elevenlabs SDK
+bun add @docent/tts-compatible                         # OpenAI-compatible endpoints
+```
 
-The slash commands match how you think about a subject:
+The `peerDependency` model is intentional: a docent install with only
+`@docent/kit` + `@docent/core` has *zero* paid-API code in its bundle.
 
-| Command | What it does | Killer case |
+---
+
+## Quick start
+
+### 1. Write a film spec
+
+`films/hello.json`:
+
+```jsonc
+{
+  "meta": {
+    "id": "hello",
+    "title": "What docent is",
+    "subject": "the visualization rendering engine for explanation",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "style": { "preset": "engineering" },
+  "scenes": [
+    {
+      "type": "frame",
+      "id": "open",
+      "kicker": "DOCENT // v3.0",
+      "title": "Render an idea",
+      "tagline": "Closed grammar, deterministic pipeline, plugin protocol",
+      "beats": [
+        { "id": "f1", "narration": "Hand the engine a spec. Get back a film that argues for what it explains." }
+      ]
+    },
+    {
+      "type": "recap",
+      "id": "close",
+      "title": "Three packages.",
+      "beats": [
+        { "id": "r1", "narration": "Kit, core, CLI. Everything else is a plugin." }
+      ]
+    }
+  ]
+}
+```
+
+### 2. Render it
+
+```bash
+docent build hello --scale 0.5
+```
+
+The cascade runs in four cached stages — `validate → tts → render` —
+and writes `out/hello.mp4`. Re-run; only changed beats re-synthesize and
+re-render.
+
+### 3. Watch
+
+```bash
+open out/hello.mp4
+```
+
+---
+
+## Plugin authoring
+
+> **The "stranger could ship a plugin" bar.** This section is the
+> contract: an external developer reads it once and ships
+> `@theirorg/docent-*` in an hour.
+
+A plugin is a tagged value. The framework's `engine.use(plugin)` sniffs
+`plugin.kind` and dispatches to the right registry. Authors do not
+subclass anything.
+
+```ts
+type PluginKind = 'scene' | 'preset' | 'tts' | 'feature';
+
+interface PluginBase {
+  readonly name: string;     // '@theirorg/docent-finance/ohlc'
+  readonly version: string;  // semver
+  readonly kind: PluginKind;
+}
+```
+
+The acceptance-test starter, [`tests/example-docent-scifi/`](tests/example-docent-scifi/),
+ships one custom scene (`holodeck`) + one custom preset (`scifi-noir`)
+through `docent.config.ts`. Treat it as your reference fork point.
+
+### The four plugin kinds
+
+| `kind` | What it ships | Example |
 |---|---|---|
-| `/docent-doctor` | Verifies and installs the cascade. | First setup; whenever something feels broken. |
-| `/docent-pr <repo> <pr#>` | PR-review film — load-bearing 5%, the trade-off, a verdict. | The 800-file AI-agent PR no human reads. |
-| `/docent-ar <repo> [--subsystem X]` | Architecture review — components, flow, failure modes. | "How does X actually work?" — a system or one subsystem. |
-| `/docent-explain <subject>` | The one-shot. Any subject, any mode, end-to-end. | When you just want a film. |
+| `scene` | A new `scene.type` discriminator with its own schema branch, Remotion component, depth rules, and judge dimensions. | `@example/docent-scifi/holodeck` |
+| `preset` | A new visual register — design tokens, visualization style. | `@example/docent-scifi/scifi-noir` |
+| `feature` | Cross-cutting concerns (captions, watermarks, music). Touches multiple registries. | `narrationFeature` in `@docent/core` |
+| `tts` | A speech provider implementing `TtsProvider`. | `@docent/tts-openai`, `@docent/tts-elevenlabs` |
 
-Each skill walks survey → treatment → spec → judge → render. The pause
-points are where the **framing** forks, not where the engine does. The
-engine never asks. It explains.
+### `ScenePlugin` — the load-bearing shape
 
-## What makes it different
+```ts
+import type { ScenePlugin } from '@docent/kit';
 
-**Closed grammar, not freeform animation.** A film is a JSON spec
-against a 15-scene-type schema. The engine renders the spec
-deterministically. Nothing the agent writes can produce a "weird CSS
-moment" — the pixels are owned by Remotion code, not the agent.
+export const holodeckPlugin: ScenePlugin<HolodeckSceneSpec> = {
+  kind: 'scene',
+  name: '@theirorg/docent-scifi/holodeck',
+  version: '0.1.0',
 
-**Mandatory adversarial judge on the happy path.** Every spec runs
-through a seven-dimension grader (`triage`, `where-wrong`,
-`tests-prove-it`, `the-numbers`, `the-trade-off`, `verdict-adjudicates`,
-`takeaway-earned`) before render. A film the judge rejects does not
-ship. The loop reliably lifts first-draft specs by ~7 points on a
-30-point scale.
+  // The discriminator value in spec.scenes[].type. Globally unique
+  // within the active engine — conflicts hard-fail at engine.use().
+  sceneType: 'holodeck',
 
-**The Big Idea is built into the grammar.** Every explainer film must
-end on one held sentence the viewer should leave with — earned by the
-scenes that came before, not asserted. The validator hard-fails any
-explainer spec that lacks it.
+  // Which cognitive cluster this scene belongs to — drawn from the
+  // CLOSED 7-cluster taxonomy. `null` is reserved for chrome scenes
+  // (frame, recap) that bracket the film without a cognitive move.
+  cluster: 'experience',
 
-**Self-healing install.** `/docent-doctor` knows how to install uv,
-ffmpeg, Kokoro voice weights, and Remotion; pre-emptively flags Codex's
-quirky plugin behaviors; retries transient agent failures so a flaky
-network doesn't burn a 25-minute survey.
+  // JSON Schema fragment for this scene type. The kit assembles the
+  // full discriminated union at Engine.schema() call time — no hand-
+  // written film.schema.json.
+  schema: holodeckSchema,
 
-## What it can actually do
+  // The Remotion-compatible React component that renders the scene.
+  component: HolodeckSceneComponent,
 
-Five films across five domains. Every one passes the seven-dimension
-depth contract. All authored by an agent driving the same closed grammar:
+  // Optional structural validation beyond JSON Schema. Empty array = clean.
+  validate: (scene) => { /* … */ return []; },
+
+  // depthcheck rules contributed by this scene type. The framework
+  // refuses to render anything that doesn't declare a contract.
+  depthRules: [
+    {
+      id: 'holodeck-needs-anchor',
+      severity: 'warn',
+      check: (scene) => scene.title ? null : { path: 'title', message: '…' },
+    },
+  ],
+
+  // Judge dimensions contributed by this scene type.
+  judgeDimensions: [/* … */],
+
+  // R5 cross-bind: scenes declare what they need from the active TTS.
+  // The engine checks at spec-resolution time (warn / hard-fail
+  // per meta.tts.strict).
+  requiresTtsCapabilities: { nativeAlignment: 'word' },
+};
+```
+
+See [`packages/kit/src/protocols.ts`](packages/kit/src/protocols.ts) for
+the full, JSDoc'd type surface and [`tests/example-docent-scifi/src/scenes/holodeck/index.ts`](tests/example-docent-scifi/src/scenes/holodeck/index.ts)
+for the working example.
+
+### The cognitive-cluster taxonomy (closed list)
+
+Every `ScenePlugin` declares its cluster from this **closed** list of 7.
+The taxonomy is what makes the recommender (`docent scene-fit`)
+deterministic even as the library grows. Adding a new cluster is a
+major version bump of `@docent/kit`.
+
+| Cluster | The cognitive move |
+|---|---|
+| `connection` | Relationships, dependencies, links between entities (graph, tree, dependency). |
+| `time` | Temporal sequencing, before/after, progressions, timelines, epochs, phases. |
+| `flow` | Control flow, data flow, state transitions, pipelines, cycles, feedback loops. |
+| `comparison` | Side-by-side options, trade-offs, scoring, ranking, measurements, charts on real axes. |
+| `categorization` | Taxonomies, set membership, boundaries between kinds, matrices. |
+| `experience` | The human angle — a journey, a perception, a walk through what it feels like. |
+| `narrative` | Story, argument, commitment, the rhetorical "we chose X because of Y." |
+
+Chrome-only scenes (`frame`, `recap`) declare `cluster: null` — they
+bracket the film but perform no cognitive move. See
+[`packages/kit/src/taxonomy/cognitive-clusters.ts`](packages/kit/src/taxonomy/cognitive-clusters.ts)
+for the canonical definition.
+
+### The depthcheck + judge contract — what every scene must honor
+
+The framework refuses to render anything that doesn't declare its
+depthcheck rules and judge dimensions. **This contract is what enforces
+quality across the open library — not membership in a curated list.**
+
+- `depthRules: DepthRule<TSpec>[]` — rules that grade the *spec*. Each
+  rule has an `id`, `severity` (`error` | `warn`), and a `check(scene,
+  ctx)` function returning a finding or `null`. Rules run as part of
+  `docent depthcheck` and gate the cascade.
+- `judgeDimensions: JudgeDimension[]` — dimensions the adversarial
+  judge grades each film on. Standard dimensions (carried over from
+  v2.5.x): `triage`, `where-wrong`, `tests-prove-it`, `the-numbers`,
+  `the-trade-off`, `verdict-adjudicates`, `takeaway-earned`. A scene
+  plugin can add a dimension specific to its move.
+
+A film the judge rejects does not ship. The loop reliably lifts
+first-draft specs by ~7 points on a 30-point scale (carried over from
+v2.5.x; v3.0 keeps the same contract).
+
+### Project-side registration: `docent.config.ts`
+
+The CLI walks up from `cwd` looking for a `docent.config.ts` (or `.js`
+or `.json`). When found, its `plugins` array is registered on top of
+`@docent/core`'s defaults. Conflicts (same `sceneType`, same
+`presetName`) hard-fail at `engine.use()` time with both plugin names
+surfaced.
+
+```ts
+// docent.config.ts
+import scifi from '@theirorg/docent-scifi';
+import { ohlcPlugin } from '@theirorg/docent-finance';
+
+export default {
+  plugins: [...scifi, ohlcPlugin],
+};
+```
+
+A plugin pack typically exports an array of plugins as its default
+export — see [`tests/example-docent-scifi/src/index.ts`](tests/example-docent-scifi/src/index.ts):
+
+```ts
+import type { Plugin } from '@docent/kit';
+import { holodeckPlugin } from './scenes/holodeck';
+import { scifiNoirPreset } from './presets/scifi-noir';
+
+const plugins: ReadonlyArray<Plugin> = [holodeckPlugin, scifiNoirPreset];
+export default plugins;
+```
+
+### The `peerDependency` model for paid TTS adapters
+
+A paid TTS plugin declares the underlying SDK as a `peerDependency`,
+not a hard `dependency`:
+
+```jsonc
+// @docent/tts-elevenlabs/package.json
+{
+  "name": "@docent/tts-elevenlabs",
+  "peerDependencies": {
+    "@docent/kit": "^3.0.0",
+    "@elevenlabs/elevenlabs-js": "^1.0.0"
+  }
+}
+```
+
+A user who wants ElevenLabs runs `bun add @docent/tts-elevenlabs
+@elevenlabs/elevenlabs-js`. The SDK is not in `@docent/core`'s dep tree
+at all. **The plugin package is the entire feature flag.** This pattern
+generalizes to any heavy dependency a plugin may need (a custom Manim
+runtime, a remote rendering service, a font subsetter).
+
+A `TtsProviderPlugin` declares its capabilities at the type level:
+
+```ts
+interface TtsCapabilities {
+  nativeAlignment: 'word' | 'character' | 'chunk' | 'none';
+  streaming: boolean;
+  ssml: boolean;
+  voiceCloning: boolean;
+  local: boolean;
+}
+```
+
+Scenes that need word-level alignment (e.g. `passage`) declare it via
+`requiresTtsCapabilities`; the engine refuses to schedule incompatible
+combinations at spec-resolution time, not five minutes into a render.
+
+### Publishing checklist
+
+1. Name the package `@theirorg/docent-*` (the `docent-` prefix is the
+   convention — `docent-scenes-finance`, `docent-preset-brand`,
+   `docent-tts-azure`).
+2. Set `"peerDependencies": { "@docent/kit": "^3.0.0" }`. Pin the
+   `@docent/kit` major; minor/patch float.
+3. Export your plugins as the default export, or expose them
+   individually as named exports.
+4. Declare every `ScenePlugin`'s `depthRules` and `judgeDimensions` —
+   the framework refuses to render scenes without a contract.
+5. Publish under MIT (or a compatible OSS license). The reference
+   implementation is MIT.
+
+See [`docs/design/plugin-architecture.md`](docs/design/plugin-architecture.md)
+for the full design — verbatim interfaces, lifecycle hooks, and the
+forward-compat surface for R3 (custom modifiers), R4 (preset
+composition), and R6 (inline microsyntax).
+
+---
+
+## The architecture
+
+```
+                       films/<id>.json
+                              │
+                              ▼
+┌────────────────────────────────────────────────────────────────────┐
+│  @docent/agent — skills, surveys, prompts (LLM-author layer)       │
+└────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌────────────────────────────────────────────────────────────────────┐
+│  @docent/cli — docent build / validate / depthcheck / hermetic     │
+└────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌────────────────────────────────────────────────────────────────────┐
+│  @docent/kit — THE FRAMEWORK (zero opinions)                       │
+│                                                                    │
+│    class Engine {                                                  │
+│      use(plugin): this              // sniff plugin.kind           │
+│      scenes / presets / tts / features / modifiers                 │
+│      schema(): JSONSchema7          // computed from registry      │
+│      validate(spec): Issue[]                                       │
+│      render(spec, opts): Promise<RenderResult>                     │
+│    }                                                               │
+│                                                                    │
+│  Protocols: PluginBase, ScenePlugin, PresetPlugin, FeaturePlugin,  │
+│             TtsProviderPlugin, ModifierRegistry (R3 stub)          │
+│  Cascade: validate → tts → render. Remotion bindings.              │
+└────────────────────────────────────────────────────────────────────┘
+                              ▲
+              ┌───────────────┼───────────────────┐
+              │               │                    │
+              ▼               ▼                    ▼
+┌──────────────────────┐ ┌───────────────┐ ┌────────────────────────┐
+│  @docent/core        │ │ @docent/tts-* │ │  @theirorg/docent-*    │
+│    29 ScenePlugin    │ │   kokoro      │ │    scenes (e.g. ohlc)  │
+│    6 PresetPlugin    │ │   openai      │ │    preset-fintech      │
+│    narration feat    │ │   elevenlabs  │ │    feature-captions    │
+│    audio-rhythm feat │ │   compatible  │ │                        │
+└──────────────────────┘ └───────────────┘ └────────────────────────┘
+```
+
+The discipline: **`@docent/core` is one consumer of `@docent/kit`'s
+public API. It is never the privileged path.** A third-party plugin
+pack has exactly the same powers and constraints.
+
+For the deep dive — sequencing, protocols verbatim, forward-compat for
+R3/R4/R6, and the locked-in commitments — read
+[`docs/design/plugin-architecture-strategy.md`](docs/design/plugin-architecture-strategy.md).
+
+The architectural DAG (which depends on which) lives at
+[`docs/design/plugin-architecture-dag.md`](docs/design/plugin-architecture-dag.md).
+
+---
+
+## The 29 canonical scenes
+
+The opinionated default `@docent/core` ships. Pick the scene whose
+*native shape* is your move — don't force-fit. A quoted text belongs in
+`passage`, not `closeup`; an image in `figure`.
+
+| Scene | Cluster | Reach for this when… |
+|---|---|---|
+| `frame` | *(chrome)* | …you need to set up the subject — kicker, title, tagline, footnote. |
+| `recap` | *(chrome)* | …you need to land the takeaway — one held sentence the viewer leaves with. |
+| `structure` | connection | …the parts of the subject relate in a graph (entails, causes, depends-on). |
+| `tree` | connection | …relationships are hierarchical — a taxonomy, an org chart, a tree. |
+| `map` | connection | …entities are positioned by something *other* than time (a landscape, a territory). |
+| `walkthrough` | connection | …one instance unfolds step by step — a trace through a specific path. |
+| `progression` | time | …stages along a path — linear, cycle, braided, or iterate. |
+| `timeline` | time | …explicit epochs / phases / dates on a real time axis. |
+| `mechanism` | flow | …how the *machine* works — gears, ports, the inside view of the process. |
+| `causal-loop` | flow | …feedback loops, reinforcing / balancing dynamics, system archetypes. |
+| `diff` | flow | …before vs. after — what changed in a code or design transformation (PR films). |
+| `compare` | comparison | …two or three options held side by side. |
+| `quantities` | comparison | …a number that must *land* — figure cards, animated counters. |
+| `chart` | comparison | …data on real axes — a curve, bars that grow, a point on a curve. |
+| `probe` | comparison | …vary one input, follow the consequence (sensitivity, what-if). |
+| `prior-art` | comparison | …survey of what came before — name what others tried, name what's new here. |
+| `landscape` | comparison | …a 2D positioning of options against two axes. |
+| `venn` | comparison | …set membership — overlap and disjoint regions. |
+| `tension` | categorization | …the trade-off, the failure mode, where the design breaks. |
+| `closeup` | experience | …annotate one code artifact — a function, a struct, a config block. |
+| `journey-map` | experience | …a perception arc — how something *feels* across stages. |
+| `passage` | narrative | …annotate a plain text by phrase — a poem, prose, a primary source. |
+| `figure` | narrative | …annotate a still image by region — a painting, a map, a photograph. |
+| `epigraph` | narrative | …a single quote held alone, attribution beneath. |
+| `provocation` | narrative | …the question or claim the film opens with — to pull tension forward. |
+| `objection` | narrative | …name the counter-argument the film must answer. |
+| `concession` | narrative | …grant what's true on the other side, before pressing yours. |
+| `big-idea` | narrative | …the held sentence the rest of the film *earned*. |
+| `demonstrate` | narrative | …play the phenomenon itself — an audio clip, an interaction, the thing in motion. |
+
+29 scenes. 7 clusters. The taxonomy is closed; the library is open —
+ship a 30th scene in `@theirorg/docent-scenes-x` if your domain has a
+move docent didn't.
+
+---
+
+## CLI reference
+
+`@docent/cli` is intentionally thin — every subcommand is a few lines
+on top of `@docent/kit`'s public Engine surface.
+
+```
+docent — render explanatory films via @docent/kit.
+
+USAGE
+  docent <command> [args]
+
+COMMANDS
+  build <film-id>      Render a film to MP4 at out/<film-id>.mp4.
+  validate <film-id>   Structurally validate a film spec via engine.validate().
+  depthcheck <film-id> Aggregate every plugin's depthRules over a film spec.
+  hermetic             Render the 4 gallery fixtures end to end.
+  help                 Print this usage and exit.
+
+BUILD FLAGS
+  --scale <n>          Render scale (0.25, 0.5, 1). Default: 1.
+  --concurrency <n>    Render frame concurrency. Default: Remotion's auto.
+  --still <s>          Render a single still at second offset s.
+  --skip-tts           Skip the TTS stage — produces a silent mp4.
+  --output-dir <p>     Override the output directory.
+  --films-dir <p>      Override the films/ directory.
+  --project-root <p>   Override the project root (config + entry generation).
+
+EXAMPLES
+  docent build linear-algebra --scale 0.5
+  docent validate kubernetes-pr
+  docent depthcheck euclid-primes
+  docent hermetic --scale 0.5
+```
+
+### `docent build`
+
+Runs the full cascade: validate → tts (Kokoro by default) → render.
+Per-beat audio is mounted into the Remotion composition; per-stage
+caching means re-runs only synthesize and render what changed.
+
+### `docent validate`
+
+Runs `engine.validate(spec)` — JSON Schema (the computed union of every
+registered scene's schema fragment) plus each plugin's structural
+`validate(scene, ctx)` hook. Exit code is non-zero on any `error`-level
+issue.
+
+### `docent depthcheck`
+
+Aggregates every plugin's `depthRules` over the spec and reports
+findings. The cascade gates on this in CI — a depth regression is a
+hard fail. The judge surface (the 7-dimension grader) runs on top of
+depthcheck; see [`docs/design/plugin-architecture-strategy.md`](docs/design/plugin-architecture-strategy.md)
+§4.2.
+
+### `docent hermetic`
+
+Renders the 4 gallery fixtures (`linear-algebra`, `kubernetes-pr`,
+`euclid-primes`, `stopping-by-woods`) end to end through the same
+`@docent/cli` path a user takes. The CI signal for "v3.0 still ships
+the gallery."
+
+### The corpus
+
+The four gallery fixtures + the kitchen-sink test — every one passes
+the depthcheck contract through `@docent/cli`:
 
 | Film | Subject | Domain | Verdict |
 |---|---|---|---|
@@ -135,57 +586,97 @@ depth contract. All authored by an agent driving the same closed grammar:
 | `stopping-by-woods` | A close reading of Robert Frost | Literature | 27 / 30 PASS, first try |
 | `grammar-check` | Kitchen-sink scene grammar test | Engineering | (test fixture) |
 
-Specs live in `films/*.json`. Render any of them: `/docent-build <id>`,
-or `docent build <id>` directly.
+Specs live in `films/*.json`. Render any of them: `docent build <id>`.
 
-## How it works
+---
 
-The cascade runs in four cached stages:
+## Versioning
 
-```
-survey   →  films/<id>.json       the spec — authored by the agent
-tts      →  public/audio/<id>/*   Kokoro narration, parallel
-clips    →  public/clips/<id>/*   optional Manim inserts
-render   →  out/<id>.mp4          Remotion, frame-parallel
-```
+The `@docent/*` packages move in lockstep at the major. Each package's
+`peerDependencies` pin `@docent/kit: ^X.0.0` where X is the current
+major. Inside a major, packages move independently.
 
-Every stage is cached on the beat. A beat whose narration text hasn't
-changed isn't re-rendered or re-synthesised. The engine binary owns
-every pixel; the agent only ever writes JSON.
+| Change | semver impact |
+|---|---|
+| Breaking a protocol in [`packages/kit/src/protocols.ts`](packages/kit/src/protocols.ts) (`ScenePlugin`, `PresetPlugin`, `FeaturePlugin`, `TtsProviderPlugin`, `ModifierRegistry`). | **major** |
+| Removing a `@docent/kit` public export. | **major** |
+| Removing the `engine.use(plugin)` API or any `Engine` method. | **major** |
+| Changing the closed cognitive-cluster taxonomy (adding or removing a cluster). | **major** |
+| Removing a canonical scene from `@docent/core`. | **major** |
+| Adding an optional field to a protocol interface. | **minor** |
+| Adding a new scene plugin to `@docent/core`. | **minor** |
+| Adding a new CLI subcommand. | **minor** |
+| Tightening a depth rule's `check` (false-positive surface narrows). | **patch** |
+| Loosening a depth rule's `check` (false-positive surface widens). | **minor** (behavioral change) |
+| Bug fixes that don't change a public type or visible behavior. | **patch** |
 
-## Updating
+What v3.0 locked in **permanently** (only recoverable through a v4):
 
-**Claude Code (APM):**
+- The plugin API is public. Breaking any protocol is a breaking change.
+- Registry-based dispatch — no fast path that bypasses the registry.
+- Schema is computed from the registry — `film.schema.json` is a build
+  artifact, not a hand-written source of truth.
+- The `@docent/*` npm scope.
+- The framework/implementation split — no private path from
+  `@docent/core` into `@docent/kit` internals.
+- The open scene library — verification, if it ever ships, is layered
+  on top as a quality signal, never as a gate.
 
-```bash
-# pinned: bump the tag in apm.yml, then:
-apm install
+See [`docs/design/plugin-architecture-strategy.md`](docs/design/plugin-architecture-strategy.md)
+§12 for the full list.
 
-# unpinned (tracks main):
-apm install --update benelser/docent/packages/agent
-```
+---
 
-**Codex:**
+## Contributing
 
-```bash
-# Git-source marketplace:
-codex plugin marketplace upgrade docent
+### To `@docent/core` — proposing a new canonical scene
 
-# Local-path marketplace (development):
-codex plugin add docent-agent@docent
-```
+The bar for landing a scene type in `@docent/core` is high: **the scene
+must be a cognitive move, not a visual treatment.** Concretely:
 
-After the engine layer updates, re-run `/docent-doctor` to pick up any
-new dependencies. The engine `git pull`s itself the next time the
-cascade runs.
+1. The scene's *native shape* is something existing scenes can't carry
+   without force-fit. A `treemap` is a visual treatment of `tree`; a
+   `sankey` is a distinct cognitive move (continuous flow with
+   conserved magnitude).
+2. The scene declares a `cluster` from the 7-closed list. If no cluster
+   fits, the proposal needs to extend the taxonomy — a major version
+   bump of `@docent/kit`, separately considered.
+3. The scene contributes `depthRules` that catch the *failure mode
+   specific to this move*. A `tension` scene without a named
+   trade-off fails its own depth rule.
+4. The scene contributes `judgeDimensions` if the standard 7 don't
+   capture what makes *this* scene's quality.
+5. At least one corpus film uses the scene end-to-end, and the
+   acceptance test (`docent hermetic`) is green.
+
+Open an issue with the proposed scene's name, cluster, depth rules,
+and a paragraph on the cognitive move it makes that the existing 29
+can't. PRs without an accepted proposal are not reviewed — the bar is
+deliberately high.
+
+### To ship outside `@docent/core` — the easy path
+
+If your scene is domain-specific (an OHLC chart for finance, a Sankey
+for material flow, a UML diagram for software) — ship it as
+`@theirorg/docent-scenes-x` and skip the core PR. The plugin protocol
+is the public contract; there is no second-class citizenship.
+
+### To `@docent/kit` — protocol changes
+
+`@docent/kit` is the frozen surface. Protocol changes need a written
+case for *why* the existing protocol can't carry the use case. The
+`FeaturePlugin` lifecycle hooks are intentionally open — most
+"protocol change" instincts are actually "new optional `FeaturePlugin`
+hook" requests, which are additive and non-breaking.
+
+---
 
 ## License
 
-MIT (see [`LICENSE`](LICENSE)). Distribution: APM
-([benelser/docent/packages/agent](https://github.com/benelser/docent/tree/main/packages/agent))
-for Claude Code, and the Codex plugin marketplace for Codex. The
-engine itself is `private: true` — everything users need ships through
-the agent layer.
+MIT (see [`LICENSE`](LICENSE)). All `@docent/*` packages publish under
+the same scope; the reference plugin pack at
+[`tests/example-docent-scifi/`](tests/example-docent-scifi/) is the
+working starter you can fork.
 
 ---
 
