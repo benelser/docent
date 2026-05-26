@@ -31,15 +31,19 @@
     "react-dom": "^18.3.1",
     "remotion": "^4.0.464",
     "roughjs": "^4.6.6",
-    "zod": "^4.4.3"
+    "zod": "4.3.6"
   },
   "peerDependencies": {
     "elevenlabs": "^1.59.0",
     "openai": "^6.39.0"
   },
   "peerDependenciesMeta": {
-    "elevenlabs": {"optional": true},
-    "openai": {"optional": true}
+    "elevenlabs": {
+      "optional": true
+    },
+    "openai": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
