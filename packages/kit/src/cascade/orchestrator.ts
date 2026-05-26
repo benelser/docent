@@ -151,8 +151,23 @@ export const runCascade = async (
   // Synthesizes every beat. Throws a `TtsProviderError` if the provider
   // is missing or fails to initialize. The kit owns the contract; the
   // CLI layer adds caching + filesystem persistence on top.
+  //
+  // `opts.skipTts` short-circuits the stage entirely — useful for fast
+  // visual iteration. The render still runs; the resulting mp4 is silent.
   let ttsManifest: TtsStageManifest;
-  {
+  if (opts.skipTts) {
+    ttsManifest = {
+      providerId: 'skipped',
+      voice: '',
+      totalSeconds: 0,
+      beats: [],
+    };
+    stages.push({
+      name: 'tts',
+      seconds: 0,
+      summary: 'skipped (--skip-tts)',
+    });
+  } else {
     const t0 = performance.now();
     const stageOpts: Parameters<typeof runTtsStage>[2] = {};
     if (opts.cacheDir !== undefined) stageOpts.cacheDir = opts.cacheDir;
@@ -166,9 +181,6 @@ export const runCascade = async (
   }
 
   // ─── 4. render ───────────────────────────────────────────────────────
-  // Throws "not implemented (A.9 dependency)" in this build. The earlier
-  // three stages have already run; a caller who catches this still gets
-  // an exercisable cascade head.
   const t0 = performance.now();
   const result = await runRenderStage({
     spec,

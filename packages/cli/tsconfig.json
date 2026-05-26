@@ -9,14 +9,16 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["node", "react", "json-schema"],
+    "types": ["node"],
     "resolveJsonModule": true,
     "noEmit": true,
-    "declaration": true,
     "isolatedModules": true,
-    "verbatimModuleSyntax": false,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": false
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "paths": {
+      "@docent/kit": ["../kit/src/index.ts"],
+      "@docent/core": ["../core/src/index.ts"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "../core/src/**/*engine-shims.d.ts"]
 }

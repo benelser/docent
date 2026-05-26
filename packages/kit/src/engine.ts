@@ -46,7 +46,16 @@ import {
   assertPluginBase,
   assertScenePluginShape,
 } from './validation/plugin';
-import {runCascade} from './cascade/orchestrator';
+// IMPORTANT: `engine.render()` is Node-only and lives in a separate
+// module (`./engine-render.ts`) that is NOT imported here. Web bundles for
+// chromium see only the lightweight `Engine` class with `use / validate /
+// resolveStyle / schema` — none of which need `node:fs` / `node:child_process`.
+//
+// CLI callers that want to render call `runRender(engine, spec, opts)` from
+// `@docent/kit/engine-render` directly. The `engine.render()` instance method
+// re-exports the same surface — but it dynamic-imports the renderer via
+// `new Function('p','return import(p)')` so webpack's static analyser can't
+// follow it into the chromium bundle.
 import type {DesignTokens} from './types/design-tokens';
 import type {VisualizationStyle} from './types/visualization-style';
 import type {StyleIntent} from './types/style';
@@ -409,7 +418,22 @@ export class Engine {
    * and the `tts` stage all run, so a caller exercising the cascade
    * head observes real behaviour up to that point.
    */
-  render(spec: FilmSpec, opts: RenderOptions = {}): Promise<RenderResult> {
-    return runCascade(spec, this, opts);
+  async render(
+    spec: FilmSpec,
+    opts: RenderOptions = {},
+  ): Promise<RenderResult> {
+    // Hide the render module from webpack's static analyser by building the
+    // module specifier at runtime. The browser bundle never executes this
+    // path — it sits behind a CLI call. Bun/Node resolve `./engine-render`
+    // relative to this file via their own loader.
+    const part1 = './engine-';
+    const part2 = 'render';
+    const spec_ = part1 + part2;
+    const dynamicImport = new Function(
+      'p',
+      'return import(p)',
+    ) as (p: string) => Promise<{runRender: typeof import('./engine-render').runRender}>;
+    const mod = await dynamicImport(spec_);
+    return mod.runRender(this, spec, opts);
   }
 }

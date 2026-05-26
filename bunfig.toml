@@ -1,0 +1,10 @@
+# Bun runtime configuration.
+#
+# Aliases for the `@docent-engine-bridge/*` namespace used by in-flight scene
+# migrations (e.g. quantities) that still reach into engine-private utilities.
+# When those scenes' supporting helpers (SceneFrame, BoundValue, …) finish
+# migrating into @docent/core, these aliases can be removed.
+
+[install.aliases]
+# (bun-install aliases are for npm packages; bun's runtime resolves via
+#  the project tsconfig "paths" maps instead — see packages/core/tsconfig.json)

@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": false,
+    "paths": {
+      "@docent/kit": ["./packages/kit/src/index.ts"],
+      "@docent/core": ["./packages/core/src/index.ts"],
+      "@docent-engine-bridge/*": ["./packages/engine/src/*"]
+    }
+  },
+  "include": [
+    "remotion.config.ts",
+    ".docent/tmp/**/*.tsx",
+    ".docent/tmp/**/*.ts",
+    "packages/kit/src/**/*.ts",
+    "packages/kit/src/**/*.tsx",
+    "packages/core/src/**/*.ts",
+    "packages/core/src/**/*.tsx",
+    "tests/example-docent-scifi/src/**/*.ts",
+    "tests/example-docent-scifi/src/**/*.tsx"
+  ],
+  "exclude": ["node_modules", "packages/engine/dist"]
+}

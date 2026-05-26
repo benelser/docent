@@ -581,6 +581,35 @@ export interface RenderOptions {
   concurrency?: number;
   /** Path to the cache directory the cascade may write to. */
   cacheDir?: string;
+  /** Override the output directory (default: <cwd>/out). */
+  outputDir?: string;
+  /**
+   * Absolute path to the Remotion entry script the render shell-out invokes.
+   * The kit ships a helper (`registerKitRoot`) but does NOT statically know
+   * which plugins to load; the invoker (CLI) generates a per-render entry
+   * that statically imports the required plugins and passes that path here.
+   * If omitted, the render stage hard-fails with a clear error.
+   */
+  entryPath?: string;
+  /** Optional Remotion `--public-dir` pass-through. */
+  publicDir?: string;
+  /** Path to the `remotion` bin. Defaults to a walked-up node_modules lookup. */
+  remotionBin?: string;
+  /**
+   * Skip the TTS stage entirely. The render still runs; the resulting mp4
+   * has no narration audio (the kit's default composition is silent — audio
+   * overlay is a feature-plugin concern). Mirrors `--skip-tts` on the legacy
+   * engine cascade. Useful for fast iteration on visuals.
+   */
+  skipTts?: boolean;
+  /**
+   * Working directory passed to the `remotion render` subprocess. Remotion
+   * finds `remotion.config.ts` by walking up from cwd to the closest
+   * `package.json`. If your project's remotion.config.ts lives at the repo
+   * root but you're invoking from a subpackage (e.g. an acceptance-test
+   * dir), set this to the repo root so the config is picked up.
+   */
+  renderCwd?: string;
 }
 
 export interface RenderResult {
