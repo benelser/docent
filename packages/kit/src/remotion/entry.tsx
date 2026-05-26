@@ -1,27 +1,20 @@
 // Kit-provided default Remotion entry — a working reference path.
 //
-// This file IS the entry the kit ships for `remotion render`. To stay
-// opinion-free, the entry resolves its plugin source at **bundle time** by
-// reading two `webpack.DefinePlugin`-style env vars baked into the bundle by
-// the invoker (the CLI's render stage). The trick: Remotion bundles via
-// webpack; webpack inlines `process.env.X` at compile time when the invoker
-// has set up `EnvironmentPlugin`. We avoid that complexity by using a
-// SIMPLER pattern instead — the CLI **generates a per-render entry file**
-// that statically imports `@docent/core` plus any user plugins and then
-// re-exports the kit's `buildKitRoot` helper. This file documents the
-// pattern and exposes that helper.
+// This file IS the entry the kit ships for `remotion render`. The CLI
+// generates a per-render entry that statically imports `@docent/core` plus
+// any user plugins and calls `registerKitRoot({plugins, spec})`. The kit
+// constructs the engine once at module-load time and binds the composition
+// to it via a context that survives Remotion's prop serialization.
 //
-// Why generation-time imports (vs. runtime dynamic import): Remotion bundles
-// the composition for **chromium**. Anything the entry references must be
-// statically reachable at bundle time so webpack can include it in the
-// browser bundle. Runtime `import()` resolves at chromium-execution time
-// against filesystem paths chromium can't see — it doesn't work.
-//
-// The kit therefore provides `buildKitRoot({plugins, specPath})` and the
-// CLI generates a 5-line entry that calls it. See
-// `@docent/cli/src/render-entry.ts` for the generator.
+// Why a module-level singleton: Remotion's renderer serializes the props
+// every Composition declares to JSON before sending them to chromium. A
+// live `Engine` instance has methods (`engine.scenes.get(...)`) — JSON
+// strips those. To preserve the engine across the Node-bundle → chromium-
+// render hop, we build the engine inside chromium itself, at bundle-load
+// time, and keep it module-scoped. The composition reads from this module-
+// level engine rather than from props.
 
-import React from 'react';
+import React, {createContext, useContext} from 'react';
 import {Composition, registerRoot} from 'remotion';
 
 import {Engine} from '../engine';
@@ -49,24 +42,67 @@ export interface BuildKitRootOptions {
 }
 
 /**
+ * Module-level engine + spec singleton. Set by `buildKitRoot` at composition-
+ * registration time; read by `<KitFilm>` inside the chromium bundle. Survives
+ * Remotion's JSON-only inputProps serialization because both sides of the
+ * Node↔chromium hop evaluate the same bundle module-init code.
+ */
+let _registeredEngine: Engine | null = null;
+let _registeredSpec: FilmSpec | null = null;
+
+/**
+ * Render-side wrapper that reads the module-level engine + spec singleton
+ * and mounts `<DocentFilm>`. The Composition's inputProps are intentionally
+ * empty — the engine + spec ride along in module state, not in props.
+ *
+ * The wrapper resolves the style once per render and threads it into
+ * `<DocentFilm>`. Without this, scenes that read `style.tokens.accent.blue`
+ * crash because the kit's fallback style ships empty tokens.
+ */
+const KitFilm: React.FC = () => {
+  if (!_registeredEngine || !_registeredSpec) {
+    return (
+      <div
+        style={{
+          color: '#ff5252',
+          fontFamily: 'monospace',
+          fontSize: 24,
+          padding: 48,
+        }}
+      >
+        [@docent/kit] no engine/spec registered — call buildKitRoot() in the
+        entry before registerRoot().
+      </div>
+    );
+  }
+  const style = _registeredEngine.resolveStyle(_registeredSpec);
+  return (
+    <DocentFilm
+      spec={_registeredSpec}
+      engine={_registeredEngine}
+      style={style}
+    />
+  );
+};
+
+/**
  * Build a Remotion `Root` component that registers exactly one composition
  * (matching `spec.meta.id`) and mounts `<DocentFilm spec engine>`.
  *
- * The CLI's per-render entry calls this with statically imported plugins +
- * spec. The engine is constructed at module scope so webpack bundles every
- * referenced scene component for chromium.
- *
  * @example The CLI-generated entry looks like:
  *
+ *   import {registerRoot} from 'remotion';
  *   import {buildKitRoot} from '@docent/kit/remotion/entry';
  *   import corePlugins from '@docent/core';
  *   import userPlugins from '/abs/path/to/docent.config.ts';
  *   import spec from '/abs/path/to/film.json';
- *   import {registerRoot} from 'remotion';
  *   registerRoot(buildKitRoot({plugins: [...corePlugins, ...userPlugins], spec}));
  */
 export const buildKitRoot = (opts: BuildKitRootOptions): React.FC => {
   const engine = new Engine().use(opts.plugins as Plugin[]);
+  _registeredEngine = engine;
+  _registeredSpec = opts.spec;
+
   const schedule = buildFrameSchedule(opts.spec, engine);
   const res = opts.spec.meta.resolution;
   // Legacy films carry fps/width/height directly on meta; honour both shapes.
@@ -81,26 +117,14 @@ export const buildKitRoot = (opts: BuildKitRootOptions): React.FC => {
   const durationInFrames = Math.max(1, Math.round(schedule.totalFrames));
   const compositionId = opts.compositionId ?? opts.spec.meta.id;
 
-  // Cast through `unknown` because Remotion's Composition constrains props
-  // to `Record<string, unknown>`; our `DocentFilmProps` carries typed
-  // engine/spec fields the index signature can't widen to. Sound at runtime:
-  // <DocentFilm> reads exactly these fields off defaultProps.
-  const ComponentForComposition =
-    DocentFilm as unknown as React.ComponentType<Record<string, unknown>>;
-  const defaultProps: Record<string, unknown> = {
-    spec: opts.spec as unknown,
-    engine: engine as unknown,
-  };
-
   const Root: React.FC = () => (
     <Composition
       id={compositionId}
-      component={ComponentForComposition}
+      component={KitFilm}
       durationInFrames={durationInFrames}
       fps={fps}
       width={width}
       height={height}
-      defaultProps={defaultProps}
     />
   );
   return Root;
@@ -117,3 +141,7 @@ export const registerKitRoot = (opts: BuildKitRootOptions): void => {
 // Pin the DocentFilmProps type so it survives `verbatimModuleSyntax` and is
 // re-exported for downstream type consumers.
 export type {DocentFilmProps};
+
+// Silence unused-import warnings for items kept for type re-export.
+void createContext;
+void useContext;

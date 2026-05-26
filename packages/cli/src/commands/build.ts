@@ -25,6 +25,8 @@ export interface BuildArgs {
   readonly concurrency?: number;
   /** Render a single still frame. */
   readonly still?: number;
+  /** Skip the TTS stage; produce a silent mp4. */
+  readonly skipTts?: boolean;
   /** Override the project root for entry-file generation + config lookup. */
   readonly projectRoot?: string;
 }
@@ -84,6 +86,7 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
       ...(args.scale !== undefined ? {scale: args.scale} : {}),
       ...(args.concurrency !== undefined ? {concurrency: args.concurrency} : {}),
       ...(args.still !== undefined ? {still: args.still} : {}),
+      ...(args.skipTts ? {skipTts: true} : {}),
     });
     log(
       `\x1b[32m✓ rendered ${result.outPath}\x1b[0m  ${(result.durationMs / 1000).toFixed(1)}s`,

@@ -595,6 +595,13 @@ export interface RenderOptions {
   publicDir?: string;
   /** Path to the `remotion` bin. Defaults to a walked-up node_modules lookup. */
   remotionBin?: string;
+  /**
+   * Skip the TTS stage entirely. The render still runs; the resulting mp4
+   * has no narration audio (the kit's default composition is silent — audio
+   * overlay is a feature-plugin concern). Mirrors `--skip-tts` on the legacy
+   * engine cascade. Useful for fast iteration on visuals.
+   */
+  skipTts?: boolean;
 }
 
 export interface RenderResult {
