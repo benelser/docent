@@ -225,21 +225,21 @@ When every checkbox below is ✅, this file gets the rename
 
 ### Status checklist
 
-- [ ] D1 — Audio overlay
-- [ ] D2 — Embed renderers
+- [x] D1 — Audio overlay (A2 → `4534290`, merged `6e6944e`)
+- [ ] D2 — Embed renderers (A3 in flight)
 - [ ] D3 — README films re-rendered + compared
 - [ ] D4 — Hermetic 4/4 verified end-to-end through @docent/cli
-- [ ] D5 — Strict tsc flags restored on @docent/core
-- [ ] D6 — @docent-engine-bridge/* eliminated
-- [ ] D7 — _shared/* helpers consolidated
-- [ ] D8 — Paid TTS providers split into @docent/tts-*
-- [ ] D9 — Plugin manifest code-generated
+- [ ] D5 — Strict tsc flags restored on @docent/core (B1 in flight, unblocked by D6)
+- [x] D6 — @docent-engine-bridge/* eliminated (B2 → `44132b4`, merged `dc91e96`)
+- [x] D7 — _shared/* helpers consolidated (A1)
+- [x] D8 — Paid TTS providers split into @docent/tts-* (C1)
+- [x] D9 — Plugin manifest code-generated (C2)
 - [ ] D10 — public/audio/manifest.json stub removed (follows D6)
-- [ ] D11 — zod version pinned
+- [x] D11 — zod version pinned to 4.3.6 (`f8dd4f9`)
 - [ ] D12 — `requiresTtsCapabilities` declared on at least passage
-- [x] D13 — packages/agent normalized to @docent/agent
+- [x] D13 — packages/agent normalized to @docent/agent (C3)
 - [ ] D14 — Kokoro byte-equivalence (decision: accept or fix)
-- [ ] D15 — README plugin-authoring guide
-- [ ] D16 — Example packs beyond scifi
-- [ ] D17 — Public type JSDoc
+- [x] D15 — README plugin-authoring guide (E1)
+- [x] D16 — Example packs beyond scifi (E2 → `6390517`: finance + brand + captions)
+- [x] D17 — Public type JSDoc (E3)
 - [ ] D18 — `@docent/*` packages versioned + npm pack dry-runs clean
