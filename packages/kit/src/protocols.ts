@@ -97,30 +97,60 @@ export {
 // ---------------------------------------------------------------------------
 
 /**
- * The 4 plugin kinds the engine recognises. The discriminator on
- * `PluginBase`. `engine.use(plugin)` sniffs this and routes to the right
- * registry.
+ * The 4 plugin kinds the engine recognises — the discriminator union for
+ * `PluginBase.kind`. `engine.use(plugin)` sniffs this value and routes to the
+ * matching registry (scene → SceneRegistry, preset → PresetRegistry, etc.).
  *
- * `'modifier'` is NOT in this union. Modifiers are not plugins; they live
- * in the `ModifierRegistry`, populated by `FeaturePlugin.registerModifiers`.
+ * **`'modifier'` is NOT in this union.** Modifiers are not plugins; they are
+ * registered THROUGH a {@link FeaturePlugin}'s `registerModifiers` hook and
+ * live in the engine's {@link ModifierRegistry} (R3 forward-compat).
+ *
+ * Adding a kind is a major release of `@docent/kit` — every existing engine
+ * dispatch and every plugin author has to learn it.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.1
  */
 export type PluginKind = 'scene' | 'preset' | 'tts' | 'feature';
 
 /**
- * Every plugin extends this. Three fields:
- *   - `name`: human-readable identifier (`'frame'`, `'engineering'`,
- *             `'kokoro'`, `'captions'`).
- *   - `version`: plugin author's semver. Used by `docent doctor` and
- *                conflict diagnostics.
- *   - `kind`: the discriminator. Determines which registry it lands in.
+ * The foundation every plugin extends. Modelled after Marpit's plugin shape:
+ * a tiny, declarative descriptor the engine can sniff to know what to do.
  *
- * Plugin authors are encouraged to use globally-unique-ish names
- * (e.g. `@scope/scene-sankey`) but the engine's conflict policy keys off the
- * domain-specific id (sceneType, presetName, providerId) not `name`.
+ * Three mandatory fields:
+ *   - `name` — human-readable identifier (`'frame'`, `'engineering'`,
+ *     `'kokoro'`, `'captions'`). Authors are encouraged to use globally
+ *     unique-ish names (e.g. `@scope/scene-sankey`) but the engine's
+ *     conflict policy keys off the domain-specific id (`sceneType`,
+ *     `presetName`, `providerId`, feature `name`), not this field.
+ *   - `version` — plugin author's semver. Surfaced by `docent doctor` and
+ *     in conflict diagnostics so an integrator can pin a known-good pair.
+ *   - `kind` — the {@link PluginKind} discriminator. Determines which
+ *     registry the plugin lands in when `engine.use(plugin)` is called.
+ *
+ * Plugins are constructed by their author (typically as a plain frozen object
+ * literal or via a factory) and handed to `engine.use()` once per process.
+ * The kit performs a structural sniff (`assertPluginBase`) at `use()` time;
+ * a misshapen plugin throws with a pointed error.
+ *
+ * @example
+ * ```ts
+ * const myScene: ScenePlugin = {
+ *   kind: 'scene',
+ *   name: '@example/sankey',
+ *   version: '1.0.0',
+ *   sceneType: 'sankey',
+ *   // ...the rest of ScenePlugin
+ * };
+ * ```
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.1
  */
 export interface PluginBase {
+  /** Human-readable plugin identifier (e.g. `'@scope/scene-sankey'`). */
   readonly name: string;
+  /** Plugin author's semver — surfaced by `docent doctor` diagnostics. */
   readonly version: string;
+  /** The discriminator. Routes the plugin to its matching registry. */
   readonly kind: PluginKind;
 }
 
@@ -129,9 +159,28 @@ export interface PluginBase {
 // ---------------------------------------------------------------------------
 
 /**
- * Render-time props passed to a scene's React component. The kit owns the
- * `common` shape (style, timing, meta); the scene's per-spec shape is the
- * generic parameter.
+ * Render-time props passed to a {@link ScenePlugin}'s React component.
+ *
+ * The kit owns the `common` shape — every scene receives the same bundle of
+ * timing/style/meta context. The scene's per-spec shape is plugin-owned and
+ * passed through the `TSpec` generic.
+ *
+ * The composition (`@docent/kit/remotion`) constructs this at render time by:
+ *   1. Resolving the scene's spec (schema-validated, modifiers expanded).
+ *   2. Computing the {@link TimelineSlot} from the schedule.
+ *   3. Resolving the {@link ResolvedStyle} once at film level.
+ *   4. Mounting `<plugin.component scene={…} common={…} />` inside a
+ *      Remotion `<Sequence>`.
+ *
+ * @example
+ * ```ts
+ * function MyScene({scene, common}: SceneRenderProps<MyScene>) {
+ *   const {tokens} = common.style;
+ *   return <h1 style={{color: tokens.ink.hi}}>{scene.title}</h1>;
+ * }
+ * ```
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
  */
 export interface SceneRenderProps<TSpec = unknown> {
   /** The fully resolved scene spec — schema-validated, modifiers expanded. */
@@ -144,6 +193,13 @@ export interface SceneRenderProps<TSpec = unknown> {
  * The shared prop bundle every scene component receives alongside its own
  * spec. The kit owns this shape so a scene plugin from any package can be
  * dropped in without renegotiating the prop contract.
+ *
+ * Constructed by the composition layer once per scene per render. A scene
+ * author reads `common.style.tokens.ink.hi` rather than reaching into a
+ * global theme module — that's the discipline that keeps third-party
+ * plugins drop-in-clean.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
  */
 export interface CommonSceneProps {
   /** Timeline slot — the frames this scene occupies in the composition. */
@@ -159,20 +215,49 @@ export interface CommonSceneProps {
 }
 
 /**
- * One scene's slot in the composition timeline. `frames` is the total
- * duration; `beats` are the schedule-resolved per-beat windows.
+ * One scene's slot in the composition timeline. Produced by the schedule
+ * resolver before render-time; carried on {@link CommonSceneProps.ts}.
+ *
+ * - `startFrame` — global frame offset where the scene begins (0 for the
+ *   first scene).
+ * - `frames` — total duration of the scene, in frames at the film's fps.
+ * - `beats` — schedule-resolved per-beat windows, in declaration order.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
  */
 export interface TimelineSlot {
+  /** Global frame offset (0-indexed) where this scene begins. */
   readonly startFrame: number;
+  /** Total duration in frames at the film's fps. */
   readonly frames: number;
+  /** Per-beat windows, in declaration order. */
   readonly beats: ReadonlyArray<BeatTimelineSlot>;
 }
 
+/**
+ * One beat's schedule-resolved window within a {@link TimelineSlot}.
+ *
+ * - `beatIndex` — 0-based index of this beat within its scene.
+ * - `startFrame` — global frame offset where this beat begins (NOT relative
+ *   to the scene start; absolute within the film).
+ * - `frames` — beat duration in frames; the engine derives this from the
+ *   TTS clip length when narration is present, falls back to `pace`-driven
+ *   defaults otherwise.
+ * - `beat` — the beat spec itself (the {@link Beat} object the author
+ *   wrote, after `resolveBeat?` ran).
+ * - `audio` — optional path to a synthesized audio clip for this beat, when
+ *   the TTS stage produced one and threaded it into the schedule.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
+ */
 export interface BeatTimelineSlot {
+  /** 0-based index of this beat within its scene. */
   readonly beatIndex: number;
+  /** Global frame offset where this beat begins (absolute within the film). */
   readonly startFrame: number;
+  /** Beat duration in frames at the film's fps. */
   readonly frames: number;
-  /** The beat's own data, narrowed by the scene's beat type. */
+  /** The beat's own data, after `ScenePlugin.resolveBeat?` ran. */
   readonly beat: Beat;
   /**
    * Public-folder-relative path to a synthesized audio clip for this beat,
@@ -184,23 +269,50 @@ export interface BeatTimelineSlot {
   readonly audio?: string | null;
 }
 
-/** Issue surfaced by per-scene structural validation. */
+/**
+ * Issue surfaced by a {@link ScenePlugin}'s `validate?` hook. The kit's
+ * `validateSpec` aggregates these per scene and re-roots their `path` under
+ * `scenes[<i>]` before emitting them as top-level {@link Issue}s.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
+ */
 export interface SceneIssue {
+  /** Path relative to the scene root (e.g. `'beats[0].narration'`). */
   readonly path: string;
+  /** Human-readable explanation. */
   readonly message: string;
+  /** Severity — `'error'` blocks render; `'warning'` flags but allows. */
   readonly severity: 'error' | 'warning';
-  /** Optional machine-readable code for tooling. */
+  /** Optional machine-readable code for tooling (e.g. `'narration.empty'`). */
   readonly code?: string;
 }
 
+/**
+ * Context handed to a {@link ScenePlugin}'s `validate?` hook. Lets the
+ * validator surface scene-position-aware diagnostics ("scene 3 of 7").
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
+ */
 export interface SceneValidationContext {
+  /** The film's stable id (`meta.id`). */
   readonly filmId: string;
+  /** 0-based index of the scene being validated. */
   readonly sceneIndex: number;
 }
 
+/**
+ * Context handed to a {@link ScenePlugin}'s `resolveBeat?` hook — the
+ * beat-level resolution stage where scene-specific beat fields take shape
+ * before the renderer runs.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
+ */
 export interface BeatResolutionContext {
+  /** The plugin's own `sceneType` — handed back so generic helpers can branch. */
   readonly sceneType: string;
+  /** 0-based scene index. */
   readonly sceneIndex: number;
+  /** 0-based beat index within the scene. */
   readonly beatIndex: number;
   /** The film-wide register, in case the scene's beat resolver wants it. */
   readonly register?: FilmMeta['register'];
@@ -211,27 +323,71 @@ export interface BeatResolutionContext {
  * aggregates rules across all registered plugins; `docent depthcheck` runs
  * the union over every scene/film.
  *
- * `check` returns `null` for "rule passes", or a `DepthFinding` describing
- * the failure.
+ * `check` returns `null` for "rule passes", or a {@link DepthFinding}
+ * describing the failure. The check may be async — useful for rules that
+ * probe file paths or external state.
+ *
+ * @example
+ * ```ts
+ * const tensionMustResolve: DepthRule<TensionScene> = {
+ *   id: 'tension.resolve',
+ *   description: 'every tension scene must end with a resolution beat',
+ *   severity: 'warning',
+ *   scope: 'scene',
+ *   check(scene) {
+ *     const last = scene.beats?.at(-1);
+ *     if (last?.kind !== 'resolution') {
+ *       return {
+ *         ruleId: 'tension.resolve',
+ *         path: 'beats',
+ *         message: 'add a resolution beat',
+ *         severity: 'warning',
+ *       };
+ *     }
+ *     return null;
+ *   },
+ * };
+ * ```
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
  */
 export interface DepthRule<TSpec = unknown> {
+  /** Stable rule id surfaced in findings (e.g. `'tension.resolve'`). */
   readonly id: string;
+  /** One-line description for the depthcheck report header. */
   readonly description: string;
+  /** Author-chosen severity. */
   readonly severity: 'error' | 'warning' | 'info';
   /**
    * Optional scope hint — `'scene'` rules run on every scene of this
-   * plugin's type; `'film'` rules run once per film with full context.
+   * plugin's type; `'film'` rules run once per film with full context. When
+   * omitted on a {@link ScenePlugin}'s rule, defaults to `'scene'`. Feature
+   * plugin rules always run film-scoped.
    */
   readonly scope?: 'scene' | 'film';
+  /**
+   * Run the rule against `target`. Return `null` if the rule passes; a
+   * {@link DepthFinding} otherwise.
+   */
   check(
     target: TSpec,
     ctx: DepthCheckContext,
   ): DepthFinding | null | Promise<DepthFinding | null>;
 }
 
+/**
+ * Context handed to every {@link DepthRule}'s `check`. Carries the whole
+ * film spec plus the rule's local position (scene/beat index when
+ * scene-scoped) and the active TTS provider's capabilities when known.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
+ */
 export interface DepthCheckContext {
+  /** The whole film spec — rules may inspect other scenes/beats. */
   readonly filmSpec: FilmSpec;
+  /** 0-based scene index when the rule is scene-scoped. */
   readonly sceneIndex?: number;
+  /** 0-based beat index for beat-scoped rules. */
   readonly beatIndex?: number;
   /** The active TTS provider's capabilities, when known. */
   readonly tts?: {
@@ -240,22 +396,50 @@ export interface DepthCheckContext {
   };
 }
 
+/**
+ * The result of a {@link DepthRule}'s `check` when the rule fails. Surfaced
+ * to the depthcheck report and to the agent layer's review loop.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
+ */
 export interface DepthFinding {
+  /** The rule's id — links the finding back to its declaring rule. */
   readonly ruleId: string;
+  /** Path into the film spec the finding is about (e.g. `'scenes[2].beats'`). */
   readonly path: string;
+  /** Human-readable explanation. */
   readonly message: string;
+  /** Author-chosen severity. */
   readonly severity: 'error' | 'warning' | 'info';
+  /** Optional remediation hint surfaced beneath the finding. */
   readonly suggestion?: string;
 }
 
 /**
  * A judge dimension contributed by a scene or feature plugin. The judge
  * grades a rendered film across these dimensions; `docent judge` aggregates
- * them.
+ * them via {@link collectJudgeDimensions} into a composite rubric the LLM
+ * grader consumes.
+ *
+ * @example
+ * ```ts
+ * const axesLabelled: JudgeDimension = {
+ *   id: 'chart.axes-labelled',
+ *   title: 'Chart axes are labelled',
+ *   description: 'A reader can read units off the chart without narration.',
+ *   weight: 0.8,
+ *   rubric: 'Score 0..1 by checking if both axes carry units.',
+ * };
+ * ```
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
  */
 export interface JudgeDimension {
+  /** Stable id used to dedupe / cross-reference findings. */
   readonly id: string;
+  /** Short label surfaced in the judge report. */
   readonly title: string;
+  /** One-line description — read by humans, not the grader. */
   readonly description: string;
   /**
    * Optional weight (0..1). The judge's composite score weights by this.
@@ -270,52 +454,97 @@ export interface JudgeDimension {
 }
 
 /**
- * The ScenePlugin — the core abstraction the rip-and-replace builds on.
+ * The ScenePlugin — the highest-traffic plugin shape, and the core
+ * abstraction the rip-and-replace builds on.
  *
- * Every one of the 29 default scenes in `@docent/core` becomes one of these.
- * A third-party scene type (`@example/docent-scifi/holodeck`) is literally
- * the same shape.
+ * Every one of the 29 default scenes in `@docent/core` is one of these. A
+ * third-party scene type (e.g. `@example/docent-scifi/holodeck`) is
+ * literally the same shape — the kit makes no distinction between built-in
+ * and third-party plugins.
  *
- * Mandatory: `kind`, `name`, `version` (from `PluginBase`), `sceneType`,
- * `schema`, `component`, `cluster`.
+ * A scene plugin contributes FIVE things to the engine:
+ *   1. A {@link sceneType} discriminator that gates `spec.scenes[].type`.
+ *   2. A {@link schema} fragment that becomes one branch of the computed
+ *      film schema.
+ *   3. A {@link component} that renders frames at composition time.
+ *   4. A {@link cluster} tag (one of the 7 closed cognitive clusters) so
+ *      the recommender and the agent layer can reason about it.
+ *   5. Optional {@link depthRules} and {@link judgeDimensions} — the
+ *      scene's own quality bar.
+ *
+ * Mandatory: `kind`, `name`, `version` (from {@link PluginBase}),
+ * `sceneType`, `schema`, `component`, `cluster`.
  *
  * Optional: `validate`, `depthRules`, `judgeDimensions`,
  * `requiresTtsCapabilities`, `resolveBeat`.
+ *
+ * @example
+ * ```ts
+ * import type {ScenePlugin} from '@docent/kit';
+ *
+ * interface FrameScene { type: 'frame'; title: string; subtitle?: string; }
+ *
+ * export const framePlugin: ScenePlugin<FrameScene> = {
+ *   kind: 'scene',
+ *   name: 'frame',
+ *   version: '1.0.0',
+ *   sceneType: 'frame',
+ *   cluster: null,
+ *   schema: {
+ *     type: 'object',
+ *     required: ['title'],
+ *     properties: {title: {type: 'string'}, subtitle: {type: 'string'}},
+ *   },
+ *   component: FrameComponent,
+ * };
+ * ```
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
  */
 export interface ScenePlugin<TSpec = Scene> extends PluginBase {
+  /** The plugin-kind discriminator. */
   readonly kind: 'scene';
 
   /**
    * The discriminator value in `spec.scenes[].type`. Must be globally
    * unique within the active engine — conflicts hard-fail at `engine.use()`
-   * with both plugin names surfaced.
+   * with both plugin names surfaced (see {@link RegistryConflictError}).
    */
   readonly sceneType: string;
 
   /**
    * The cognitive cluster this scene belongs to. Drawn from the CLOSED
-   * 7-cluster taxonomy. `null` is reserved for chrome-only scenes (`frame`,
-   * `recap`) that bracket the film but perform no cognitive move.
+   * 7-cluster taxonomy ({@link CognitiveCluster}). `null` is reserved for
+   * chrome-only scenes (`frame`, `recap`) that bracket the film but
+   * perform no cognitive move.
+   *
+   * The recommender (`docent scene-fit`) and the agent layer's prompts
+   * navigate by these clusters.
    */
   readonly cluster: CognitiveCluster | null;
 
   /**
    * JSON Schema fragment for this scene's spec. Contributed to the computed
-   * film schema as one branch of the discriminated union. The kit assembles
-   * the union at `Engine.schema()` call time; no hand-written
-   * `film.schema.json`.
+   * film schema as one branch of the `oneOf` discriminated union, narrowed
+   * by `sceneType`. The kit assembles the union at `Engine.schema()` call
+   * time — there is no hand-written `film.schema.json`.
+   *
+   * @see {@link computeSchema}
    */
   readonly schema: JSONSchema7;
 
   /**
    * The React/Remotion component that renders this scene type. Receives
-   * the fully-resolved scene spec + the shared `common` bundle.
+   * the fully-resolved scene spec + the shared `common` bundle (see
+   * {@link SceneRenderProps}).
    */
   readonly component: React.ComponentType<SceneRenderProps<TSpec>>;
 
   /**
    * Optional structural validation beyond JSON Schema (cross-field checks,
-   * graph-shape invariants, etc.). Returns issues; empty array = clean.
+   * graph-shape invariants, narration-vs-reveal pairing, etc.). Returns
+   * issues; empty array = clean. The kit re-roots returned paths under
+   * `scenes[<i>]` before surfacing.
    */
   readonly validate?: (
     scene: TSpec,
@@ -330,19 +559,25 @@ export interface ScenePlugin<TSpec = Scene> extends PluginBase {
 
   /**
    * R5 cross-bind: scenes declare what TTS capabilities they meaningfully
-   * use. The engine checks at spec-resolution time.
+   * use. The engine checks at spec-resolution time against the active TTS
+   * provider's {@link TtsCapabilities}:
    *   - When `FilmTtsConfig.strict === true`, an unsatisfied requirement
    *     hard-fails resolution.
    *   - Otherwise, it emits a depthcheck warning.
    *
-   * A `passage` scene typically declares `nativeAlignment: 'word'`.
+   * A `passage` scene typically declares `nativeAlignment: 'word'`; a
+   * `demonstrate` scene that uses SSML pauses declares `ssml: true`.
    */
   readonly requiresTtsCapabilities?: Partial<TtsCapabilities>;
 
   /**
    * Beat-level resolution hook — scenes that introduce new beat fields
    * (e.g. mechanism's freezes, journey-map's curve points) shape the beat
-   * here before it reaches the renderer.
+   * here before it reaches the renderer. Receives the raw beat from the
+   * spec; returns the beat with its scene-specific fields shaped.
+   *
+   * Runs at schedule-resolution time, before {@link BeatTimelineSlot.beat}
+   * is populated.
    */
   readonly resolveBeat?: (
     beat: Beat,
@@ -359,15 +594,33 @@ export interface ScenePlugin<TSpec = Scene> extends PluginBase {
  * style + intent map that names a coherent visual register
  * (`engineering`, `editorial`, `paper`, …).
  *
- * The 6 default presets in `@docent/core` become 6 of these. A third-party
- * preset pack (`@brand/docent-preset-fintech`) registers via the same
- * protocol.
+ * The 6 default presets in `@docent/core` (`neutral`, `engineering`,
+ * `editorial`, `paper`, `executive`, `analytical`) become 6 of these. A
+ * third-party preset pack (e.g. `@brand/docent-preset-fintech`) registers
+ * via the same protocol.
  *
- * `extends` is **reserved for R4** — the resolver in this build IGNORES it
- * (presets remain flat). R4 lands by implementing composition semantics on
- * top of an already-stable schema field, non-breaking.
+ * Created by a preset author as a frozen object literal; registered via
+ * `engine.use(presetPlugin)`. Looked up at render time by name from
+ * `spec.style.preset`. The {@link Engine.resolveStyle} method composes
+ * the preset's tokens + visualization over the neutral floor.
+ *
+ * @example
+ * ```ts
+ * export const engineeringPreset: PresetPlugin = {
+ *   kind: 'preset',
+ *   name: 'engineering',
+ *   version: '1.0.0',
+ *   presetName: 'engineering',
+ *   tokens: {bg: {…}, ink: {…}, accent: {…}, …},
+ *   visualization: {legendPosition: 'right', gridLines: true},
+ *   notes: 'Console-screen aesthetic; data-first.',
+ * };
+ * ```
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.3
  */
 export interface PresetPlugin extends PluginBase {
+  /** The plugin-kind discriminator. */
   readonly kind: 'preset';
 
   /**
@@ -379,39 +632,52 @@ export interface PresetPlugin extends PluginBase {
   /** The structured token bundle this preset contributes. */
   readonly tokens: DesignTokens;
 
-  /** Family-level renderer knobs. */
+  /** Family-level renderer knobs (legend position, grid lines, etc.). */
   readonly visualization: VisualizationStyle;
 
   /** One-line human-readable description — surfaced by `docent style list`. */
   readonly notes: string;
 
   /**
-   * **R4 forward-compat.** A preset can declare it inherits from another
-   * preset by name. **In this build, the resolver IGNORES this field**
-   * — presets are flat. R4 lands by implementing the composition semantics
-   * on top of this already-typed field. Non-breaking.
+   * **R4 forward-compat — RESERVED FIELD.** A preset can declare it inherits
+   * from another preset by name. **In this build, the resolver IGNORES this
+   * field** — presets remain flat. The field is shipped on day 1 so R4
+   * lands by implementing the composition semantics on top of an
+   * already-stable schema field. Non-breaking when R4 ships.
+   *
+   * Plugin authors may set this today; it survives in the spec but does
+   * not affect the resolved style.
    */
   readonly extends?: string;
 
   /**
    * Optional intent → token-delta map. Composes with the resolved preset
-   * to produce the final tokens. The 6 default presets each ship one of
-   * these.
+   * to produce the final tokens (e.g. `{'tone:executive': {ink: {hi:
+   * '#fff'}}}`). The 6 default presets each ship one of these.
+   *
+   * Keys are pre-computed dot-prefixed strings — see
+   * {@link KnownStyleIntentKey}.
    */
   readonly intent?: Partial<Record<KnownStyleIntentKey, DesignTokenOverrides>>;
 
   /**
    * Optional per-scene-type token overrides (e.g. all `quantities` scenes
    * in this preset use the warm accent). Marp's `section.lead { ... }`
-   * rule, ported.
+   * rule, ported. Keys are `sceneType` strings; values are the same deep
+   * partial as {@link DesignTokenOverrides}.
    */
   readonly sceneOverrides?: Readonly<Record<string, DesignTokenOverrides>>;
 }
 
 /**
- * The keys an intent map may pin on (e.g. `'tone:executive'`,
- * `'audience:technical'`). Pre-computed dot-prefixed strings let a preset's
- * intent block read flatly.
+ * The keys a {@link PresetPlugin.intent} map may pin on (e.g.
+ * `'tone:executive'`, `'audience:technical'`). Pre-computed colon-prefixed
+ * strings let a preset's intent block read flatly without nested objects.
+ *
+ * Derived from the closed enums on {@link StyleIntent} — adding a new tone
+ * automatically widens this union.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.3
  */
 export type KnownStyleIntentKey =
   | `tone:${NonNullable<StyleIntent['tone']>}`
@@ -433,107 +699,192 @@ export type KnownStyleIntentKey =
 // ---------------------------------------------------------------------------
 
 /**
- * Forward-declared registries. The concrete implementations live in
- * `./registries/*.ts` and are imported as types here to avoid a circular
- * dependency.
+ * The scene-registry interface. The concrete implementation is internal to
+ * the kit; consumers interact through {@link Engine.scenes}. Surfaced as an
+ * interface so a {@link FeaturePlugin}'s `registerScenes` hook can be typed
+ * without leaking the implementation class.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
  */
 export interface SceneRegistry {
+  /** Register a scene plugin. Throws {@link RegistryConflictError} on duplicate `sceneType`. */
   register(plugin: ScenePlugin<any>): void;
+  /** Look up a plugin by `sceneType`. Returns `undefined` if not registered. */
   get(sceneType: string): ScenePlugin<any> | undefined;
+  /** Check whether a `sceneType` is registered. */
   has(sceneType: string): boolean;
+  /** Iterate all registered scene plugins, in registration order. */
   all(): ReadonlyArray<ScenePlugin<any>>;
 }
 
+/**
+ * The preset-registry interface. Consumers interact through
+ * {@link Engine.presets}.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
+ */
 export interface PresetRegistry {
+  /** Register a preset. Throws {@link RegistryConflictError} on duplicate `presetName`. */
   register(plugin: PresetPlugin): void;
+  /** Look up a preset by name. Returns `undefined` if not registered. */
   get(presetName: string): PresetPlugin | undefined;
+  /** Check whether a preset name is registered. */
   has(presetName: string): boolean;
+  /** Iterate all registered presets, in registration order. */
   all(): ReadonlyArray<PresetPlugin>;
 }
 
+/**
+ * The TTS-provider-registry interface. Consumers interact through
+ * {@link Engine.tts}.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
+ */
 export interface TtsRegistry {
+  /** Register a TTS provider plugin. Throws {@link RegistryConflictError} on duplicate `providerId`. */
   register(plugin: TtsProviderPlugin): void;
+  /** Look up a provider plugin by id. Returns `undefined` if not registered. */
   get(providerId: string): TtsProviderPlugin | undefined;
+  /** Check whether a provider id is registered. */
   has(providerId: string): boolean;
+  /** Iterate all registered providers, in registration order. */
   all(): ReadonlyArray<TtsProviderPlugin>;
 }
 
+/**
+ * The feature-registry interface. Consumers interact through
+ * {@link Engine.features}.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
+ */
 export interface FeatureRegistry {
+  /** Register a feature plugin. Throws {@link RegistryConflictError} on duplicate `name`. */
   register(plugin: FeaturePlugin): void;
+  /** Look up a feature by name. Returns `undefined` if not registered. */
   get(name: string): FeaturePlugin | undefined;
+  /** Check whether a feature name is registered. */
   has(name: string): boolean;
+  /** Iterate all registered features, in registration order. */
   all(): ReadonlyArray<FeaturePlugin>;
 }
 
 /* ──────── Modifier registry — R3 forward-compat ──────── */
 
 /**
- * Three tiers, mirroring Marp's three-tier directive system
- * (global / local / spot ↔ film / scene / beat).
+ * Three tiers a modifier can pin on, mirroring Marp's three-tier directive
+ * system (global / local / spot ↔ film / scene / beat).
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.6
  */
 export type ModifierTier = 'film' | 'scene' | 'beat';
 
+/**
+ * Context handed to every {@link ModifierFn} call. Carries the tier the
+ * modifier is firing at plus the surrounding film/scene/beat position.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.6
+ */
 export interface ModifierContext {
+  /** Which tier this firing is at — `'film'`, `'scene'`, or `'beat'`. */
   readonly tier: ModifierTier;
+  /** The whole film spec — modifiers may cross-reference. */
   readonly filmSpec: FilmSpec;
+  /** 0-based scene index for `'scene'` / `'beat'` tiers. */
   readonly sceneIndex?: number;
+  /** 0-based beat index for `'beat'` tier. */
   readonly beatIndex?: number;
 }
 
 /**
  * A modifier function. Receives the user-declared value, returns a
  * partial object merged into the target at the matching tier.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.6
  */
 export type ModifierFn<TValue = unknown, TPartial = Record<string, unknown>> =
   (value: TValue, ctx: ModifierContext) => Partial<TPartial>;
 
 /**
- * **R3 forward-compat.** The registry exists from day 1 and is typed
- * correctly; **it is empty in this build**. R3 lands by populating it (and
- * by exposing a user-facing config surface for projects to register custom
- * modifiers).
+ * **R3 forward-compat — STUB REGISTRY.** The registry exists from day 1 and
+ * is typed correctly; **it is empty in this build, and the resolver does
+ * not consult it**. R3 lands by populating it (and by exposing a
+ * user-facing config surface for projects to register custom modifiers).
  *
- * The registry is NOT a plugin kind. Modifiers are registered THROUGH
- * `FeaturePlugin.registerModifiers(reg)`.
+ * The registry is NOT a plugin kind. Modifiers are registered THROUGH a
+ * {@link FeaturePlugin}'s `registerModifiers(reg)` hook — the hook fires
+ * during `engine.use(featurePlugin)`.
+ *
+ * Carrying the typed registry from day 1 means R3 ships without breaking
+ * the kit's public surface — the resolution semantics get layered on top
+ * of an already-stable type.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.6
  */
 export interface ModifierRegistry {
+  /** Film-tier modifiers — fire once per film, merged into `FilmMeta`. */
   readonly film: Map<string, ModifierFn<unknown, Partial<FilmMeta>>>;
+  /** Scene-tier modifiers — fire per scene, merged into the scene spec. */
   readonly scene: Map<string, ModifierFn<unknown, Partial<Scene>>>;
+  /** Beat-tier modifiers — fire per beat, merged into the beat spec. */
   readonly beat: Map<string, ModifierFn<unknown, Partial<Beat>>>;
 }
 
 /* ──────── Feature plugin ──────── */
 
 /**
- * Context passed to a feature's `injectStyleTokens` hook. The feature may
- * inspect the resolved style so far and the active film/scene to decide
- * which tokens to inject.
+ * Context passed to a {@link FeaturePlugin}'s `injectStyleTokens` hook. The
+ * feature may inspect the resolved style so far and the active film/scene
+ * to decide which tokens to inject.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.5
  */
 export interface StyleContext {
+  /** The whole film spec — the feature may branch on its content. */
   readonly filmSpec: FilmSpec;
+  /** 0-based scene index when injection is scene-scoped. */
   readonly sceneIndex?: number;
 }
 
-/** The output of a single scene render, between renderer and feature wrap. */
+/**
+ * The output of a single scene render, between renderer and a
+ * {@link FeaturePlugin}'s `wrapRender` hook. The feature receives this and
+ * may return a wrapped element (e.g. captions overlay, watermark).
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.5
+ */
 export interface SceneOutput {
+  /** The React element the scene renderer produced. */
   readonly element: React.ReactElement;
+  /** The scene's `sceneType`. */
   readonly sceneType: string;
+  /** 0-based scene index in the film. */
   readonly sceneIndex: number;
 }
 
+/**
+ * Context handed to a {@link FeaturePlugin}'s `wrapRender` hook alongside
+ * the scene's {@link SceneOutput}.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.5
+ */
 export interface RenderContext {
+  /** The whole film spec. */
   readonly filmSpec: FilmSpec;
+  /** The same `common` props the scene component received. */
   readonly common: CommonSceneProps;
 }
 
 /**
- * Props the kit passes to a feature plugin's `wrapsScenes` component. The
- * composition mounts the component inside each scene's `<Sequence>`,
- * alongside the scene's own renderer; the feature decides what to layer.
+ * Props the kit passes to a {@link FeaturePlugin.wrapsScenes} component.
+ * The composition mounts the component inside each scene's `<Sequence>`,
+ * alongside the scene's own renderer; the feature decides what to layer
+ * (narration audio overlay, captions, watermark, lower-thirds, …).
  *
  * Per-beat slots carry the beat data + (optionally) the path to a
- * synthesized audio clip — see `BeatTimelineSlot.audio`. The feature
+ * synthesized audio clip — see {@link BeatTimelineSlot.audio}. The feature
  * resolves the URL via Remotion's `staticFile()`.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.5
  */
 export interface SceneFeatureProps {
   /** The slot occupied by the host scene in the film timeline. */
@@ -552,31 +903,69 @@ export interface SceneFeatureProps {
  * The FeaturePlugin — cross-cutting concerns that touch multiple registries
  * (captions, watermarks, music, lower-thirds, narration overlay).
  *
- * Lets `@docent/core` express itself as a feature pack rather than a
- * god-object. Every lifecycle hook is optional so adding new ones later is
- * additive (non-breaking).
+ * The pattern that lets `@docent/core` express itself as a feature pack
+ * rather than a god-object. A feature plugin can:
+ *   - Register child plugins of any kind via `registerScenes`,
+ *     `registerPresets`, `registerTtsProviders`, `registerModifiers` —
+ *     these hooks fire during `engine.use(featurePlugin)`.
+ *   - Inject style tokens at resolution time (`injectStyleTokens`).
+ *   - Wrap a scene's rendered output (`wrapRender`).
+ *   - Mount a component alongside every scene (`wrapsScenes`).
+ *   - Contribute depth rules (`depthRules`).
+ *   - Preprocess the spec (`preprocessSpec` — R6 forward-compat).
  *
- * **R3 forward-compat**: `registerModifiers` populates the engine's
- * `ModifierRegistry`.
- * **R6 forward-compat**: `preprocessSpec` runs BEFORE schema validation —
- * the slot for a microsyntax decoder.
+ * Every lifecycle hook is optional, so adding new hooks later is additive
+ * (non-breaking).
+ *
+ * **R3 forward-compat**: {@link registerModifiers} populates the engine's
+ * {@link ModifierRegistry} — the registry is typed today but the resolver
+ * does not consult it.
+ *
+ * **R6 forward-compat**: {@link preprocessSpec} runs BEFORE schema
+ * validation — the slot for a microsyntax decoder. Identity by default in
+ * this build.
+ *
+ * @example
+ * ```ts
+ * export const narrationFeature: FeaturePlugin = {
+ *   kind: 'feature',
+ *   name: 'narration',
+ *   version: '1.0.0',
+ *   wrapsScenes: NarrationOverlay, // mounts per-beat <Audio>
+ * };
+ * ```
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.5
  */
 export interface FeaturePlugin extends PluginBase {
+  /** The plugin-kind discriminator. */
   readonly kind: 'feature';
 
+  /** Register additional scene plugins (fires during `engine.use(this)`). */
   registerScenes?(reg: SceneRegistry): void;
+  /** Register additional presets (fires during `engine.use(this)`). */
   registerPresets?(reg: PresetRegistry): void;
+  /** Register additional TTS providers (fires during `engine.use(this)`). */
   registerTtsProviders?(reg: TtsRegistry): void;
-  /** **R3 forward-compat.** Populates the engine's `ModifierRegistry`. */
+  /**
+   * **R3 forward-compat.** Populate the engine's {@link ModifierRegistry}.
+   * The hook fires during `engine.use(this)` but the resolver currently
+   * does not consult the registry — R3 lands by wiring it through.
+   */
   registerModifiers?(reg: ModifierRegistry): void;
 
-  /** Inject style tokens that augment the resolved preset. */
+  /**
+   * Inject style tokens that augment the resolved preset. Called by the
+   * style resolver after the preset has been composed. Return a
+   * {@link DesignTokenOverrides} (deep-partial) to layer on top, or
+   * `undefined` to inject nothing.
+   */
   injectStyleTokens?(
     resolved: ResolvedStyle,
     ctx: StyleContext,
   ): DesignTokenOverrides | undefined;
 
-  /** Wrap or post-process a scene's rendered output. */
+  /** Wrap or post-process a scene's rendered output (e.g. overlay captions). */
   wrapRender?(rendered: SceneOutput, ctx: RenderContext): SceneOutput;
 
   /**
@@ -593,12 +982,14 @@ export interface FeaturePlugin extends PluginBase {
 
   /**
    * **R6 forward-compat.** Pre-process the spec BEFORE schema validation
-   * (e.g. expand microsyntax shortcuts). Identity by default; chain
-   * through if multiple features preprocess.
+   * (e.g. expand microsyntax shortcuts like `@@@` directives). Identity by
+   * default in this build; the orchestrator does not yet chain features
+   * through this hook. When R6 lands, multiple features compose in
+   * registration order.
    */
   preprocessSpec?(spec: FilmSpec): FilmSpec;
 
-  /** Contribute depth rules. */
+  /** Contribute film-scoped depth rules. */
   readonly depthRules?: ReadonlyArray<DepthRule<unknown>>;
 }
 
@@ -608,14 +999,17 @@ export interface FeaturePlugin extends PluginBase {
 
 /**
  * Render options accepted by `engine.render(spec, opts)`. The CLI surfaces
- * these via `docent build`.
+ * these via `docent build`. Every field is optional; callers pass `{}` for
+ * defaults.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
  */
 export interface RenderOptions {
-  /** Output path for the rendered MP4. Defaults to the film's id. */
+  /** Output path for the rendered MP4. Defaults to `<outputDir>/<filmId>.mp4`. */
   readOutPath?: string;
-  /** Render scale (0.25, 0.5, 1.0). */
+  /** Render scale (0.25, 0.5, 1.0). Defaults to 1.0. */
   scale?: number;
-  /** Render only a still frame at the given second offset. */
+  /** Render only a still frame at the given second offset. Skips video encode. */
   still?: number;
   /** Override the codec; defaults to h264. */
   codec?: 'h264' | 'h265' | 'vp8' | 'vp9' | 'prores';
@@ -623,7 +1017,7 @@ export interface RenderOptions {
   concurrency?: number;
   /** Path to the cache directory the cascade may write to. */
   cacheDir?: string;
-  /** Override the output directory (default: <cwd>/out). */
+  /** Override the output directory (default: `<cwd>/out`). */
   outputDir?: string;
   /**
    * Absolute path to the Remotion entry script the render shell-out invokes.
@@ -660,7 +1054,7 @@ export interface RenderOptions {
   /**
    * Optional hook the orchestrator calls AFTER the TTS stage finishes
    * persisting per-beat audio + manifest. Lets the caller (typically
-   * @docent/cli) regenerate the Remotion entry script so it can statically
+   * `@docent/cli`) regenerate the Remotion entry script so it can statically
    * `import` the freshly-written per-film audio manifest. Returns the entry
    * path to use for the render — if it returns the same path, the orchestrator
    * uses it unchanged. Surfaced as a hook (rather than re-running entry
@@ -673,35 +1067,55 @@ export interface RenderOptions {
   }) => Promise<string> | string;
 }
 
+/**
+ * The result of a successful `engine.render(spec, opts)` call.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
+ */
 export interface RenderResult {
-  /** Where the MP4 (or still) landed. */
+  /** Where the MP4 (or still) landed on disk. */
   readonly outPath: string;
   /** Render duration in ms — surfaced in the `docent build` summary. */
   readonly durationMs: number;
   /** Per-beat audio metrics (if the active TTS provider populated them). */
   readonly tts?: ReadonlyArray<{
+    /** 0-based scene index. */
     readonly sceneIndex: number;
+    /** 0-based beat index. */
     readonly beatIndex: number;
+    /** Words-per-minute the provider measured (null if unmeasured). */
     readonly wpm: number | null;
+    /** Final clip duration in seconds (post-trim). */
     readonly clipSeconds: number;
   }>;
 }
 
 /**
- * Issue surfaced by `engine.validate(spec)`. Aggregates schema errors,
- * per-scene `validate` results, and registry conflicts.
+ * A single issue surfaced by `engine.validate(spec)`. The flat aggregation
+ * of: top-level shape checks (kit-owned), per-scene plugin `validate`
+ * results (re-rooted to film-level paths), and — in the full cascade —
+ * AJV schema errors. Registry conflicts surface as throws, not as Issues.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
  */
 export interface Issue {
+  /** Dotted/bracketed path into the spec (e.g. `'scenes[2].beats[0].narration'`). */
   readonly path: string;
+  /** Human-readable explanation. */
   readonly message: string;
+  /** Severity — `'error'` blocks render; `'warning'` flags but allows. */
   readonly severity: 'error' | 'warning';
+  /** Optional machine-readable code (e.g. `'meta.id.missing'`). */
   readonly code?: string;
   /** When the issue comes from a per-plugin validator, the plugin's name. */
   readonly source?: string;
 }
 
 /**
- * The shape every `Plugin` extends. This is the input type to
- * `engine.use(plugin)`.
+ * The discriminated union of every plugin shape `engine.use()` accepts.
+ * The input type to `engine.use(plugin)`; the engine narrows on `kind` and
+ * routes to the right registry.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.1
  */
 export type Plugin = ScenePlugin<any> | PresetPlugin | TtsProviderPlugin | FeaturePlugin;

@@ -35,14 +35,26 @@ import type {Engine} from '../engine';
 import type {ScenePlugin} from '../protocols';
 
 /**
- * Compute the union film schema from the registered scenes.
+ * Compute the union film schema from the registered scenes. The pure
+ * function behind {@link Engine.schema}. Surfaced as a standalone export
+ * so tooling (a custom validator, a doctor surface) can call it directly.
+ *
+ * The schema is a discriminated union: each registered scene plugin's
+ * `schema` becomes one branch of a `oneOf` on `scenes[].items`, narrowed
+ * by the plugin's `sceneType` literal. The top-level keys (`meta`,
+ * `scenes`, `style`, `tts`) are CLOSED — they cannot be extended by a
+ * plugin.
  *
  * Even with zero scene plugins registered, the function returns a valid
- * top-level schema — the `scenes[]` items just collapse to `false`, which
- * makes the empty-engine error "no scene types registered" instead of "scenes
- * is invalid". Future iterations may push the empty-engine case to a clearer
- * surfaced error; for the rip-and-replace, returning a valid (if exclusionary)
- * schema is the safe default.
+ * top-level schema — the `scenes[]` items just collapse to `{not: {}}`,
+ * which makes the empty-engine error "no scene types registered" instead
+ * of "scenes is invalid". Future iterations may push the empty-engine
+ * case to a clearer surfaced error; for the rip-and-replace, returning a
+ * valid (if exclusionary) schema is the safe default.
+ *
+ * @returns A {@link JSONSchema7} ready to feed to AJV.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §11.5
  */
 export function computeSchema(engine: Engine): JSONSchema7 {
   const scenePlugins = engine.scenes.all();

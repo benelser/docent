@@ -31,15 +31,24 @@ import type {FilmSpec, Scene} from '../types/spec';
  * Run every registered depth rule over a spec; return the union of findings.
  *
  * Rules are dispatched in three buckets:
- *   1. Scene-scope rules from each `ScenePlugin.depthRules` — run once per
- *      matching scene (matching by sceneType).
- *   2. Film-scope rules from each `ScenePlugin.depthRules` whose `scope ===
- *      'film'` — run once per film. The plugin is responsible for finding
- *      its own scenes via `ctx.filmSpec`.
+ *   1. Scene-scope rules from each {@link ScenePlugin}'s `depthRules` —
+ *      run once per matching scene (matching by `sceneType`).
+ *   2. Film-scope rules from each {@link ScenePlugin}'s `depthRules`
+ *      whose `scope === 'film'` — run once per film. The plugin is
+ *      responsible for finding its own scenes via `ctx.filmSpec`.
  *   3. Feature-plugin `depthRules` — always run once per film.
  *
- * The `scope` hint defaults to `'scene'` when omitted (matching the protocol
- * doc's behaviour: a scene plugin's rule is per-scene unless declared otherwise).
+ * The `scope` hint defaults to `'scene'` when omitted on a `ScenePlugin`'s
+ * rule (matching the protocol doc's behaviour: a scene plugin's rule is
+ * per-scene unless declared otherwise).
+ *
+ * Async-tolerant: a rule may return a Promise so a rule that needs to
+ * probe external state (asset paths, fixture files) can.
+ *
+ * @returns A flat {@link DepthFinding} array. Empty = the film clears
+ * every active plugin's depth bar.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.2
  */
 export async function depthCheck(
   spec: FilmSpec,

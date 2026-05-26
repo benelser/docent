@@ -7,10 +7,16 @@
 
 /**
  * Hard-fail when two plugins try to register the same id. Always surfaces
- * both names so the integrator can resolve the conflict immediately.
+ * both plugin names so the integrator can resolve the conflict immediately
+ * without spelunking.
  *
  * `kind` is the human-readable name of the collision domain
  * (e.g. `'sceneType'`, `'presetName'`, `'providerId'`, `'feature name'`).
+ *
+ * @throws {@link RegistryConflictError} — always; the function's return
+ * type is `never`.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §6 (conflict policy)
  */
 export function assertNoConflict(
   kind: string,
@@ -29,13 +35,21 @@ export function assertNoConflict(
 }
 
 /**
- * Custom error class — surfaces the conflict fields so tooling (the doctor
- * surface, the cascade's preflight) can match on it.
+ * Thrown when two plugins try to register the same id within a registry
+ * (sceneType, presetName, providerId, feature name). Surfaces the conflict
+ * fields so tooling (the doctor surface, the cascade's preflight) can
+ * match on it via `instanceof` or by reading the structured fields.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §6
  */
 export class RegistryConflictError extends Error {
+  /** The collision domain — `'sceneType'`, `'presetName'`, etc. */
   readonly kind: string;
+  /** The colliding id. */
   readonly id: string;
+  /** The plugin that registered first. */
   readonly existingPluginName: string;
+  /** The plugin that tried to register the duplicate. */
   readonly incomingPluginName: string;
 
   constructor(

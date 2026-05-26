@@ -31,7 +31,9 @@ import type {Issue, SceneIssue, ScenePlugin} from '../protocols';
 import type {FilmSpec, Scene} from '../types/spec';
 
 /**
- * Validate a candidate film spec against the active engine.
+ * Validate a candidate film spec against the active engine. The pure
+ * function behind {@link Engine.validate}. Surfaced as a standalone export
+ * so a doctor surface or custom CI gate can call it directly.
  *
  * Flow:
  *   1. Film-level structural checks — `meta`, `scenes` must exist and be of
@@ -39,9 +41,12 @@ import type {FilmSpec, Scene} from '../types/spec';
  *   2. For each scene: confirm `type` is a non-empty string AND matches a
  *      registered `ScenePlugin.sceneType`.
  *   3. For each scene whose plugin declares `validate?`, call it and pull in
- *      its `SceneIssue[]` (re-rooting the path to `scenes[i].…`).
+ *      its {@link SceneIssue}s (re-rooting the path to `scenes[i].…`).
  *
- * Returns a flat `Issue[]`. Empty array means the spec is structurally clean.
+ * @returns A flat {@link Issue} array. Empty means the spec is
+ * structurally clean.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.7
  */
 export function validateSpec(spec: unknown, engine: Engine): Issue[] {
   const issues: Issue[] = [];
