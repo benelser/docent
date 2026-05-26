@@ -26,6 +26,7 @@ import {
   DEFAULT_HEIGHT,
   DEFAULT_WIDTH,
   buildFrameSchedule,
+  type TtsAudioMap,
 } from './schedule';
 
 /**
@@ -39,6 +40,14 @@ export interface BuildKitRootOptions {
   readonly plugins: ReadonlyArray<Plugin>;
   readonly spec: FilmSpec;
   readonly compositionId?: string;
+  /**
+   * Optional per-beat audio map (indexed by `<sceneIndex>-<beatIndex>`) the
+   * CLI's render-entry generator emits inline from the persisted per-film
+   * TTS manifest at `<publicDir>/audio/<filmId>/manifest.json`. Threaded into
+   * the schedule so the narration feature can attach per-beat `<Audio>`
+   * overlays via Remotion's `staticFile()`.
+   */
+  readonly ttsAudio?: TtsAudioMap;
 }
 
 /**
@@ -49,6 +58,7 @@ export interface BuildKitRootOptions {
  */
 let _registeredEngine: Engine | null = null;
 let _registeredSpec: FilmSpec | null = null;
+let _registeredTtsAudio: TtsAudioMap | undefined = undefined;
 
 /**
  * Render-side wrapper that reads the module-level engine + spec singleton
@@ -81,6 +91,7 @@ const KitFilm: React.FC = () => {
       spec={_registeredSpec}
       engine={_registeredEngine}
       style={style}
+      {...(_registeredTtsAudio !== undefined ? {ttsAudio: _registeredTtsAudio} : {})}
     />
   );
 };
@@ -102,8 +113,9 @@ export const buildKitRoot = (opts: BuildKitRootOptions): React.FC => {
   const engine = new Engine().use(opts.plugins as Plugin[]);
   _registeredEngine = engine;
   _registeredSpec = opts.spec;
+  _registeredTtsAudio = opts.ttsAudio;
 
-  const schedule = buildFrameSchedule(opts.spec, engine);
+  const schedule = buildFrameSchedule(opts.spec, engine, opts.ttsAudio);
   const res = opts.spec.meta.resolution;
   // Legacy films carry fps/width/height directly on meta; honour both shapes.
   const metaAny = opts.spec.meta as unknown as {

@@ -54,6 +54,7 @@ export type {
   StyleContext,
   SceneOutput,
   RenderContext,
+  SceneFeatureProps,
 
   // Modifier (R3 forward-compat)
   ModifierTier,

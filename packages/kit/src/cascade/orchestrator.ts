@@ -171,6 +171,11 @@ export const runCascade = async (
     const t0 = performance.now();
     const stageOpts: Parameters<typeof runTtsStage>[2] = {};
     if (opts.cacheDir !== undefined) stageOpts.cacheDir = opts.cacheDir;
+    // Persistence target — narrationFeature reads the resulting
+    // `<publicDir>/audio/<filmId>/manifest.json` at render-entry generation
+    // time so per-beat `<Audio>` overlays attach during the Remotion render.
+    if (opts.publicDir !== undefined) stageOpts.publicDir = opts.publicDir;
+    if (spec.meta?.id) stageOpts.filmId = spec.meta.id;
     ttsManifest = await runTtsStage(spec, engine, stageOpts);
     const seconds = (performance.now() - t0) / 1000;
     stages.push({
@@ -180,6 +185,20 @@ export const runCascade = async (
     });
   }
 
+  // Post-TTS hook — the CLI uses this to regenerate the Remotion entry so
+  // it can statically `import` the freshly-written per-film audio manifest.
+  // No-op when the caller didn't supply one.
+  let renderOpts: RenderOptions = opts;
+  if (opts.onTtsComplete && spec.meta?.id) {
+    const updatedEntry = await opts.onTtsComplete({
+      publicDir: opts.publicDir,
+      filmId: spec.meta.id,
+    });
+    if (typeof updatedEntry === 'string' && updatedEntry.length > 0) {
+      renderOpts = {...opts, entryPath: updatedEntry};
+    }
+  }
+
   // ─── 4. render ───────────────────────────────────────────────────────
   const t0 = performance.now();
   const result = await runRenderStage({
@@ -187,7 +206,7 @@ export const runCascade = async (
     engine,
     style,
     tts: ttsManifest,
-    opts,
+    opts: renderOpts,
   });
   const seconds = (performance.now() - t0) / 1000;
   stages.push({name: 'render', seconds});

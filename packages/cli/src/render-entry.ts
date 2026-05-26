@@ -10,8 +10,8 @@
 // esbuild/webpack with TS support. The generated entry is throwaway — it
 // lives under `<projectRoot>/.docent/tmp/` and is overwritten each render.
 
-import {mkdirSync, writeFileSync} from 'node:fs';
-import {dirname, relative, resolve} from 'node:path';
+import {existsSync, mkdirSync, readFileSync, writeFileSync} from 'node:fs';
+import {dirname, join, relative, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import type {Plugin} from '@docent/kit';
@@ -30,6 +30,14 @@ export interface GenerateEntryOptions {
    * generator references them by config-file path, not by value.
    */
   readonly userPlugins: ReadonlyArray<Plugin>;
+  /**
+   * Absolute path of the Remotion `public/` dir. When set, the generator
+   * looks for a per-film tts manifest at
+   * `<publicDir>/audio/<filmId>/manifest.json` and inlines its `beats`
+   * map in the entry so the narration feature can attach per-beat
+   * `<Audio>` overlays via `staticFile()`.
+   */
+  readonly publicDir?: string;
 }
 
 /** Resolve the absolute path of a package's package.json `main`. */
@@ -99,6 +107,44 @@ export const generateRenderEntry = async (
 const userPlugins = Array.isArray(userConfig?.plugins) ? userConfig.plugins : [];`
     : `const userPlugins: any[] = [];`;
 
+  // Inline the per-film tts manifest's `{<sceneIdx>-<beatIdx>: {file, seconds}}`
+  // map. Read here at generation time so the entry is a fully static module
+  // (Remotion's webpack bundler doesn't need filesystem I/O at render time).
+  let ttsAudioLiteral = 'undefined';
+  if (opts.publicDir) {
+    const manifestPath = join(
+      opts.publicDir,
+      'audio',
+      opts.filmId,
+      'manifest.json',
+    );
+    if (existsSync(manifestPath)) {
+      try {
+        const raw = JSON.parse(readFileSync(manifestPath, 'utf-8')) as {
+          beats?: Record<
+            string,
+            {file?: string; seconds?: number} | undefined
+          >;
+        };
+        const audioMap: Record<string, {file: string; seconds: number}> = {};
+        const beatsObj = raw.beats ?? {};
+        for (const [key, val] of Object.entries(beatsObj)) {
+          if (val && typeof val.file === 'string') {
+            audioMap[key] = {
+              file: val.file,
+              seconds: typeof val.seconds === 'number' ? val.seconds : 0,
+            };
+          }
+        }
+        if (Object.keys(audioMap).length > 0) {
+          ttsAudioLiteral = JSON.stringify(audioMap);
+        }
+      } catch {
+        // tolerable — fall back to silent render with a warning at runtime.
+      }
+    }
+  }
+
   // NOTE: Remotion's CLI greps the entry source for the literal string
   // "registerRoot" (see node_modules/@remotion/bundler/dist/bundle.js
   // validateEntryPoint). We MUST call `registerRoot` by name here (not via a
@@ -114,7 +160,8 @@ import spec from ${JSON.stringify(prefix(relSpec))};
 ${userImport}
 
 const all = [...corePlugins, ...userPlugins];
-registerRoot(buildKitRoot({plugins: all, spec}));
+const ttsAudio = ${ttsAudioLiteral};
+registerRoot(buildKitRoot(ttsAudio !== undefined ? {plugins: all, spec, ttsAudio} : {plugins: all, spec}));
 `;
   writeFileSync(entryPath, source, 'utf-8');
   return entryPath;
