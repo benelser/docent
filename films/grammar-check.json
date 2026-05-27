@@ -466,7 +466,7 @@
       "beats": [
         {
           "id": "demonstrate-1",
-          "narration": "A demonstrate scene plays the phenomenon itself — the thing in motion, not a diagram about it. With no clip attached, it falls back to this panel."
+          "narration": "A demonstrate scene plays the phenomenon itself — the thing in motion, not a diagram about it. The clip is the load-bearing field; the renderer frames it like a captured screen."
         }
       ],
       "clip": "placeholder-clip.webm"

@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "id": "prior-art-primer",
+    "title": "Prior-art primer",
+    "subject": "the prior-art scene — a comparison-cluster move",
+    "repo": "docent",
+    "prompt": "grammar-cover",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "neutral"
+  },
+  "style": {
+    "preset": "engineering",
+    "intent": {
+      "tone": "technical",
+      "audience": "technical",
+      "density": "comfortable",
+      "emphasis": "insight-first"
+    }
+  },
+  "scenes": [
+    {
+      "id": "f-intro",
+      "type": "frame",
+      "kicker": "PRIMER // PRIOR-ART",
+      "title": "Prior art",
+      "heading": "Prior art — the comparison-cluster move",
+      "beats": [
+        {
+          "id": "frame-1",
+          "narration": "Prior-art places the subject against systems that occupy similar terrain — not as a winner-and-losers ranking, but dimensionally. The novelty row is the one line of difference the film argues from."
+        }
+      ]
+    },
+    {
+      "id": "s-prior-art",
+      "type": "prior-art",
+      "kicker": "01 // AGAINST THE PRIOR ART",
+      "heading": "Where docent stands against the field",
+      "systems": [
+        {"id": "marp", "label": "Marp", "sub": "Markdown-to-deck", "year": "2017+"},
+        {"id": "reveal", "label": "Reveal.js", "sub": "HTML deck framework", "year": "2011+"},
+        {"id": "manim", "label": "Manim", "sub": "explainer code library", "year": "2018+"}
+      ],
+      "dimensions": [
+        {"id": "input", "label": "What the author writes"},
+        {"id": "output", "label": "What the audience receives"},
+        {"id": "argument", "label": "Whether the form argues for what it explains"}
+      ],
+      "cells": [
+        {"system": "marp", "dimension": "input", "mark": "same", "note": "Markdown — declarative content"},
+        {"system": "reveal", "dimension": "input", "mark": "diverges", "note": "HTML — every slot is hand-laid"},
+        {"system": "manim", "dimension": "input", "mark": "diverges", "note": "Python code — imperative animation"},
+        {"system": "marp", "dimension": "output", "mark": "same", "note": "Slides — a static reading surface"},
+        {"system": "reveal", "dimension": "output", "mark": "same", "note": "Slides — a static reading surface"},
+        {"system": "manim", "dimension": "output", "mark": "diverges", "note": "Video — narrated motion"},
+        {"system": "marp", "dimension": "argument", "mark": "diverges", "note": "Content; the deck does not push back"},
+        {"system": "reveal", "dimension": "argument", "mark": "diverges", "note": "Content; the deck does not push back"},
+        {"system": "manim", "dimension": "argument", "mark": "diverges", "note": "Beautiful, but the argument is the author's voiceover, not the form"}
+      ],
+      "novelty": {
+        "kind": "prior-art",
+        "dimension": "argument",
+        "statement": "docent's grammar is the argument — every scene type IS a cognitive move with a depth contract that refuses to render without it."
+      },
+      "beats": [
+        {
+          "id": "p-systems",
+          "narration": "Three systems occupy similar terrain: Marp, Reveal.js, and Manim. Each maps an author's input onto an audience's output.",
+          "reveal": ["marp", "reveal", "manim"]
+        },
+        {
+          "id": "p-input",
+          "narration": "On input, Marp and docent both ask for declarative content. Reveal asks for HTML; Manim asks for Python.",
+          "reveal": ["input"],
+          "focus": ["input"]
+        },
+        {
+          "id": "p-output",
+          "narration": "On output, Marp and Reveal land on slides. Manim renders narrated motion — closer to docent's surface, but stopping at the visual.",
+          "reveal": ["output"],
+          "focus": ["output"]
+        },
+        {
+          "id": "p-argument",
+          "narration": "The novelty is the third row. None of the prior systems carry an argument in their form. Their form delivers content; the argument lives in the author's voice. Docent's grammar IS the argument.",
+          "reveal": ["argument"],
+          "focus": ["argument"]
+        }
+      ]
+    },
+    {
+      "id": "r-recap",
+      "type": "recap",
+      "kicker": "VERDICT // THE NEW LINE",
+      "heading": "Prior-art — the comparison move with novelty",
+      "points": [
+        {
+          "id": "r-1",
+          "title": "The form factor",
+          "body": "Systems × dimensions × cells. Same or diverges, with one short claim per cell."
+        },
+        {
+          "id": "r-2",
+          "title": "The argument",
+          "body": "One row is the novelty — the line of difference the film argues from. The renderer lights it."
+        },
+        {
+          "id": "r-3",
+          "title": "The position",
+          "body": "Prior-art belongs between frame and the first structure scene — the viewer learns what's been tried before they see the system itself."
+        }
+      ],
+      "beats": [
+        {
+          "id": "r-1",
+          "narration": "Prior-art's form: systems by dimensions, with cells marking same or diverges.",
+          "reveal": ["r-1"]
+        },
+        {
+          "id": "r-2",
+          "narration": "Its argument: the novelty row — the one line of difference — gets the accent rule and the wash. The viewer's eye lands on what the film is here to claim.",
+          "reveal": ["r-2"]
+        },
+        {
+          "id": "r-3",
+          "narration": "Its position: between the frame and the first structure scene. What's been tried, before what we built.",
+          "reveal": ["r-3"]
+        }
+      ]
+    }
+  ]
+}

@@ -12,6 +12,7 @@
 
 import {runBuild} from './commands/build';
 import {runDepthcheck} from './commands/depthcheck';
+import {runGrammarCheck} from './commands/grammar-check';
 import {runHermetic} from './commands/hermetic';
 import {runRenderCheck} from './commands/render-check';
 import {runValidate} from './commands/validate';
@@ -28,6 +29,12 @@ COMMANDS
   render-check <film-id>  Render at low scale + assert every narrated scene
                           evolves visibly across its window. Guards against
                           chrome-only renders (audio without body).
+  grammar-check           Run the cover-set of demo films and assert three
+                          invariants across the registered scene library:
+                          coverage (every plugin exercised), taxonomy
+                          (every plugin declares a valid cognitive cluster),
+                          pipeline (every cover-set film renders + passes
+                          render-check).
   hermetic                Render the 4 gallery fixtures end to end.
   help                    Print this usage and exit.
 
@@ -162,6 +169,18 @@ const main = async (): Promise<number> => {
       ...(flags['skip-tts'] ? {skipTts: true} : {}),
       ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+    });
+  }
+
+  if (command === 'grammar-check') {
+    return runGrammarCheck({
+      ...(num(flags.scale) !== undefined ? {scale: num(flags.scale)!} : {}),
+      ...(flags['skip-tts'] === false ? {skipTts: false} : {}),
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
         : {}),

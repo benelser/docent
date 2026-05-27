@@ -7,6 +7,12 @@ node_modules/
 out/
 public/audio/
 public/clips/
+# Exception: the grammar-check fixture's 1-second placeholder clip is the
+# only checked-in clip — it's what makes `docent grammar-check` work
+# end-to-end on a fresh clone. Other clips live at the renderer's authoring
+# time and aren't gallery-tracked.
+!public/clips/grammar-check/
+!public/clips/grammar-check/placeholder-clip.webm
 .remotion/
 .manim-cache/
 
@@ -49,6 +55,7 @@ films/*
 !films/text-stress-narrative.json
 !films/rhetorical-primer.json
 !films/sprint-b-composition-demo.json
+!films/prior-art-primer.json
 analysis/*
 !analysis/linear-algebra.md
 !analysis/linear-algebra.source.md

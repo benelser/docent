@@ -549,6 +549,7 @@ EXAMPLES
   docent validate kubernetes-pr
   docent depthcheck euclid-primes
   docent render-check openclaw-ar
+  docent grammar-check
   docent hermetic --scale 0.5
 ```
 
@@ -593,6 +594,38 @@ docent render-check openclaw-ar
 Exit code 0 on full pass, 4 when at least one narrated scene is static.
 A per-film sidecar (`out/.render-check-<id>/check.json`) records every
 sample for follow-up forensics.
+
+### `docent grammar-check`
+
+The **closed-grammar invariant** — one command, three asks:
+
+1. **Coverage** — every registered `ScenePlugin`'s `sceneType` appears
+   in at least one demo film in the cover set. A scene plugin nobody
+   ever uses is dead weight; a scene plugin nobody can use is a bug.
+2. **Taxonomy** — every registered `ScenePlugin` declares a `cluster`
+   field from the closed 7-cluster taxonomy (or `null` for chrome).
+   The recommender (`docent scene-fit`) navigates by these clusters;
+   a missing or typo'd cluster breaks scene-fit.
+3. **Pipeline** — every film in the cover set survives validate → render
+   → `render-check`. A scene plugin that can't make it through the
+   cascade end-to-end isn't usable.
+
+The default cover set is **six small demo films** that union-cover all
+29 canonical scene types in minutes, not hours:
+`grammar-check` (15 scenes), `rhetorical-primer` (4 unique),
+`sprint-b-composition-demo` (7 unique via embeds), `causal-loop-primer`,
+`multi-region-db`, `prior-art-primer`.
+
+```bash
+docent grammar-check
+```
+
+Per-scene status table prints the cluster tag + which film(s) exercise
+it. Exit code 0 on green; 5 on any taxonomy, coverage, or pipeline
+failure. Third-party plugin packs registered via `docent.config.ts`
+are folded in automatically — register a `@yourorg/docent-finance/ohlc`
+scene and the next grammar-check will surface "uncovered" until a demo
+film cites it.
 
 ### `docent hermetic`
 
