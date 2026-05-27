@@ -550,6 +550,8 @@ EXAMPLES
   docent depthcheck euclid-primes
   docent render-check openclaw-ar
   docent grammar-check
+  docent scene-fit list
+  docent scene-fit recommend linear-algebra --top 8
   docent hermetic --scale 0.5
 ```
 
@@ -594,6 +596,30 @@ docent render-check openclaw-ar
 Exit code 0 on full pass, 4 when at least one narrated scene is static.
 A per-film sidecar (`out/.render-check-<id>/check.json`) records every
 sample for follow-up forensics.
+
+### `docent scene-fit`
+
+The **agent-facing introspection** over the 29-scene grammar — the
+recommender that closes the "which scene fits which cognitive move"
+loop. Without it, an undirected agent reflex-defaults to
+`frame / structure / compare / tension / recap` on every film, producing
+tour-shaped specs instead of arguments.
+
+```bash
+# enumerate registered scene plugins by cluster, with a "reach for it when" cue
+docent scene-fit list [--json]
+
+# read analysis/<id>.md and recommend the top N scene types with rationales
+docent scene-fit recommend <subject-id> [--top N] [--json]
+```
+
+`list` reads from the engine registry, so third-party plugins
+registered via `docent.config.ts` surface alongside core. `recommend`
+runs a rule-based mapper (NOT an LLM call) — every signal needle in
+the survey contributes a weighted vote toward one scene type. When the
+top N is a subset of the default-rut five, the result raises a
+`warningOnDefault` flag prompting the author to re-read the survey for
+the more specific primitives they may have skipped.
 
 ### `docent grammar-check`
 

@@ -15,6 +15,7 @@ import {runDepthcheck} from './commands/depthcheck';
 import {runGrammarCheck} from './commands/grammar-check';
 import {runHermetic} from './commands/hermetic';
 import {runRenderCheck} from './commands/render-check';
+import {runSceneFitList, runSceneFitRecommend} from './commands/scene-fit';
 import {runValidate} from './commands/validate';
 
 const USAGE = `docent — render explanatory films via @docent/kit.
@@ -35,6 +36,9 @@ COMMANDS
                           (every plugin declares a valid cognitive cluster),
                           pipeline (every cover-set film renders + passes
                           render-check).
+  scene-fit list          Enumerate registered scene plugins by cluster.
+  scene-fit recommend     Read analysis/<id>.md + recommend scene types.
+                          The agent-facing introspection over the grammar.
   hermetic                Render the 4 gallery fixtures end to end.
   help                    Print this usage and exit.
 
@@ -173,6 +177,43 @@ const main = async (): Promise<number> => {
         ? {projectRoot: str(flags['project-root'])!}
         : {}),
     });
+  }
+
+  if (command === 'scene-fit') {
+    const sub = positional[0];
+    if (!sub || sub === 'list') {
+      return runSceneFitList({
+        json: Boolean(flags.json),
+        ...(str(flags['project-root'])
+          ? {projectRoot: str(flags['project-root'])!}
+          : {}),
+        ...(str(flags['analysis-dir'])
+          ? {analysisDir: str(flags['analysis-dir'])!}
+          : {}),
+      });
+    }
+    if (sub === 'recommend') {
+      const subjectId = positional[1];
+      if (!subjectId) {
+        process.stderr.write(
+          'docent scene-fit recommend: missing <subject-id>\n' + USAGE,
+        );
+        return 64;
+      }
+      return runSceneFitRecommend({
+        subjectId,
+        json: Boolean(flags.json),
+        ...(num(flags.top) !== undefined ? {top: num(flags.top)!} : {}),
+        ...(str(flags['project-root'])
+          ? {projectRoot: str(flags['project-root'])!}
+          : {}),
+        ...(str(flags['analysis-dir'])
+          ? {analysisDir: str(flags['analysis-dir'])!}
+          : {}),
+      });
+    }
+    process.stderr.write(`docent scene-fit: unknown subcommand "${sub}" — use list | recommend\n` + USAGE);
+    return 64;
   }
 
   if (command === 'grammar-check') {
