@@ -236,7 +236,7 @@ When every checkbox below is ✅, this file gets the rename
 ### Status checklist
 
 - [x] D1 — Audio overlay (A2 → `4534290`, merged `6e6944e`)
-- [ ] D2 — Embed renderers (A3 in flight)
+- [x] D2 — Embed renderers (A3 → `65002b3`, merged `8cee499`)
 - [ ] D3 — README films re-rendered + compared
 - [ ] D4 — Hermetic 4/4 verified end-to-end through @docent/cli
 - [ ] D5 — Strict tsc flags restored on @docent/core (B1 in flight, unblocked by D6)
