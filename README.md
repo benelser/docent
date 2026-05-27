@@ -44,9 +44,9 @@ Hover for motion, click for the full HD mp4.
 |  |  |
 |---|---|
 | [![docent reviewing its own architecture](docs/stills/docent-self-preview.gif)](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/docent-self.mp4) | [![OpenClaw — one local daemon, twenty-two channels](docs/stills/openclaw-ar-preview.gif)](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/openclaw-ar.mp4) |
-| **▶ docent** *— reviewing its own architecture* — 11 min · 40 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/docent-self.mp4)<br/>`frame · prior-art · structure · progression · compare · tension · quantities · recap` | **▶ OpenClaw** *— one local daemon, twenty-two channels* — 12 min · 53 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/openclaw-ar.mp4)<br/>`frame · prior-art · structure · walkthrough · structure · tension · quantities · recap` |
+| **▶ docent** *— reviewing its own architecture* — 11 min · 52 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/docent-self.mp4)<br/>`frame · prior-art · structure · progression · compare · tension · quantities · recap` | **▶ OpenClaw** *— one local daemon, twenty-two channels* — 12 min · 80 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/openclaw-ar.mp4)<br/>`frame · prior-art · structure · walkthrough · structure · tension · quantities · recap` |
 | [![The Lethal Trifecta](docs/stills/lethal-trifecta-blog-preview.gif)](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/lethal-trifecta-blog.mp4) | [![Let the Barbarians In](docs/stills/arxiv-2512-14806-preview.gif)](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/arxiv-2512-14806.mp4) |
-| **▶ The Lethal Trifecta** *— Simon Willison's essay on agent security* — 12 min · 54 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/lethal-trifecta-blog.mp4)<br/>`frame · structure · passage · walkthrough · quantities · compare · tension · big-idea · recap` | **▶ Let the Barbarians In** *— a recent arXiv paper, fetched as PDF* — 11 min · 46 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/arxiv-2512-14806.mp4)<br/>`frame · compare · structure · quantities · tension · probe · big-idea · recap` |
+| **▶ The Lethal Trifecta** *— Simon Willison's essay on agent security* — 12 min · 62 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/lethal-trifecta-blog.mp4)<br/>`frame · structure · passage · walkthrough · quantities · compare · tension · big-idea · recap` | **▶ Let the Barbarians In** *— a recent arXiv paper, fetched as PDF* — 11 min · 56 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/arxiv-2512-14806.mp4)<br/>`frame · compare · structure · quantities · tension · probe · big-idea · recap` |
 
 Each film went **survey → treatment → spec → judge → render** through
 the same engine. The grammar is what's shared. The argument is what
@@ -548,6 +548,7 @@ EXAMPLES
   docent build linear-algebra --scale 0.5
   docent validate kubernetes-pr
   docent depthcheck euclid-primes
+  docent render-check openclaw-ar
   docent hermetic --scale 0.5
 ```
 
@@ -571,6 +572,27 @@ findings. The cascade gates on this in CI — a depth regression is a
 hard fail. The judge surface (the 7-dimension grader) runs on top of
 depthcheck; see [`docs/design/plugin-architecture-strategy.md`](docs/design/plugin-architecture-strategy.md)
 §4.2.
+
+### `docent render-check`
+
+Holds the **visual-integrity invariant**:
+
+> A film with narration cannot ship blank scene bodies.
+
+The build path is the kind that can fail silently — audio plays, chrome
+renders, but a scene's body content (nodes, edges, panels, quantities)
+stays at frame-0 state because a reveal-gate never fires. `render-check`
+catches it: builds at low scale + `--skip-tts`, then per scene with
+narration samples three frames at 10% / 50% / 90% of the window, hashes
+each, and **fails if a scene's three samples are pixel-identical**.
+
+```bash
+docent render-check openclaw-ar
+```
+
+Exit code 0 on full pass, 4 when at least one narrated scene is static.
+A per-film sidecar (`out/.render-check-<id>/check.json`) records every
+sample for follow-up forensics.
 
 ### `docent hermetic`
 
