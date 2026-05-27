@@ -109,7 +109,9 @@ this is the persistent reference.
 ### 🟨 MINOR — known, documented, low priority
 
 #### D10. `public/audio/manifest.json` stub
-Pre-existing engine issue. Gitignored stub required for `packages/core` tsc to pass when walking through `@docent-engine-bridge/*`. Goes away when D6 lands.
+Pre-existing engine issue. Gitignored stub historically required for `packages/core` tsc to pass when walking through `@docent-engine-bridge/*`.
+
+**Resolution (2026-05-26):** ✅ With D6 closed and the bridge alias removed from `tsconfig.json` (root), every v3 contract package — `@docent/kit`, `@docent/core`, `@docent/cli`, `@docent/tts-{openai,elevenlabs,compatible}`, and the four example packs — tsc's clean with the stub absent. The stub is now a runtime artifact written by the TTS stage during renders; on a fresh clone it doesn't exist, and that is fine for every v3 workflow. The only consumer that still imports it statically is `packages/engine/src/engine/spec.ts`, which is preserved-as-source (v2.5 monolith) but no longer part of the tsc contract.
 
 #### D11. `zod` version mismatch warning
 Remotion logs warning every render: installed 4.4.3, expected 4.3.6. Non-blocking. Pin in `package.json`.
@@ -244,7 +246,7 @@ When every checkbox below is ✅, this file gets the rename
 - [x] D7 — _shared/* helpers consolidated (A1)
 - [x] D8 — Paid TTS providers split into @docent/tts-* (C1)
 - [x] D9 — Plugin manifest code-generated (C2)
-- [ ] D10 — public/audio/manifest.json stub removed (follows D6)
+- [x] D10 — public/audio/manifest.json stub no longer required by v3 contract (proved via cross-package tsc with stub absent)
 - [x] D11 — zod version pinned to 4.3.6 (`f8dd4f9`)
 - [ ] D12 — `requiresTtsCapabilities` declared on at least passage
 - [x] D13 — packages/agent normalized to @docent/agent (C3)

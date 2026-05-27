@@ -15,8 +15,7 @@
     "allowImportingTsExtensions": false,
     "paths": {
       "@docent/kit": ["./packages/kit/src/index.ts"],
-      "@docent/core": ["./packages/core/src/index.ts"],
-      "@docent-engine-bridge/*": ["./packages/engine/src/*"]
+      "@docent/core": ["./packages/core/src/index.ts"]
     }
   },
   "include": [
