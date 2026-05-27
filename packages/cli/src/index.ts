@@ -12,6 +12,7 @@
 
 import {runBuild} from './commands/build';
 import {runDepthcheck} from './commands/depthcheck';
+import {runDoctor} from './commands/doctor';
 import {runGrammarCheck} from './commands/grammar-check';
 import {runHermetic} from './commands/hermetic';
 import {runRenderCheck} from './commands/render-check';
@@ -39,6 +40,10 @@ COMMANDS
   scene-fit list          Enumerate registered scene plugins by cluster.
   scene-fit recommend     Read analysis/<id>.md + recommend scene types.
                           The agent-facing introspection over the grammar.
+  doctor                  Plugin conformance + setup diagnostics. Grades
+                          every registered plugin against the protocol
+                          contract; surfaces missing cues, empty signals,
+                          bad clusters, registry conflicts. Exit 6 on error.
   hermetic                Render the 4 gallery fixtures end to end.
   help                    Print this usage and exit.
 
@@ -214,6 +219,15 @@ const main = async (): Promise<number> => {
     }
     process.stderr.write(`docent scene-fit: unknown subcommand "${sub}" — use list | recommend\n` + USAGE);
     return 64;
+  }
+
+  if (command === 'doctor') {
+    return runDoctor({
+      json: Boolean(flags.json),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+    });
   }
 
   if (command === 'grammar-check') {

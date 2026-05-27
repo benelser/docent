@@ -552,6 +552,7 @@ EXAMPLES
   docent grammar-check
   docent scene-fit list
   docent scene-fit recommend linear-algebra --top 8
+  docent doctor
   docent hermetic --scale 0.5
 ```
 
@@ -596,6 +597,34 @@ docent render-check openclaw-ar
 Exit code 0 on full pass, 4 when at least one narrated scene is static.
 A per-film sidecar (`out/.render-check-<id>/check.json`) records every
 sample for follow-up forensics.
+
+### `docent doctor`
+
+The **plugin conformance** check. Reads the engine registry (core + any
+plugins from `docent.config.ts`) and grades every registered plugin
+against the protocol contract.
+
+```bash
+docent doctor          # human-readable
+docent doctor --json   # machine-readable for CI gates
+```
+
+Reports:
+
+- **ERROR** — structural violations that will fail renders (missing
+  `sceneType`, bad `cluster`, missing `schema` or `component`, bad
+  signal weights, registry conflicts). Exit code **6**.
+- **WARN** — valid but missing things authors want (no `cue` for
+  `scene-fit list`, no `signals` on a non-chrome scene, undeclared
+  `depthRules`/`judgeDimensions` arrays). Exit code **0** — warnings
+  are informational.
+- **INFO** — counts + cluster distribution for orientation.
+
+Run from a project root and `doctor` sees the user's plugins too —
+the line `+2 from docent.config.ts` confirms the pack is loaded.
+This is the first command extension authors should reach for after
+`bunx tsc --noEmit`: it answers "did I honor the contract?" without
+needing to render a film.
 
 ### `docent scene-fit`
 

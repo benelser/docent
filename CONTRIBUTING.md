@@ -22,16 +22,24 @@ The full plugin-authoring guide is in the [main README](README.md#plugin-authori
 After authoring, verify your pack lands clean:
 
 ```bash
-# Tsc check
+# 1. Tsc check
 bunx tsc --noEmit
 
-# Render the demo film
+# 2. Plugin conformance — the first thing to run. Surfaces missing
+#    cues, empty signals, bad clusters, registry conflicts. No render
+#    needed — fast feedback.
+bun /path/to/docent/packages/cli/src/index.ts doctor
+
+# 3. Render the demo film
 bun /path/to/docent/packages/cli/src/index.ts build <your-film-id> --scale 0.5
 
-# Run the harness suite
+# 4. Run the harness suite
 bun /path/to/docent/packages/cli/src/index.ts render-check <your-film-id>
 bun /path/to/docent/packages/cli/src/index.ts grammar-check  # if you registered the pack
 ```
+
+For published packs, gate CI on `docent doctor --json` (parses
+to JSON; exits 6 on errors, 0 with warnings).
 
 ### Pull-request your pack into the gallery (optional)
 
