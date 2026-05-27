@@ -76,7 +76,7 @@ on `films/<id>.json` as a top-level `"style"` field.
 **Run the recommender** (rule-based; not an LLM call):
 
 ```bash
-bun packages/engine/cli/docent.ts style recommend <id>
+bun run docent-legacy style recommend <id>
 ```
 
 It reads this survey file (`analysis/<id>.md`) and prints a recommended
@@ -134,7 +134,7 @@ trade-off plane, an `epigraph` + `objection` for a contested topic.
 **Run the recommender** (rule-based; not an LLM call):
 
 ```bash
-bun packages/engine/cli/docent.ts scene-fit recommend <id>
+bun run docent scene-fit recommend <id>
 ```
 
 It reads this survey file (`analysis/<id>.md`), scores every cognitive

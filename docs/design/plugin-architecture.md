@@ -1,10 +1,10 @@
 # docent plugin architecture
 
-**Status:** design proposal, single coherent ship — no alpha/beta/v3 channel.
-**Date:** 2026-05-26
+**Status:** ✅ **SHIPPED in v3.0.0-rc.0** (2026-05-27). Original design proposal preserved below as the historical record; the framework + the default implementation pack + the 6 cover-set example packs are live.
+**Date drafted:** 2026-05-26
 **Author:** docent research agent
 **Inputs:** [docs/research/marp-inspired-extensibility.md](../research/marp-inspired-extensibility.md), [docs/research/tts-adapter-ecosystem.md](../research/tts-adapter-ecosystem.md), Rig source (`rig-core` 0.37, the [`audio_generation`](https://docs.rs/rig-core/latest/rig_core/audio_generation/index.html) and [`client`](https://docs.rs/rig-core/latest/rig_core/client/index.html) modules, and the [`Capabilities`](https://docs.rs/rig-core/latest/rig_core/client/trait.Capabilities.html) pattern).
-**Disposition:** one design, one release. The whole engine moves from monolith to `docent-kit` + `docent-core` in a single migration. No staged opt-in.
+**Disposition:** one design, one release. The whole engine moved from monolith to `@docent/kit` + `@docent/core` in a single migration — no staged opt-in. The 18-item stabilization sprint that closed the spike is captured in [`v3-stabilization.COMPLETE.md`](v3-stabilization.COMPLETE.md). For the in-flight strategic surface (R3 modifiers, R4 preset composition, R6 microsyntax — documented hooks; first consumer activates them), see [`plugin-architecture-strategy.md`](plugin-architecture-strategy.md).
 
 ---
 

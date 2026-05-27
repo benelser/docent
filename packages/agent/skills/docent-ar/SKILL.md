@@ -39,7 +39,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
 2. **Survey** — architecture mode:
 
    ```bash
-   bun packages/engine/cli/docent.ts survey <repo> --mode ar [--subsystem X] [--id X]
+   bun run docent-legacy survey <repo> --mode ar [--subsystem X] [--id X]
    ```
 
    The survey lands at `analysis/<id>.md`. When a subsystem is named,
@@ -63,7 +63,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
    register the film renders in:
 
    ```bash
-   bun packages/engine/cli/docent.ts style recommend <id>
+   bun run docent-legacy style recommend <id>
    ```
 
    For architecture-review films the recommender will return
@@ -81,7 +81,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
    layer down — the cognitive moves the film will make.
 
    ```bash
-   bun packages/engine/cli/docent.ts scene-fit recommend <id>
+   bun run docent scene-fit recommend <id>
    ```
 
    The recommender reads the survey and prints the top scene types
@@ -100,7 +100,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
 4. **Treatment.**
 
    ```bash
-   bun packages/engine/cli/docent.ts treatment <id>
+   bun run docent-legacy treatment <id>
    ```
 
    Writes `treatments/<id>.md`. Print the *Angle* line so the user sees
@@ -109,8 +109,8 @@ idioms, the failure modes, the trade-offs, with a verdict.
 5. **Spec — and interrogate it.**
 
    ```bash
-   bun packages/engine/cli/docent.ts treatment <id> --to-spec
-   bun packages/engine/cli/docent.ts review <id> --max-rounds 2
+   bun run docent-legacy treatment <id> --to-spec
+   bun run docent-legacy review <id> --max-rounds 2
    ```
 
    The first compiles the treatment into `films/<id>.json`. The second
@@ -139,7 +139,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
 6. **Render.**
 
    ```bash
-   bun packages/engine/cli/docent.ts build <id> --scale 1
+   bun run docent build <id> --scale 1
    ```
 
 7. **Open the result** (unless `--no-open`). On macOS: `open out/<id>.mp4`.

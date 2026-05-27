@@ -45,7 +45,7 @@ core before → after, what ripples, what could break, and a verdict.
    register the film renders in:
 
    ```bash
-   bun packages/engine/cli/docent.ts style recommend <id>
+   bun run docent-legacy style recommend <id>
    ```
 
    For PR films the recommender will almost always return
@@ -64,7 +64,7 @@ core before → after, what ripples, what could break, and a verdict.
    layer down — the cognitive moves the film will make.
 
    ```bash
-   bun packages/engine/cli/docent.ts scene-fit recommend <id>
+   bun run docent scene-fit recommend <id>
    ```
 
    The recommender reads the survey and prints the top scene types with

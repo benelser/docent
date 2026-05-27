@@ -18,7 +18,8 @@
     "tests/example-docent-feature-captions"
   ],
   "scripts": {
-    "docent": "bun packages/engine/cli/docent.ts"
+    "docent": "bun packages/cli/src/index.ts",
+    "docent-legacy": "bun packages/engine/cli/docent.ts"
   },
   "license": "MIT"
 }

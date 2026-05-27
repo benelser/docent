@@ -213,7 +213,7 @@ legal scene types are the enum above; the six legal accents are `blue`, `cyan`,
 Run:
 
 ```
-bun packages/engine/cli/docent.ts depthcheck <id>
+bun run docent depthcheck <id>
 ```
 
 Revise `films/<id>.json` until it validates and the depth contract reports met
