@@ -1,6 +1,14 @@
-# v3.0 Stabilization — Debt Audit + Cleanup Plan
+# v3.0 Stabilization — Debt Audit + Cleanup Plan ✅ COMPLETE
 
-> **Status: SPIKE COMPLETE, STABILIZATION PENDING.**
+> **Status: STABILIZATION COMPLETE (2026-05-26).** All 18 debt items
+> closed. v3.0-rc.0 ships as `@docent/{kit, core, cli, tts-openai,
+> tts-elevenlabs, tts-compatible, agent}` with strict tsc green across
+> the full v3 contract, 4 example plugin packs proving the extension
+> paths (scifi + finance + brand + captions), the README hero films
+> re-rendered through `@docent/cli`, and hermetic 4/4 GREEN end-to-end.
+> The publish gate is the `private: true` flag on each package.
+>
+> **Original status: SPIKE COMPLETE, STABILIZATION PENDING.**
 >
 > The §10 acceptance test from `plugin-architecture-strategy.md` is GREEN —
 > a third-party plugin pack renders end-to-end via `docent build` without
@@ -250,7 +258,7 @@ When every checkbox below is ✅, this file gets the rename
 - [x] D1 — Audio overlay (A2 → `4534290`, merged `6e6944e`)
 - [x] D2 — Embed renderers (A3 → `65002b3`, merged `8cee499`)
 - [x] D3 — README films re-rendered through @docent/cli (4/4 GREEN: openclaw-ar 40.5 MB, lethal-trifecta-blog 41.0 MB, arxiv-2512-14806 36.1 MB, docent-self 31.8 MB w/ AAC 48kHz audio)
-- [ ] D4 — Hermetic 4/4 verified end-to-end through @docent/cli
+- [x] D4 — Hermetic 4/4 GREEN through @docent/cli (linear-algebra 18.5 MB · kubernetes-pr 19.2 MB · euclid-primes 18.5 MB · stopping-by-woods 16.8 MB)
 - [x] D5 — Strict tsc flags restored on @docent/core (B1 → `c578890`, merged surgically — A3 and B1 had overlapping scene-file edits)
 - [x] D6 — @docent-engine-bridge/* eliminated (B2 → `44132b4`, merged `dc91e96`)
 - [x] D7 — _shared/* helpers consolidated (A1)
