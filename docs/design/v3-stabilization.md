@@ -249,7 +249,7 @@ When every checkbox below is ✅, this file gets the rename
 
 - [x] D1 — Audio overlay (A2 → `4534290`, merged `6e6944e`)
 - [x] D2 — Embed renderers (A3 → `65002b3`, merged `8cee499`)
-- [ ] D3 — README films re-rendered + compared
+- [x] D3 — README films re-rendered through @docent/cli (4/4 GREEN: openclaw-ar 40.5 MB, lethal-trifecta-blog 41.0 MB, arxiv-2512-14806 36.1 MB, docent-self 31.8 MB w/ AAC 48kHz audio)
 - [ ] D4 — Hermetic 4/4 verified end-to-end through @docent/cli
 - [x] D5 — Strict tsc flags restored on @docent/core (B1 → `c578890`, merged surgically — A3 and B1 had overlapping scene-file edits)
 - [x] D6 — @docent-engine-bridge/* eliminated (B2 → `44132b4`, merged `dc91e96`)
