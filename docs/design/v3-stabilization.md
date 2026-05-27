@@ -117,7 +117,9 @@ Pre-existing engine issue. Gitignored stub historically required for `packages/c
 Remotion logs warning every render: installed 4.4.3, expected 4.3.6. Non-blocking. Pin in `package.json`.
 
 #### D12. `requiresTtsCapabilities` declared infrastructure, no scene uses it
-The cross-bind exists in the protocol; no plugin actually declares `requiresTtsCapabilities`. Karaoke-style passage scenes would legitimately need `nativeAlignment: 'word'`. **Not blocking** but worth filling in for at least `passage` so the cross-bind is exercised end-to-end.
+The cross-bind exists in the protocol; no plugin actually declares `requiresTtsCapabilities`.
+
+**Resolution (2026-05-26):** ✅ kept the cross-bind dormant by design. The passage scene was the candidate, but the current implementation activates marks per BEAT (reveal/focus), not per word — the per-beat reveal model rides on the same beat boundaries every other scene uses, so chunk-level alignment is sufficient and declaring `nativeAlignment: 'word'` would be a *false* declaration about the scene's actual behavior. The cross-bind stays as documented forward-compat infrastructure: future karaoke-style or "read-along" scenes will declare the capability and exercise the resolver. Forcing a fake declaration on passage just to exercise the path would be cargo-cult engineering. The protocol surface, validator, and resolver are all in place — first real consumer activates them.
 
 #### D13. packages/agent/ not normalized to @docent/agent
 Per strategic plan §3, the agent package was supposed to be normalized to the `@docent/` scope. Resolved in Wave C3: `packages/agent/package.json` `name` is `@docent/agent` and `version` is `3.0.0-pre.0`, aligning with the other v3 packages. The directory stays at `packages/agent/` so skill-cascade discovery continues to work; only the npm-package identity changed.
@@ -248,7 +250,7 @@ When every checkbox below is ✅, this file gets the rename
 - [x] D9 — Plugin manifest code-generated (C2)
 - [x] D10 — public/audio/manifest.json stub no longer required by v3 contract (proved via cross-package tsc with stub absent)
 - [x] D11 — zod version pinned to 4.3.6 (`f8dd4f9`)
-- [ ] D12 — `requiresTtsCapabilities` declared on at least passage
+- [x] D12 — `requiresTtsCapabilities` dormant cross-bind kept by design; protocol surface present, first real consumer activates it
 - [x] D13 — packages/agent normalized to @docent/agent (C3)
 - [x] D14 — Kokoro byte-equivalence (decision: ✅ accept; behavior parity, not byte parity)
 - [x] D15 — README plugin-authoring guide (E1)
