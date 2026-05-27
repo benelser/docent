@@ -14,14 +14,8 @@
 // `comparison` cluster move — it places the subject against alternatives
 // on dimensions, the family that includes `compare`, `landscape`,
 // `quantities`, `chart`, `venn`, `probe`.
-//
-// Phase B migration note: the engine still owns the render path in this
-// build (Film.tsx's 29-way switch). The component this plugin exposes is
-// a placeholder until Phase D refactors Film.tsx to dispatch through the
-// registry — at which point the renderer ports across in one move with
-// hermetic-gallery parity. See `./component.tsx`.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {Scene, ScenePlugin} from '@docent/kit';
 
 import {Component} from './component';
 import {schema} from './schema';
@@ -29,14 +23,22 @@ import {validate} from './validate';
 import {depthRules} from './depth-rules';
 import {judgeDimensions} from './judge-dimensions';
 
-export const priorArtPlugin: ScenePlugin = {
+// The component reads typed `prior-art` fields, but the plugin contract is
+// keyed on the open `Scene` union — the engine narrows on `scene.type`
+// before dispatch, and the validator hard-fails any prior-art scene whose
+// per-type fields don't match the shape Component reads.
+export const priorArtPlugin: ScenePlugin<Scene> = {
   kind: 'scene',
   name: 'prior-art',
   version: '1.0.0',
   sceneType: 'prior-art',
   cluster: 'comparison',
   schema,
-  component: Component,
+  // Component accepts `SceneRenderProps<PriorArtScene>` internally; the
+  // plugin protocol asks for `SceneRenderProps<Scene>`. The structural cast
+  // is safe because the validator (above) hard-fails any spec that violates
+  // the prior-art shape, so the renderer never sees a malformed object.
+  component: Component as ScenePlugin<Scene>['component'],
   validate,
   depthRules,
   judgeDimensions,

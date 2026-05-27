@@ -192,3 +192,18 @@ export {validateSpec} from './frameworks/validate';
 export {depthCheck} from './frameworks/depthcheck';
 export {collectJudgeDimensions} from './frameworks/judge';
 export {computeSchema} from './schema/from-registry';
+
+// ---------- Frame schedule (for render-check and other introspection) --------
+//
+// `buildFrameSchedule` resolves a film's per-scene + per-beat frame windows
+// against a constructed Engine. Surface it so external tooling (a docent
+// render-check command, a third-party visualizer, a doctor pass) can ask
+// "what frame does scene N occupy?" without re-implementing the timing math.
+
+export {buildFrameSchedule} from './remotion/schedule';
+export type {
+  FrameSchedule,
+  SceneSchedule,
+  BeatSchedule,
+  TtsAudioMap,
+} from './remotion/schedule';

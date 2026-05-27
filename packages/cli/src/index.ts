@@ -13,6 +13,7 @@
 import {runBuild} from './commands/build';
 import {runDepthcheck} from './commands/depthcheck';
 import {runHermetic} from './commands/hermetic';
+import {runRenderCheck} from './commands/render-check';
 import {runValidate} from './commands/validate';
 
 const USAGE = `docent — render explanatory films via @docent/kit.
@@ -21,11 +22,14 @@ USAGE
   docent <command> [args]
 
 COMMANDS
-  build <film-id>      Render a film to MP4 at out/<film-id>.mp4.
-  validate <film-id>   Structurally validate a film spec via engine.validate().
-  depthcheck <film-id> Aggregate every plugin's depthRules over a film spec.
-  hermetic             Render the 4 gallery fixtures end to end.
-  help                 Print this usage and exit.
+  build <film-id>         Render a film to MP4 at out/<film-id>.mp4.
+  validate <film-id>      Structurally validate a film spec via engine.validate().
+  depthcheck <film-id>    Aggregate every plugin's depthRules over a film spec.
+  render-check <film-id>  Render at low scale + assert every narrated scene
+                          evolves visibly across its window. Guards against
+                          chrome-only renders (audio without body).
+  hermetic                Render the 4 gallery fixtures end to end.
+  help                    Print this usage and exit.
 
 BUILD FLAGS
   --scale <n>          Render scale (0.25, 0.5, 1). Default: 1.
@@ -135,6 +139,28 @@ const main = async (): Promise<number> => {
     }
     return runDepthcheck({
       filmId,
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+    });
+  }
+
+  if (command === 'render-check') {
+    const filmId = positional[0];
+    if (!filmId) {
+      process.stderr.write('docent render-check: missing <film-id>\n' + USAGE);
+      return 64;
+    }
+    return runRenderCheck({
+      filmId,
+      ...(num(flags.scale) !== undefined ? {scale: num(flags.scale)!} : {}),
+      ...(num(flags.concurrency) !== undefined
+        ? {concurrency: num(flags.concurrency)!}
+        : {}),
+      ...(num(flags.samples) !== undefined ? {samples: num(flags.samples)!} : {}),
+      ...(flags['skip-tts'] ? {skipTts: true} : {}),
+      ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
