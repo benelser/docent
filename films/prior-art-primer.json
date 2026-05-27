@@ -97,37 +97,22 @@
       "kicker": "VERDICT // THE NEW LINE",
       "heading": "Prior-art — the comparison move with novelty",
       "points": [
-        {
-          "id": "r-1",
-          "title": "The form factor",
-          "body": "Systems × dimensions × cells. Same or diverges, with one short claim per cell."
-        },
-        {
-          "id": "r-2",
-          "title": "The argument",
-          "body": "One row is the novelty — the line of difference the film argues from. The renderer lights it."
-        },
-        {
-          "id": "r-3",
-          "title": "The position",
-          "body": "Prior-art belongs between frame and the first structure scene — the viewer learns what's been tried before they see the system itself."
-        }
+        "Form — systems by dimensions, with one short claim per cell marking same or diverges. The shape teaches what dimensions matter before anyone reads the cells.",
+        "Argument — one row is the novelty. The renderer lights it: accent rule, brighter wash, the eye lands there last. The film argues from that line.",
+        "Position — between the frame and the first structure scene. What's been tried, before what we built. The viewer arrives knowing the line of difference."
       ],
       "beats": [
         {
           "id": "r-1",
-          "narration": "Prior-art's form: systems by dimensions, with cells marking same or diverges.",
-          "reveal": ["r-1"]
+          "narration": "Prior-art's form: systems by dimensions, with cells marking same or diverges. The shape teaches what dimensions matter before the cells are read."
         },
         {
           "id": "r-2",
-          "narration": "Its argument: the novelty row — the one line of difference — gets the accent rule and the wash. The viewer's eye lands on what the film is here to claim.",
-          "reveal": ["r-2"]
+          "narration": "Its argument: the novelty row — the one line of difference — gets the accent rule and the wash. The viewer's eye lands on what the film is here to claim."
         },
         {
           "id": "r-3",
-          "narration": "Its position: between the frame and the first structure scene. What's been tried, before what we built.",
-          "reveal": ["r-3"]
+          "narration": "Its position: between the frame and the first structure scene. What's been tried, before what we built."
         }
       ]
     }
