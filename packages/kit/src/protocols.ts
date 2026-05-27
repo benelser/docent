@@ -709,8 +709,15 @@ export interface PresetPlugin extends PluginBase {
   /** The structured token bundle this preset contributes. */
   readonly tokens: DesignTokens;
 
-  /** Family-level renderer knobs (legend position, grid lines, etc.). */
-  readonly visualization: VisualizationStyle;
+  /**
+   * Family-level renderer knobs (legend position, grid lines, etc.).
+   *
+   * Optional when the preset declares {@link extends} — the resolver walks
+   * the chain base-first and inherits any unset visualization fields from
+   * the parent. A base preset (no `extends`) should declare a complete
+   * {@link VisualizationStyle}.
+   */
+  readonly visualization?: VisualizationStyle;
 
   /** One-line human-readable description — surfaced by `docent style list`. */
   readonly notes: string;

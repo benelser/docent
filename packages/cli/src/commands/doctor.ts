@@ -215,6 +215,48 @@ export const runDoctor = async (args: DoctorArgs): Promise<number> => {
     }
   }
 
+  // ---- preset extends-chain conformance (R4) ----------------------------
+  //
+  // The resolver throws on cycle / unknown extends at style-resolution
+  // time. Doctor surfaces both at registry-load time so an author catches
+  // the problem before the first render.
+  const presetByName = new Map<string, (typeof presetPlugins)[number]>();
+  for (const p of presetPlugins) presetByName.set(p.presetName, p);
+  for (const p of presetPlugins) {
+    const ext = p.extends;
+    if (!ext) continue;
+    if (ext === 'neutral') continue; // neutral floor — implicit, always OK
+    if (!presetByName.has(ext)) {
+      findings.push({
+        severity: 'error',
+        plugin: p.name,
+        sceneType: null,
+        code: 'preset/unknown-extends',
+        message: `preset '${p.presetName}' extends '${ext}' which is not registered`,
+      });
+      continue;
+    }
+    // Walk to detect cycles
+    const seen = new Set<string>([p.presetName]);
+    let cursor: typeof p | undefined = presetByName.get(ext);
+    while (cursor) {
+      if (seen.has(cursor.presetName)) {
+        findings.push({
+          severity: 'error',
+          plugin: p.name,
+          sceneType: null,
+          code: 'preset/extends-cycle',
+          message: `preset '${p.presetName}' extends chain cycles back to '${cursor.presetName}'`,
+        });
+        break;
+      }
+      seen.add(cursor.presetName);
+      const nextExt = cursor.extends;
+      if (!nextExt || nextExt === 'neutral') break;
+      cursor = presetByName.get(nextExt);
+    }
+  }
+
   // ---- output ------------------------------------------------------------
   const errors = findings.filter((f) => f.severity === 'error');
   const warns = findings.filter((f) => f.severity === 'warn');

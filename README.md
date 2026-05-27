@@ -227,7 +227,7 @@ Treat scifi as the simplest fork point. Reach for finance/brand/captions when yo
 | `kind` | What it ships | Example |
 |---|---|---|
 | `scene` | A new `scene.type` discriminator with its own schema branch, Remotion component, depth rules, and judge dimensions. | `@example/docent-scifi/holodeck`, `@example/docent-finance/{ohlc,candlestick}` |
-| `preset` | A new visual register — design tokens, visualization style. | `@example/docent-scifi/scifi-noir`, `@example/docent-preset-brand/acme` |
+| `preset` | A new visual register — design tokens, visualization style. Composes via optional `extends: <base>` (R4). | `@example/docent-scifi/scifi-noir`, `@example/docent-preset-brand/{acme, acme-dark}` |
 | `feature` | Cross-cutting concerns (captions, watermarks, music). Touches multiple registries; can write sidecars via `afterRender`. | `narrationFeature` in `@docent/core`, `@example/docent-feature-captions` |
 | `tts` | A speech provider implementing `TtsProvider`. | `@docent/tts-openai`, `@docent/tts-elevenlabs`, `@docent/tts-compatible` |
 

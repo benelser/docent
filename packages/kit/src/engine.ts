@@ -28,6 +28,7 @@ import type {
   ModifierRegistry,
   Plugin,
   PluginBase,
+  PresetPlugin,
   PresetRegistry,
   RenderOptions,
   RenderResult,
@@ -378,12 +379,7 @@ export class Engine {
 
     // The preset is *missing*. Two cases:
     //   - presetName === 'neutral': fall back to the kit's NEUTRAL floor.
-    //     The neutral preset is conventionally the engine's baseline; if
-    //     no presets at all are registered (a bare-engine test), this
-    //     still resolves cleanly.
-    //   - presetName !== 'neutral': hard-fail. A spec that names
-    //     `engineering` against an engine with no engineering preset is
-    //     a contract failure the caller needs to see.
+    //   - presetName !== 'neutral': hard-fail with the registered set.
     if (!presetPlugin && presetName !== 'neutral') {
       const known = this.presets
         .all()
@@ -400,83 +396,188 @@ export class Engine {
       ]);
     }
 
-    // Compose the tokens. The neutral floor is the starting point; the
-    // preset's tokens shadow per category; the spec's `style.tokens`
-    // overrides shadow on top of that.
-    const tokens: DesignTokens = {
-      bg: {...NEUTRAL_TOKENS.bg, ...presetPlugin?.tokens?.bg, ...styleInput.tokens?.bg},
-      ink: {...NEUTRAL_TOKENS.ink, ...presetPlugin?.tokens?.ink, ...styleInput.tokens?.ink},
-      accent: {
-        ...NEUTRAL_TOKENS.accent,
-        ...presetPlugin?.tokens?.accent,
-        ...styleInput.tokens?.accent,
-      },
-      typography: {
-        family: {
-          ...NEUTRAL_TOKENS.typography.family,
-          ...presetPlugin?.tokens?.typography?.family,
-          ...styleInput.tokens?.typography?.family,
-        },
-        size: {
-          ...NEUTRAL_TOKENS.typography.size,
-          ...presetPlugin?.tokens?.typography?.size,
-          ...styleInput.tokens?.typography?.size,
-        },
-        weight: {
-          ...NEUTRAL_TOKENS.typography.weight,
-          ...presetPlugin?.tokens?.typography?.weight,
-          ...styleInput.tokens?.typography?.weight,
-        },
-        lineHeight:
-          styleInput.tokens?.typography?.lineHeight ??
-          presetPlugin?.tokens?.typography?.lineHeight ??
-          NEUTRAL_TOKENS.typography.lineHeight,
-        letterSpacing:
-          styleInput.tokens?.typography?.letterSpacing ??
-          presetPlugin?.tokens?.typography?.letterSpacing ??
-          NEUTRAL_TOKENS.typography.letterSpacing,
-      },
-      spacing: {
-        ...NEUTRAL_TOKENS.spacing,
-        ...presetPlugin?.tokens?.spacing,
-        ...styleInput.tokens?.spacing,
-      },
-      radius: {
-        ...NEUTRAL_TOKENS.radius,
-        ...presetPlugin?.tokens?.radius,
-        ...styleInput.tokens?.radius,
-      },
-      stroke: {
-        ...NEUTRAL_TOKENS.stroke,
-        ...presetPlugin?.tokens?.stroke,
-        ...styleInput.tokens?.stroke,
-      },
+    // R4: walk the `extends` chain to assemble the effective preset stack.
+    // The chain is base-first: [grandparent, parent, plugin]. Each member's
+    // tokens shadow the previous; the final overlays styleInput.tokens.
+    // Cycles are an error; missing extends targets are an error.
+    const chain: PresetPlugin[] = [];
+    if (presetPlugin) {
+      const seen = new Set<string>();
+      let cursor: PresetPlugin | undefined = presetPlugin;
+      while (cursor) {
+        if (seen.has(cursor.presetName)) {
+          throw new StyleValidationError([
+            {
+              code: 'preset_cycle',
+              path: 'style.preset',
+              value: cursor.presetName,
+              message: `preset extends chain has a cycle (saw '${cursor.presetName}' twice)`,
+            },
+          ]);
+        }
+        seen.add(cursor.presetName);
+        chain.unshift(cursor); // base-first
+        const ext: string | undefined = cursor.extends;
+        if (!ext) break;
+        if (ext === 'neutral') break; // neutral floor is implicit
+        const parent = this.presets.get(ext);
+        if (!parent) {
+          const known = this.presets
+            .all()
+            .map((p) => p.presetName)
+            .sort();
+          throw new StyleValidationError([
+            {
+              code: 'unknown_extends',
+              path: 'style.preset',
+              value: ext,
+              message: `preset "${cursor.presetName}" extends "${ext}" which is not registered`,
+              expected: known.length > 0 ? `one of: ${known.join(', ')}` : '(no presets registered)',
+            },
+          ]);
+        }
+        cursor = parent;
+      }
+    }
+
+    // Compose tokens: NEUTRAL floor → walk the chain base-first → styleInput.
+    // Each layer shadows the previous per category.
+    const composeGroup = <K extends keyof DesignTokens>(
+      key: K,
+      pluck: (p: PresetPlugin) => Partial<DesignTokens[K]> | undefined,
+      neutral: DesignTokens[K],
+      override: Partial<DesignTokens[K]> | undefined,
+    ): DesignTokens[K] => {
+      let acc: DesignTokens[K] = {...neutral};
+      for (const p of chain) {
+        const layer = pluck(p);
+        if (layer) acc = {...acc, ...layer};
+      }
+      if (override) acc = {...acc, ...override};
+      return acc;
     };
 
-    // Compose the visualization knobs. Same shadow order.
+    const tokens: DesignTokens = {
+      bg: composeGroup('bg', (p) => p.tokens?.bg, NEUTRAL_TOKENS.bg, styleInput.tokens?.bg),
+      ink: composeGroup('ink', (p) => p.tokens?.ink, NEUTRAL_TOKENS.ink, styleInput.tokens?.ink),
+      accent: composeGroup(
+        'accent',
+        (p) => p.tokens?.accent,
+        NEUTRAL_TOKENS.accent,
+        styleInput.tokens?.accent,
+      ),
+      typography: {
+        family: ((): DesignTokens['typography']['family'] => {
+          let acc = {...NEUTRAL_TOKENS.typography.family};
+          for (const p of chain) {
+            const layer = p.tokens?.typography?.family;
+            if (layer) acc = {...acc, ...layer};
+          }
+          if (styleInput.tokens?.typography?.family) {
+            acc = {...acc, ...styleInput.tokens.typography.family};
+          }
+          return acc;
+        })(),
+        size: ((): DesignTokens['typography']['size'] => {
+          let acc = {...NEUTRAL_TOKENS.typography.size};
+          for (const p of chain) {
+            const layer = p.tokens?.typography?.size;
+            if (layer) acc = {...acc, ...layer};
+          }
+          if (styleInput.tokens?.typography?.size) {
+            acc = {...acc, ...styleInput.tokens.typography.size};
+          }
+          return acc;
+        })(),
+        weight: ((): DesignTokens['typography']['weight'] => {
+          let acc = {...NEUTRAL_TOKENS.typography.weight};
+          for (const p of chain) {
+            const layer = p.tokens?.typography?.weight;
+            if (layer) acc = {...acc, ...layer};
+          }
+          if (styleInput.tokens?.typography?.weight) {
+            acc = {...acc, ...styleInput.tokens.typography.weight};
+          }
+          return acc;
+        })(),
+        lineHeight: (() => {
+          // last-wins precedence: styleInput → most-derived chain member with a value → neutral.
+          if (styleInput.tokens?.typography?.lineHeight !== undefined) {
+            return styleInput.tokens.typography.lineHeight;
+          }
+          for (let i = chain.length - 1; i >= 0; i--) {
+            const v = chain[i]!.tokens?.typography?.lineHeight;
+            if (v !== undefined) return v;
+          }
+          return NEUTRAL_TOKENS.typography.lineHeight;
+        })(),
+        letterSpacing: (() => {
+          if (styleInput.tokens?.typography?.letterSpacing !== undefined) {
+            return styleInput.tokens.typography.letterSpacing;
+          }
+          for (let i = chain.length - 1; i >= 0; i--) {
+            const v = chain[i]!.tokens?.typography?.letterSpacing;
+            if (v !== undefined) return v;
+          }
+          return NEUTRAL_TOKENS.typography.letterSpacing;
+        })(),
+      },
+      spacing: composeGroup(
+        'spacing',
+        (p) => p.tokens?.spacing,
+        NEUTRAL_TOKENS.spacing,
+        styleInput.tokens?.spacing,
+      ),
+      radius: composeGroup(
+        'radius',
+        (p) => p.tokens?.radius,
+        NEUTRAL_TOKENS.radius,
+        styleInput.tokens?.radius,
+      ),
+      stroke: composeGroup(
+        'stroke',
+        (p) => p.tokens?.stroke,
+        NEUTRAL_TOKENS.stroke,
+        styleInput.tokens?.stroke,
+      ),
+    };
+
+    // Compose the visualization knobs. Same last-wins precedence as the
+    // single-valued token fields above.
+    const pickVizDerived = <K extends keyof VisualizationStyle>(
+      key: K,
+    ): VisualizationStyle[K] | undefined => {
+      for (let i = chain.length - 1; i >= 0; i--) {
+        const v = chain[i]!.visualization?.[key];
+        if (v !== undefined) return v as VisualizationStyle[K];
+      }
+      return undefined;
+    };
     const visualization: Required<VisualizationStyle> = {
       legendPosition:
         styleInput.visualization?.legendPosition ??
-        presetPlugin?.visualization?.legendPosition ??
+        pickVizDerived('legendPosition') ??
         NEUTRAL_VISUALIZATION.legendPosition,
       gridLines:
         styleInput.visualization?.gridLines ??
-        presetPlugin?.visualization?.gridLines ??
+        pickVizDerived('gridLines') ??
         NEUTRAL_VISUALIZATION.gridLines,
       axisLabels:
         styleInput.visualization?.axisLabels ??
-        presetPlugin?.visualization?.axisLabels ??
+        pickVizDerived('axisLabels') ??
         NEUTRAL_VISUALIZATION.axisLabels,
       maxLabelsPerSeries:
         styleInput.visualization?.maxLabelsPerSeries ??
-        presetPlugin?.visualization?.maxLabelsPerSeries ??
+        pickVizDerived('maxLabelsPerSeries') ??
         NEUTRAL_VISUALIZATION.maxLabelsPerSeries,
-      treatmentLock:
-        styleInput.visualization?.treatmentLock !== undefined
-          ? styleInput.visualization.treatmentLock
-          : presetPlugin?.visualization?.treatmentLock !== undefined
-            ? presetPlugin.visualization.treatmentLock!
-            : NEUTRAL_VISUALIZATION.treatmentLock,
+      treatmentLock: ((): Required<VisualizationStyle>['treatmentLock'] => {
+        if (styleInput.visualization?.treatmentLock !== undefined) {
+          return styleInput.visualization.treatmentLock;
+        }
+        const fromChain = pickVizDerived('treatmentLock');
+        if (fromChain !== undefined) return fromChain;
+        return NEUTRAL_VISUALIZATION.treatmentLock;
+      })(),
     };
 
     const resolved: ResolvedStyle = Object.freeze({

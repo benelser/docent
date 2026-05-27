@@ -1,0 +1,75 @@
+{
+  "meta": {
+    "id": "acme-quarterly-dark",
+    "title": "Acme Q3 — Dark Mode (R4 preset composition demo)",
+    "subject": "How extends: \"acme\" composes a dark variant — only bg.* changes; gold + typography inherit.",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "style": {
+    "preset": "acme-dark"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "kicker": "ACME // Q3 BRIEFING",
+      "title": "The Quarter in Four Frames",
+      "tagline": "What a brand preset is — and what it isn't",
+      "footnote": "Preset: acme  ·  loaded from @example/docent-preset-brand  ·  every scene below is a canonical docent core scene",
+      "beats": [
+        {
+          "id": "aq-frame-1",
+          "narration": "Welcome to Acme's quarterly briefing. The look is ours — the deep navy, the gold accent, the corporate breathing room. But every scene you are about to see is a docent core scene, unchanged.",
+          "show": "title"
+        },
+        {
+          "id": "aq-frame-2",
+          "narration": "What changed is the preset. One file of tokens. The frame, the quantities, the recap — same components, brand register applied.",
+          "show": "tagline"
+        }
+      ]
+    },
+    {
+      "id": "quarter-numbers",
+      "type": "quantities",
+      "kicker": "01 // BY THE NUMBERS",
+      "heading": "Q3, in three figures",
+      "figures": [
+        {
+          "id": "rev",
+          "label": "Revenue",
+          "value": "$248M",
+          "note": "+18% YoY"
+        },
+        {
+          "id": "users",
+          "label": "Active users",
+          "value": "12.4M",
+          "note": "+9% QoQ"
+        },
+        {
+          "id": "margin",
+          "label": "Gross margin",
+          "value": "71%",
+          "note": "+200 bps"
+        }
+      ],
+      "beats": [
+        {
+          "id": "aq-num-1",
+          "narration": "Three numbers tell the quarter. Revenue at 248 million, up eighteen percent year over year. Active users at 12.4 million, up nine percent quarter over quarter. Gross margin at 71 percent, up two hundred basis points.",
+          "reveal": 3
+        },
+        {
+          "id": "aq-num-2",
+          "narration": "Notice how the gold carries the emphasis. The brand preset routes every accent through the corporate gold — one colour, the whole register.",
+          "pace": "settle"
+        }
+      ]
+    }
+  ]
+}
