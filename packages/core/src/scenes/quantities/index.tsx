@@ -44,6 +44,15 @@ export const quantitiesPlugin: ScenePlugin<Scene> = {
   validate,
   depthRules,
   judgeDimensions,
+  cue: 'the numbers are the argument — figures, a matrix, named metrics.',
+  signals: [
+    {needle: 'numerical claims', weight: 4},
+    {needle: 'metrics', weight: 2},
+    {needle: 'what the numbers say', weight: 4},
+    {needle: 'key numbers', weight: 3},
+    {needle: 'benchmark numbers', weight: 3},
+    {needle: 'figures the argument', weight: 3},
+  ],
   // requiresTtsCapabilities: undefined — quantities does NOT need word-level
   // alignment. Its rendering is driven by beats' set directives and the
   // numeric reveal map; the narration plays alongside without per-word

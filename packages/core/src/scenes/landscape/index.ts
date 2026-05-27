@@ -36,6 +36,25 @@ export const landscapePlugin: ScenePlugin<LandscapeScene> = {
   // requiresTtsCapabilities: undefined — landscape narrates over markers,
   // not karaoke word-aligned passage text; the default chunk-level
   // alignment every TTS provider supports is sufficient.
+
+  cue: 'options on a 2-D trade-off plane — name both axes, quadrant analysis.',
+  signals: [
+    {needle: 'trade-off plane', weight: 4},
+    {needle: 'tradeoff plane', weight: 4},
+    {needle: 'two-dimensional', weight: 3},
+    {needle: '2-dimensional', weight: 3},
+    {needle: 'two axes', weight: 3},
+    {needle: 'quadrant', weight: 4},
+    {needle: 'positioning', weight: 2},
+    {needle: 'cost vs value', weight: 3},
+    {needle: 'cost vs. value', weight: 3},
+    {needle: 'simplicity vs power', weight: 3},
+    {needle: 'latency vs throughput', weight: 3},
+    {needle: 'placement on', weight: 2},
+    {needle: 'x-axis', weight: 1},
+    {needle: 'y-axis', weight: 1},
+    {needle: 'plotted on', weight: 1},
+  ],
 };
 
 export type {

@@ -34,6 +34,14 @@ export const bigIdeaPlugin: ScenePlugin<BigIdeaScene> = {
   judgeDimensions,
   // requiresTtsCapabilities: undefined — the takeaway is a held sentence
   // with narration playing beneath; no word-level alignment required.
+
+  cue: 'one held sentence the viewer should leave with; sits before recap (explainer films).',
+  signals: [
+    {needle: 'the big idea', weight: 4},
+    {needle: 'one held sentence', weight: 4},
+    {needle: 'the takeaway', weight: 3},
+    {needle: 'the central claim', weight: 2},
+  ],
 };
 
 export type {BigIdeaAnchor, BigIdeaScene} from './validate';

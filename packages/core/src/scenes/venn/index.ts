@@ -39,6 +39,21 @@ export const vennPlugin: ScenePlugin<VennScene> = {
   // requiresTtsCapabilities: undefined — venn narration walks one region
   // at a time, bound to the BEAT (reveal/focus) not the character, so the
   // default chunk-level alignment every TTS provider supports is sufficient.
+
+  cue: 'argument is about what lives ONLY in the intersection of 2-3 sets.',
+  signals: [
+    {needle: 'set intersection', weight: 4},
+    {needle: 'intersection of', weight: 3},
+    {needle: 'overlap', weight: 2},
+    {needle: 'overlap analysis', weight: 4},
+    {needle: 'what\'s in both', weight: 4},
+    {needle: 'in the intersection', weight: 4},
+    {needle: 'three sets', weight: 3},
+    {needle: 'two sets', weight: 2},
+    {needle: 'trifecta', weight: 3},
+    {needle: 'lives only in', weight: 4},
+    {needle: 'lives in the intersection', weight: 4},
+  ],
 };
 
 export type {VennNovelty, VennRegion, VennScene, VennSet} from './validate';

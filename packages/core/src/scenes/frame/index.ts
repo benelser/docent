@@ -34,6 +34,9 @@ export const framePlugin: ScenePlugin<FrameScene> = {
   // requiresTtsCapabilities: undefined — frame renders narrated chrome
   // (title/tagline/footnote spring in over short beats); the default
   // chunk-level alignment every TTS provider supports is sufficient.
+
+  cue: 'the film\'s opening commitment — title, tagline, footnote. Every film opens with one.',
+  signals: [],
 };
 
 export type {FrameScene} from './validate';

@@ -35,6 +35,22 @@ export const timelinePlugin: ScenePlugin<TimelineScene> = {
   // requiresTtsCapabilities: undefined — timeline renders dated cards and
   // span bars, not karaoke word-aligned passage text; the default
   // chunk-level alignment every TTS provider supports is sufficient.
+
+  cue: 'the GAPS between dates are part of the argument (real date axis, proportional spacing).',
+  signals: [
+    {needle: 'timeline', weight: 3},
+    {needle: 'date axis', weight: 4},
+    {needle: 'chronological', weight: 3},
+    {needle: 'chronology', weight: 3},
+    {needle: 'dated milestones', weight: 4},
+    {needle: 'gaps between', weight: 2},
+    {needle: 'years between', weight: 2},
+    {needle: 'months between', weight: 2},
+    {needle: 'time axis', weight: 3},
+    {needle: 'historical record', weight: 2},
+    {needle: 'milestone dates', weight: 3},
+    {needle: 'arc of', weight: 1},
+  ],
 };
 
 export type {

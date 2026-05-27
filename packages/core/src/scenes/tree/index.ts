@@ -33,6 +33,23 @@ export const treePlugin: ScenePlugin<TreeScene> = {
   judgeDimensions,
   // requiresTtsCapabilities: undefined — tree narrates over its reveal
   // beats with chunk-level alignment; no word-level karaoke needed.
+
+  cue: 'the structure is parent-child and the levels mean something (a taxonomy).',
+  signals: [
+    {needle: 'parent-child', weight: 4},
+    {needle: 'parent/child', weight: 4},
+    {needle: 'hierarchy', weight: 3},
+    {needle: 'taxonomy', weight: 4},
+    {needle: 'taxonomic', weight: 3},
+    {needle: 'classification', weight: 2},
+    {needle: 'rooted tree', weight: 4},
+    {needle: 'org chart', weight: 3},
+    {needle: 'kingdom', weight: 2},
+    {needle: 'phylum', weight: 2},
+    {needle: 'dependency tree', weight: 3},
+    {needle: 'reporting line', weight: 2},
+    {needle: 'levels mean', weight: 2},
+  ],
 };
 
 export type {TreeScene, TreeNodeSpec} from './validate';

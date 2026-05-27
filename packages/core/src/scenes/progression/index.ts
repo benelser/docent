@@ -36,6 +36,15 @@ export const progressionPlugin: ScenePlugin<ProgressionScene> = {
   // a track with beat-driven reveals and a Narration overlay that plays
   // alongside; it does NOT need word-level alignment. The default chunk-
   // level alignment every TTS provider supports is sufficient.
+
+  cue: 'the order matters but the dates don\'t (ordinal stages along a track).',
+  signals: [
+    {needle: 'ordinal stages', weight: 4},
+    {needle: 'staged process', weight: 3},
+    {needle: 'stages of the', weight: 2},
+    {needle: 'pipeline stages', weight: 3},
+    {needle: 'phases of', weight: 2},
+  ],
 };
 
 export type {ProgressionScene, ProgressionStage, ProgressionFlow} from './validate';

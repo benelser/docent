@@ -45,6 +45,16 @@ export const priorArtPlugin: ScenePlugin<Scene> = {
   // requiresTtsCapabilities — prior-art does not need word-level alignment;
   // the narration walks one column at a time but is bound to the BEAT
   // (reveal/focus) not the character. Leave undefined.
+
+  cue: 'argument hinges on novelty — the subject placed against 2-4 prior systems × dimensions.',
+  signals: [
+    {needle: 'prior art', weight: 4},
+    {needle: 'prior-art', weight: 4},
+    {needle: 'prior systems', weight: 3},
+    {needle: 'lineage', weight: 2},
+    {needle: 'novelty dimension', weight: 3},
+    {needle: 'differs dimensionally', weight: 3},
+  ],
 };
 
 export default priorArtPlugin;

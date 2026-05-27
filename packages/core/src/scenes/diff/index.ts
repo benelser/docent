@@ -32,6 +32,15 @@ export const diffPlugin: ScenePlugin<DiffScene> = {
   // requiresTtsCapabilities: undefined — diff renders code, not karaoke
   // word-aligned passage text; the default chunk-level alignment every
   // TTS provider supports is sufficient.
+
+  cue: 'the argument is "this changed" (before / after, side by side; PR films).',
+  signals: [
+    {needle: 'before / after', weight: 4},
+    {needle: 'before/after', weight: 3},
+    {needle: 'before and after', weight: 3},
+    {needle: 'pull request', weight: 2},
+    {needle: 'the diff', weight: 2},
+  ],
 };
 
 export type {DiffScene} from './validate';

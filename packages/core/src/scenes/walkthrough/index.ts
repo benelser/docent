@@ -35,6 +35,19 @@ export const walkthroughPlugin: ScenePlugin<WalkthroughScene> = {
   // labels and actor pills, not karaoke word-aligned passage text; the
   // default chunk-level alignment every TTS provider supports is
   // sufficient.
+
+  cue: 'the argument depends on WHO passes WHAT to WHOM and WHEN (actors over time).',
+  signals: [
+    {needle: 'sequence diagram', weight: 4},
+    {needle: 'actors exchange', weight: 4},
+    {needle: 'protocol exchange', weight: 3},
+    {needle: 'handshake', weight: 2},
+    {needle: 'request/response', weight: 2},
+    {needle: 'step by step', weight: 1},
+    {needle: 'who passes what', weight: 4},
+    {needle: 'message exchange', weight: 3},
+    {needle: 'over a sequence', weight: 2},
+  ],
 };
 
 export type {WalkthroughScene} from './validate';

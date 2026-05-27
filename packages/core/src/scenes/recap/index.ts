@@ -34,6 +34,9 @@ export const recapPlugin: ScenePlugin<RecapScene> = {
   // the narration progresses; the default chunk-level alignment every
   // TTS provider supports is sufficient. No karaoke / word-level
   // requirement.
+
+  cue: 'a closing RULING — points the film proved, what to doubt; never a restatement.',
+  signals: [],
 };
 
 export type {RecapScene} from './validate';

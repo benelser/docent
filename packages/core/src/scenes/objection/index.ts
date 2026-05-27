@@ -36,6 +36,19 @@ export const objectionPlugin: ScenePlugin<ObjectionSpec> = {
   judgeDimensions,
   // No `requiresTtsCapabilities` — objection plays narration like any
   // other scene but does not depend on word-level alignment.
+
+  cue: 'a real-literature challenge the film must answer — CLAIM / OBJECTION / REFUTATION steelman.',
+  signals: [
+    {needle: 'anticipated counter-argument', weight: 4},
+    {needle: 'counter-argument', weight: 3},
+    {needle: 'steelman', weight: 4},
+    {needle: 'critics argue', weight: 3},
+    {needle: 'objection from', weight: 3},
+    {needle: 'has been challenged', weight: 3},
+    {needle: 'refutation', weight: 3},
+    {needle: 'rebuttal', weight: 3},
+    {needle: 'contested topic', weight: 3},
+  ],
 };
 
 export type {ObjectionSpec};

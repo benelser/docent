@@ -35,6 +35,17 @@ export const concessionPlugin: ScenePlugin<ConcessionScene> = {
   // requiresTtsCapabilities: undefined — concession renders prose chunks,
   // not karaoke-aligned passage text; the default chunk-level alignment
   // every TTS provider supports is sufficient.
+
+  cue: 'the film argues something narrow — IN SCOPE / OUT OF SCOPE columns sharpen every claim.',
+  signals: [
+    {needle: 'out of scope', weight: 4},
+    {needle: 'in scope', weight: 2},
+    {needle: 'in scope / out of scope', weight: 4},
+    {needle: 'explicit scope cut', weight: 4},
+    {needle: 'scope cuts', weight: 3},
+    {needle: 'set aside explicitly', weight: 3},
+    {needle: 'content boundary', weight: 2},
+  ],
 };
 
 export type {ConcessionScene} from './validate';

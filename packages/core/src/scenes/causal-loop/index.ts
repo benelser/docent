@@ -42,6 +42,24 @@ export const causalLoopPlugin: ScenePlugin<CausalLoopScene> = {
   // R/B verdicts at beat granularity; the default chunk-level alignment
   // every TTS provider supports is sufficient. No karaoke / word-level
   // reveal is needed.
+
+  cue: 'variables influencing each other in a closed cycle — reinforcing or balancing dynamics.',
+  signals: [
+    {needle: 'feedback loop', weight: 4},
+    {needle: 'causal loop', weight: 4},
+    {needle: 'self-reinforcing', weight: 4},
+    {needle: 'self reinforcing', weight: 3},
+    {needle: 'reinforcing loop', weight: 4},
+    {needle: 'balancing loop', weight: 4},
+    {needle: 'vicious cycle', weight: 3},
+    {needle: 'virtuous cycle', weight: 3},
+    {needle: 'compounds', weight: 2},
+    {needle: 'compounding', weight: 2},
+    {needle: 'positive feedback', weight: 3},
+    {needle: 'negative feedback', weight: 3},
+    {needle: 'flywheel', weight: 2},
+    {needle: 'polarity', weight: 2},
+  ],
 };
 
 export type {

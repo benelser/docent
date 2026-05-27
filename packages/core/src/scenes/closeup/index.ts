@@ -36,6 +36,17 @@ export const closeupPlugin: ScenePlugin<CloseupScene> = {
   // range-level highlight spotlights, not karaoke word-aligned passage
   // text; the default chunk-level alignment every TTS provider supports
   // is sufficient.
+
+  cue: 'a specific code or text span needs to land at the line level (annotated artifact).',
+  signals: [
+    {needle: 'load-bearing line', weight: 3},
+    {needle: 'load-bearing function', weight: 3},
+    {needle: 'load-bearing change', weight: 3},
+    {needle: 'at the line level', weight: 4},
+    {needle: 'function-level', weight: 2},
+    {needle: 'comparator', weight: 1},
+    {needle: 'annotate the function', weight: 4},
+  ],
 };
 
 export type {CloseupScene} from './validate';

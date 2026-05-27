@@ -36,6 +36,18 @@ export const figurePlugin: ScenePlugin<FigureScene> = {
   // the standard beat granularity; it does not need word-level karaoke
   // alignment like passage does. The default chunk-level alignment
   // every TTS provider supports is sufficient.
+
+  cue: 'the IMAGE is the artifact — a painting, a chart screenshot, a photograph; annotated by region.',
+  signals: [
+    {needle: 'image with regions', weight: 4},
+    {needle: 'diagram annotation', weight: 4},
+    {needle: 'annotate the image', weight: 4},
+    {needle: 'annotated regions', weight: 3},
+    {needle: 'still image', weight: 3},
+    {needle: 'photograph', weight: 2},
+    {needle: 'painting', weight: 2},
+    {needle: 'chart screenshot', weight: 3},
+  ],
 };
 
 export type {FigureCallout, FigureScene} from './validate';

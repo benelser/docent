@@ -35,6 +35,21 @@ export const chartPlugin: ScenePlugin<ChartScene> = {
   // narration walks the shape/value at the beat granularity (reveal / focus
   // / `set` keys), not the character. The default chunk-level alignment
   // every TTS provider supports is sufficient.
+
+  cue: 'continuous data on numeric axes — a trend, a curve, a distribution.',
+  signals: [
+    {needle: 'plot data', weight: 3},
+    {needle: 'plot the data', weight: 3},
+    {needle: 'curve', weight: 1},
+    {needle: 'distribution', weight: 2},
+    {needle: 'power law', weight: 3},
+    {needle: 'power-law', weight: 3},
+    {needle: 'trend line', weight: 3},
+    {needle: 'trendline', weight: 3},
+    {needle: 'growth curve', weight: 3},
+    {needle: 'decay curve', weight: 3},
+    {needle: 'data points', weight: 1},
+  ],
 };
 
 export type {ChartScene} from './validate';

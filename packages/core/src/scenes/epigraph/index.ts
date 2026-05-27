@@ -70,6 +70,16 @@ export const epigraphPlugin: ScenePlugin<EpigraphSceneSpec> = {
   judgeDimensions,
   // requiresTtsCapabilities — an epigraph does not need word-level alignment;
   // the narration plays beneath a static typographic scene.
+
+  cue: 'anchor in a tradition — a cited authority opens the film and the argument argues with it.',
+  signals: [
+    {needle: 'cited authority', weight: 4},
+    {needle: 'opens with a quote', weight: 4},
+    {needle: 'opens the film', weight: 3},
+    {needle: 'anchor in a tradition', weight: 4},
+    {needle: 'quoted authority', weight: 3},
+    {needle: 'in the words of', weight: 2},
+  ],
 };
 
 export default epigraphPlugin;

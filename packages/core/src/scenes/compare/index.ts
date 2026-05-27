@@ -35,6 +35,19 @@ export const comparePlugin: ScenePlugin<CompareScene> = {
   // requiresTtsCapabilities: undefined — compare renders a static
   // judgement table; the default chunk-level alignment every TTS
   // provider supports is sufficient for the narration timing.
+
+  cue: 'a head-to-head call as discrete table cells — options × criteria.',
+  signals: [
+    {needle: 'side-by-side options', weight: 4},
+    {needle: 'side by side options', weight: 4},
+    {needle: 'options × criteria', weight: 4},
+    {needle: 'options x criteria', weight: 4},
+    {needle: 'head-to-head', weight: 3},
+    {needle: 'comparison table', weight: 3},
+    {needle: 'feature matrix', weight: 3},
+    {needle: 'side by side', weight: 2},
+    {needle: 'side-by-side', weight: 2},
+  ],
 };
 
 export type {

@@ -35,6 +35,24 @@ export const mapPlugin: ScenePlugin<MapScene> = {
   // requiresTtsCapabilities: undefined — map renders region labels and
   // narration; the default chunk-level alignment every TTS provider
   // supports is sufficient. No word-level karaoke needed.
+
+  cue: 'WHERE something is matters — geography, topology, proximity, transmission paths.',
+  signals: [
+    {needle: 'geography', weight: 4},
+    {needle: 'geographic', weight: 4},
+    {needle: 'regions', weight: 2},
+    {needle: 'regional topology', weight: 4},
+    {needle: 'topology', weight: 2},
+    {needle: 'multi-region', weight: 3},
+    {needle: 'multi region', weight: 3},
+    {needle: 'supply chain', weight: 3},
+    {needle: 'transmission paths', weight: 3},
+    {needle: 'spatial', weight: 2},
+    {needle: 'proximity', weight: 2},
+    {needle: 'continent', weight: 2},
+    {needle: 'border', weight: 1},
+    {needle: 'epidemiology', weight: 2},
+  ],
 };
 
 export type {

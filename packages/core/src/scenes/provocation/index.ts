@@ -39,6 +39,18 @@ export const provocationPlugin: ScenePlugin<ProvocationScene> = {
   judgeDimensions,
   // requiresTtsCapabilities: undefined — provocation renders body text with
   // chunk-level narration; no word-level karaoke alignment required.
+
+  cue: 'the right ending is "we don\\\'t know yet" — a question-shaped hand-off, the final scene.',
+  signals: [
+    {needle: 'open question', weight: 4},
+    {needle: 'leave unresolved', weight: 4},
+    {needle: 'unresolved question', weight: 4},
+    {needle: 'we don\'t know yet', weight: 4},
+    {needle: 'we do not know yet', weight: 4},
+    {needle: 'hand off to the viewer', weight: 3},
+    {needle: 'frontier question', weight: 3},
+    {needle: 'unsettled', weight: 2},
+  ],
 };
 
 export type {ProvocationScene} from './validate';

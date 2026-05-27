@@ -52,6 +52,24 @@ export const mechanismPlugin: ScenePlugin<Scene> = {
   validate,
   depthRules,
   judgeDimensions,
+
+  cue: 'parts arranged in a working motion — feedback loop iterating, state machine cycling.',
+  signals: [
+    {needle: 'working motion', weight: 4},
+    {needle: 'cycle through phases', weight: 4},
+    {needle: 'iterate through', weight: 3},
+    {needle: 'iterates through', weight: 3},
+    {needle: 'state machine', weight: 3},
+    {needle: 'state cycle', weight: 3},
+    {needle: 'oscillate', weight: 3},
+    {needle: 'thermostat', weight: 3},
+    {needle: 'gradient descent', weight: 3},
+    {needle: 'how it operates', weight: 3},
+    {needle: 'in continuous motion', weight: 4},
+    {needle: 'animated mechanism', weight: 4},
+    {needle: 'pump', weight: 1},
+    {needle: 'engine cycle', weight: 3},
+  ],
 };
 
 export default mechanismPlugin;

@@ -34,6 +34,20 @@ export const structurePlugin: ScenePlugin<StructureScene> = {
   // diagram with beat-driven reveals; it does NOT need word-level
   // alignment. The default chunk-level alignment every TTS provider
   // supports is sufficient.
+
+  cue: 'the subject IS its components and how they connect (node-and-edge diagram).',
+  signals: [
+    {needle: 'components and connections', weight: 4},
+    {needle: 'node-and-edge', weight: 4},
+    {needle: 'node and edge', weight: 4},
+    {needle: 'block diagram', weight: 3},
+    {needle: 'architecture diagram', weight: 3},
+    {needle: 'system diagram', weight: 2},
+    {needle: 'connected components', weight: 3},
+    {needle: 'wired together', weight: 2},
+    {needle: 'subsystem', weight: 1},
+    {needle: 'modules', weight: 1},
+  ],
 };
 
 export type {

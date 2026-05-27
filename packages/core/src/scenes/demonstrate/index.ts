@@ -36,6 +36,16 @@ export const demonstratePlugin: ScenePlugin<DemonstrateScene> = {
   // with narration laid over the panel; chunk-level alignment (every
   // TTS provider supports it) is sufficient. There is no karaoke-style
   // word-aligned reveal on this scene.
+
+  cue: 'only the moving image conveys it — a Manim render, a UI demo, a phenomenon in motion.',
+  signals: [
+    {needle: 'video clip', weight: 4},
+    {needle: 'manim render', weight: 4},
+    {needle: 'ui demo', weight: 4},
+    {needle: 'screen capture', weight: 3},
+    {needle: 'demo recording', weight: 3},
+    {needle: 'play it back', weight: 2},
+  ],
 };
 
 export type {DemonstrateScene} from './validate';

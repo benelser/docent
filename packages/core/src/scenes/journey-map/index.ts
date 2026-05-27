@@ -33,6 +33,24 @@ export const journeyMapPlugin: ScenePlugin<JourneyMapScene> = {
   judgeDimensions,
   // requiresTtsCapabilities: undefined — journey-map narrates over the arc
   // at beat granularity; word-level alignment is not required.
+
+  cue: 'how a PERSON moves through something — onboarding, UX, patient flow (emotion × touchpoint).',
+  signals: [
+    {needle: 'stages of experience', weight: 4},
+    {needle: 'user flow', weight: 4},
+    {needle: 'user journey', weight: 4},
+    {needle: 'customer journey', weight: 4},
+    {needle: 'onboarding', weight: 3},
+    {needle: 'first-time user', weight: 3},
+    {needle: 'first hour', weight: 2},
+    {needle: 'first week', weight: 2},
+    {needle: 'emotional arc', weight: 3},
+    {needle: 'touchpoint', weight: 3},
+    {needle: 'pain point', weight: 3},
+    {needle: 'pain-point', weight: 3},
+    {needle: 'patient flow', weight: 3},
+    {needle: 'ux research', weight: 2},
+  ],
 };
 
 export type {JourneyEmotion, JourneyMapScene, JourneyStage} from './validate';

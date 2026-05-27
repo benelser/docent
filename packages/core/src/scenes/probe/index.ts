@@ -38,6 +38,18 @@ export const probePlugin: ScenePlugin<ProbeScene> = {
   // the narration plays alongside without per-word synchronization, so
   // the default chunk-level alignment every TTS provider supports is
   // sufficient.
+
+  cue: 'vary ONE input and follow the consequence — sensitivity analysis, perturbation, what-if.',
+  signals: [
+    {needle: 'sensitivity analysis', weight: 4},
+    {needle: 'what if', weight: 2},
+    {needle: 'what-if', weight: 3},
+    {needle: 'perturbation', weight: 4},
+    {needle: 'vary one input', weight: 4},
+    {needle: 'turn the knob', weight: 3},
+    {needle: 'parameter sweep', weight: 4},
+    {needle: 'dial up', weight: 1},
+  ],
 };
 
 export type {ProbeScene} from './validate';

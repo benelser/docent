@@ -42,6 +42,20 @@ export const passagePlugin: ScenePlugin<PassageScene> = {
   // this passage scene's reveal model rides on the same beat boundaries
   // every scene uses, so the default chunk-level alignment every TTS
   // provider supports is sufficient.
+
+  cue: 'the SOURCE TEXT is the artifact — a poem, a quote, a statute; annotated by phrase.',
+  signals: [
+    {needle: 'prose passage', weight: 4},
+    {needle: 'close reading', weight: 4},
+    {needle: 'close-reading', weight: 4},
+    {needle: 'the source text', weight: 4},
+    {needle: 'quoted text', weight: 3},
+    {needle: 'annotated by phrase', weight: 4},
+    {needle: 'poem', weight: 3},
+    {needle: 'stanza', weight: 3},
+    {needle: 'verse', weight: 2},
+    {needle: 'primary source', weight: 2},
+  ],
 };
 
 export type {PassageMark, PassageScene} from './validate';

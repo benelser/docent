@@ -43,6 +43,20 @@ export const tensionPlugin: ScenePlugin<TensionScene> = {
   // typography and verdict marks, not karaoke word-aligned passage text;
   // the default chunk-level alignment every TTS provider supports is
   // sufficient.
+
+  cue: 'a trade-off ledger — chosen / rejected / risk; the design choice in the open.',
+  signals: [
+    {needle: 'trade-off ledger', weight: 4},
+    {needle: 'trade off ledger', weight: 4},
+    {needle: 'kept / set aside', weight: 4},
+    {needle: 'chosen / rejected', weight: 4},
+    {needle: 'design trade-off', weight: 3},
+    {needle: 'residual risk', weight: 3},
+    {needle: 'the road not taken', weight: 3},
+    {needle: 'alternative not taken', weight: 3},
+    {needle: 'what was set aside', weight: 3},
+    {needle: 'what we kept', weight: 2},
+  ],
 };
 
 export type {TensionScene, TensionNode} from './validate';
