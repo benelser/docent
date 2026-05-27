@@ -30,11 +30,15 @@ export type {NarrationBeat, NarrationProps} from './component.js';
  * Composition-side adapter: turn each `BeatTimelineSlot` into the shape the
  * legacy `Narration` component consumes. The `audio` field arrives from the
  * persisted tts manifest threaded through `buildFrameSchedule`.
+ *
+ * `b.startFrame` is scene-relative (per protocol — see BeatTimelineSlot
+ * JSDoc). Inside a `<Sequence>`, `<Audio from={X}>` expects the same
+ * scene-relative coordinate, so we pass it through unchanged.
  */
 const NarrationOverlay: React.FC<SceneFeatureProps> = ({ts, style}) => {
   const beats: NarrationBeat[] = ts.beats.map((b: BeatTimelineSlot) => ({
     audio: b.audio ?? null,
-    from: b.startFrame - ts.startFrame,
+    from: b.startFrame,
     durationInFrames: b.frames,
     ...(b.beat.id !== undefined ? {id: b.beat.id} : {}),
   }));

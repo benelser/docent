@@ -238,8 +238,11 @@ export interface TimelineSlot {
  * One beat's schedule-resolved window within a {@link TimelineSlot}.
  *
  * - `beatIndex` — 0-based index of this beat within its scene.
- * - `startFrame` — global frame offset where this beat begins (NOT relative
- *   to the scene start; absolute within the film).
+ * - `startFrame` — **scene-relative** frame offset where this beat begins
+ *   (NOT absolute within the film). Scenes are mounted in a Remotion
+ *   `<Sequence>` so `useCurrentFrame()` returns scene-relative frames;
+ *   `startFrame` shares that coordinate so beat reveal-gates of the form
+ *   `frame >= b.startFrame` work correctly.
  * - `frames` — beat duration in frames; the engine derives this from the
  *   TTS clip length when narration is present, falls back to `pace`-driven
  *   defaults otherwise.
@@ -253,7 +256,13 @@ export interface TimelineSlot {
 export interface BeatTimelineSlot {
   /** 0-based index of this beat within its scene. */
   readonly beatIndex: number;
-  /** Global frame offset where this beat begins (absolute within the film). */
+  /**
+   * Scene-relative frame offset where this beat begins.
+   *
+   * Matches the coordinate of `useCurrentFrame()` inside a scene's
+   * Remotion `<Sequence>`, so reveal-gates of the form
+   * `frame >= b.startFrame` work without coordinate translation.
+   */
   readonly startFrame: number;
   /** Beat duration in frames at the film's fps. */
   readonly frames: number;

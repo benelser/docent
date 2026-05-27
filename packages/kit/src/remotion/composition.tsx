@@ -73,11 +73,29 @@ const fallbackStyle = (): ResolvedStyle =>
     },
   });
 
-/** Convert a `SceneSchedule` entry into the kit's public `TimelineSlot`. */
+/**
+ * Convert a `SceneSchedule` entry into the kit's public `TimelineSlot`.
+ *
+ * Coordinate-system rule (matches v2.5's `buildTimeline`):
+ *   - `TimelineSlot.startFrame`     — ABSOLUTE (the scene's offset in the
+ *     global film timeline; the composition uses it for `<Sequence from={}>`).
+ *   - `BeatTimelineSlot.startFrame` — SCENE-RELATIVE (the beat's offset
+ *     within its scene). Scenes are mounted in a `<Sequence>` so their
+ *     `useCurrentFrame()` returns scene-relative frames; beat reveal-gates
+ *     compare against that same coordinate. Schedule emits absolute beat
+ *     frames internally, so we subtract the scene's absolute start here.
+ *
+ * Getting this wrong is silent: chrome and headings still render (they
+ * don't gate on beats), but every reveal-gated body element stays
+ * `hidden` because `useCurrentFrame() < absolute b.startFrame` is always
+ * true within the Sequence.
+ */
 const toTimelineSlot = (entry: SceneSchedule): TimelineSlot => {
   const beats: BeatTimelineSlot[] = entry.beats.map((b) => ({
     beatIndex: b.beatIndex,
-    startFrame: b.startFrame,
+    // Subtract the scene's absolute start so this is scene-relative — the
+    // same coordinate as `useCurrentFrame()` inside the Sequence.
+    startFrame: b.startFrame - entry.startFrame,
     frames: b.frames,
     beat: b.beat,
     // Threaded through so a feature plugin (e.g. narration) can attach a
