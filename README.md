@@ -43,22 +43,21 @@ Hover for motion, click for the full HD mp4.
 
 |  |  |
 |---|---|
-| [![docent reviewing its own architecture](docs/stills/docent-self-preview.gif)](https://github.com/benelser/docent/releases/download/v2.4.0/docent-self.mp4) | [![OpenClaw — one local daemon, twenty-two channels](docs/stills/openclaw-ar-preview.gif)](https://github.com/benelser/docent/releases/download/v2.4.0/openclaw-ar.mp4) |
-| **▶ docent** *— reviewing its own architecture* — 11 min · 52 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.4.0/docent-self.mp4)<br/>`frame · prior-art · structure · progression · compare · tension · quantities · recap` | **▶ OpenClaw** *— one local daemon, twenty-two channels* — 13 min · 83 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.4.0/openclaw-ar.mp4)<br/>`frame · prior-art · structure · walkthrough · structure · tension · quantities · recap` |
-| [![The Lethal Trifecta](docs/stills/lethal-trifecta-blog-preview.gif)](https://github.com/benelser/docent/releases/download/v2.4.0/lethal-trifecta-blog.mp4) | [![Let the Barbarians In](docs/stills/arxiv-2512-14806-preview.gif)](https://github.com/benelser/docent/releases/download/v2.4.0/arxiv-2512-14806.mp4) |
-| **▶ The Lethal Trifecta** *— Simon Willison's essay on agent security* — 13 min · 68 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.4.0/lethal-trifecta-blog.mp4)<br/>`frame · structure · passage · walkthrough · quantities · compare · tension · big-idea · recap` | **▶ Let the Barbarians In** *— a recent arXiv paper, fetched as PDF* — 11 min · 52 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v2.4.0/arxiv-2512-14806.mp4)<br/>`frame · compare · structure · quantities · tension · probe · big-idea · recap` |
+| [![docent reviewing its own architecture](docs/stills/docent-self-preview.gif)](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/docent-self.mp4) | [![OpenClaw — one local daemon, twenty-two channels](docs/stills/openclaw-ar-preview.gif)](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/openclaw-ar.mp4) |
+| **▶ docent** *— reviewing its own architecture* — 11 min · 40 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/docent-self.mp4)<br/>`frame · prior-art · structure · progression · compare · tension · quantities · recap` | **▶ OpenClaw** *— one local daemon, twenty-two channels* — 12 min · 53 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/openclaw-ar.mp4)<br/>`frame · prior-art · structure · walkthrough · structure · tension · quantities · recap` |
+| [![The Lethal Trifecta](docs/stills/lethal-trifecta-blog-preview.gif)](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/lethal-trifecta-blog.mp4) | [![Let the Barbarians In](docs/stills/arxiv-2512-14806-preview.gif)](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/arxiv-2512-14806.mp4) |
+| **▶ The Lethal Trifecta** *— Simon Willison's essay on agent security* — 12 min · 54 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/lethal-trifecta-blog.mp4)<br/>`frame · structure · passage · walkthrough · quantities · compare · tension · big-idea · recap` | **▶ Let the Barbarians In** *— a recent arXiv paper, fetched as PDF* — 11 min · 46 MB · [▶ play full HD](https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/arxiv-2512-14806.mp4)<br/>`frame · compare · structure · quantities · tension · probe · big-idea · recap` |
 
 Each film went **survey → treatment → spec → judge → render** through
 the same engine. The grammar is what's shared. The argument is what
 each film commits to.
 
-> **Note on v3.0 re-renders.** The mp4s linked above were rendered through
-> the v2.5.x monolithic engine. v3.0 is the rip-and-replace into
-> `@docent/kit` + `@docent/core`. The acceptance test (the `scifi-demo`
-> film rendered through a third-party plugin pack) is green. README films
-> re-rendered through `@docent/cli` will replace these URLs as part of
-> the v3.0 release tag; see [`docs/design/v3-stabilization.md`](docs/design/v3-stabilization.md)
-> D3 for the tracking item.
+> **v3.0-rc.0 re-renders.** Every film above is freshly rendered through
+> `@docent/cli` against the new `@docent/kit` + `@docent/core` architecture
+> (full HD, full Kokoro narration, AAC 48 kHz). The §10 acceptance test —
+> a third-party plugin pack rendering end-to-end without forking `@docent/core` —
+> is green. The 18-item stabilization sprint that landed the new architecture
+> is captured in [`docs/design/v3-stabilization.COMPLETE.md`](docs/design/v3-stabilization.COMPLETE.md).
 
 ---
 
