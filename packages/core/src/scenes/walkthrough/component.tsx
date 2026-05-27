@@ -150,6 +150,9 @@ export const WalkthroughSceneComponent: React.FC<
           const op = (isCurrent ? 1 : 0.42) * intro;
           const x1 = actorX[m.from];
           const x2 = actorX[m.to];
+          // Skip messages whose endpoints reference unknown actors — same
+          // bail-out the engine had implicitly via NaN arithmetic.
+          if (x1 === undefined || x2 === undefined) return null;
           const ret = m.kind === 'reply';
           const self = m.from === m.to;
           const key = (typeof b.beat.id === 'string' && b.beat.id) || `msg-${b.beatIndex}`;
@@ -223,6 +226,9 @@ export const WalkthroughSceneComponent: React.FC<
       {/* actor headers */}
       {actors.map((a) => {
         const x = actorX[a.id];
+        // Skip an actor with no registered position — same bail-out the
+        // engine had implicitly via NaN arithmetic.
+        if (x === undefined) return null;
         const lit = Boolean(curMsg && (curMsg.from === a.id || curMsg.to === a.id));
         return (
           <div
@@ -302,6 +308,8 @@ export const WalkthroughSceneComponent: React.FC<
         const self = m.from === m.to;
         const x1 = actorX[m.from];
         const x2 = actorX[m.to];
+        // Skip messages whose endpoints reference unknown actors.
+        if (x1 === undefined || x2 === undefined) return null;
         const midX = self ? x1 + 92 : (x1 + x2) / 2;
         const labelIn = interpolate(local, [6, 20], [0, 1], {
           extrapolateLeft: 'clamp',

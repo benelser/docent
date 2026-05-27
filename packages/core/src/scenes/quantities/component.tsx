@@ -128,9 +128,14 @@ export const QuantitiesScene: React.FC<SceneRenderProps<Scene>> = ({
     // declared metric order. A knob-free metric resolves to the original
     // `{from: <first set beat>, cadence: undefined, order: 0}`.
     const metricRevealOf = (mIndex: number): RevealEntry => {
-      const bind = metrics[mIndex].bind;
+      // metrics[mIndex] non-null: mIndex is always a valid index into metrics
+      // (this is called only from inside metrics.map below).
+      const bind = metrics[mIndex]!.bind;
       const slot = ts.beats.find((s) => {
-        const b = s.beat as {set?: Record<string, unknown>};
+        // The legacy engine shape of `beat.set` is an open record of
+        // `{ bind → value | tween }`, not the kit's `BeatSetDirective[]`.
+        // Cast through `unknown` to read it.
+        const b = s.beat as unknown as {set?: Record<string, unknown>};
         return b.set && bind in b.set;
       });
       if (!slot) return {from: 0, cadence: undefined, order: 0};
@@ -139,8 +144,9 @@ export const QuantitiesScene: React.FC<SceneRenderProps<Scene>> = ({
       let order = 0;
       for (let j = 0; j < mIndex; j++) {
         const earlier = ts.beats.find((s) => {
-          const b = s.beat as {set?: Record<string, unknown>};
-          return b.set && metrics[j].bind in b.set;
+          const b = s.beat as unknown as {set?: Record<string, unknown>};
+          // metrics[j] non-null: j < mIndex < metrics.length by loop bound.
+          return b.set && metrics[j]!.bind in b.set;
         });
         if (earlier === slot) order++;
       }
@@ -525,7 +531,7 @@ export const QuantitiesScene: React.FC<SceneRenderProps<Scene>> = ({
               const a = appearWith(cellReveals[idx]);
               if (a <= 0) return null;
               const id = `${ri}-${ci}`;
-              const focused = focusIds.has(id) || focusIds.has(rowLabels[ri]);
+              const focused = focusIds.has(id) || focusIds.has(rowLabels[ri] ?? '');
               const dim = hasFocus && !focused;
               const opacity = a * (dim ? 0.32 : 1);
               const cellScale = interpolate(a, [0, 1], [0.85, 1]);

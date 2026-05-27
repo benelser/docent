@@ -229,17 +229,19 @@ export const ChartSceneComponent: React.FC<SceneRenderProps<ChartSceneSpec>> = (
   const curveYAt = (s: Series, x: number): number => {
     const pts = curveSamples(s);
     if (pts.length === 0) return yMin;
-    if (x <= pts[0][0]) return pts[0][1];
-    if (x >= pts[pts.length - 1][0]) return pts[pts.length - 1][1];
+    // pts[0] / pts[len-1] / pts[i] / pts[i-1]: all bounded by explicit length
+    // checks above; the `!` is a deliberate index-safety statement.
+    if (x <= pts[0]![0]) return pts[0]![1];
+    if (x >= pts[pts.length - 1]![0]) return pts[pts.length - 1]![1];
     for (let i = 1; i < pts.length; i++) {
-      if (x <= pts[i][0]) {
-        const [x0, y0] = pts[i - 1];
-        const [x1, y1] = pts[i];
+      if (x <= pts[i]![0]) {
+        const [x0, y0] = pts[i - 1]!;
+        const [x1, y1] = pts[i]!;
         const t = x1 === x0 ? 0 : (x - x0) / (x1 - x0);
         return y0 + t * (y1 - y0);
       }
     }
-    return pts[pts.length - 1][1];
+    return pts[pts.length - 1]![1];
   };
 
   // World-space path → screen-space SVG `d`.

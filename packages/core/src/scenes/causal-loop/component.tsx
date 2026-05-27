@@ -132,7 +132,8 @@ export const CausalLoopSceneComponent: React.FC<
   const {bg, ink, accent: accentTokens} = style.tokens;
   const accentOf = (k?: string): string =>
     (k && (accentTokens as unknown as Record<string, string>)[k]) ||
-    (accentTokens as unknown as Record<string, string>).blue;
+    (accentTokens as unknown as Record<string, string>).blue ||
+    '#3B82F6';
   const accentHex = paletteSceneHex(undefined, undefined, style as ResolvedStyle);
   const variables: CausalVariable[] = scene.variables ?? [];
   const edges: CausalEdge[] = scene.causalEdges ?? [];
@@ -185,8 +186,8 @@ export const CausalLoopSceneComponent: React.FC<
   // A variable's eased 0..1 entrance progress. Mirrors Card's appear logic.
   // An id that no beat has revealed yet sits at 0 — invisible.
   const variableAppear = (id: string): number => {
-    if (!(id in revealFrame)) return 0;
     const enter = revealFrame[id];
+    if (enter === undefined) return 0;
     const local = frame - enter;
     if (local <= 0) return 0;
     return spring({frame: local, fps, config: cadenceSpringConfig(cadenceOf(id))});
@@ -194,8 +195,8 @@ export const CausalLoopSceneComponent: React.FC<
 
   // An edge / loop's draw-on progress — same shape as Connector's `draw`.
   const drawProgress = (id: string): number => {
-    if (!(id in revealFrame)) return 0;
     const enter = revealFrame[id];
+    if (enter === undefined) return 0;
     const local = frame - enter;
     if (local <= 0) return 0;
     const mass = cadenceOf(id) === 'snap' ? 0.32 : 0.5;
@@ -205,8 +206,10 @@ export const CausalLoopSceneComponent: React.FC<
   // A flag for "this id has been revealed by some beat at or before the
   // current frame" — used to gate render. An id never appearing in any
   // reveal is treated as never visible.
-  const isVisible = (id: string): boolean =>
-    id in revealFrame && frame >= revealFrame[id];
+  const isVisible = (id: string): boolean => {
+    const enter = revealFrame[id];
+    return enter !== undefined && frame >= enter;
+  };
 
   return (
     <SceneFrame

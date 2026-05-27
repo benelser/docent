@@ -71,18 +71,20 @@ export const parseTimelineDate = (s: unknown): number | null => {
   // Month-year text — "Jun 2025", "June 2025"
   const mo = /^([A-Za-z]+)\s+(\d{1,4})$/.exec(t);
   if (mo) {
-    const m = MONTHS[mo[1].toLowerCase()];
+    // mo[1]/mo[2] non-null: the regex matched, both capture groups are
+    // required (no `?` or alternation between them).
+    const m = MONTHS[mo[1]!.toLowerCase()];
     if (m === undefined) return null; // alpha that isn't a month name → reject
-    const y = Number(mo[2]);
+    const y = Number(mo[2]!);
     return Date.UTC(y, m, 1);
   }
 
   // Year-month text — "2025 Jun"
   const ym = /^(\d{1,4})\s+([A-Za-z]+)$/.exec(t);
   if (ym) {
-    const m = MONTHS[ym[2].toLowerCase()];
+    const m = MONTHS[ym[2]!.toLowerCase()];
     if (m === undefined) return null;
-    const y = Number(ym[1]);
+    const y = Number(ym[1]!);
     return Date.UTC(y, m, 1);
   }
 

@@ -140,7 +140,13 @@ export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>>
   const morphTargets = new Set<string>();
   if (morphsHere) {
     ts.beats.forEach((b) => {
-      const ts2 = (b.beat as {transform?: ReadonlyArray<{node: string}>}).transform;
+      // Structure's per-node morph shape is *wider* than the kit's
+      // `BeatTransformDirective` (it carries a full `into: Partial<Node>`),
+      // so we read it back as the structure-owned shape via `unknown` —
+      // the kit's open index signature on Beat sanctions this.
+      const ts2 = (b.beat as unknown as {
+        transform?: ReadonlyArray<{node: string}>;
+      }).transform;
       if (Array.isArray(ts2)) {
         ts2.forEach((t) => morphTargets.add(t.node));
       }
@@ -152,11 +158,13 @@ export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>>
   const renderNode = (n: StructureNode, order: number): React.ReactNode => {
     // Fast path — a non-transformed node is exactly the original <Card>.
     if (!morphTargets.has(n.id)) {
+      // boxes[n.id] non-null: `n` iterates over `nodes`, and `boxes` was
+      // populated from the same `nodes` forEach above, so the entry exists.
       return (
         <Card
           style={style}
           key={n.id}
-          box={boxes[n.id]}
+          box={boxes[n.id]!}
           label={n.label}
           sub={n.sub}
           tag={n.tag}
@@ -255,11 +263,14 @@ export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>>
         }}
       >
         {edges.map((e) => (
+          // boxes[e.from / e.to] non-null: scene validation guarantees edge
+          // endpoints reference existing nodes, and every node populated
+          // `boxes` above.
           <Connector
             style={style}
             key={e.id}
-            from={boxes[e.from]}
-            to={boxes[e.to]}
+            from={boxes[e.from]!}
+            to={boxes[e.to]!}
             // An entailment / causal claim takes the scene accent — the line
             // is the argument, so it carries the scene's voice. A plain
             // `relation` stays the neutral wire grey, byte-identical to before.

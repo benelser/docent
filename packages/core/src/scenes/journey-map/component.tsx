@@ -80,12 +80,13 @@ const emotionLabel = (
 // SVG viewBox 1920 × 1080.
 const buildCurvePath = (pts: [number, number][]): string => {
   if (pts.length === 0) return '';
-  if (pts.length === 1) return `M ${pts[0][0]} ${pts[0][1]}`;
+  // pts[0]! after length guards: confirmed non-empty by the early return above.
+  if (pts.length === 1) return `M ${pts[0]![0]} ${pts[0]![1]}`;
   // A simple smooth path: each segment uses two cubic control points
   // halfway to the neighbours, scaled by tension. Reads as one continuous
   // emotional arc rather than connected line segments.
   const t = 0.35;
-  let d = `M ${pts[0][0]} ${pts[0][1]}`;
+  let d = `M ${pts[0]![0]} ${pts[0]![1]}`;
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[Math.max(0, i - 1)]!;
     const p1 = pts[i]!;

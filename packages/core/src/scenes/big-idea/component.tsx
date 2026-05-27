@@ -42,7 +42,7 @@ import type {BigIdeaAnchor, BigIdeaScene as BigIdeaSceneSpec} from './validate';
 
 const accentOf = (style: ResolvedStyle, key?: string): string => {
   const map = style.tokens.accent as unknown as Record<string, string>;
-  return (key && map[key]) || map.blue;
+  return (key && map[key]) || map.blue || '#3B82F6';
 };
 
 // ----- anchor renderers ----------------------------------------------------
@@ -158,8 +158,8 @@ const ChartFragmentAnchor: React.FC<{
     .map((pair) => {
       const [x, y] = pair.split(',').map((s) => Number(s.trim()));
       return [
-        Number.isFinite(x) ? Math.max(0, Math.min(1, x)) : 0,
-        Number.isFinite(y) ? Math.max(0, Math.min(1, y)) : 0,
+        Number.isFinite(x) ? Math.max(0, Math.min(1, x ?? 0)) : 0,
+        Number.isFinite(y) ? Math.max(0, Math.min(1, y ?? 0)) : 0,
       ] as [number, number];
     });
   if (points.length < 2) {

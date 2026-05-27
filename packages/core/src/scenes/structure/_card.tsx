@@ -23,14 +23,14 @@ export type CardWeight = 'hero' | 'primary' | 'normal' | 'recede';
 export const Card: React.FC<{
   box: Box;
   label: string;
-  sub?: string;
-  tag?: string;
+  sub?: string | undefined;
+  tag?: string | undefined;
   accentHex: string;
-  emphasis?: boolean;
-  weight?: CardWeight;
+  emphasis?: boolean | undefined;
+  weight?: CardWeight | undefined;
   state: CardState;
   enterFrame: number;
-  cadence?: Cadence;
+  cadence?: Cadence | undefined;
   style: ResolvedStyle;
 }> = ({box, label, sub, tag, accentHex, emphasis, weight, state, enterFrame, cadence, style}) => {
   const {bg, ink} = style.tokens;

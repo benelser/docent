@@ -48,7 +48,9 @@ export const morphTimeline = (
     const ts = beatTransforms(slot.beat);
     const t = ts?.find((tr) => tr.node === base.id);
     if (!t) continue;
-    const prev = states[states.length - 1].node;
+    // states[length-1] non-null: we seeded with one element above and only
+    // push onto it from here.
+    const prev = states[states.length - 1]!.node;
     // `into` is a partial Node — only named fields change; the id is fixed.
     states.push({fromFrame: slot.startFrame, node: {...prev, ...t.into, id: base.id}});
   }
@@ -67,26 +69,28 @@ export const resolveMorph = (
   frame: number,
   fps: number,
 ): {from: StructureNode; to: StructureNode; p: number} => {
+  // states[*] non-null in every reach below: length is ≥ 1 throughout, and
+  // `active` was set inside `states[i]` traversal so it indexes a real slot.
   if (states.length === 1) {
-    return {from: states[0].node, to: states[0].node, p: 1};
+    return {from: states[0]!.node, to: states[0]!.node, p: 1};
   }
   let active = 0;
   for (let i = states.length - 1; i >= 0; i--) {
-    if (frame >= states[i].fromFrame) {
+    if (frame >= states[i]!.fromFrame) {
       active = i;
       break;
     }
   }
   if (active === 0) {
-    return {from: states[0].node, to: states[0].node, p: 1};
+    return {from: states[0]!.node, to: states[0]!.node, p: 1};
   }
-  const fromDef = states[active - 1].node;
-  const toDef = states[active].node;
+  const fromDef = states[active - 1]!.node;
+  const toDef = states[active]!.node;
   // The transition beat owns the morph — `p` eases across its duration, then
   // rests at 1.
-  const tBeat = beats.find((b) => b.startFrame === states[active].fromFrame);
+  const tBeat = beats.find((b) => b.startFrame === states[active]!.fromFrame);
   const dur = tBeat?.frames ?? 1;
-  const local = frame - states[active].fromFrame;
+  const local = frame - states[active]!.fromFrame;
   const p =
     local <= 0
       ? 0

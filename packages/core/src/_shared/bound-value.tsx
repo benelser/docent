@@ -39,8 +39,8 @@ export const formatValue = (v: number, format?: MetricFormat): string => {
 export const BoundValue: React.FC<{
   beats: ReadonlyArray<BeatTimelineSlot>;
   bind: string;
-  format?: MetricFormat;
-  style?: React.CSSProperties;
+  format?: MetricFormat | undefined;
+  style?: React.CSSProperties | undefined;
 }> = ({beats, bind, format, style}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();

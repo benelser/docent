@@ -638,7 +638,7 @@ const Chrome: React.FC<{
   isWhiteboard: boolean;
   accentHex: string;
   kicker: string;
-  heading?: string;
+  heading?: string | undefined;
   sceneIndex: number;
   sceneCount: number;
   intro: number;

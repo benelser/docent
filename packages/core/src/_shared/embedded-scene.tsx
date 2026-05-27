@@ -420,7 +420,7 @@ const renderQuantitiesEmbed = (
     id: string;
     label: string;
     value: string;
-    unit?: string;
+    unit?: string | undefined;
   }> = (embed.metrics ?? []).map((m) => ({
     id: m.id,
     label: m.label,

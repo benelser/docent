@@ -37,19 +37,19 @@ export type NodeRepr = 'box' | 'matrix' | 'vector' | 'grid' | 'code' | 'equation
 export interface Node {
   id: string;
   label: string;
-  sub?: string;
-  tag?: string;
+  sub?: string | undefined;
+  tag?: string | undefined;
   col: number;
   row: number;
-  accent?: string;
-  emphasis?: boolean;
-  weight?: 'hero' | 'primary' | 'normal' | 'recede';
-  wide?: boolean;
+  accent?: string | undefined;
+  emphasis?: boolean | undefined;
+  weight?: 'hero' | 'primary' | 'normal' | 'recede' | undefined;
+  wide?: boolean | undefined;
   /** tension scenes: a node can be a flagged risk or a rejected alternative. */
-  kind?: 'risk' | 'rejected';
-  as?: NodeRepr;
-  cells?: (string | number)[][];
-  expr?: string;
+  kind?: 'risk' | 'rejected' | undefined;
+  as?: NodeRepr | undefined;
+  cells?: (string | number)[][] | undefined;
+  expr?: string | undefined;
 }
 
 /**

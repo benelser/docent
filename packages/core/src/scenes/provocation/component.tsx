@@ -39,7 +39,7 @@ import type {ProvocationScene as ProvocationSceneSpec} from './validate';
 
 const accentOf = (style: ResolvedStyle, key?: string): string => {
   const map = style.tokens.accent as unknown as Record<string, string>;
-  return (key && map[key]) || map.blue;
+  return (key && map[key]) || map.blue || '#3B82F6';
 };
 
 export const ProvocationSceneComponent: React.FC<

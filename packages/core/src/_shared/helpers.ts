@@ -379,23 +379,27 @@ export const tweenValue = (
     }
   }
   // Before the first set-beat — rest at that beat's start value.
+  // setBeats[0] is non-null: we returned above when length === 0.
   if (active < 0) {
     const first = asTween(
-      (setBeats[0].beat.set as Record<string, number | Tween>)[key],
+      (setBeats[0]!.beat.set as Record<string, number | Tween>)[key]!,
     );
     return first.from ?? 0;
   }
 
-  const activeBeat = setBeats[active];
+  // setBeats[active] is non-null: `active` was set inside a `setBeats[i]`
+  // truthy check above, so this index is guaranteed populated.
+  const activeBeat = setBeats[active]!;
   const tw = asTween(
-    (activeBeat.beat.set as Record<string, number | Tween>)[key],
+    (activeBeat.beat.set as Record<string, number | Tween>)[key]!,
   );
   // The value the timeline held entering this beat: the previous set-beat's
   // target, else this tween's explicit `from`, else 0.
+  // setBeats[active - 1] is non-null when active > 0 by the same logic.
   const start =
     active > 0
       ? asTween(
-          (setBeats[active - 1].beat.set as Record<string, number | Tween>)[key],
+          (setBeats[active - 1]!.beat.set as Record<string, number | Tween>)[key]!,
         ).to
       : (tw.from ?? 0);
 

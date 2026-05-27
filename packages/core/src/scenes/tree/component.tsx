@@ -67,8 +67,8 @@ import type {TreeNodeSpec, TreeScene as TreeSceneSpec} from './validate';
 type LayoutNode = {
   id: string;
   label: string;
-  sub?: string;
-  accent?: string;
+  sub?: string | undefined;
+  accent?: string | undefined;
   depth: number;
   // normalized 0..1 along the depth axis (0 at root, 1 at deepest leaf row)
   d: number;
@@ -80,7 +80,7 @@ type LayoutNode = {
   parent: string | null;
   // Sprint B — compositional embed carried through layout. Root nodes do
   // not get an embed (the schema disallows it); children may.
-  embed?: EmbeddedSceneSpec;
+  embed?: EmbeddedSceneSpec | undefined;
 };
 
 type LayoutEdge = {
@@ -95,10 +95,10 @@ type LayoutEdge = {
 type TNode = {
   id: string;
   label: string;
-  sub?: string;
-  accent?: string;
-  children?: ReadonlyArray<TNode>;
-  embed?: EmbeddedSceneSpec;
+  sub?: string | undefined;
+  accent?: string | undefined;
+  children?: ReadonlyArray<TNode> | undefined;
+  embed?: EmbeddedSceneSpec | undefined;
 };
 
 // Walk the tree, return its leaf count. Tags `widths[id]` along the way.
@@ -354,8 +354,9 @@ export const TreeSceneComponent: React.FC<SceneRenderProps<TreeSceneSpec>> = ({
   });
   // Auto-reveal each edge with its child node (unless the author named it).
   for (const e of layout.edges) {
-    if (revealFrame[e.id] === undefined && revealFrame[e.to] !== undefined) {
-      revealFrame[e.id] = revealFrame[e.to];
+    const toFrame = revealFrame[e.to];
+    if (revealFrame[e.id] === undefined && toFrame !== undefined) {
+      revealFrame[e.id] = toFrame;
       revealCadence[e.id] = revealCadence[e.to];
     }
   }
@@ -363,7 +364,8 @@ export const TreeSceneComponent: React.FC<SceneRenderProps<TreeSceneSpec>> = ({
   // the scene's first beat (a tree without its root revealed is a void).
   // Auto-pin the root to the first beat if no beat names it.
   if (revealFrame[rootNode.id] === undefined && ts.beats.length > 0) {
-    revealFrame[rootNode.id] = ts.beats[0].startFrame;
+    // ts.beats[0] non-null: length > 0 above.
+    revealFrame[rootNode.id] = ts.beats[0]!.startFrame;
   }
   const revealOf = (id: string): number => revealFrame[id] ?? 0;
 

@@ -241,7 +241,7 @@ When every checkbox below is ✅, this file gets the rename
 - [x] D2 — Embed renderers (A3 → `65002b3`, merged `8cee499`)
 - [ ] D3 — README films re-rendered + compared
 - [ ] D4 — Hermetic 4/4 verified end-to-end through @docent/cli
-- [ ] D5 — Strict tsc flags restored on @docent/core (B1 in flight, unblocked by D6)
+- [x] D5 — Strict tsc flags restored on @docent/core (B1 → `c578890`, merged surgically — A3 and B1 had overlapping scene-file edits)
 - [x] D6 — @docent-engine-bridge/* eliminated (B2 → `44132b4`, merged `dc91e96`)
 - [x] D7 — _shared/* helpers consolidated (A1)
 - [x] D8 — Paid TTS providers split into @docent/tts-* (C1)

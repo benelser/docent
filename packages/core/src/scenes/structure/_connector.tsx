@@ -24,9 +24,9 @@ export const Connector: React.FC<{
   accentHex: string;
   state: EdgeState;
   enterFrame: number;
-  kind?: 'relation' | 'feedback' | 'entails' | 'causes';
-  strength?: 'necessary' | 'contributing';
-  label?: string;
+  kind?: 'relation' | 'feedback' | 'entails' | 'causes' | undefined;
+  strength?: 'necessary' | 'contributing' | undefined;
+  label?: string | undefined;
   cadence?: Cadence;
   style: ResolvedStyle;
 }> = ({from, to, accentHex, state, enterFrame, kind, strength, label, cadence, style}) => {
