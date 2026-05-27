@@ -212,18 +212,25 @@ interface PluginBase {
 }
 ```
 
-The acceptance-test starter, [`tests/example-docent-scifi/`](tests/example-docent-scifi/),
-ships one custom scene (`holodeck`) + one custom preset (`scifi-noir`)
-through `docent.config.ts`. Treat it as your reference fork point.
+Four runnable reference packs live under [`tests/example-docent-*/`](tests/) — each is a complete `@example/docent-*` package with a working film, ready to fork.
+
+| Pack | What it demonstrates | Film |
+|---|---|---|
+| [`tests/example-docent-scifi/`](tests/example-docent-scifi/) | A third-party **scene + preset** pack (one `holodeck` scene, one `scifi-noir` preset) — the §10 acceptance test that proves you can extend the surface without forking `@docent/core`. | `scifi-demo.json` |
+| [`tests/example-docent-finance/`](tests/example-docent-finance/) | A **vertical scene pack** — two new `scene.type` discriminators (`ohlc`, `candlestick`), each with its own schema branch, depth rules, and judge dimensions. The pattern for `docent-scenes-<vertical>`. | `finance-primer.json` |
+| [`tests/example-docent-preset-brand/`](tests/example-docent-preset-brand/) | A **brand preset** (`acme`, navy + gold) — design tokens + visualization style, no scene code. The pattern for `docent-preset-<brand>`. | `acme-quarterly.json` |
+| [`tests/example-docent-feature-captions/`](tests/example-docent-feature-captions/) | A **feature plugin** that writes a sidecar SRT next to the rendered mp4 via the `FeaturePlugin.afterRender` hook. The pattern for cross-cutting concerns (captions, transcripts, chapter markers). | `captions-demo.json` |
+
+Treat scifi as the simplest fork point. Reach for finance/brand/captions when your plugin shape matches theirs.
 
 ### The four plugin kinds
 
 | `kind` | What it ships | Example |
 |---|---|---|
-| `scene` | A new `scene.type` discriminator with its own schema branch, Remotion component, depth rules, and judge dimensions. | `@example/docent-scifi/holodeck` |
-| `preset` | A new visual register — design tokens, visualization style. | `@example/docent-scifi/scifi-noir` |
-| `feature` | Cross-cutting concerns (captions, watermarks, music). Touches multiple registries. | `narrationFeature` in `@docent/core` |
-| `tts` | A speech provider implementing `TtsProvider`. | `@docent/tts-openai`, `@docent/tts-elevenlabs` |
+| `scene` | A new `scene.type` discriminator with its own schema branch, Remotion component, depth rules, and judge dimensions. | `@example/docent-scifi/holodeck`, `@example/docent-finance/{ohlc,candlestick}` |
+| `preset` | A new visual register — design tokens, visualization style. | `@example/docent-scifi/scifi-noir`, `@example/docent-preset-brand/acme` |
+| `feature` | Cross-cutting concerns (captions, watermarks, music). Touches multiple registries; can write sidecars via `afterRender`. | `narrationFeature` in `@docent/core`, `@example/docent-feature-captions` |
+| `tts` | A speech provider implementing `TtsProvider`. | `@docent/tts-openai`, `@docent/tts-elevenlabs`, `@docent/tts-compatible` |
 
 ### `ScenePlugin` — the load-bearing shape
 
