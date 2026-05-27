@@ -12,11 +12,10 @@
 //     scene's directory until the shared-infra migration agent lands; the
 //     integrator will swap the underscore-prefixed local helpers for
 //     shared imports at merge time.
-//   - the `EmbeddedScene` cross-scene primitive is not yet migrated; the
-//     embed branch here renders a structural placeholder so the JSX shape
-//     is byte-equivalent. The mechanism scene migration used the same
-//     pattern (a colocated stub preserving the structural shape). The
-//     integrator restores the shared EmbeddedScene at merge time.
+//   - the `EmbeddedScene` cross-scene primitive lives in
+//     `_shared/embedded-scene.tsx` (A3 of v3.0 stabilization) and renders
+//     the per-type tableau body. Allowlist for journey-map stages:
+//     causal-loop | mechanism | compare.
 //
 // Horizontal stages along a journey, each with an emotion chip and
 // optional touchpoints / painPoints. A continuous emotional curve runs
@@ -34,6 +33,7 @@ import {
 import type {DesignTokens, ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
 import {
+  EmbeddedScene,
   FittedText,
   Narration,
   SceneFrame,
@@ -46,6 +46,7 @@ import {
   numericRevealMap,
   paletteGlowScale,
   paletteSceneHex,
+  type EmbeddedSceneSpec,
 } from '../../_shared';
 import type {JourneyEmotion, JourneyMapScene as JourneyMapSceneSpec} from './validate';
 
@@ -538,16 +539,30 @@ export const JourneyMapSceneComponent: React.FC<
                   </div>
                 ) : null}
               </div>
-              {/* Sprint B — compositional embed. The v2.5.x renderer drew
-                  a static sub-scene tableau here through the shared
-                  EmbeddedScene primitive (allowlist: causal-loop |
-                  mechanism | compare). That primitive has not yet been
-                  migrated to @docent/core; we preserve the JSX shape so
-                  the rendering remains structurally identical, and leave
-                  the embed branch as a no-op until the shared
-                  EmbeddedScene migration lands. The integrator restores
-                  the live tableau renderer at merge time. */}
-              {s.embed ? <EmbedPlaceholder /> : null}
+              {/* Sprint B — compositional embed. A journey-map stage may
+                  carry a static sub-scene tableau, drawn above the axis
+                  in the curve band area so it sits beside its curve dot.
+                  Allowlist: causal-loop | mechanism | compare. */}
+              {s.embed ? (
+                <svg
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    opacity,
+                  }}
+                  viewBox="0 0 1920 1080"
+                >
+                  <EmbeddedScene
+                    embed={s.embed as EmbeddedSceneSpec}
+                    bounds={{cx: x, cy: 130, w: 220, h: 160}}
+                    inheritedStyle={style}
+                    parentAccent={accentHex}
+                  />
+                </svg>
+              ) : null}
             </React.Fragment>
           );
         })}
@@ -558,11 +573,3 @@ export const JourneyMapSceneComponent: React.FC<
   );
 };
 
-/**
- * Placeholder for the Sprint B `EmbeddedScene` primitive. The v2.5.x
- * renderer drew a static sub-scene tableau inside each stage's curve dot;
- * that primitive has not yet been migrated to @docent/core. Renders
- * nothing — the JSX shape stays intact for the integrator to swap. See
- * the comment above the call-site for the full migration note.
- */
-const EmbedPlaceholder: React.FC = () => null;

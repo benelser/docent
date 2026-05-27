@@ -29,21 +29,16 @@
 //
 // SUBJECT EMBEDS — Sprint B compositional grammar. A subject MAY carry an
 // `embed` (a static sub-scene tableau adjacent to the marker). The embed
-// renderer (EmbeddedScene) lives in `packages/engine/src/scenes/` today;
-// porting it into @docent/core requires the recursive scene-render path
-// the engine still owns. Until that lands, this component PRESERVES the
-// embed FIELD on the schema (so spec authors can keep declaring embeds
-// for round-trip equivalence) but does not render it. The behaviour
-// matches the engine path for every film in `films/` that does not use a
-// landscape embed — which is every landscape scene in the gallery as of
-// v2.5.x. When the embed feature migrates, this component picks up an
-// `<EmbeddedScene>` import and the deferral note retires.
+// renderer (`EmbeddedScene`) lives in `_shared/embedded-scene.tsx` (A3 of
+// v3.0 stabilization) and dispatches across the per-type tableau
+// renderers (mechanism | venn | chart | quantities for this host).
 
 import React from 'react';
 import {AbsoluteFill, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {Beat, ResolvedStyle, SceneRenderProps} from '@docent/kit';
 
 import {
+  EmbeddedScene,
   Narration,
   SceneFrame,
   activeBeatIndex,
@@ -54,6 +49,7 @@ import {
   paletteGlowScale,
   paletteSceneHex,
   truncateForSlot,
+  type EmbeddedSceneSpec,
 } from '../../_shared';
 import type {LandscapeScene as LandscapeSceneSpec, LandscapeSubjectSpec} from './validate';
 
@@ -468,11 +464,39 @@ export const LandscapeSceneComponent: React.FC<SceneRenderProps<LandscapeSceneSp
                     </text>
                   );
                 })() : null}
-                {/* SUBJECT EMBED — deferred until the EmbeddedScene
-                    renderer ports into @docent/core. The spec field is
-                    preserved (see schema.ts) so authored embeds round-trip;
-                    the engine path continues to render them today. See the
-                    file header for the deferral note. */}
+                {/* Sprint B — compositional embed. A landscape subject
+                    may carry a static sub-scene tableau in its slot. The
+                    embed sits adjacent to the marker, sized to a fraction
+                    of the plot box; visible once the marker is revealed.
+                    Allowlist: mechanism | venn | chart | quantities. */}
+                {s.embed ? (() => {
+                  const embedW = Math.min(240, PLOT.w * 0.18);
+                  const embedH = Math.min(180, PLOT.h * 0.28);
+                  // Place opposite the label so they don't collide.
+                  const ex = flipLeft
+                    ? p.x + dotR + embedW / 2 + 14
+                    : p.x - dotR - embedW / 2 - 14;
+                  const ey = flipUp
+                    ? p.y + embedH / 2 + 14
+                    : p.y - embedH / 2 - 14;
+                  // Clamp inside the plot box so embeds never bleed off-stage.
+                  const cx = Math.max(
+                    PLOT.x + embedW / 2,
+                    Math.min(PLOT.x + PLOT.w - embedW / 2, ex),
+                  );
+                  const cy = Math.max(
+                    PLOT.y + embedH / 2,
+                    Math.min(PLOT.y + PLOT.h - embedH / 2, ey),
+                  );
+                  return (
+                    <EmbeddedScene
+                      embed={s.embed as EmbeddedSceneSpec}
+                      bounds={{cx, cy, w: embedW, h: embedH}}
+                      inheritedStyle={style}
+                      parentAccent={col}
+                    />
+                  );
+                })() : null}
               </g>
             );
           })}

@@ -12,6 +12,11 @@
 export {interFamily, monoFamily} from './fonts';
 export {codeTheme} from './code-theme';
 export {
+  EmbeddedScene,
+  type EmbedBounds,
+  type EmbeddedSceneSpec,
+} from './embedded-scene';
+export {
   FittedText,
   fitFontSize,
   truncateForSlot,
