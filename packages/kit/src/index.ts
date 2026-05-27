@@ -188,6 +188,8 @@ export {
 // a linter, a custom CI gate) can call them directly without going through
 // the Engine — pure, side-effect-free given a constructed Engine.
 
+export type {SceneFitSignal} from './protocols';
+
 export {validateSpec} from './frameworks/validate';
 export {depthCheck} from './frameworks/depthcheck';
 export {collectJudgeDimensions} from './frameworks/judge';

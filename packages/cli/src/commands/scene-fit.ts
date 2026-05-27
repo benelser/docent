@@ -36,6 +36,8 @@
 import {existsSync, readFileSync} from 'node:fs';
 import {join} from 'node:path';
 
+import type {Engine, ScenePlugin} from '@docent/kit';
+
 import {createEngine} from '../engine-factory';
 
 // ----- the grammar — 29 scene types -----------------------------------------
@@ -585,26 +587,68 @@ export type RecommendResult = {
   notes: string[];
 };
 
+/**
+ * Build the effective SIGNALS table at runtime from the registered scene
+ * plugins UNIONED with the internal fallback table. Per-scene policy:
+ *
+ *   - If a plugin advertises `signals: [...]`, those are the SOLE source
+ *     of signal-driven votes for that scene type. Plugins that opt into
+ *     advertising fully own their scene-fit shape.
+ *   - If a plugin does not advertise, the internal SIGNALS table
+ *     contributes (back-compat for the 29 core scenes until they migrate
+ *     to advertising at the plugin level).
+ *
+ * This means a third-party plugin like `@example/docent-finance/ohlc` can
+ * declare its own needles ("ohlc bars", "candlestick pattern") and the
+ * recommender will surface it without any change to scene-fit.ts.
+ */
+const buildEffectiveSignals = (engine: Engine): Signal[] => {
+  const out: Signal[] = [];
+  const advertised = new Set<string>();
+  for (const p of engine.scenes.all() as ReadonlyArray<ScenePlugin>) {
+    if (p.signals && p.signals.length > 0) {
+      advertised.add(p.sceneType);
+      for (const s of p.signals) {
+        out.push({
+          needle: s.needle.toLowerCase(),
+          scene: p.sceneType as SceneType,
+          weight: s.weight,
+        });
+      }
+    }
+  }
+  // Fallback: include internal SIGNALS entries for scenes that haven't
+  // migrated to plugin-level signal advertisement. This keeps the v2
+  // cues working during migration.
+  for (const s of SIGNALS) {
+    if (!advertised.has(s.scene)) out.push(s);
+  }
+  return out;
+};
+
 const scoreSurvey = (
   body: string,
-): {scores: Record<SceneType, number>; matches: Record<SceneType, string[]>} => {
+  signalsTable: ReadonlyArray<Signal>,
+  knownTypes: ReadonlySet<string>,
+): {scores: Record<string, number>; matches: Record<string, string[]>} => {
   const scores: Record<string, number> = {};
   const matches: Record<string, string[]> = {};
-  for (const t of SCENE_TYPES) {
+  for (const t of knownTypes) {
     scores[t] = 0;
     matches[t] = [];
   }
   const haystack = body.toLowerCase();
-  for (const s of SIGNALS) {
+  for (const s of signalsTable) {
     if (haystack.includes(s.needle)) {
+      if (scores[s.scene] === undefined) {
+        scores[s.scene] = 0;
+        matches[s.scene] = [];
+      }
       scores[s.scene]! += s.weight;
       matches[s.scene]!.push(s.needle);
     }
   }
-  return {
-    scores: scores as Record<SceneType, number>,
-    matches: matches as Record<SceneType, string[]>,
-  };
+  return {scores, matches};
 };
 
 const detectMode = (source: string): 'pr' | 'ar' | 'ex' | undefined => {
@@ -613,46 +657,96 @@ const detectMode = (source: string): 'pr' | 'ar' | 'ex' | undefined => {
   return m ? (m[1] as 'pr' | 'ar' | 'ex') : undefined;
 };
 
+/**
+ * Resolve a scene type's cluster + cue with this precedence:
+ *
+ *   1. Plugin-advertised `plugin.cluster` (v3 closed taxonomy) + `plugin.cue`
+ *      — the canonical source for v3-aware plugins, including third-party packs.
+ *   2. Internal `SCENE_META[sceneType]` — back-compat for v2 cues still
+ *      anchored to the internal table.
+ *   3. Fallback labels for unknown scene types.
+ */
+const resolveSceneMeta = (
+  plugin: ScenePlugin | undefined,
+  sceneType: string,
+): {cluster: string; cue: string} => {
+  const fromMeta = (SCENE_META as Record<string, SceneMeta | undefined>)[sceneType];
+  const cluster =
+    plugin?.cluster === null
+      ? 'chrome'
+      : (plugin?.cluster ?? fromMeta?.cluster ?? 'unclassified');
+  const cue = plugin?.cue ?? fromMeta?.cue ?? '(no cue advertised by this plugin)';
+  return {cluster, cue};
+};
+
 export const recommendScenes = (
+  engine: Engine,
   id: string,
   source: string,
   top: number = 8,
 ): RecommendResult => {
   if (top < 1) top = 1;
-  const {scores, matches} = scoreSurvey(source);
+
+  const plugins = engine.scenes.all() as ReadonlyArray<ScenePlugin>;
+  const sceneTypes = new Set<string>(plugins.map((p) => p.sceneType));
+  // Also union internal SCENE_TYPES so back-compat cues still vote — they're
+  // skipped by the loop below if no plugin is registered for that type.
+  for (const t of SCENE_TYPES) sceneTypes.add(t);
+
+  const signalsTable = buildEffectiveSignals(engine);
+  const {scores, matches} = scoreSurvey(source, signalsTable, sceneTypes);
   const mode = detectMode(source);
 
-  const ranked = SCENE_TYPES.filter((t) => t !== 'frame' && t !== 'recap')
-    .map((scene) => ({
-      scene,
-      cluster: SCENE_META[scene].cluster,
-      score: scores[scene],
-      matched: matches[scene],
-    }))
+  // Build a stable type-ordering for tie-breaks: registered plugins (in
+  // engine registration order) come first, then any back-compat-only
+  // sceneTypes from SCENE_META.
+  const orderIndex = new Map<string, number>();
+  let i = 0;
+  for (const p of plugins) {
+    if (!orderIndex.has(p.sceneType)) orderIndex.set(p.sceneType, i++);
+  }
+  for (const t of SCENE_TYPES) {
+    if (!orderIndex.has(t)) orderIndex.set(t, i++);
+  }
+
+  const ranked = [...sceneTypes]
+    .filter((t) => t !== 'frame' && t !== 'recap')
+    .map((scene) => {
+      const plugin = plugins.find((p) => p.sceneType === scene);
+      const meta = resolveSceneMeta(plugin, scene);
+      return {
+        scene,
+        cluster: meta.cluster,
+        score: scores[scene] ?? 0,
+        matched: matches[scene] ?? [],
+      };
+    })
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
-      return SCENE_TYPES.indexOf(a.scene) - SCENE_TYPES.indexOf(b.scene);
+      return (orderIndex.get(a.scene) ?? 1e9) - (orderIndex.get(b.scene) ?? 1e9);
     });
 
   const bodySlots = Math.max(1, top - 2);
   const bodyPicks = ranked.filter((r) => r.score > 0).slice(0, bodySlots);
 
-  const modeAdds: SceneType[] = [];
+  const modeAdds: string[] = [];
   if (mode === 'pr' && !bodyPicks.find((r) => r.scene === 'diff')) modeAdds.push('diff');
   if (mode === 'ex' && !bodyPicks.find((r) => r.scene === 'big-idea')) modeAdds.push('big-idea');
 
-  const seen = new Set<SceneType>();
+  const seen = new Set<string>();
   const out: SceneRecommendation[] = [];
 
-  const push = (scene: SceneType, score: number, matched: string[]): void => {
+  const push = (scene: string, score: number, matched: string[]): void => {
     if (seen.has(scene)) return;
     seen.add(scene);
+    const plugin = plugins.find((p) => p.sceneType === scene);
+    const meta = resolveSceneMeta(plugin, scene);
     out.push({
-      scene,
-      cluster: SCENE_META[scene].cluster,
+      scene: scene as SceneType,
+      cluster: meta.cluster as Cluster,
       score,
       matched,
-      rationale: buildRationale(scene, score, matched, mode),
+      rationale: buildRationale(scene, meta.cue, score, matched, mode),
     });
   };
 
@@ -666,7 +760,8 @@ export const recommendScenes = (
   const bodyOnly = trimmed
     .map((r) => r.scene)
     .filter((s) => s !== 'frame' && s !== 'recap');
-  const allRut = bodyOnly.length > 0 && bodyOnly.every((s) => DEFAULT_RUT.has(s));
+  const allRut =
+    bodyOnly.length > 0 && bodyOnly.every((s) => (DEFAULT_RUT as ReadonlySet<string>).has(s));
   const hasOnlyDefaults = bodyOnly.length === 0 || allRut;
 
   const notes: string[] = [];
@@ -685,7 +780,8 @@ export const recommendScenes = (
 };
 
 const buildRationale = (
-  scene: SceneType,
+  scene: string,
+  cue: string,
   score: number,
   matched: string[],
   mode?: 'pr' | 'ar' | 'ex',
@@ -699,10 +795,10 @@ const buildRationale = (
     return 'every explainer carries one held sentence before the recap.';
   }
   if (matched.length === 0) {
-    return `${SCENE_META[scene].cue} (no specific signal — included by mode default)`;
+    return `${cue} (no specific signal — included by mode default)`;
   }
   const hits = matched.slice(0, 3).join(', ');
-  return `survey contains [${hits}] (score ${score}) → ${SCENE_META[scene].cue}`;
+  return `survey contains [${hits}] (score ${score}) → ${cue}`;
 };
 
 // ----- the CLI surface ------------------------------------------------------
@@ -747,13 +843,13 @@ export const runSceneFitList = async (args: ListArgs): Promise<number> => {
   const plugins = engine.scenes.all();
 
   // Group registered plugins by their declared cluster (the v3 closed
-  // taxonomy). Each plugin's cue comes from SCENE_META (if known) or a
-  // fallback label.
+  // taxonomy). Cue precedence: plugin.cue (advertised at the plugin shape)
+  // > internal SCENE_META (v2 back-compat) > fallback label.
   const grouped = new Map<string, Array<{scene: string; cue: string; rutTag: boolean}>>();
   for (const p of plugins) {
     const cluster = p.cluster === null ? 'chrome' : (p.cluster ?? 'unclassified');
     const meta = (SCENE_META as Record<string, SceneMeta | undefined>)[p.sceneType];
-    const cue = meta ? meta.cue : '(no cue advertised by this plugin)';
+    const cue = p.cue ?? meta?.cue ?? '(no cue advertised by this plugin)';
     const rutTag = (DEFAULT_RUT as ReadonlySet<string>).has(p.sceneType);
     const bucket = grouped.get(cluster) ?? [];
     bucket.push({scene: p.sceneType, cue, rutTag});
@@ -827,8 +923,9 @@ export const runSceneFitRecommend = async (
     return 1;
   }
 
+  const {engine} = await createEngine(projectRoot);
   const top = args.top ?? 8;
-  const result = recommendScenes(args.subjectId, source, top);
+  const result = recommendScenes(engine, args.subjectId, source, top);
 
   if (args.json) {
     log(JSON.stringify(result, null, 2));

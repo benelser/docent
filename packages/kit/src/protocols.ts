@@ -510,6 +510,25 @@ export interface JudgeDimension {
  *
  * @see docs/design/plugin-architecture-strategy.md §4.2
  */
+/**
+ * One rule-based selection signal for the `docent scene-fit recommend`
+ * recommender. A {@link ScenePlugin} declares an array of these to advertise
+ * what survey language pulls this scene into the recommendation. See
+ * {@link ScenePlugin.signals} for the tuning heuristic.
+ *
+ * Matched case-insensitively against the lowercased survey body. A scene
+ * with several specific needles outscores a generic scene with one fuzzy
+ * needle — that's how the recommender breaks ties in favor of precise fits.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §11.5
+ */
+export interface SceneFitSignal {
+  /** Substring (lowercased before match) the recommender looks for. */
+  readonly needle: string;
+  /** Weight added to the scene's score when the needle matches. */
+  readonly weight: number;
+}
+
 export interface ScenePlugin<TSpec = Scene> extends PluginBase {
   /** The plugin-kind discriminator. */
   readonly kind: 'scene';
@@ -565,6 +584,55 @@ export interface ScenePlugin<TSpec = Scene> extends PluginBase {
 
   /** judge dimensions contributed by this scene type. */
   readonly judgeDimensions?: ReadonlyArray<JudgeDimension>;
+
+  /**
+   * One-line "reach for it when" cue surfaced by `docent scene-fit list`
+   * and the agent layer's prompts. The cue is what the survey-authoring
+   * agent reads when deciding which primitive to reach for. Authors of
+   * community packs are STRONGLY encouraged to declare it.
+   *
+   * Style guide for cues:
+   *   - One sentence, naming the cognitive move the scene performs
+   *   - Lead with the load-bearing structural signal
+   *   - End with a parenthetical that names the visual idiom
+   *
+   * Example: `"the subject IS its components and how they connect
+   *   (node-and-edge diagram)."`
+   *
+   * Optional — the `docent scene-fit list` command will surface
+   * `(no cue advertised)` for plugins that omit it.
+   *
+   * @see docs/design/plugin-architecture-strategy.md §11.5
+   */
+  readonly cue?: string;
+
+  /**
+   * Rule-based selection signals for `docent scene-fit recommend`. Each
+   * signal is a substring needle the recommender looks for in the lowercased
+   * survey body; a match contributes the declared weight to this scene's
+   * recommendation score. The top N highest-scoring scenes are pulled into
+   * the agent's recommendation.
+   *
+   * The needle string is matched case-insensitively (the recommender
+   * lowercases both sides). Use weighted phrases so distinctive language
+   * (e.g. `"causal loop"`, `"trade-off plane"`) outvotes circumstantial
+   * matches (e.g. `"curve"`, `"compounds"`).
+   *
+   * Tuning heuristic:
+   *   - **4** — the phrase IS the scene's defining language (a hard match).
+   *   - **3** — strong domain hint; clearly biases toward this scene.
+   *   - **2** — clear but ambiguous between siblings (e.g. timeline vs
+   *     progression).
+   *   - **1** — circumstantial; contributes only alongside stronger
+   *     evidence for the same scene.
+   *
+   * Empty / omitted: the scene relies on `cue` for discovery and on the
+   * mode-driven structural rules (`frame` always opens, `recap` always
+   * closes, `diff` is structurally required for PR films) for inclusion.
+   *
+   * @see docs/design/plugin-architecture-strategy.md §11.5
+   */
+  readonly signals?: ReadonlyArray<SceneFitSignal>;
 
   /**
    * R5 cross-bind: scenes declare what TTS capabilities they meaningfully
