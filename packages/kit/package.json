@@ -1,6 +1,6 @@
 {
   "name": "@docent/kit",
-  "version": "3.0.0-pre.0",
+  "version": "3.0.0-rc.0",
   "description": "docent's framework: protocols, registries, the Engine. Zero opinions, zero implementations. Every scene, preset, TTS provider, and feature in @docent/core (and every third-party plugin pack) is registered through this package's public API.",
   "private": true,
   "type": "module",
@@ -27,7 +27,9 @@
     "remotion": "^4.0.0"
   },
   "peerDependenciesMeta": {
-    "@remotion/transitions": {"optional": true}
+    "@remotion/transitions": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/json-schema": "^7.0.15",

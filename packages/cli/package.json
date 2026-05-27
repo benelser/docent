@@ -1,6 +1,6 @@
 {
   "name": "@docent/cli",
-  "version": "3.0.0-pre.0",
+  "version": "3.0.0-rc.0",
   "description": "docent's thin CLI shell. Subcommand routing on top of @docent/kit's public Engine surface; loads @docent/core and any user docent.config.ts plugins.",
   "private": true,
   "type": "module",
@@ -17,7 +17,10 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "files": ["src", "README.md"],
+  "files": [
+    "src",
+    "README.md"
+  ],
   "dependencies": {
     "@docent/core": "workspace:*",
     "@docent/kit": "workspace:*"

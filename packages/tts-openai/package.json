@@ -1,6 +1,6 @@
 {
   "name": "@docent/tts-openai",
-  "version": "3.0.0-pre.0",
+  "version": "3.0.0-rc.0",
   "description": "The OpenAI TTS provider plugin for docent. Wraps the official `openai` npm package's `audio.speech.create()` and exposes it through @docent/kit's TtsProviderPlugin contract.",
   "private": true,
   "type": "module",
@@ -14,7 +14,10 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "files": ["src", "README.md"],
+  "files": [
+    "src",
+    "README.md"
+  ],
   "dependencies": {
     "@docent/kit": "workspace:*"
   },

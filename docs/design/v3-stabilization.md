@@ -160,9 +160,17 @@ The scifi pack is an acceptance proof. Real developers need richer examples:
 Every type exported from `@docent/kit/src/index.ts` should have JSDoc that explains intent, gives examples, and links to the strategic plan section. Today they're bare types.
 
 #### D18. Versioning + npm publish prep
-- Move `@docent/*` versions from `3.0.0-pre.0` to `3.0.0-rc.0`
-- Verify `package.json` `exports`, `files`, `types` fields
-- `npm pack --dry-run` for each package — confirm what ships
+
+**Resolution (2026-05-26):** ✅ rc.0 ready.
+
+- ✅ Bumped 7 `@docent/*` packages from `3.0.0-pre.0` to `3.0.0-rc.0`: kit, core, cli, tts-openai, tts-elevenlabs, tts-compatible, agent
+- ✅ Verified `package.json` metadata across all 6 public packages: `exports['.']` → `./src/index.ts` (source distribution), `files: ['src', 'README.md']`, `name` correct, `repository.directory` correct
+- ✅ Wrote short package-scoped README.md for `cli`, `tts-openai`, `tts-elevenlabs`, `tts-compatible` (kit and core already had one)
+- ✅ `npm pack --dry-run` clean for all 6: tarballs land at `docent-kit-3.0.0-rc.0.tgz`, `docent-core-3.0.0-rc.0.tgz`, etc.
+
+**Distribution shape:** v3.0-rc.0 ships as **source TypeScript**. `exports['.']` points at the raw `.ts` files. Consumers using Bun, Vite + TS, tsx, or any TS-aware loader install and import cleanly. Plain-Node JS consumers will need a TS loader (or wait for GA, when prebuilt JS + d.ts is the consideration).
+
+**Publish gate:** every package still has `private: true`. This is the explicit safety net — `npm publish` will refuse with a clear error pointing at the flag. Flipping `private` and running `npm publish` is the deliberate motion that takes v3 from "ready" to "released."
 
 ---
 
@@ -256,4 +264,4 @@ When every checkbox below is ✅, this file gets the rename
 - [x] D15 — README plugin-authoring guide (E1)
 - [x] D16 — Example packs beyond scifi (E2 → `6390517`: finance + brand + captions)
 - [x] D17 — Public type JSDoc (E3)
-- [ ] D18 — `@docent/*` packages versioned + npm pack dry-runs clean
+- [x] D18 — `@docent/*` packages versioned 3.0.0-rc.0 + dry-packs clean + per-package READMEs in place; `private: true` is the explicit publish gate
