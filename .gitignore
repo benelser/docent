@@ -92,3 +92,8 @@ package-lock.json
 # Per-render entry scripts the CLI generates under .docent/tmp/.
 # These are throwaway — regenerated on every `docent build`.
 .docent/
+
+# SvelteKit landing site — source is committed, build artifacts are not
+landing/build/
+landing/node_modules/
+landing/.svelte-kit/

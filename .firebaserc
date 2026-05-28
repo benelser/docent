@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "docent-497713"
+  },
+  "targets": {
+    "docent-497713": {
+      "hosting": {
+        "main": ["docent-studio"]
+      }
+    }
+  }
+}
