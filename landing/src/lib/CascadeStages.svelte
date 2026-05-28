@@ -24,25 +24,11 @@
 	};
 
 	onMount(() => {
-		const rect = container.getBoundingClientRect();
-		const onScreen = rect.top < window.innerHeight * 1.2 && rect.bottom > -100;
-		if (onScreen || window.innerHeight === 0) {
-			run();
-			return;
-		}
-		const io = new IntersectionObserver(
-			(entries) => {
-				for (const e of entries) {
-					if (e.isIntersecting) {
-						run();
-						io.disconnect();
-					}
-				}
-			},
-			{ threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
-		);
-		io.observe(container);
-		return () => io.disconnect();
+		// Animate on mount — same reasoning as TypingJson. The pills usually
+		// have completed by the time the viewer scrolls down to the cascade
+		// section, but they will always show the final amber-done state
+		// instead of risking a blank spinner forever.
+		run();
 	});
 </script>
 

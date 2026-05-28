@@ -26,28 +26,13 @@
 	};
 
 	onMount(() => {
-		// If already on or above the fold (or in a headless context with no
-		// viewport), start immediately — IO can miss when the user scrolls past
-		// quickly or when threshold:0.4 is never met by a tall pane.
-		const rect = container.getBoundingClientRect();
-		const onScreen = rect.top < window.innerHeight * 1.2 && rect.bottom > -100;
-		if (onScreen || window.innerHeight === 0) {
-			run();
-			return;
-		}
-		const io = new IntersectionObserver(
-			(entries) => {
-				for (const e of entries) {
-					if (e.isIntersecting) {
-						run();
-						io.disconnect();
-					}
-				}
-			},
-			{ threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
-		);
-		io.observe(container);
-		return () => io.disconnect();
+		// Animate immediately on mount. The pane lives below the fold, so the
+		// animation usually completes before the viewer scrolls into view —
+		// they see static text, which is fine. The alternative (gating on IO)
+		// was leaving the pane empty when the observer didn't fire reliably,
+		// e.g. through a display:contents wrapper that has no layout box.
+		// Static-text > blank-pane every time.
+		run();
 	});
 
 	let shown = $derived(source.slice(0, visible));

@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { CLUSTERS, TOTAL_SCENES } from '$lib/data';
-	import { FILMS } from '$lib/films';
+	import { FILMS, type Film } from '$lib/films';
 	import TypingJson from '$lib/TypingJson.svelte';
 	import Counter from '$lib/Counter.svelte';
 	import CascadeStages from '$lib/CascadeStages.svelte';
+	import Lightbox from '$lib/Lightbox.svelte';
 
 	onMount(() => {
 		// Lazy autoplay films when they scroll into view, pause when they leave —
@@ -24,6 +25,23 @@
 		);
 		document.querySelectorAll('video.lazy').forEach((v) => filmObs.observe(v));
 	});
+
+	// Lightbox state — one for the four-film gallery, one for the 29-scene tiles.
+	let openFilm = $state<Film | null>(null);
+	let openScene = $state<{ id: string; cue?: string; cluster: string } | null>(null);
+
+	const openFilmLightbox = (e: MouseEvent, film: Film): void => {
+		e.preventDefault();
+		openFilm = film;
+	};
+	const openSceneLightbox = (
+		e: MouseEvent,
+		scene: { id: string; cue?: string },
+		cluster: string
+	): void => {
+		e.preventDefault();
+		openScene = { id: scene.id, cue: scene.cue, cluster };
+	};
 
 	const demoSpec = `{
   "meta": {
@@ -126,10 +144,11 @@
 				</div>
 				<div class="tile-grid">
 					{#each cluster.scenes as scene (scene.id)}
-						<a
+						<button
+							type="button"
 							class="tile"
-							href="https://github.com/benelser/docent/tree/main/packages/core/src/scenes/{scene.id}"
 							title={scene.cue}
+							onclick={(e) => openSceneLightbox(e, scene, cluster.name)}
 						>
 							{#if stillExists(scene.id)}
 								<img
@@ -148,7 +167,7 @@
 									<span class="tile-rut">default rut</span>
 								{/if}
 							</div>
-						</a>
+						</button>
 					{/each}
 				</div>
 			</div>
@@ -171,10 +190,11 @@
 
 		<div class="film-grid">
 			{#each FILMS as film, i (film.id)}
-				<a
+				<button
+					type="button"
 					class="film-card reveal"
-					href="https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/{film.id}.mp4"
 					style="animation-delay: {i * 100}ms;"
+					onclick={(e) => openFilmLightbox(e, film)}
 				>
 					<div class="film-card-video">
 						<video
@@ -189,6 +209,7 @@
 							<source src="/films/{film.id}.mp4" type="video/mp4" />
 						</video>
 						<span class="film-card-duration">{film.duration}</span>
+						<span class="film-card-play" aria-hidden="true">▶</span>
 					</div>
 					<div class="film-card-body">
 						<h3 class="film-card-title">
@@ -204,7 +225,7 @@
 							{/each}
 						</div>
 					</div>
-				</a>
+				</button>
 			{/each}
 		</div>
 	</div>
@@ -280,6 +301,90 @@
 		</div>
 	</div>
 </section>
+
+<Lightbox open={openFilm !== null} onClose={() => (openFilm = null)}>
+	{#snippet children()}
+		{#if openFilm}
+			<div class="film-lightbox">
+				<div class="film-lightbox-video">
+					<video
+						src="/films/{openFilm.id}.mp4"
+						poster="/films/{openFilm.id}-poster.jpg"
+						controls
+						autoplay
+						playsinline
+					></video>
+				</div>
+				<div class="film-lightbox-meta">
+					<h3 class="film-lightbox-title">
+						{openFilm.title}
+						<span class="film-lightbox-subject">— {openFilm.subject}</span>
+					</h3>
+					<p class="film-lightbox-domain">
+						{openFilm.domain} · <span class="film-lightbox-duration">{openFilm.duration}</span>
+					</p>
+					<div class="film-lightbox-scenes">
+						{#each openFilm.scenes as s, j (j + s)}
+							<span class="scene-chip">{s}</span>{#if j < openFilm.scenes.length - 1}<span
+									class="scene-sep">·</span
+								>{/if}
+						{/each}
+					</div>
+					<div class="film-lightbox-actions">
+						<a
+							class="button button-ghost"
+							href="https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/{openFilm.id}.mp4"
+							download
+						>
+							download mp4 <span class="arrow">↓</span>
+						</a>
+						<a
+							class="button button-ghost"
+							href="https://github.com/benelser/docent/tree/main/films/{openFilm.id}.json"
+						>
+							spec on github <span class="arrow">↗</span>
+						</a>
+					</div>
+				</div>
+			</div>
+		{/if}
+	{/snippet}
+</Lightbox>
+
+<Lightbox open={openScene !== null} onClose={() => (openScene = null)}>
+	{#snippet children()}
+		{#if openScene}
+			<div class="scene-lightbox">
+				<img
+					class="scene-lightbox-still"
+					src="/stills/{openScene.id}.jpg"
+					alt="{openScene.id} scene example"
+				/>
+				<div class="scene-lightbox-meta">
+					<span class="scene-lightbox-cluster">{openScene.cluster}</span>
+					<h3 class="scene-lightbox-name">{openScene.id}</h3>
+					{#if openScene.cue}
+						<p class="scene-lightbox-cue">{openScene.cue}</p>
+					{/if}
+					<div class="scene-lightbox-actions">
+						<a
+							class="button button-ghost"
+							href="https://github.com/benelser/docent/tree/main/packages/core/src/scenes/{openScene.id}"
+						>
+							scene source <span class="arrow">↗</span>
+						</a>
+						<a
+							class="button button-ghost"
+							href="https://github.com/benelser/docent/blob/main/schema/film.schema.json"
+						>
+							schema <span class="arrow">↗</span>
+						</a>
+					</div>
+				</div>
+			</div>
+		{/if}
+	{/snippet}
+</Lightbox>
 
 <footer class="footer">
 	<div class="shell">

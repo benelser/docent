@@ -451,6 +451,13 @@ code {
 	border-radius: 8px;
 	overflow: hidden;
 	transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+	/* Reset button defaults — tile + film-card are now <button> to open the lightbox. */
+	padding: 0;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	display: block;
 }
 
 .tile:hover {
@@ -539,6 +546,12 @@ code {
 	color: var(--ink-mid);
 	display: flex;
 	flex-direction: column;
+	/* Reset button defaults. */
+	padding: 0;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	width: 100%;
 }
 
 .film-card:hover {
@@ -573,6 +586,164 @@ code {
 	padding: 0.3rem 0.55rem;
 	border-radius: 4px;
 	backdrop-filter: blur(8px);
+}
+
+.film-card-play {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%) scale(0.92);
+	width: 4rem;
+	height: 4rem;
+	border-radius: 50%;
+	background: rgba(12, 10, 8, 0.72);
+	border: 1px solid rgba(230, 169, 73, 0.5);
+	color: var(--accent-bright);
+	font-size: 1.4rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding-left: 0.3rem;
+	opacity: 0;
+	transition: opacity 0.25s ease, transform 0.25s ease, border-color 0.25s ease,
+		box-shadow 0.25s ease;
+	backdrop-filter: blur(6px);
+	pointer-events: none;
+}
+
+.film-card:hover .film-card-play {
+	opacity: 1;
+	transform: translate(-50%, -50%) scale(1);
+	border-color: var(--accent);
+	box-shadow: 0 0 30px var(--accent-glow);
+}
+
+/* ─── Lightbox panes (film + scene) ────────────────────────────── */
+
+.film-lightbox {
+	display: grid;
+	grid-template-columns: 1fr;
+}
+
+.film-lightbox-video {
+	background: #000;
+	aspect-ratio: 16 / 9;
+	width: 100%;
+	overflow: hidden;
+}
+
+.film-lightbox-video video {
+	width: 100%;
+	height: 100%;
+	display: block;
+	object-fit: contain;
+	background: #000;
+}
+
+.film-lightbox-meta {
+	padding: 1.6rem 1.75rem 1.85rem;
+}
+
+.film-lightbox-title {
+	font-family: var(--font-display);
+	font-size: 1.9rem;
+	color: var(--ink-hi);
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	margin: 0 0 0.35rem;
+}
+
+.film-lightbox-subject {
+	font-family: var(--font-display);
+	font-style: italic;
+	color: var(--ink-mid);
+	font-size: 1.3rem;
+	font-weight: 300;
+}
+
+.film-lightbox-domain {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--accent);
+	margin: 0 0 1rem;
+}
+
+.film-lightbox-duration {
+	color: var(--ink-mid);
+}
+
+.film-lightbox-scenes {
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	color: var(--ink-low);
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 0.45rem;
+	margin-bottom: 1.4rem;
+}
+
+.film-lightbox-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+.scene-lightbox {
+	display: grid;
+	grid-template-columns: 1fr;
+}
+
+.scene-lightbox-still {
+	width: 100%;
+	display: block;
+	background: #000;
+	max-height: 70vh;
+	object-fit: contain;
+}
+
+.scene-lightbox-meta {
+	padding: 1.5rem 1.75rem 1.75rem;
+}
+
+.scene-lightbox-cluster {
+	font-family: var(--font-mono);
+	font-size: 0.7rem;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+.scene-lightbox-name {
+	font-family: var(--font-mono);
+	font-size: 1.4rem;
+	color: var(--ink-hi);
+	margin: 0.2rem 0 0.55rem;
+}
+
+.scene-lightbox-cue {
+	font-family: var(--font-display);
+	font-style: italic;
+	font-size: 1.15rem;
+	color: var(--ink-mid);
+	margin: 0 0 1.3rem;
+	line-height: 1.4;
+}
+
+.scene-lightbox-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+@media (min-width: 900px) {
+	.film-lightbox-meta {
+		padding: 1.85rem 2rem 2rem;
+	}
+	.scene-lightbox-meta {
+		padding: 1.75rem 2rem 2rem;
+	}
 }
 
 .film-card-body {
