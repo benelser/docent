@@ -27,6 +27,25 @@ export const paperPreset: PresetPlugin = {
   notes:
     'Nature / LaTeX preprint (LIGHT MODE) — cream paper, deep navy ink, classical accents.',
   // extends?: undefined — R4 forward-compat field; leave undefined in v1.
+
+  cue: "academic register — arXiv preprints, journal papers, formal lemma/proof prose.",
+  signals: [
+    {needle: "arxiv", weight: 4},
+    {needle: "arxiv.org", weight: 4},
+    {needle: "/abs/", weight: 3},
+    {needle: "/pdf/", weight: 2},
+    {needle: "journal", weight: 2},
+    {needle: "preprint", weight: 3},
+    {needle: "cite", weight: 1},
+    {needle: "citation", weight: 1},
+    {needle: "abstract:", weight: 1},
+    {needle: "doi:", weight: 3},
+    {needle: "peer-reviewed", weight: 3},
+    {needle: "academic paper", weight: 3},
+    {needle: "research paper", weight: 3},
+    {needle: "figure 1", weight: 1},
+    {needle: "table 1", weight: 1},
+  ],
 };
 
 export default paperPreset;

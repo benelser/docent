@@ -63,7 +63,7 @@ idioms, the failure modes, the trade-offs, with a verdict.
    register the film renders in:
 
    ```bash
-   bun run docent-legacy style recommend <id>
+   bun run docent style recommend <id>
    ```
 
    For architecture-review films the recommender will return

@@ -76,7 +76,7 @@ on `films/<id>.json` as a top-level `"style"` field.
 **Run the recommender** (rule-based; not an LLM call):
 
 ```bash
-bun run docent-legacy style recommend <id>
+bun run docent style recommend <id>
 ```
 
 It reads this survey file (`analysis/<id>.md`) and prints a recommended

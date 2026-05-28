@@ -70,7 +70,7 @@ those only when the user explicitly wants to pause between stages.
    that the spec author will pin to `films/<id>.json`.
 
    ```bash
-   bun run docent-legacy style recommend <id>
+   bun run docent style recommend <id>
    ```
 
    The recommender reads `analysis/<id>.md` and prints a rules-based

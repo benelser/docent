@@ -27,6 +27,25 @@ export const engineeringPreset: PresetPlugin = {
   notes:
     'Linear / Raycast / iTerm — deep blue-black, electric primaries, tight mono.',
   // extends?: undefined — R4 forward-compat field; leave undefined in v1.
+
+  cue: "console aesthetic — code-heavy reviews, PR walkthroughs, internal subsystem deep-dives.",
+  signals: [
+    {needle: "pull request", weight: 3},
+    {needle: "pr review", weight: 3},
+    {needle: "github.com", weight: 1},
+    {needle: "diff", weight: 1},
+    {needle: "load-bearing change", weight: 2},
+    {needle: "kubernetes", weight: 2},
+    {needle: "scheduler", weight: 1},
+    {needle: "codebase", weight: 2},
+    {needle: "repository", weight: 1},
+    {needle: "commit", weight: 1},
+    {needle: "pkg/", weight: 2},
+    {needle: "src/", weight: 1},
+    {needle: "subsystem", weight: 2},
+    {needle: "function", weight: 1},
+    {needle: "control plane", weight: 2},
+  ],
 };
 
 export default engineeringPreset;

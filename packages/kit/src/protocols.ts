@@ -719,6 +719,31 @@ export interface PresetPlugin extends PluginBase {
    */
   readonly visualization?: VisualizationStyle;
 
+  /**
+   * One-line "reach for it when" cue surfaced by `docent style list` and
+   * consumed by the agent layer's prompts. Authors of community packs
+   * are encouraged to declare it — it's what an author reads when
+   * picking among the registered presets.
+   *
+   * Optional. `docent style list` falls back to `notes` when missing.
+   */
+  readonly cue?: string;
+
+  /**
+   * Rule-based selection signals for `docent style recommend`. Each entry
+   * is a substring needle the recommender looks for in the lowercased
+   * survey body; matches contribute the declared weight to this preset's
+   * recommendation score.
+   *
+   * Same shape as {@link ScenePlugin.signals} — see that JSDoc for the
+   * tuning heuristic (weight 4 for defining language, 1 for circumstantial).
+   * Empty / omitted: the preset participates in the registry but never
+   * scores in `recommend`.
+   *
+   * @see ScenePlugin.signals
+   */
+  readonly signals?: ReadonlyArray<SceneFitSignal>;
+
   /** One-line human-readable description — surfaced by `docent style list`. */
   readonly notes: string;
 

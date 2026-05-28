@@ -24,6 +24,19 @@ export const analyticalPreset: PresetPlugin = {
   notes:
     'Mathematica chalkboard — near-black slate, chalk-spectrum accents, mono leads.',
   // extends?: undefined — R4 forward-compat field; leave undefined in v1.
+
+  cue: "math-first register — proofs, theorems, derivations; mono labels, scientific axes.",
+  signals: [
+    {needle: "theorem", weight: 3},
+    {needle: "proof", weight: 2},
+    {needle: "lemma", weight: 2},
+    {needle: "corollary", weight: 2},
+    {needle: "euclid", weight: 2},
+    {needle: "derivation", weight: 1},
+    {needle: "equation", weight: 1},
+    {needle: "matrix", weight: 1},
+    {needle: "vector", weight: 1},
+  ],
 };
 
 export default analyticalPreset;

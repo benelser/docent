@@ -33,6 +33,8 @@ export const neutralPreset: PresetPlugin = {
   notes:
     'Default — the dark-console docent baseline. Byte-identical to theme.ts.',
   // extends?: undefined — R4 forward-compat field; presets are flat in v1.
+
+  cue: "the safe baseline — no domain bias. Pick neutral when the survey doesn't match any other register.",
 };
 
 export default neutralPreset;

@@ -28,6 +28,15 @@ export const executivePreset: PresetPlugin = {
   notes:
     'Apple Keynote / premium strategy deck — pure black, pure white, iOS system colors.',
   // extends?: undefined — R4 forward-compat field; leave undefined in v1.
+
+  cue: "C-suite deck register — strategy decks, board updates; minimal chart noise, single-accent emphasis.",
+  signals: [
+    {needle: "exec deck", weight: 3},
+    {needle: "executive summary", weight: 3},
+    {needle: "board", weight: 1},
+    {needle: "strategy", weight: 1},
+    {needle: "go-to-market", weight: 2},
+  ],
 };
 
 export default executivePreset;

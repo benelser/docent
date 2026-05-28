@@ -29,6 +29,22 @@ export const editorialPreset: PresetPlugin = {
   notes:
     'NYT / New Yorker — warm walnut, serif everywhere, burgundy/ochre.',
   // extends?: undefined — R4 forward-compat field; leave undefined in v1.
+
+  cue: "essay / close-reading register — literary prose, blog posts, primary-source criticism.",
+  signals: [
+    {needle: "essay", weight: 3},
+    {needle: "close reading", weight: 3},
+    {needle: "close-reading", weight: 3},
+    {needle: "poem", weight: 3},
+    {needle: "stanza", weight: 3},
+    {needle: "prose", weight: 2},
+    {needle: "novel", weight: 2},
+    {needle: "literary", weight: 2},
+    {needle: "frost", weight: 1},
+    {needle: "blog post", weight: 2},
+    {needle: "narrative", weight: 1},
+    {needle: "metaphor", weight: 1},
+  ],
 };
 
 export default editorialPreset;
