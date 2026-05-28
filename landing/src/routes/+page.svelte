@@ -359,7 +359,7 @@
 					<video
 						class="scene-lightbox-video"
 						src="/clips/{openScene.id}.mp4"
-						poster="/stills/{openScene.id}.jpg"
+						poster="/stills/full/{openScene.id}.jpg"
 						autoplay
 						loop
 						muted

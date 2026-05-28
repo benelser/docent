@@ -55,13 +55,42 @@ MAPPING = {
 }
 
 
+def actual_duration(film: str) -> float | None:
+    mp4 = OUT / f'{film}.mp4'
+    if not mp4.exists():
+        return None
+    res = subprocess.run(
+        ['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+         '-of', 'csv=p=0', str(mp4)],
+        capture_output=True, text=True,
+    )
+    try:
+        return float(res.stdout.strip())
+    except ValueError:
+        return None
+
+
 def find_t50(film: str, idx: int) -> tuple[float, str]:
+    """
+    Return (t50_scaled, scene_type). Scaled by actual_duration /
+    check.json_duration so end-of-film scenes don't overflow when the
+    re-render came out slightly shorter than the original check (TTS
+    audio length is not deterministic).
+    """
     check = OUT / f'.render-check-{film}' / 'check.json'
     with check.open() as f:
         data = json.load(f)
+    check_duration = data.get('durationSeconds') or 0.0
+    actual = actual_duration(film) or check_duration
+    scale = actual / check_duration if check_duration > 0 else 1.0
     for s in data['samples']:
         if s['sceneIndex'] == idx:
-            return s['t50s'], s['type']
+            t50 = s['t50s'] * scale
+            # Pull back 0.1s from the very end so ffmpeg always has a
+            # frame to grab.
+            if actual:
+                t50 = min(t50, actual - 0.1)
+            return t50, s['type']
     raise SystemExit(f'no sample at index {idx} in {check}')
 
 
