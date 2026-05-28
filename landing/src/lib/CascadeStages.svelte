@@ -12,21 +12,34 @@
 	let done = $state<boolean[]>(stages.map(() => false));
 	let container: HTMLDivElement;
 
+	let triggered = false;
+	const run = (): void => {
+		if (triggered) return;
+		triggered = true;
+		stages.forEach((_, i) => {
+			setTimeout(() => {
+				done[i] = true;
+			}, 400 + i * 360);
+		});
+	};
+
 	onMount(() => {
+		const rect = container.getBoundingClientRect();
+		const onScreen = rect.top < window.innerHeight * 1.2 && rect.bottom > -100;
+		if (onScreen || window.innerHeight === 0) {
+			run();
+			return;
+		}
 		const io = new IntersectionObserver(
 			(entries) => {
 				for (const e of entries) {
 					if (e.isIntersecting) {
-						stages.forEach((_, i) => {
-							setTimeout(() => {
-								done[i] = true;
-							}, 400 + i * 360);
-						});
+						run();
 						io.disconnect();
 					}
 				}
 			},
-			{ threshold: 0.4 }
+			{ threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
 		);
 		io.observe(container);
 		return () => io.disconnect();

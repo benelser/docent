@@ -7,30 +7,44 @@
 	let started = $state(false);
 	let container: HTMLDivElement;
 
+	const run = (): void => {
+		if (started) return;
+		started = true;
+		// Token-based reveal — roughly 8 chars per frame for a brisk
+		// "typing" feel without making the user wait too long.
+		const total = source.length;
+		const start = performance.now();
+		const duration = Math.min(2400, total * 6);
+		const step = (now: number): void => {
+			const t = Math.min(1, (now - start) / duration);
+			// Ease-in-out
+			const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+			visible = Math.round(total * eased);
+			if (t < 1) requestAnimationFrame(step);
+		};
+		requestAnimationFrame(step);
+	};
+
 	onMount(() => {
+		// If already on or above the fold (or in a headless context with no
+		// viewport), start immediately — IO can miss when the user scrolls past
+		// quickly or when threshold:0.4 is never met by a tall pane.
+		const rect = container.getBoundingClientRect();
+		const onScreen = rect.top < window.innerHeight * 1.2 && rect.bottom > -100;
+		if (onScreen || window.innerHeight === 0) {
+			run();
+			return;
+		}
 		const io = new IntersectionObserver(
 			(entries) => {
 				for (const e of entries) {
-					if (e.isIntersecting && !started) {
-						started = true;
-						// Token-based reveal — roughly 8 chars per frame for a brisk
-						// "typing" feel without making the user wait too long.
-						const total = source.length;
-						const start = performance.now();
-						const duration = Math.min(2400, total * 6);
-						const step = (now: number) => {
-							const t = Math.min(1, (now - start) / duration);
-							// Ease-in-out
-							const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-							visible = Math.round(total * eased);
-							if (t < 1) requestAnimationFrame(step);
-						};
-						requestAnimationFrame(step);
+					if (e.isIntersecting) {
+						run();
 						io.disconnect();
 					}
 				}
 			},
-			{ threshold: 0.4 }
+			{ threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
 		);
 		io.observe(container);
 		return () => io.disconnect();
