@@ -355,11 +355,18 @@
 	{#snippet children()}
 		{#if openScene}
 			<div class="scene-lightbox">
-				<img
-					class="scene-lightbox-still"
-					src="/stills/{openScene.id}.jpg"
-					alt="{openScene.id} scene example"
-				/>
+				<div class="scene-lightbox-media">
+					<video
+						class="scene-lightbox-video"
+						src="/clips/{openScene.id}.mp4"
+						poster="/stills/{openScene.id}.jpg"
+						autoplay
+						loop
+						muted
+						playsinline
+						preload="auto"
+					></video>
+				</div>
 				<div class="scene-lightbox-meta">
 					<span class="scene-lightbox-cluster">{openScene.cluster}</span>
 					<h3 class="scene-lightbox-name">{openScene.id}</h3>

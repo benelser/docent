@@ -65,19 +65,18 @@ def find_t50(film: str, idx: int) -> tuple[float, str]:
     raise SystemExit(f'no sample at index {idx} in {check}')
 
 
-def extract(film: str, t: float, out_jpg: Path) -> None:
+def extract(film: str, t: float, out_jpg: Path, width: int, quality: int) -> None:
     mp4 = OUT / f'{film}.mp4'
     if not mp4.exists():
         raise SystemExit(f'missing mp4: {mp4}')
-    # -ss before -i = fast seek; -vframes 1 = single frame; scale to 900px
-    # wide preserving aspect ratio; jpeg q=4 stays sharp under 35 KB.
+    # -ss after -i = accurate seek; lanczos scale keeps text crisp.
     cmd = [
         'ffmpeg', '-y', '-loglevel', 'error',
-        '-ss', f'{t:.3f}',
         '-i', str(mp4),
+        '-ss', f'{t:.3f}',
         '-vframes', '1',
-        '-vf', 'scale=900:-1',
-        '-q:v', '4',
+        '-vf', f'scale={width}:-1:flags=lanczos',
+        '-q:v', str(quality),
         str(out_jpg),
     ]
     subprocess.run(cmd, check=True)
@@ -85,17 +84,24 @@ def extract(film: str, t: float, out_jpg: Path) -> None:
 
 def main() -> int:
     bad = 0
-    print(f'Re-extracting {len(MAPPING)} canonical stills...')
+    # Two sizes: catalog tile (480w, ~25 KB) for the grid + foreground
+    # detail (1920w, ~150 KB) for the lightbox at retina res.
+    STILLS.mkdir(parents=True, exist_ok=True)
+    (STILLS / 'full').mkdir(exist_ok=True)
+    print(f'Re-extracting {len(MAPPING)} canonical stills (tile + full)...')
     for scene, (film, idx) in sorted(MAPPING.items()):
         t, actual_type = find_t50(film, idx)
         if actual_type != scene:
             print(f'  ! {scene:14} MAPPING ERROR: {film}#{idx} is {actual_type!r}, not {scene!r}')
             bad += 1
             continue
-        out_jpg = STILLS / f'{scene}.jpg'
-        extract(film, t, out_jpg)
-        size = out_jpg.stat().st_size // 1024
-        print(f'  ✓ {scene:14} ← {film}#{idx} @ {t:6.2f}s  ({size} KB)')
+        tile = STILLS / f'{scene}.jpg'
+        full = STILLS / 'full' / f'{scene}.jpg'
+        extract(film, t, tile, width=480, quality=4)
+        extract(film, t, full, width=1920, quality=2)
+        ts = tile.stat().st_size // 1024
+        fs = full.stat().st_size // 1024
+        print(f'  ✓ {scene:14} ← {film}#{idx} @ {t:6.2f}s  tile {ts:>3} KB · full {fs:>4} KB')
     if bad:
         print(f'{bad} mapping errors')
         return 1
