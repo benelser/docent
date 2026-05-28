@@ -1,6 +1,6 @@
 # @example/docent-feature-modifier
 
-A **FeaturePlugin** that uses `registerModifiers` to advertise three concrete inline directives. The R3 modifier registry demo for `@docent/kit`.
+A **FeaturePlugin** that uses `registerModifiers` to advertise three concrete inline directives. The R3 modifier registry demo for `@bjelser/kit`.
 
 The pattern for any feature pack that wants to give authors per-spec shorthand the cascade compiles into structured patches before validation. Modifiers fire at one of three tiers — film, scene, or beat — and merge a `Partial<>` into the corresponding target.
 

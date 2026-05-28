@@ -1,7 +1,7 @@
 // SceneFrame — the parallaxed chrome every scene sits in.
 //
 // MIRROR of `packages/engine/src/components/SceneFrame.tsx`, adapted to live
-// inside `@docent/core` (resolves `ResolvedStyle` through `@docent/kit`,
+// inside `@bjelser/core` (resolves `ResolvedStyle` through `@bjelser/kit`,
 // and carries its own minimal `CameraState` interface so it does not reach
 // back into the engine for the camera-state shape).
 //
@@ -14,7 +14,7 @@
 
 import React, {useMemo} from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {ResolvedStyle} from '@docent/kit';
+import type {ResolvedStyle} from '@bjelser/kit';
 
 import {FittedText} from './fitted-text';
 import {glow} from './helpers';
@@ -50,7 +50,7 @@ const MOTES = (() => {
 /**
  * Camera-state shape SceneFrame reads. Mirrors the engine's `CameraState`
  * (tx/ty pixel offsets, scale 1.0 = identity). Re-declared locally so
- * `@docent/core` does not import from the engine.
+ * `@bjelser/core` does not import from the engine.
  */
 export interface CameraState {
   tx: number;

@@ -1,4 +1,4 @@
-// @docent/core — `structure` scene plugin.
+// @bjelser/core — `structure` scene plugin.
 //
 // The load-bearing template most architecture films rest on: a node-and-edge
 // diagram. Cluster: `connection` (the move is showing how the parts
@@ -10,7 +10,7 @@
 // structural validator (node/edge shape, the as/cells/expr cross-field
 // rules, the box-overlap guarantee, the embed-allowlist check).
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {StructureSceneComponent} from './component';
 import {depthRules} from './depth-rules';

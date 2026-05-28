@@ -8,7 +8,7 @@
 // VERBATIM from the v2.5.x renderer, with two differences enforced by
 // the migration brief:
 //
-//   - props receive `SceneRenderProps<CompareScene>` from @docent/kit
+//   - props receive `SceneRenderProps<CompareScene>` from @bjelser/kit
 //     (the kit-owned `{scene, common}` envelope), rather than the legacy
 //     `SceneProps` (the engine-owned `ts: TimedScene` envelope).
 //   - the engine-shared chrome (SceneFrame, Narration, FittedText,
@@ -29,7 +29,7 @@
 
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {ResolvedStyle, SceneRenderProps} from '@docent/kit';
+import type {ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
 
 import {EmbeddedScene} from './_embedded-scene';
 import {

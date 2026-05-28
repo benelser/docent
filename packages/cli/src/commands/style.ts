@@ -1,4 +1,4 @@
-// docent style — the agent-facing introspection surface over @docent/kit's
+// docent style — the agent-facing introspection surface over @bjelser/kit's
 // style/preset system. Mirrors `docent scene-fit` one layer down: closes the
 // "which preset is right for this subject?" loop the agent had no handle on.
 //
@@ -19,7 +19,7 @@
 import {existsSync, readFileSync} from 'node:fs';
 import {join} from 'node:path';
 
-import type {Engine, PresetPlugin} from '@docent/kit';
+import type {Engine, PresetPlugin} from '@bjelser/kit';
 import {
   STYLE_AUDIENCES,
   STYLE_DENSITIES,
@@ -27,7 +27,7 @@ import {
   STYLE_MEDIUMS,
   STYLE_THEMES,
   STYLE_TONES,
-} from '@docent/kit';
+} from '@bjelser/kit';
 
 import {createEngine} from '../engine-factory';
 

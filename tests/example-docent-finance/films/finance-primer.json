@@ -16,7 +16,7 @@
       "kicker": "DOCENT // FINANCE PACK",
       "title": "Reading the Tape",
       "tagline": "Two scenes a domain-specific pack contributes — `ohlc` and `candlestick`",
-      "footnote": "Loaded from @example/docent-finance  ·  zero edits to @docent/core",
+      "footnote": "Loaded from @example/docent-finance  ·  zero edits to @bjelser/core",
       "beats": [
         {
           "id": "fp-frame-1",
@@ -158,7 +158,7 @@
       "points": [
         "OHLC for the arc — the trend across 5 to 20 bars.",
         "Candlestick for the close-up — one bar, one close-read.",
-        "Both ship through @docent/kit's ScenePlugin protocol. No fork."
+        "Both ship through @bjelser/kit's ScenePlugin protocol. No fork."
       ],
       "beats": [
         {

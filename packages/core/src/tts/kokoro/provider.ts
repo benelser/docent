@@ -40,8 +40,8 @@ import type {
   TtsSynthesisResult,
   TtsVoice,
   TtsCapabilities,
-} from '@docent/kit';
-import {TtsProviderError} from '@docent/kit';
+} from '@bjelser/kit';
+import {TtsProviderError} from '@bjelser/kit';
 import {trimSilence, encodeWav} from './silence-trim';
 
 export const KOKORO_CAPABILITIES: TtsCapabilities = {

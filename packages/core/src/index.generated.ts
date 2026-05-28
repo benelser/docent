@@ -11,7 +11,7 @@
 //
 // Total plugins: 38
 
-import type {Plugin} from '@docent/kit';
+import type {Plugin} from '@bjelser/kit';
 
 
 // Presets (6)
@@ -74,7 +74,7 @@ export {kokoroTtsPlugin};
 export {bigIdeaPlugin, causalLoopPlugin, chartPlugin, closeupPlugin, comparePlugin, concessionPlugin, demonstratePlugin, diffPlugin, epigraphPlugin, figurePlugin, framePlugin, journeyMapPlugin, landscapePlugin, mapPlugin, mechanismPlugin, objectionPlugin, passagePlugin, priorArtPlugin, probePlugin, progressionPlugin, provocationPlugin, quantitiesPlugin, recapPlugin, structurePlugin, tensionPlugin, timelinePlugin, treePlugin, vennPlugin, walkthroughPlugin};
 
 /**
- * The set of plugins shipped with `@docent/core` — the opinionated default
+ * The set of plugins shipped with `@bjelser/core` — the opinionated default
  * implementation. The engine's `use()` sniffs `plugin.kind` and dispatches
  * to the right registry, so loading order is irrelevant to correctness; the
  * order below is stable for reviewability (presets first, then features, TTS,

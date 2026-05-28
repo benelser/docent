@@ -1,13 +1,13 @@
-# @docent/tts-openai
+# @bjelser/tts-openai
 
-OpenAI TTS provider for `@docent/kit`. Synthesizes per-beat narration audio against OpenAI's `tts-1` / `tts-1-hd` / `gpt-4o-mini-tts` models.
+OpenAI TTS provider for `@bjelser/kit`. Synthesizes per-beat narration audio against OpenAI's `tts-1` / `tts-1-hd` / `gpt-4o-mini-tts` models.
 
 ## Install
 
 ```bash
-npm install @docent/tts-openai openai
+npm install @bjelser/tts-openai openai
 # or
-bun add @docent/tts-openai openai
+bun add @bjelser/tts-openai openai
 ```
 
 `openai` is a **peer dependency** — bring your own SDK version.
@@ -18,8 +18,8 @@ Register the provider with the engine, set `OPENAI_API_KEY`, and reference it fr
 
 ```ts
 // docent.config.ts
-import {corePlugins} from '@docent/core';
-import {openaiTtsProvider} from '@docent/tts-openai';
+import {corePlugins} from '@bjelser/core';
+import {openaiTtsProvider} from '@bjelser/tts-openai';
 
 export default {
   plugins: [...corePlugins, openaiTtsProvider],

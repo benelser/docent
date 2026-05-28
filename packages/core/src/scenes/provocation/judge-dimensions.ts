@@ -14,7 +14,7 @@
 //
 // Films with no provocation scene mark the dimension n/a.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 const provocationLoadBearing: JudgeDimension = {
   id: 'provocation-load-bearing',

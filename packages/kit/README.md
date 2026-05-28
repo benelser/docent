@@ -1,14 +1,14 @@
-# @docent/kit
+# @bjelser/kit
 
 The framework. Zero opinions, zero implementations.
 
-`@docent/kit` owns the plugin protocols, the registries, the `Engine` class,
+`@bjelser/kit` owns the plugin protocols, the registries, the `Engine` class,
 the spec validator, the cascade orchestrator, and the Remotion bindings.
-Every scene, preset, TTS provider, and feature in `@docent/core` (and every
+Every scene, preset, TTS provider, and feature in `@bjelser/core` (and every
 third-party plugin pack) is registered through this package's public API
 via `engine.use(plugin)`.
 
-There is no private path. `@docent/core` is one customer of `@docent/kit`'s
+There is no private path. `@bjelser/core` is one customer of `@bjelser/kit`'s
 public API; a third-party plugin pack has exactly the same powers and
 constraints.
 
@@ -30,9 +30,9 @@ constraints.
 - **Not the implementation.** Zero scenes. Zero presets. Zero TTS providers.
   Zero opinions about what a film looks like. The 29 default scenes, the
   6 default presets, the Kokoro TTS provider, the default narration feature
-  — every one of them lives in `@docent/core`, registered through this
+  — every one of them lives in `@bjelser/core`, registered through this
   package's public API.
-- **Not a renderer.** `@docent/kit` references React + Remotion in types
+- **Not a renderer.** `@bjelser/kit` references React + Remotion in types
   only (peer dependencies). The kit imports nothing at runtime from either.
 
 ## Status
@@ -72,7 +72,7 @@ the film but perform no cognitive move.
 ## Quick reference
 
 ```ts
-import {Engine, type ScenePlugin} from '@docent/kit';
+import {Engine, type ScenePlugin} from '@bjelser/kit';
 
 // Construct an empty engine.
 const engine = new Engine();

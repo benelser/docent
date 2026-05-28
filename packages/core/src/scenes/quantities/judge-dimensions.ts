@@ -8,7 +8,7 @@
 // counting up across beats actually pay off the narration's claim?") slot
 // in here without touching the protocol.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

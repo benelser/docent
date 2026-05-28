@@ -1,4 +1,4 @@
-// @docent/core — `causal-loop` scene plugin.
+// @bjelser/core — `causal-loop` scene plugin.
 //
 // The system-dynamics primitive: feedback diagrams. Variables sit as
 // labelled discs arranged in a ring; directed edges between them carry a
@@ -18,7 +18,7 @@
 // the renderer, ./schema.ts for the spec branch, and ./validate.ts for
 // the structural validator.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {CausalLoopSceneComponent} from './component';
 import {depthRules} from './depth-rules';

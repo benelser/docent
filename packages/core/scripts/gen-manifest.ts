@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // packages/core/scripts/gen-manifest.ts
 //
-// Code-generates `src/index.generated.ts` — the @docent/core plugin manifest.
+// Code-generates `src/index.generated.ts` — the @bjelser/core plugin manifest.
 //
 // Why this exists (D9 of the v3.0 stabilization sprint, docs/design/v3-stabilization.md):
 // the hand-assembled manifest in src/index.ts had 38 imports + 38 array entries
@@ -225,7 +225,7 @@ function renderManifest(discovered: readonly DiscoveredCategory[]): string {
 //
 // Total plugins: ${total}
 
-import type {Plugin} from '@docent/kit';
+import type {Plugin} from '@bjelser/kit';
 
 `;
 
@@ -257,7 +257,7 @@ import type {Plugin} from '@docent/kit';
     .join('\n');
 
   const manifest = `/**
- * The set of plugins shipped with \`@docent/core\` — the opinionated default
+ * The set of plugins shipped with \`@bjelser/core\` — the opinionated default
  * implementation. The engine's \`use()\` sniffs \`plugin.kind\` and dispatches
  * to the right registry, so loading order is irrelevant to correctness; the
  * order below is stable for reviewability (presets first, then features, TTS,

@@ -4,7 +4,7 @@
 // authored against this preset opt in by writing `style: {preset: 'acme'}`
 // at the film level.
 
-import type {PresetPlugin, VisualizationStyle} from '@docent/kit';
+import type {PresetPlugin, VisualizationStyle} from '@bjelser/kit';
 
 import {tokens} from './tokens';
 

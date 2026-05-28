@@ -1,4 +1,4 @@
-// @docent/core — `passage` scene plugin.
+// @bjelser/core — `passage` scene plugin.
 //
 // Annotates a plain-text artifact (a poem, prose, a primary-source
 // document) by phrase. The annotation unit is a `mark` — a span
@@ -16,7 +16,7 @@
 // for the renderer, ./schema.ts for the spec branch, ./validate.ts for
 // the structural validator.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {PassageSceneComponent} from './component';
 import {depthRules} from './depth-rules';

@@ -8,7 +8,7 @@
 // metric must be reached by at least one beat's `set` directive") slot in
 // here without touching the protocol.
 
-import type {DepthRule, Scene} from '@docent/kit';
+import type {DepthRule, Scene} from '@bjelser/kit';
 
 export const depthRules: ReadonlyArray<DepthRule<Scene>> = [];
 

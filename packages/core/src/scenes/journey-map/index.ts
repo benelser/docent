@@ -1,4 +1,4 @@
-// @docent/core — `journey-map` scene plugin.
+// @bjelser/core — `journey-map` scene plugin.
 //
 // The UX/service-design move: a person's emotional arc across 3-8 stages.
 // Cluster: `experience` (the human's felt path through a system, not its
@@ -11,7 +11,7 @@
 // findings (`journey-asymmetric`, `journey-specifics`), and
 // ./judge-dimensions.ts for the `experience-is-load-bearing` judge axis.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {JourneyMapSceneComponent} from './component';
 import {depthRules} from './depth-rules';

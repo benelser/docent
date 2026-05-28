@@ -9,7 +9,7 @@
 // ordering relative to claim scenes — of which chart is one) live at the
 // film-level checker, not here.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 // The closed allowlist of named functions a `line` series may plot.
 // Anything outside this list is rejected: the author names a shape, the

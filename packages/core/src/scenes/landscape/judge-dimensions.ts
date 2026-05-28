@@ -12,7 +12,7 @@
 // convenience, quadrants used as decoration — fails this dimension even
 // when every structural check passes.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 const quadrantHonest: JudgeDimension = {
   id: 'quadrant-honest',

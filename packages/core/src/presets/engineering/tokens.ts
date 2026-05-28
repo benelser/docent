@@ -9,7 +9,7 @@
 // electric primaries, tight mono numerics, sharp IDE-like corners,
 // hairline borders. Code is the medium.
 
-import type {DesignTokens} from '@docent/kit';
+import type {DesignTokens} from '@bjelser/kit';
 
 export const tokens: DesignTokens = {
   bg: {

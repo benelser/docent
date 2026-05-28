@@ -9,7 +9,7 @@
 //
 // In the new plugin architecture the silence-trim itself stays in the TTS
 // provider (kokoro applies it inline, where it has the raw Float32 samples)
-// — what `@docent/core/features/audio-rhythm` OWNS is the *policy*: the
+// — what `@bjelser/core/features/audio-rhythm` OWNS is the *policy*: the
 // per-pace ceilings, declared in one place, consumable by:
 //
 //   - the kokoro provider (for its inline trim),
@@ -20,7 +20,7 @@
 // — changing them changes the audio rhythm of every existing film, so they
 // are part of the feature's public contract.
 
-import type {BeatPace} from '@docent/kit';
+import type {BeatPace} from '@bjelser/kit';
 
 /**
  * Maximum leading silence we KEEP, regardless of pace. Kokoro tends to emit

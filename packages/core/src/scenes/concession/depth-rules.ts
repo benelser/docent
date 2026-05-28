@@ -13,7 +13,7 @@
 // count check so the `docent depthcheck` report carries the full picture
 // in a single rule.
 
-import type {DepthFinding, DepthRule} from '@docent/kit';
+import type {DepthFinding, DepthRule} from '@bjelser/kit';
 
 import type {ConcessionScene} from './validate';
 

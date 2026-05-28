@@ -16,7 +16,7 @@
 // (other scenes' validators flag THEIR own intrusions on mechanism's fields,
 // not vice versa).
 
-import type {SceneIssue, SceneValidationContext, Scene} from '@docent/kit';
+import type {SceneIssue, SceneValidationContext, Scene} from '@bjelser/kit';
 
 const MOTION_KINDS = ['cycle', 'oscillate', 'descend', 'iterate'] as const;
 

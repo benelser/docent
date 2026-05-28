@@ -7,7 +7,7 @@ import {existsSync, readFileSync} from 'node:fs';
 import {join, resolve} from 'node:path';
 
 import {createEngine} from '../engine-factory';
-import type {FilmSpec} from '@docent/kit';
+import type {FilmSpec} from '@bjelser/kit';
 
 export interface ValidateArgs {
   readonly filmId: string;

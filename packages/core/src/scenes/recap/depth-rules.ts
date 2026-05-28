@@ -20,7 +20,7 @@
 // recap-specific depth rule (e.g. "every point reads as a synthesis,
 // not a restatement"), this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {RecapScene} from './validate';
 

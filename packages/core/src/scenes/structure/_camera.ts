@@ -13,7 +13,7 @@
 import {interpolate, spring} from 'remotion';
 
 import {STAGE, type Box} from './_layout';
-import type {BeatTimelineSlot} from '@docent/kit';
+import type {BeatTimelineSlot} from '@bjelser/kit';
 
 export const VIEW = {w: 1920, h: 1080};
 

@@ -14,7 +14,7 @@
 // per-scene with `scope: 'scene'` — semantically equivalent for any film
 // (every degenerate tree still surfaces individually).
 
-import type {DepthFinding, DepthRule, Scene} from '@docent/kit';
+import type {DepthFinding, DepthRule, Scene} from '@bjelser/kit';
 
 import type {TreeNodeSpec, TreeScene} from './validate';
 

@@ -1,4 +1,4 @@
-// @docent/core — `walkthrough` scene plugin.
+// @bjelser/core — `walkthrough` scene plugin.
 //
 // The sequence-diagram move: a small cast of actors with vertical
 // lifelines, and messages that hop between them one beat at a time — a
@@ -11,7 +11,7 @@
 // for the renderer, ./schema.ts for the spec branch, and ./validate.ts
 // for the structural validator.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {WalkthroughSceneComponent} from './component';
 import {depthRules} from './depth-rules';

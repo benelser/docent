@@ -10,7 +10,7 @@
   },
   "files": ["src", "films"],
   "dependencies": {
-    "@docent/kit": "workspace:*"
+    "@bjelser/kit": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.0.0",

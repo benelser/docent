@@ -6,8 +6,8 @@
 // reuses a `sceneType` already claimed by core throws with both names
 // surfaced.
 
-import {Engine, type Plugin} from '@docent/kit';
-import {corePlugins} from '@docent/core';
+import {Engine, type Plugin} from '@bjelser/kit';
+import {corePlugins} from '@bjelser/core';
 
 import {loadConfig, type LoadedConfig} from './load-config';
 
@@ -21,7 +21,7 @@ export interface CreatedEngine {
 }
 
 /**
- * Build an Engine populated with `@docent/core`'s `corePlugins` plus any
+ * Build an Engine populated with `@bjelser/core`'s `corePlugins` plus any
  * plugins declared in a `docent.config.ts` found in `startDir`'s ancestor
  * tree.
  */

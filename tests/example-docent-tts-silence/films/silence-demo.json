@@ -35,7 +35,7 @@
       "kicker": "DEMO // 02",
       "heading": "What the silence pack proves",
       "points": [
-        "Third-party providers register through the same TtsProviderPlugin contract @docent/tts-{openai,elevenlabs,compatible} use.",
+        "Third-party providers register through the same TtsProviderPlugin contract @bjelser/tts-{openai,elevenlabs,compatible} use.",
         "Capabilities are declared at the plugin level — the engine cross-binds against scene requiresTtsCapabilities.",
         "Provider creation is async and can throw on missing config; the cascade surfaces it before the slow render."
       ],

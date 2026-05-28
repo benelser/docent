@@ -15,7 +15,7 @@
 // one line range — narration without a spotlight is a tour, not a
 // review"), this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {CloseupScene} from './validate';
 

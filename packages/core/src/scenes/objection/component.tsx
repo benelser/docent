@@ -5,10 +5,10 @@
 // three stacked panels (CLAIM → OBJECTION → REFUTATION), same dim-on-arrival
 // rhetoric. The only differences:
 //
-//   - Imports from @docent/kit for the plugin prop contract (SceneRenderProps,
+//   - Imports from @bjelser/kit for the plugin prop contract (SceneRenderProps,
 //     CommonSceneProps, ResolvedStyle).
 //   - Chrome (SceneFrame, Narration, FittedText) and the `glow` /
-//     `activeBeatIndex` helpers are sourced from `@docent/core/_shared`.
+//     `activeBeatIndex` helpers are sourced from `@bjelser/core/_shared`.
 //     There is no path back into `packages/engine/`.
 //
 // In v2.5.x props arrived as a flat `SceneProps & {style}` bag with
@@ -36,7 +36,7 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 
-import type {ResolvedStyle, Scene, SceneRenderProps} from '@docent/kit';
+import type {ResolvedStyle, Scene, SceneRenderProps} from '@bjelser/kit';
 
 import {
   FittedText,

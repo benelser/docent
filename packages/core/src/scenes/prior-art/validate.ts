@@ -14,7 +14,7 @@
 // immediately after the frame and before the first structure, in AR-mode
 // films) live at the film-level checker, not here.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 /**
  * Validate a `prior-art` scene structurally. The kit handles common-shell

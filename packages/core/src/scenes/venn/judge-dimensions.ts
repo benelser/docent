@@ -14,7 +14,7 @@
 // `rubric` field; here we port the v2.5.x label into the rubric verbatim
 // so the LLM judge gets the same instruction.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 /**
  * Intersection named — when the film carries a venn, the intersection

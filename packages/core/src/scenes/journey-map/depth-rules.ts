@@ -18,7 +18,7 @@
 // short-circuit to a pass when there are zero stages so they don't double-
 // report.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {JourneyMapScene} from './validate';
 

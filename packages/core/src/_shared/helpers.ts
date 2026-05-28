@@ -13,7 +13,7 @@
 // migration.
 
 import {interpolate, spring} from 'remotion';
-import type {Beat, BeatCadence, ResolvedStyle} from '@docent/kit';
+import type {Beat, BeatCadence, ResolvedStyle} from '@bjelser/kit';
 
 // ---------------------------------------------------------------------------
 // Theme — `glow` and the `ACCENTS` accent table.

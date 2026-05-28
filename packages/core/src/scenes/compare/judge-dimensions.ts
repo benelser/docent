@@ -13,7 +13,7 @@
 // the options on dimensional grounds, not evaluative ones"), this is
 // where it lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

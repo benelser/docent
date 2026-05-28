@@ -15,7 +15,7 @@
 // *spec authoring* time the absence of a `clip` is an error — a
 // demonstrate scene without a clip has nothing to demonstrate.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 export interface DemonstrateScene extends Scene {
   type: 'demonstrate';

@@ -9,7 +9,7 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {evolvePath} from '@remotion/paths';
-import type {Beat, ResolvedStyle} from '@docent/kit';
+import type {Beat, ResolvedStyle} from '@bjelser/kit';
 
 import {fitFontSize, glow, monoFamily, truncateForSlot} from '../../_shared';
 import {connectorPath, curvedPath, type Box} from './_layout';

@@ -14,7 +14,7 @@
 // walkthrough-specific depth rule (e.g. "every walkthrough surfaces a
 // reply, not just a forward chain"), this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {WalkthroughScene} from './validate';
 

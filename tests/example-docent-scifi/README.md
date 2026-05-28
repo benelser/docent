@@ -1,6 +1,6 @@
 # @example/docent-scifi
 
-The **§10 acceptance test** for docent's plugin architecture. A third-party pack that ships one scene plugin (`holodeck`) and one preset plugin (`scifi-noir`) and renders end-to-end through `docent build` without forking `@docent/core`.
+The **§10 acceptance test** for docent's plugin architecture. A third-party pack that ships one scene plugin (`holodeck`) and one preset plugin (`scifi-noir`) and renders end-to-end through `docent build` without forking `@bjelser/core`.
 
 If you're authoring your first `@yourorg/docent-*` pack, **fork this one**. It is the smallest complete example: two plugins, one film, all the contract obligations honored.
 
@@ -35,7 +35,7 @@ Output lands at `out/scifi-demo.mp4`.
 - `src/scenes/holodeck/` — the full ScenePlugin shape (`index.ts`, `component.tsx`, `schema.ts`, `validate.ts`, `depth-rules.ts`, `judge-dimensions.ts`).
 - `src/presets/scifi-noir/` — the PresetPlugin shape (`index.ts`, `tokens.ts`).
 - `src/index.ts` — the pack's default export, the array of plugins the host engine consumes.
-- `docent.config.ts` — how the pack registers itself when `@docent/cli` discovers it at project root.
+- `docent.config.ts` — how the pack registers itself when `@bjelser/cli` discovers it at project root.
 
 For the full plugin-authoring guide, see the [main README](../../README.md#plugin-authoring) and [`docs/design/plugin-architecture-strategy.md`](../../docs/design/plugin-architecture-strategy.md).
 

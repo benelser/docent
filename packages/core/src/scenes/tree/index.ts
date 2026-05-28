@@ -1,4 +1,4 @@
-// @docent/core — `tree` scene plugin.
+// @bjelser/core — `tree` scene plugin.
 //
 // A rooted hierarchy where depth encodes a classification axis. Cluster:
 // `connection` (the tree shows what relates to what — a parent→child
@@ -11,7 +11,7 @@
 // structural validator, ./depth-rules.ts for `tree-discriminates`, and
 // ./judge-dimensions.ts for `hierarchy-meaningful`.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {TreeSceneComponent} from './component';
 import {depthRules} from './depth-rules';

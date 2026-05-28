@@ -5,7 +5,7 @@ so docent rides inside whatever coding agent a developer already uses
 (Claude Code, Codex, …) rather than being bound to one.
 
 docent is a method for a coding agent to author a **film spec**; the engine
-(`@docent/engine`) renders it. This package is that method.
+(`@bjelser/engine`) renders it. This package is that method.
 
 ## Layout
 

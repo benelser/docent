@@ -1,4 +1,4 @@
-// protocols — the API surface of @docent/kit.
+// protocols — the API surface of @bjelser/kit.
 //
 // Every interface in this file is part of the public contract. Once shipped,
 // changes here are major version bumps.
@@ -36,7 +36,7 @@ import type {
 } from './types/tts';
 import type {VisualizationStyle} from './types/visualization-style';
 
-// Re-export to keep `import {…} from '@docent/kit'` flat for plugin authors.
+// Re-export to keep `import {…} from '@bjelser/kit'` flat for plugin authors.
 export type {
   TtsCapabilities,
   TtsProvider,
@@ -105,7 +105,7 @@ export {
  * registered THROUGH a {@link FeaturePlugin}'s `registerModifiers` hook and
  * live in the engine's {@link ModifierRegistry} (R3 forward-compat).
  *
- * Adding a kind is a major release of `@docent/kit` — every existing engine
+ * Adding a kind is a major release of `@bjelser/kit` — every existing engine
  * dispatch and every plugin author has to learn it.
  *
  * @see docs/design/plugin-architecture-strategy.md §4.1
@@ -165,7 +165,7 @@ export interface PluginBase {
  * timing/style/meta context. The scene's per-spec shape is plugin-owned and
  * passed through the `TSpec` generic.
  *
- * The composition (`@docent/kit/remotion`) constructs this at render time by:
+ * The composition (`@bjelser/kit/remotion`) constructs this at render time by:
  *   1. Resolving the scene's spec (schema-validated, modifiers expanded).
  *   2. Computing the {@link TimelineSlot} from the schedule.
  *   3. Resolving the {@link ResolvedStyle} once at film level.
@@ -466,7 +466,7 @@ export interface JudgeDimension {
  * The ScenePlugin — the highest-traffic plugin shape, and the core
  * abstraction the rip-and-replace builds on.
  *
- * Every one of the 29 default scenes in `@docent/core` is one of these. A
+ * Every one of the 29 default scenes in `@bjelser/core` is one of these. A
  * third-party scene type (e.g. `@example/docent-scifi/holodeck`) is
  * literally the same shape — the kit makes no distinction between built-in
  * and third-party plugins.
@@ -489,7 +489,7 @@ export interface JudgeDimension {
  *
  * @example
  * ```ts
- * import type {ScenePlugin} from '@docent/kit';
+ * import type {ScenePlugin} from '@bjelser/kit';
  *
  * interface FrameScene { type: 'frame'; title: string; subtitle?: string; }
  *
@@ -671,7 +671,7 @@ export interface ScenePlugin<TSpec = Scene> extends PluginBase {
  * style + intent map that names a coherent visual register
  * (`engineering`, `editorial`, `paper`, …).
  *
- * The 6 default presets in `@docent/core` (`neutral`, `engineering`,
+ * The 6 default presets in `@bjelser/core` (`neutral`, `engineering`,
  * `editorial`, `paper`, `executive`, `analytical`) become 6 of these. A
  * third-party preset pack (e.g. `@brand/docent-preset-fintech`) registers
  * via the same protocol.
@@ -1058,7 +1058,7 @@ export interface SceneFeatureProps {
  * The FeaturePlugin — cross-cutting concerns that touch multiple registries
  * (captions, watermarks, music, lower-thirds, narration overlay).
  *
- * The pattern that lets `@docent/core` express itself as a feature pack
+ * The pattern that lets `@bjelser/core` express itself as a feature pack
  * rather than a god-object. A feature plugin can:
  *   - Register child plugins of any kind via `registerScenes`,
  *     `registerPresets`, `registerTtsProviders`, `registerModifiers` —
@@ -1131,7 +1131,7 @@ export interface FeaturePlugin extends PluginBase {
    * `ts.beats[].audio` when the TTS stage persisted them.
    *
    * The narration feature ships this to thread per-beat `<Audio>` into the
-   * composition without composition.tsx depending on `@docent/core`.
+   * composition without composition.tsx depending on `@bjelser/core`.
    */
   readonly wrapsScenes?: React.ComponentType<SceneFeatureProps>;
 
@@ -1225,7 +1225,7 @@ export interface RenderOptions {
   /**
    * Optional hook the orchestrator calls AFTER the TTS stage finishes
    * persisting per-beat audio + manifest. Lets the caller (typically
-   * `@docent/cli`) regenerate the Remotion entry script so it can statically
+   * `@bjelser/cli`) regenerate the Remotion entry script so it can statically
    * `import` the freshly-written per-film audio manifest. Returns the entry
    * path to use for the render — if it returns the same path, the orchestrator
    * uses it unchanged. Surfaced as a hook (rather than re-running entry

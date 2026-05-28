@@ -3,7 +3,7 @@
 // Same semantic checks as `ohlc.validate` — high ≥ max(open,close),
 // low ≤ min(open,close), finite numbers — applied to the single bar.
 
-import type {SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 import type {CandlestickSceneSpec} from './schema';
 

@@ -12,7 +12,7 @@
 
 import React from 'react';
 import {Audio, Sequence, staticFile} from 'remotion';
-import type {Beat, BeatTimelineSlot, ResolvedStyle} from '@docent/kit';
+import type {Beat, BeatTimelineSlot, ResolvedStyle} from '@bjelser/kit';
 
 // The engine's narration pipeline attaches an `audio: string | null` to
 // each beat (the path to the synthesized mp3, relative to public/). Read

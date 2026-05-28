@@ -20,7 +20,7 @@
 // named values), but a typo like `kind: 'rejcted'` should not silently
 // promote a card into the wrong lane.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 /**
  * One ledger item. `kind` decides the lane:

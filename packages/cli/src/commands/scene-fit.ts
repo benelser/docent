@@ -1,7 +1,7 @@
 // docent scene-fit — the agent-facing introspection surface over the scene
 // grammar.
 //
-// docent ships a closed grammar of 29 canonical scene types in @docent/core
+// docent ships a closed grammar of 29 canonical scene types in @bjelser/core
 // (organized by the kit's closed 7-cluster cognitive taxonomy), but the
 // agent has no CLI handle to ask "given this subject's survey, which scene
 // types fit?" without one. Without it, the agent reflex-defaults to
@@ -23,14 +23,14 @@
 // REGISTRY-DRIVEN: this command has no hardcoded knowledge of the 29
 // canonical scene types. The cue + signal list are advertised at the
 // plugin level (ScenePlugin.cue, ScenePlugin.signals — see
-// @docent/kit/protocols.ts). A third-party pack registered via
-// docent.config.ts participates exactly the same way @docent/core's 29
+// @bjelser/kit/protocols.ts). A third-party pack registered via
+// docent.config.ts participates exactly the same way @bjelser/core's 29
 // scenes do; no fork, no PR into this file.
 
 import {existsSync, readFileSync} from 'node:fs';
 import {join} from 'node:path';
 
-import type {Engine, ScenePlugin} from '@docent/kit';
+import type {Engine, ScenePlugin} from '@bjelser/kit';
 
 import {createEngine} from '../engine-factory';
 

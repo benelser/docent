@@ -4,7 +4,7 @@
 import {existsSync, readFileSync} from 'node:fs';
 import {join, resolve} from 'node:path';
 
-import {depthCheck, type FilmSpec} from '@docent/kit';
+import {depthCheck, type FilmSpec} from '@bjelser/kit';
 
 import {createEngine} from '../engine-factory';
 

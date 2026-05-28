@@ -1,7 +1,7 @@
 // Chart scene–local helpers — only the bits not consolidated into
 // `../../_shared`. The shared chrome (glow, activeBeatIndex, the SVG text
 // fitters fitFontSize / truncateForSlot, SceneFrame, Narration, FittedText,
-// fonts) is now imported from `@docent/core/_shared`.
+// fonts) is now imported from `@bjelser/core/_shared`.
 //
 // `STAGE` (the rectangle every diagram type renders inside) and `tweenValue`
 // (the engine's named-value resolver — the chart's bar-height and

@@ -14,7 +14,7 @@
 // Cross-pack composition is the same protocol — a community pack could
 // declare `extends: 'acme'` from its own repo.
 
-import type {DesignTokens, PresetPlugin} from '@docent/kit';
+import type {DesignTokens, PresetPlugin} from '@bjelser/kit';
 
 // Only the bg.* group + ink.faint diverge. Every other token inherits
 // from acme through the extends chain.

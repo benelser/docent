@@ -16,7 +16,7 @@
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": false,
     "paths": {
-      "@docent/kit": ["../../packages/kit/src/index.ts"]
+      "@bjelser/kit": ["../../packages/kit/src/index.ts"]
     }
   },
   "include": ["src", "docent.config.ts"]

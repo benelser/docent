@@ -1,4 +1,4 @@
-// @docent/core — `demonstrate` scene plugin.
+// @bjelser/core — `demonstrate` scene plugin.
 //
 // The docent move that *plays the phenomenon itself*: an embedded
 // screen-capture clip inside a device-style window panel, with the
@@ -12,7 +12,7 @@
 // ./component.tsx for the renderer, ./schema.ts for the spec branch,
 // and ./validate.ts for the structural validator.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {DemonstrateSceneComponent} from './component';
 import {depthRules} from './depth-rules';

@@ -2,7 +2,7 @@
 //
 // `collectJudgeDimensions(engine)` aggregates judge dimensions across every
 // registered ScenePlugin's `judgeDimensions?` block. The judge surface (lives
-// in `@docent/agent`, not here) calls this to compose its grading rubric: the
+// in `@bjelser/agent`, not here) calls this to compose its grading rubric: the
 // kit is the registry, not the grader.
 //
 // The kit knows NOTHING about what a film's "quality" is — every dimension is
@@ -22,7 +22,7 @@ import type {JudgeDimension} from '../protocols';
 
 /**
  * Collect every {@link JudgeDimension} contributed by every registered
- * {@link ScenePlugin}. The judge surface (lives in `@docent/agent`) calls
+ * {@link ScenePlugin}. The judge surface (lives in `@bjelser/agent`) calls
  * this to compose its grading rubric.
  *
  * Order is: scenes in registration order, dimensions in declaration order

@@ -12,7 +12,7 @@
 // figure-specific judge axis (e.g. "the callouts cluster on what's
 // argued, not what's pretty"), this is where it lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

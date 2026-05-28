@@ -10,8 +10,8 @@
 // position contracts (at most one per film; at index 0 or right after the
 // frame scene) stay in the engine's film-level validator.
 
-import type {Scene} from '@docent/kit';
-import type {SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene} from '@bjelser/kit';
+import type {SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 interface EpigraphScene extends Scene {
   type: 'epigraph';

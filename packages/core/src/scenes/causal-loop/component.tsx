@@ -3,7 +3,7 @@
 // Migrated from packages/engine/src/scenes/CausalLoopScene.tsx as part of
 // the v3.0 plugin-architecture rip-and-replace. Behavior is UNCHANGED from
 // the v2.5.x renderer; only import paths and the prop shape were updated:
-//   - props receive `SceneRenderProps<CausalLoopScene>` from @docent/kit
+//   - props receive `SceneRenderProps<CausalLoopScene>` from @bjelser/kit
 //     (the kit-owned `{scene, common}` envelope), rather than the legacy
 //     `SceneProps` (the engine-owned `ts: TimedScene` envelope).
 //   - the engine-shared chrome (SceneFrame, Narration, FittedText, fonts,
@@ -35,7 +35,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import type {Beat, ResolvedStyle, SceneRenderProps} from '@docent/kit';
+import type {Beat, ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
 
 import {
   FittedText,

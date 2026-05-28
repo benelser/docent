@@ -29,7 +29,7 @@ export class SceneRegistryImpl implements SceneRegistry {
     // time so an authoring mistake fails loud before render.
     if (plugin.cluster !== null && !isCognitiveCluster(plugin.cluster)) {
       throw new Error(
-        `[@docent/kit] ScenePlugin "${plugin.name}" (sceneType "${plugin.sceneType}") ` +
+        `[@bjelser/kit] ScenePlugin "${plugin.name}" (sceneType "${plugin.sceneType}") ` +
           `declared an unknown cognitive cluster: ${JSON.stringify(plugin.cluster)}. ` +
           `Must be one of the 7 closed clusters or null for chrome-only scenes.`,
       );

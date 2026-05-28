@@ -21,7 +21,7 @@
 // nested scene shape, which only that layer can do). This per-scene
 // validator focuses on the tree's own graph invariants.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 // Hard ceilings — past these the renderer's boxes shrink past legibility
 // (depth) or the breadth axis goes thinner than label width (count). Same

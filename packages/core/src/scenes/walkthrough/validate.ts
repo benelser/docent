@@ -22,7 +22,7 @@
 // behaviorally match v2.5.x — the renderer doesn't crash on either — but
 // the spec author wants to know.
 
-import type {Beat, Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Beat, Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 interface WalkthroughActor {
   id: string;

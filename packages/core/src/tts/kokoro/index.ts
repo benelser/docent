@@ -1,4 +1,4 @@
-// @docent/core/tts/kokoro — the default TTS provider plugin.
+// @bjelser/core/tts/kokoro — the default TTS provider plugin.
 //
 // The Kokoro adapter — moved verbatim from `packages/engine/src/tts/providers/
 // kokoro.ts` — wrapped as a `TtsProviderPlugin` so `engine.use(plugin)` can
@@ -9,7 +9,7 @@
 // existing engine adapter (same synth path, same silence trim, same default
 // voice, same WAV encoding).
 
-import type {TtsProviderPlugin} from '@docent/kit';
+import type {TtsProviderPlugin} from '@bjelser/kit';
 import {createKokoroProvider, KOKORO_CAPABILITIES} from './provider';
 
 export const kokoroTtsPlugin: TtsProviderPlugin = {

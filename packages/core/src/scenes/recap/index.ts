@@ -1,4 +1,4 @@
-// @docent/core — `recap` scene plugin.
+// @bjelser/core — `recap` scene plugin.
 //
 // The closing chrome move: the synthesis the film resolves to. Cluster:
 // `null` (chrome scene — `recap` brackets the film alongside `frame`,
@@ -10,7 +10,7 @@
 // for the renderer, ./schema.ts for the spec branch, and ./validate.ts
 // for the structural validator.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {RecapSceneComponent} from './component';
 import {depthRules} from './depth-rules';

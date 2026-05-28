@@ -1,4 +1,4 @@
-// @docent/core — `frame` scene plugin.
+// @bjelser/core — `frame` scene plugin.
 //
 // The opening chrome of every film: the faux-prompt setup, hero title,
 // optional tagline, optional footnote. Cluster: `null` — frame is a
@@ -11,7 +11,7 @@
 // renderer, ./schema.ts for the spec branch, and ./validate.ts for the
 // structural validator (the v2.5.x rule: title is required).
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {FrameSceneComponent} from './component';
 import {depthRules} from './depth-rules';

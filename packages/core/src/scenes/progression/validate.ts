@@ -21,7 +21,7 @@
 // The `flow` enum is enforced by the schema (closed enum `linear`/`cycle`/
 // `braided`/`iterate`); no per-validator check needed for that field.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 /**
  * A single progression stage — the per-type shape the renderer reads off

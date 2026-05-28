@@ -16,8 +16,8 @@
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": false,
     "paths": {
-      "@docent/kit": ["../kit/src/index.ts"],
-      "@docent/core": ["../core/src/index.ts"]
+      "@bjelser/kit": ["../kit/src/index.ts"],
+      "@bjelser/core": ["../core/src/index.ts"]
     }
   },
   "include": ["src", "../core/src/**/*engine-shims.d.ts"]

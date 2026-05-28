@@ -4,7 +4,7 @@
 // (and `chart`, `compare`, etc.) but ships its own depth rule and judge
 // dimension — the close-read is its argument, not the arc.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {CandlestickSceneComponent} from './component';
 import {depthRules} from './depth-rules';

@@ -13,7 +13,7 @@
 //                              that betrays an evaluation instead of a
 //                              mechanism inside the overlap).
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {VennScene} from './validate';
 

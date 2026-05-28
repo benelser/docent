@@ -1,4 +1,4 @@
-// @docent/tts-elevenlabs — the ElevenLabs TTS provider plugin.
+// @bjelser/tts-elevenlabs — the ElevenLabs TTS provider plugin.
 //
 // Wraps the `elevenlabs` npm package's `textToSpeech.convertWithTimestamps`
 // endpoint. The killer feature: native character-level alignment, folded into
@@ -6,16 +6,16 @@
 // scenes (e.g. a `passage` that highlights the spoken word).
 //
 // Install:
-//   bun add @docent/tts-elevenlabs elevenlabs
+//   bun add @bjelser/tts-elevenlabs elevenlabs
 //
 // Register in `docent.config.ts`:
 //
-//   import elevenLabsTtsPlugin from '@docent/tts-elevenlabs';
+//   import elevenLabsTtsPlugin from '@bjelser/tts-elevenlabs';
 //   export default {plugins: [elevenLabsTtsPlugin]};
 //
 // Credentials: `ELEVENLABS_API_KEY` (required).
 
-import type {TtsProviderPlugin} from '@docent/kit';
+import type {TtsProviderPlugin} from '@bjelser/kit';
 import {createElevenLabsProvider, ELEVENLABS_CAPABILITIES} from './provider';
 
 export const elevenLabsTtsPlugin: TtsProviderPlugin = {

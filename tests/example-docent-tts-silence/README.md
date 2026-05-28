@@ -6,7 +6,7 @@ The smallest realistic **third-party `TtsProviderPlugin`** — what a community-
 - **CI runs** that need the full cascade (validate → tts → render) without burning real synthesis quota
 - **Forking** as the starter for a real adapter (Piper, Coqui, in-process Whisper, custom model)
 
-The 3 first-party packs (`@docent/tts-openai`, `@docent/tts-elevenlabs`, `@docent/tts-compatible`) follow the same shape — replace `synth` with the real call.
+The 3 first-party packs (`@bjelser/tts-openai`, `@bjelser/tts-elevenlabs`, `@bjelser/tts-compatible`) follow the same shape — replace `synth` with the real call.
 
 ## What it ships
 
@@ -37,7 +37,7 @@ Note: **no `--skip-tts` flag**. The cascade runs the silence TtsProvider for eac
   - `create(ctx)` is async and could throw `TtsProviderError` if credentials/config were missing. The silence pack needs nothing, so `create` is trivial.
   - `synth(text, options)` returns the kit's `TtsSynthesisResult` shape — `audio: Uint8Array`, `mediaType: 'audio/wav'`, `durationMs`, `alignment: WordAlignment[]` (empty for chunk-level providers), `alignmentSource: 'native' | 'aligner' | 'none'`.
   - `listVoices()` returns the available voices for `docent` introspection.
-- `docent.config.ts` — registers the plugin alongside `@docent/core`.
+- `docent.config.ts` — registers the plugin alongside `@bjelser/core`.
 
 ## How a real adapter differs
 

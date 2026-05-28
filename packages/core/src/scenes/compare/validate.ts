@@ -21,7 +21,7 @@
 // enforced by the engine-wide embed validator that walks every scene,
 // not by this per-scene validator.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 // The per-type narrowing of `Scene` for compare. The kit's `Scene` carries
 // an open index signature; we narrow only the fields this validator and

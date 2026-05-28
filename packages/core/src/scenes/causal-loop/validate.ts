@@ -22,7 +22,7 @@
 // validators flag THEIR own intrusions on causal-loop's fields, not vice
 // versa).
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 export interface CausalVariable {
   id: string;

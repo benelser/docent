@@ -14,7 +14,7 @@
 //   - axis.ticks (if present) each parse as dates within axis range
 //   - at least one event OR one span (an empty axis is not a scene)
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 import {parseTimelineDate} from './_time';
 

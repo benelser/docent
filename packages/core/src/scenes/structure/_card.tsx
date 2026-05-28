@@ -10,7 +10,7 @@
 
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {Beat, ResolvedStyle} from '@docent/kit';
+import type {Beat, ResolvedStyle} from '@bjelser/kit';
 
 import {cadenceSpringConfig, glow, interFamily, monoFamily} from '../../_shared';
 import type {Box} from './_layout';

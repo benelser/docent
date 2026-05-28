@@ -2,7 +2,7 @@
   "meta": {
     "id": "scifi-demo",
     "title": "Holodeck Audit",
-    "subject": "What a third-party scene plugin can carry — without forking @docent/core",
+    "subject": "What a third-party scene plugin can carry — without forking @bjelser/core",
     "prompt": "explainer",
     "fps": 30,
     "width": 1920,
@@ -18,8 +18,8 @@
       "type": "frame",
       "kicker": "DOCENT // ACCEPTANCE",
       "title": "Holodeck Audit",
-      "tagline": "A third-party scene type, registered through the same protocol @docent/core uses",
-      "footnote": "Loaded from @example/docent-scifi  ·  preset: scifi-noir  ·  zero edits to @docent/core",
+      "tagline": "A third-party scene type, registered through the same protocol @bjelser/core uses",
+      "footnote": "Loaded from @example/docent-scifi  ·  preset: scifi-noir  ·  zero edits to @bjelser/core",
       "beats": [
         {
           "id": "sf-frame-1",
@@ -142,9 +142,9 @@
       "kicker": "05 // THE VERDICT",
       "heading": "Framework, implementation, third-party — three packages, one protocol",
       "points": [
-        "@docent/kit owns the protocol and the registry — zero opinions.",
-        "@docent/core registers the 29 default scenes through that same public API.",
-        "@example/docent-scifi adds a 30th — without touching @docent/core."
+        "@bjelser/kit owns the protocol and the registry — zero opinions.",
+        "@bjelser/core registers the 29 default scenes through that same public API.",
+        "@example/docent-scifi adds a 30th — without touching @bjelser/core."
       ],
       "beats": [
         {

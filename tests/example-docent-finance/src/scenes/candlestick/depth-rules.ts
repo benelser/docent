@@ -4,7 +4,7 @@
 // CLOSE-READS the bar. A scene that shows a single bar and never names the
 // wick, body, open, close, or pattern has wasted the close-up.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {CandlestickSceneSpec} from './schema';
 

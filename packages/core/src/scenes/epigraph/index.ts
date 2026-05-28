@@ -11,7 +11,7 @@
 // back around the rendered body once those primitives migrate to the kit.
 
 import React from 'react';
-import type {Scene, ScenePlugin, SceneRenderProps} from '@docent/kit';
+import type {Scene, ScenePlugin, SceneRenderProps} from '@bjelser/kit';
 
 import {EpigraphSceneRenderer} from './component';
 import {schema} from './schema';

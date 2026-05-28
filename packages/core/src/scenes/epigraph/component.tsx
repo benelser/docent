@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {ResolvedStyle} from '@docent/kit';
+import type {ResolvedStyle} from '@bjelser/kit';
 
 // EpigraphScene — a cited authority opens the film.
 //
@@ -17,7 +17,7 @@ import type {ResolvedStyle} from '@docent/kit';
 //
 // Migration note (Phase B → D.1): the engine version of this scene wrapped
 // its body in `SceneFrame` and laid `Narration` audio on top. Those wrappers
-// are engine-internal primitives that have not yet migrated to @docent/kit;
+// are engine-internal primitives that have not yet migrated to @bjelser/kit;
 // D.1 (Film.tsx → registry dispatch) attaches the frame + narration via the
 // engine's scene shell rather than each scene calling them directly. The
 // renderer below produces the same `body` element the engine version did —
@@ -129,7 +129,7 @@ export const EpigraphSceneRenderer: React.FC<EpigraphSceneRendererProps> = ({
         ) : null}
         {/* FittedText lives in the engine's component library — see migration
             note at the top of this file. Until D.1 brings that primitive
-            forward into @docent/kit, render the quote as a plain centered/
+            forward into @bjelser/kit, render the quote as a plain centered/
             left block at the tiered base size. The visual register matches
             the engine version for the common case (≤ 60 words). */}
         <div

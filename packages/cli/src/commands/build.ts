@@ -10,7 +10,7 @@ import {dirname, join, resolve} from 'node:path';
 
 import {createEngine} from '../engine-factory';
 import {generateRenderEntry} from '../render-entry';
-import type {FilmSpec} from '@docent/kit';
+import type {FilmSpec} from '@bjelser/kit';
 
 /**
  * Walk up from `start` to find the dir containing a `remotion.config.{ts,js,mjs}`.

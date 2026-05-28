@@ -1,4 +1,4 @@
-// @docent/core — `probe` scene plugin.
+// @bjelser/core — `probe` scene plugin.
 //
 // The interrogation move: vary one input, follow the consequence. A
 // baseline pinned at the top, then a row per variation — the perturbed
@@ -13,7 +13,7 @@
 // structural validator, ./depth-rules.ts and ./judge-dimensions.ts for the
 // (currently empty) per-scene depth + judge contracts.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {ProbeSceneComponent} from './component';
 import {depthRules} from './depth-rules';

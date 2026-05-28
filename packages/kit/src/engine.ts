@@ -1,4 +1,4 @@
-// Engine — the public face of @docent/kit.
+// Engine — the public face of @bjelser/kit.
 //
 // Per §4.7 of the strategy doc, this is the surface every caller (the CLI,
 // the agent layer, third-party plugin packs) interacts with. A consumer
@@ -53,7 +53,7 @@ import {
 // resolveStyle / schema` — none of which need `node:fs` / `node:child_process`.
 //
 // CLI callers that want to render call `runRender(engine, spec, opts)` from
-// `@docent/kit/engine-render` directly. The `engine.render()` instance method
+// `@bjelser/kit/engine-render` directly. The `engine.render()` instance method
 // re-exports the same surface — but it dynamic-imports the renderer via
 // `new Function('p','return import(p)')` so webpack's static analyser can't
 // follow it into the chromium bundle.
@@ -66,7 +66,7 @@ import type {JSONSchema7} from 'json-schema';
 // Neutral floor tokens — the baseline every preset composes over. Mirrors
 // the engine's legacy `neutralTokens` shape (see
 // `packages/engine/src/style/styleTokens.ts`) so v2.x preset data drops
-// in unchanged when `@docent/core` migrates.
+// in unchanged when `@bjelser/core` migrates.
 //
 // The kit ships these because `resolveStyle()` must return a complete
 // `DesignTokens` even when NO preset is registered (the absolute-zero
@@ -132,7 +132,7 @@ const NEUTRAL_VISUALIZATION: Required<VisualizationStyle> = Object.freeze({
 }) as Required<VisualizationStyle>;
 
 /**
- * The Engine — the public face of `@docent/kit` and the only constructor
+ * The Engine — the public face of `@bjelser/kit` and the only constructor
  * external callers need.
  *
  * Lifecycle: one instance per process. Constructed empty; populated via
@@ -146,8 +146,8 @@ const NEUTRAL_VISUALIZATION: Required<VisualizationStyle> = Object.freeze({
  *
  * @example
  * ```ts
- * import {Engine} from '@docent/kit';
- * import core from '@docent/core';
+ * import {Engine} from '@bjelser/kit';
+ * import core from '@bjelser/core';
  * import scifi from '@example/docent-scifi';
  *
  * // Construct and register plugins. `use()` is chainable.
@@ -283,7 +283,7 @@ export class Engine {
         // Exhaustiveness check — TS will warn here if PluginKind grows.
         const _exhaustive: never = plugin;
         throw new Error(
-          `[@docent/kit] engine.use() received plugin with unknown kind: ` +
+          `[@bjelser/kit] engine.use() received plugin with unknown kind: ` +
             JSON.stringify((_exhaustive as PluginBase)?.kind),
         );
       }
@@ -296,7 +296,7 @@ export class Engine {
    * The shape is: a `oneOf` discriminated union over `scene.type` literals,
    * each branch the registered plugin's schema (narrowed by its
    * `sceneType`). Top-level `meta`, optional `style`, optional `tts` come
-   * from `@docent/kit`'s own meta schema.
+   * from `@bjelser/kit`'s own meta schema.
    *
    * The schema is pure — depends only on the active scene registry, safe
    * to call from anywhere after `use()`. Feed it to AJV (or any JSON
@@ -477,7 +477,7 @@ export class Engine {
         current = f.preprocessSpec(current);
       } catch (e) {
         throw new Error(
-          `[@docent/kit] preprocessSpec failed in feature '${f.name}': ` +
+          `[@bjelser/kit] preprocessSpec failed in feature '${f.name}': ` +
             (e instanceof Error ? e.message : String(e)),
         );
       }

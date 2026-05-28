@@ -8,7 +8,7 @@
 // true`, `maxLabelsPerSeries: 5` (focused), `treatmentLock: 'crisp'` (locks
 // out sketch/whiteboard for executive decks).
 
-import type {PresetPlugin} from '@docent/kit';
+import type {PresetPlugin} from '@bjelser/kit';
 
 import {tokens} from './tokens';
 

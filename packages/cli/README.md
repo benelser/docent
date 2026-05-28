@@ -1,13 +1,13 @@
-# @docent/cli
+# @bjelser/cli
 
-The `docent` binary — the thin shell that drives `@docent/kit` + `@docent/core`. Builds, validates, and depth-checks films from the command line.
+The `docent` binary — the thin shell that drives `@bjelser/kit` + `@bjelser/core`. Builds, validates, and depth-checks films from the command line.
 
 ## Install
 
 ```bash
-npm install @docent/cli @docent/kit @docent/core
+npm install @bjelser/cli @bjelser/kit @bjelser/core
 # or
-bun add @docent/cli @docent/kit @docent/core
+bun add @bjelser/cli @bjelser/kit @bjelser/core
 ```
 
 ## Use
@@ -32,7 +32,7 @@ The CLI auto-discovers `docent.config.ts` in the project root. Use it to registe
 
 ```ts
 // docent.config.ts
-import {corePlugins} from '@docent/core';
+import {corePlugins} from '@bjelser/core';
 import {myFinancePack} from '@example/docent-finance';
 
 export default {
@@ -42,7 +42,7 @@ export default {
 
 ## Architecture
 
-`@docent/cli` calls into `@docent/kit` (the framework). All scene types, presets, features, and TTS providers come from the plugin registry — `@docent/core` ships the defaults, third-party packs extend the surface. See the [main README](https://github.com/benelser/docent/blob/main/README.md) for the plugin-authoring guide.
+`@bjelser/cli` calls into `@bjelser/kit` (the framework). All scene types, presets, features, and TTS providers come from the plugin registry — `@bjelser/core` ships the defaults, third-party packs extend the surface. See the [main README](https://github.com/benelser/docent/blob/main/README.md) for the plugin-authoring guide.
 
 ## License
 

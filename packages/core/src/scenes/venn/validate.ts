@@ -10,7 +10,7 @@
 // monolithic engine validator becomes THIS function — keyed off the
 // scene's `type === 'venn'`.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 /**
  * One named set — a circle of the diagram. Two or three sets per scene.

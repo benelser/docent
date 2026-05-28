@@ -15,7 +15,7 @@
     "lib": ["ES2022", "DOM"],
     "types": ["node"],
     "paths": {
-      "@docent/kit": ["../kit/src/index.ts"]
+      "@bjelser/kit": ["../kit/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

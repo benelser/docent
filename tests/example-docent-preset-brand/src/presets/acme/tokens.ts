@@ -15,7 +15,7 @@
 //   - Inter for sans (corporate-clean), Source Serif for serif (the editorial
 //     foil when a passage scene wants it).
 
-import type {DesignTokens} from '@docent/kit';
+import type {DesignTokens} from '@bjelser/kit';
 
 export const tokens: DesignTokens = {
   bg: {

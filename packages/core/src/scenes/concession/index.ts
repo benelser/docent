@@ -1,4 +1,4 @@
-// @docent/core — `concession` scene plugin.
+// @bjelser/core — `concession` scene plugin.
 //
 // The film draws the line — what it does NOT cover. Cluster: `narrative`
 // (a rhetorical move; the film commits editorially to what it is and is
@@ -12,7 +12,7 @@
 // depth rule, and ./judge-dimensions.ts for the `scope-honest` judge
 // dimension.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {ConcessionSceneComponent} from './component';
 import {depthRules} from './depth-rules';

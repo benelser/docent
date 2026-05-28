@@ -19,7 +19,7 @@
 // hierarchy. The branching is necessary but not sufficient; the levels
 // must carry distinct information.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 const hierarchyMeaningful: JudgeDimension = {
   id: 'hierarchy-meaningful',

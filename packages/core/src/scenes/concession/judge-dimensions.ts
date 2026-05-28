@@ -11,7 +11,7 @@
 //
 // Films with no concession scene mark the dimension n/a.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 const scopeHonest: JudgeDimension = {
   id: 'scope-honest',

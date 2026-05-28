@@ -32,7 +32,7 @@ import {
   COGNITIVE_CLUSTERS,
   isCognitiveCluster,
   type FilmSpec,
-} from '@docent/kit';
+} from '@bjelser/kit';
 
 const log = (s: string) => process.stdout.write(`${s}\n`);
 const reset = '\x1b[0m';
@@ -240,7 +240,7 @@ export const runGrammarCheck = async (
   log('');
 
   // Pipeline
-  log(bold(`  PIPELINE  (cover-set renders through @docent/cli + render-check)`));
+  log(bold(`  PIPELINE  (cover-set renders through @bjelser/cli + render-check)`));
   for (const r of renderResults) {
     const mark = r.code === 0 ? green('✓') : red('✗');
     log(`    ${mark} ${r.filmId}${r.code !== 0 ? red(`  (exit ${r.code})`) : ''}`);

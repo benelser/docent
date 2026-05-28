@@ -9,7 +9,7 @@
 // Source of truth: stylePresets.ts § `paper` + neutralTokens (for the
 // fields paper does not override).
 
-import type {DesignTokens} from '@docent/kit';
+import type {DesignTokens} from '@bjelser/kit';
 
 // Font-family chains — mirrored from packages/engine/src/style/stylePresets.ts.
 // "Source Serif Four" is the family name Remotion's google-fonts loader returns

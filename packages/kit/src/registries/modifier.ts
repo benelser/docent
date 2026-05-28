@@ -15,7 +15,7 @@
 //       feature plugin at boot.
 //   (b) making the engine's spec resolver walk this registry — currently a
 //       no-op pass that becomes load-bearing.
-// Neither (a) nor (b) breaks `@docent/kit`'s public API; both are additive.
+// Neither (a) nor (b) breaks `@bjelser/kit`'s public API; both are additive.
 
 import type {
   Beat,

@@ -1,4 +1,4 @@
-// @docent/core — `figure` scene plugin.
+// @bjelser/core — `figure` scene plugin.
 //
 // The narrative move: annotate a still image (a painting, a map, a
 // photograph, an experimental stimulus) with labelled markers pinned to
@@ -12,7 +12,7 @@
 // renderer, ./schema.ts for the spec branch, and ./validate.ts for the
 // structural validator.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {FigureSceneComponent} from './component';
 import {depthRules} from './depth-rules';

@@ -1,6 +1,6 @@
 // Tension scene–local helpers — only the bits not consolidated into
 // `../../_shared`. The shared chrome (glow, activeBeatIndex, FittedText,
-// Narration, fonts) is now imported from `@docent/core/_shared`. Tension
+// Narration, fonts) is now imported from `@bjelser/core/_shared`. Tension
 // does NOT use SceneFrame — its whiteboard / sketch registers paint their
 // own chrome and starfield (see component.tsx).
 //

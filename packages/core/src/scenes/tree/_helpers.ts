@@ -1,7 +1,7 @@
 // Tree scene–local helpers — only the bits not consolidated into
 // `../../_shared`. The shared chrome (glow, activeBeatIndex, cadenceOffset,
 // the palette resolvers, SceneFrame, Narration, FittedText, fonts) is now
-// imported from `@docent/core/_shared`.
+// imported from `@bjelser/core/_shared`.
 //
 // `STAGE` (the diagram rectangle) stays scoped to tree; other scenes
 // (chart, map, tension, timeline) re-declare the same constant in their own

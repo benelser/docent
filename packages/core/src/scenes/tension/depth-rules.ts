@@ -18,7 +18,7 @@
 // If a future build wants a tension-specific scene-local rule (e.g. "a
 // tension scene with > 4 nodes loses legibility"), this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {TensionScene} from './validate';
 

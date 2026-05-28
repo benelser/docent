@@ -6,7 +6,7 @@
 
 import type {JSONSchema7} from 'json-schema';
 
-import type {Scene} from '@docent/kit';
+import type {Scene} from '@bjelser/kit';
 
 export interface HolodeckSceneSpec extends Scene {
   readonly type: 'holodeck';

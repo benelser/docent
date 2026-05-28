@@ -16,7 +16,7 @@
 // region the eye can find", or "no figure dwells on the image alone —
 // the callouts must do work"), this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {FigureScene} from './validate';
 

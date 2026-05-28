@@ -3,7 +3,7 @@
 // Migrated from packages/engine/src/scenes/ProbeScene.tsx as part of the
 // v3.0 plugin-architecture rip-and-replace. Behavior is UNCHANGED from the
 // v2.5.x renderer; only import paths and the prop shape were updated:
-//   - props receive `SceneRenderProps<ProbeSceneSpec>` from @docent/kit
+//   - props receive `SceneRenderProps<ProbeSceneSpec>` from @bjelser/kit
 //     (the kit-owned `{scene, common}` envelope), rather than the legacy
 //     `SceneProps` (the engine-owned `ts: TimedScene` envelope).
 //   - the engine-shared chrome (SceneFrame, Narration, FittedText, fonts,
@@ -21,7 +21,7 @@
 
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {Beat, BeatCadence, BeatTimelineSlot, SceneRenderProps} from '@docent/kit';
+import type {Beat, BeatCadence, BeatTimelineSlot, SceneRenderProps} from '@bjelser/kit';
 
 import {
   ACCENTS,

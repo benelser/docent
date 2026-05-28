@@ -12,7 +12,7 @@
 // recap-specific judge axis (e.g. "the points name a fragility, not
 // only the wins"), this is where it lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

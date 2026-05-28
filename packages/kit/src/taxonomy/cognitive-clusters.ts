@@ -6,7 +6,7 @@
 // prompts reason in these terms.
 //
 // The taxonomy never grows in lockstep with the scene library. A new
-// cluster is a major release of `@docent/kit` (and a new mental model for
+// cluster is a major release of `@bjelser/kit` (and a new mental model for
 // every existing plugin). The 7 below are the docent-method canon.
 //
 // Chrome-only scenes (`frame`, `recap`) declare `cluster: null` because
@@ -18,7 +18,7 @@
  * and `recap` that bracket the film but perform no cognitive move).
  *
  * The taxonomy is CLOSED — adding a cluster is a major release of
- * `@docent/kit` and a new mental model for every existing plugin.
+ * `@bjelser/kit` and a new mental model for every existing plugin.
  *
  * Cluster semantics, one example each:
  * - **connection** — relationships, dependencies, links between entities.

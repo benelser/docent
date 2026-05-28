@@ -17,7 +17,7 @@
 //     entry script that statically imports the required plugins and calls
 //     `registerKitRoot({plugins, spec})`. The kit refuses to render without
 //     one because picking plugins is an opinionated decision the framework
-//     does not own. `@docent/cli` generates this entry per render via
+//     does not own. `@bjelser/cli` generates this entry per render via
 //     `src/render-entry.ts`.
 //   - Output: mp4 (or png still) at `<outputDir>/<filmId>.{mp4|png}`.
 
@@ -73,7 +73,7 @@ const runChild = (
       if (code === 0) return res();
       rej(
         new Error(
-          `[@docent/kit] remotion render exited with code=${code} signal=${signal}\n` +
+          `[@bjelser/kit] remotion render exited with code=${code} signal=${signal}\n` +
             `  bin: ${bin}\n` +
             `  args: ${args.join(' ')}`,
         ),
@@ -94,8 +94,8 @@ export const runRenderStage = async (
 
   if (!opts.entryPath) {
     throw new Error(
-      '[@docent/kit] render stage: opts.entryPath is required. The kit does ' +
-        'not choose which plugins to load — the invoker (typically @docent/cli) ' +
+      '[@bjelser/kit] render stage: opts.entryPath is required. The kit does ' +
+        'not choose which plugins to load — the invoker (typically @bjelser/cli) ' +
         'must generate a Remotion entry that statically imports the desired ' +
         'plugins (so webpack can bundle them for chromium) and pass its path ' +
         'as RenderOptions.entryPath.',

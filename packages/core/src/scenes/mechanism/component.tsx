@@ -38,7 +38,7 @@ import type {
   ResolvedStyle,
   Scene,
   SceneRenderProps,
-} from '@docent/kit';
+} from '@bjelser/kit';
 
 // ---------------------------------------------------------------------------
 // Per-type spec shape — the scene branch the mechanism plugin owns.
@@ -104,7 +104,7 @@ export interface MechanismScene extends Scene {
 
 // ---------------------------------------------------------------------------
 // Local helpers — inlined from packages/engine. Self-contained so the plugin
-// has no dependency on `@docent/engine`. Phase D will replace these with the
+// has no dependency on `@bjelser/engine`. Phase D will replace these with the
 // kit's shared layout/palette/timing utilities; the values are preserved
 // byte-equivalently from v2.5.x.
 // ---------------------------------------------------------------------------

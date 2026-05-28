@@ -12,7 +12,7 @@
 // other leading char as context (passes the line through with no tint);
 // in the plugin world we surface a warning so the spec author can fix it.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 export interface DiffScene extends Scene {
   type: 'diff';

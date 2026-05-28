@@ -23,7 +23,7 @@
 //   - connections (when present) carry id, `from`/`to` (real region ids);
 //     `kind` ∈ {route, transmission, supply} when set.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 export type MapLayout = 'topology' | 'grid';
 export type MapMarkerKind = 'pin' | 'dot' | 'flag';

@@ -15,7 +15,7 @@
 // surfaces a genuine sensitivity, not a no-op sweep"), this is where it
 // lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {ProbeScene} from './validate';
 

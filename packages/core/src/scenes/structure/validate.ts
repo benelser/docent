@@ -23,7 +23,7 @@
 // check the simple per-node shape: an `embed` field's `type` must be in the
 // structure host's allowlist (mechanism | chart | venn).
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 import type {StructureEdge, StructureNode, StructureScene} from './_types';
 

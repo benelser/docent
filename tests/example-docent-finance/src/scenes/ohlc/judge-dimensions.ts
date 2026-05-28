@@ -9,7 +9,7 @@
 //   - `ohlc-trend-named` — does the narration name the direction (up / down /
 //     consolidation) of the arc the bars depict?
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 const volumeNarrated: JudgeDimension = {
   id: 'ohlc-volume-narrated',

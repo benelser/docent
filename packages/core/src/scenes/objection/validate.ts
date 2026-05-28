@@ -19,7 +19,7 @@
 // claim scene and BEFORE the closing recap/big-idea/provocation) is owned
 // by the kit's cross-scene validator and is not duplicated here.
 
-import type {SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 import type {ObjectionSpec} from './component';
 

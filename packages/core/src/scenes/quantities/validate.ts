@@ -9,7 +9,7 @@
 // disjunction across optional sibling fields; we enforce it here, as the
 // ScenePlugin's structural validator.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 const arrLen = (a: unknown): number => (Array.isArray(a) ? a.length : 0);
 

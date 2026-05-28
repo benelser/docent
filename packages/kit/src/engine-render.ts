@@ -2,7 +2,7 @@
 //
 // Lives outside `engine.ts` so the chromium-side webpack bundle never has to
 // chase down `node:fs` / `node:child_process` references. CLI callers can
-// import this module directly (`import {runRender} from '@docent/kit/
+// import this module directly (`import {runRender} from '@bjelser/kit/
 // engine-render'`) or call `engine.render(spec, opts)` which internally
 // uses a webpack-blind dynamic import to find this file.
 //

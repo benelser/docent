@@ -13,7 +13,7 @@
 // real rhythm work (e.g. cross-beat envelope shaping, ducking, gap-aware
 // captions) without a protocol bump.
 
-import type {FeaturePlugin, SceneOutput, RenderContext} from '@docent/kit';
+import type {FeaturePlugin, SceneOutput, RenderContext} from '@bjelser/kit';
 
 import {
   computeBeatTiming,

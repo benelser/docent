@@ -8,15 +8,15 @@
 //
 // A consumer wires this pack into the engine via:
 //
-//   import {Engine} from '@docent/kit';
-//   import corePlugins from '@docent/core';
+//   import {Engine} from '@bjelser/kit';
+//   import corePlugins from '@bjelser/core';
 //   import captions from '@example/docent-feature-captions';
 //
 //   const engine = new Engine().use(corePlugins).use(captions);
 //
 // The next render writes `<outputDir>/<filmId>.srt` next to the mp4.
 
-import type {Plugin} from '@docent/kit';
+import type {Plugin} from '@bjelser/kit';
 
 import {captionsFeature} from './captions/feature';
 

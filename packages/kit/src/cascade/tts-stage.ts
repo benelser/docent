@@ -180,7 +180,7 @@ export const runTtsStage = async (
     );
   }
 
-  // We type `process` defensively — `@docent/kit` does NOT depend on
+  // We type `process` defensively — `@bjelser/kit` does NOT depend on
   // `@types/node`, so we read `process.env` through `globalThis` and fall
   // back to an empty object in non-Node environments (browser, Deno
   // without node-compat, etc.).

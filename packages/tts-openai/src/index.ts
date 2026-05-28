@@ -1,20 +1,20 @@
-// @docent/tts-openai — the OpenAI TTS provider plugin.
+// @bjelser/tts-openai — the OpenAI TTS provider plugin.
 //
 // Wraps the official `openai` npm package's `audio.speech.create()` and
-// exposes it through `@docent/kit`'s `TtsProviderPlugin` contract.
+// exposes it through `@bjelser/kit`'s `TtsProviderPlugin` contract.
 //
 // Install:
-//   bun add @docent/tts-openai openai
+//   bun add @bjelser/tts-openai openai
 //
 // Register in `docent.config.ts`:
 //
-//   import openaiTtsPlugin from '@docent/tts-openai';
+//   import openaiTtsPlugin from '@bjelser/tts-openai';
 //   export default {plugins: [openaiTtsPlugin]};
 //
 // Credentials: `OPENAI_API_KEY` (required) and optionally `OPENAI_BASE_URL`
 // for a custom endpoint that speaks the canonical OpenAI wire shape.
 
-import type {TtsProviderPlugin} from '@docent/kit';
+import type {TtsProviderPlugin} from '@bjelser/kit';
 import {createOpenAIProvider, OPENAI_CAPABILITIES} from './provider';
 
 export const openaiTtsPlugin: TtsProviderPlugin = {

@@ -1,15 +1,15 @@
-# @docent/tts-compatible
+# @bjelser/tts-compatible
 
-OpenAI-compatible TTS provider for `@docent/kit`. Drives any TTS endpoint that speaks the OpenAI `/v1/audio/speech` shape — self-hosted Kokoro servers, OpenWebUI endpoints, or any community-built OpenAI-compatible bridge.
+OpenAI-compatible TTS provider for `@bjelser/kit`. Drives any TTS endpoint that speaks the OpenAI `/v1/audio/speech` shape — self-hosted Kokoro servers, OpenWebUI endpoints, or any community-built OpenAI-compatible bridge.
 
-This is the lever for callers who need PyTorch Kokoro parity or any other server-side TTS not directly wrapped by a dedicated `@docent/tts-*` package.
+This is the lever for callers who need PyTorch Kokoro parity or any other server-side TTS not directly wrapped by a dedicated `@bjelser/tts-*` package.
 
 ## Install
 
 ```bash
-npm install @docent/tts-compatible
+npm install @bjelser/tts-compatible
 # or
-bun add @docent/tts-compatible
+bun add @bjelser/tts-compatible
 ```
 
 No peer dependency — this provider talks to its endpoint via plain `fetch`.
@@ -18,8 +18,8 @@ No peer dependency — this provider talks to its endpoint via plain `fetch`.
 
 ```ts
 // docent.config.ts
-import {corePlugins} from '@docent/core';
-import {compatibleTtsProvider} from '@docent/tts-compatible';
+import {corePlugins} from '@bjelser/core';
+import {compatibleTtsProvider} from '@bjelser/tts-compatible';
 
 export default {
   plugins: [...corePlugins, compatibleTtsProvider],

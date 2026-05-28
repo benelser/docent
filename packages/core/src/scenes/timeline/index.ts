@@ -1,4 +1,4 @@
-// @docent/core — `timeline` scene plugin.
+// @bjelser/core — `timeline` scene plugin.
 //
 // Events plotted on a real date axis: the gaps between events are part of
 // the argument. Cluster: `time` (time-as-load-bearing — alongside
@@ -12,7 +12,7 @@
 // for the timeline-dates-real soft-warn, and ./judge-dimensions.ts for
 // the time-is-load-bearing axis.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {TimelineSceneComponent} from './component';
 import {depthRules} from './depth-rules';

@@ -22,7 +22,7 @@
 //     strings (an empty baseline row is the visible failure mode the
 //     renderer can't recover from).
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 /**
  * The probe scene's per-spec shape. Probe scenes carry a single optional

@@ -35,7 +35,7 @@ import {join, resolve} from 'node:path';
 
 import {createEngine} from '../engine-factory';
 import {runBuild, type BuildArgs} from './build';
-import {buildFrameSchedule, type FilmSpec, type SceneSchedule} from '@docent/kit';
+import {buildFrameSchedule, type FilmSpec, type SceneSchedule} from '@bjelser/kit';
 
 const log = (s: string) => process.stdout.write(`${s}\n`);
 const reset = '\x1b[0m';
@@ -150,7 +150,7 @@ export const runRenderCheck = async (args: RenderCheckArgs): Promise<number> => 
   // beat lengths match what the actual render saw — if absent, beat lengths
   // are estimated, and that's fine for sample positioning.
   const manifestPath = join(projectRoot, 'public', 'audio', args.filmId, 'manifest.json');
-  let ttsAudio: import('@docent/kit').TtsAudioMap | undefined;
+  let ttsAudio: import('@bjelser/kit').TtsAudioMap | undefined;
   if (existsSync(manifestPath)) {
     try {
       ttsAudio = JSON.parse(readFileSync(manifestPath, 'utf-8'));

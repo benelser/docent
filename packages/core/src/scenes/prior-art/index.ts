@@ -15,7 +15,7 @@
 // on dimensions, the family that includes `compare`, `landscape`,
 // `quantities`, `chart`, `venn`, `probe`.
 
-import type {Scene, ScenePlugin} from '@docent/kit';
+import type {Scene, ScenePlugin} from '@bjelser/kit';
 
 import {Component} from './component';
 import {schema} from './schema';

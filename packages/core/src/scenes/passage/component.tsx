@@ -13,7 +13,7 @@
 // from the v2.5.x renderer; only import paths and the prop shape were
 // updated:
 //   - props receive `SceneRenderProps<PassageSceneSpec>` from
-//     @docent/kit (the kit-owned `{scene, common}` envelope), rather
+//     @bjelser/kit (the kit-owned `{scene, common}` envelope), rather
 //     than the legacy `SceneProps` (the engine-owned `ts: TimedScene`
 //     envelope).
 //   - beat timing reads through the kit's BeatTimelineSlot — its
@@ -26,7 +26,7 @@
 
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {Beat, ResolvedStyle, SceneRenderProps} from '@docent/kit';
+import type {Beat, ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
 
 import {FittedText, Narration, SceneFrame, activeBeatIndex, glow} from '../../_shared';
 import type {PassageMark, PassageScene as PassageSceneSpec} from './validate';

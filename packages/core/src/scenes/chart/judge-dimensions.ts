@@ -14,7 +14,7 @@
 // the narration reads the shape, not just the value"), this is where it
 // lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

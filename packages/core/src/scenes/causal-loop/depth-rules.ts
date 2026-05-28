@@ -13,7 +13,7 @@
 // with no loops skips this entirely (the structural validator demands at
 // least 1).
 
-import type {DepthFinding, DepthRule, Scene} from '@docent/kit';
+import type {DepthFinding, DepthRule, Scene} from '@bjelser/kit';
 
 interface CausalLoopSceneShape extends Scene {
   type: 'causal-loop';

@@ -187,7 +187,7 @@ export const runCascade = async (
     } catch (e) {
       if (isNotImplementedSentinel(e)) {
         throw new Error(
-          '[@docent/kit] cascade: resolveStyle threw "not implemented" — ' +
+          '[@bjelser/kit] cascade: resolveStyle threw "not implemented" — ' +
             'this should be impossible given A.7 is the implementer. ' +
             `Underlying: ${e instanceof Error ? e.message : String(e)}`,
         );

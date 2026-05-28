@@ -1,4 +1,4 @@
-// @docent/core — `chart` scene plugin.
+// @bjelser/core — `chart` scene plugin.
 //
 // The `comparison` cluster's plotted move: a labelled coordinate graph
 // with line / bars / point series drawn on numeric axes. Cluster:
@@ -11,7 +11,7 @@
 // renderer, ./schema.ts for the spec branch, and ./validate.ts for the
 // structural validator.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {ChartSceneComponent} from './component';
 import {depthRules} from './depth-rules';

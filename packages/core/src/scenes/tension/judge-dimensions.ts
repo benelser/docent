@@ -13,7 +13,7 @@
 // specific judge axis (e.g. "the verdict adjudicates — names a disposition
 // and a residual risk"), this is where it lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

@@ -1,11 +1,11 @@
 // Design tokens — the structured token vocabulary every preset contributes.
 //
-// `@docent/kit` owns the *interfaces*; it ships zero values. The neutral floor
-// + the 6 default presets live in `@docent/core/src/presets/*`. A third-party
+// `@bjelser/kit` owns the *interfaces*; it ships zero values. The neutral floor
+// + the 6 default presets live in `@bjelser/core/src/presets/*`. A third-party
 // preset pack contributes its tokens against THIS type.
 //
 // Mirrors `packages/engine/src/style/styleTokens.ts` shape so the v2.x preset
-// data drops in unchanged when `@docent/core` migrates.
+// data drops in unchanged when `@bjelser/core` migrates.
 //
 // Type-only. No runtime values. The kit must stay renderer-agnostic in shape.
 

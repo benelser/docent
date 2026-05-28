@@ -3,7 +3,7 @@
 // Remotion's composition surface is a `{id, component, durationInFrames, fps,
 // width, height, defaultProps}` bag. The kit owns the projection from a
 // validated `FilmSpec` + populated `Engine` to that bag — callers (the CLI,
-// `@docent/engine`'s Remotion `Root`, a third-party studio embed) read the
+// `@bjelser/engine`'s Remotion `Root`, a third-party studio embed) read the
 // returned `CompositionConfig` straight into `<Composition {...config} />`
 // or `selectComposition` for headless renders.
 //

@@ -1,8 +1,8 @@
-// @docent/core/scenes/quantities — the `quantities` ScenePlugin.
+// @bjelser/core/scenes/quantities — the `quantities` ScenePlugin.
 //
 // Per the Phase B migration brief (Template 1), `quantities` is one of the
 // 29 reference scenes carved out of the monolithic `packages/engine/` into
-// `@docent/core`'s plugin manifest.
+// `@bjelser/core`'s plugin manifest.
 //
 // Cognitive cluster: `comparison` — quantified claims, measurements,
 // magnitudes plotted as figures, a matrix, or a tweened counting metric.
@@ -23,7 +23,7 @@
 // retired the `@docent-engine-bridge/*` back-channel and the engine-shaped
 // `ts: TimedScene` prop bag that depended on it.
 
-import type {CognitiveCluster, ScenePlugin, Scene} from '@docent/kit';
+import type {CognitiveCluster, ScenePlugin, Scene} from '@bjelser/kit';
 
 import {QuantitiesScene} from './component';
 import {schema} from './schema';

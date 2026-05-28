@@ -6,7 +6,7 @@
 // for a .git directory (the conventional project boundary). Fall back to
 // process.cwd() if nothing matches.
 //
-// AGENT_ROOT is the @docent/agent package directory itself — used for
+// AGENT_ROOT is the @bjelser/agent package directory itself — used for
 // brief / prompt file resolution.
 
 import {existsSync} from 'node:fs';

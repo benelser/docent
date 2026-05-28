@@ -4,7 +4,7 @@
 // is real or pro-forma. A candlestick scene that names the wick is doing
 // the close-up; a scene that just states "the price went up" is not.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 const closeReadEarned: JudgeDimension = {
   id: 'candlestick-close-read-earned',

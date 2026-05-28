@@ -1,7 +1,7 @@
 // Structure scene–local helpers — the morph timeline / morph resolver /
 // transform-detector. The shared chrome (glow, activeBeatIndex, the cadence
 // helpers, the palette resolvers, ACCENTS, SceneFrame, Narration,
-// FittedText, fonts, code-theme) now imports from `@docent/core/_shared`.
+// FittedText, fonts, code-theme) now imports from `@bjelser/core/_shared`.
 //
 // These three helpers — `morphTimeline`, `resolveMorph`, `hasTransform` —
 // implement cross-beat object identity: a structure node can be re-bound by
@@ -14,7 +14,7 @@
 // port (walks `BeatTimelineSlot[]` rather than the legacy `TimedBeat[]`).
 
 import {spring} from 'remotion';
-import type {Beat, BeatTimelineSlot} from '@docent/kit';
+import type {Beat, BeatTimelineSlot} from '@bjelser/kit';
 
 import type {StructureNode, StructureTransform} from './_types';
 

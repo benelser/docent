@@ -17,7 +17,7 @@
 // grandfathered-films exemption stays at the film level (it's a meta-id
 // allowlist, not a per-scene check).
 
-import type {DepthFinding, DepthRule} from '@docent/kit';
+import type {DepthFinding, DepthRule} from '@bjelser/kit';
 
 import type {BigIdeaScene} from './validate';
 

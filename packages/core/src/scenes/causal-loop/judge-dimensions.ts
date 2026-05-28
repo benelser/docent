@@ -10,7 +10,7 @@
 // causal-loop scene; films without one mark it n/a. The kit's judge
 // framework aggregates dimensions across registered plugins.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 const loopsExplain: JudgeDimension = {
   id: 'loops-explain-not-decorate',

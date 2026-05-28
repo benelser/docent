@@ -12,7 +12,7 @@
 // diff-specific judge axis (e.g. "the before→after isolates the
 // load-bearing change, not the noise"), this is where it lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

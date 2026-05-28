@@ -1,4 +1,4 @@
-// @docent/core — `closeup` scene plugin.
+// @bjelser/core — `closeup` scene plugin.
 //
 // The "annotate a code artifact" move: a deep-dive on real source where
 // a macOS-style window holds the listing, Prism highlights its tokens,
@@ -12,7 +12,7 @@
 // the renderer, ./schema.ts for the spec branch, and ./validate.ts for
 // the structural validator.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {CloseupSceneComponent} from './component';
 import {depthRules} from './depth-rules';

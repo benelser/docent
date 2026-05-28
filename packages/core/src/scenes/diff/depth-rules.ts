@@ -14,7 +14,7 @@
 // depth rule (e.g. "every diff narrates the ripple, not just the change"),
 // this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {DiffScene} from './validate';
 

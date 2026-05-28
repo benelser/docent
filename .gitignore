@@ -97,3 +97,5 @@ package-lock.json
 landing/build/
 landing/node_modules/
 landing/.svelte-kit/
+.npmrc.publish
+.firebase/

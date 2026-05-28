@@ -11,7 +11,7 @@
 // keeps a single malformed bar from silently mis-drawing the shape that
 // scene's narration is reading.
 
-import type {SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 import type {OhlcSceneSpec} from './schema';
 

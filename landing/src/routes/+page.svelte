@@ -288,7 +288,7 @@
 				Ship.
 			</p>
 			<div class="install-cmd">
-				<span class="prompt">$</span> bun add @docent/cli @docent/core @docent/kit
+				<span class="prompt">$</span> bun add @bjelser/cli @bjelser/core @bjelser/kit
 			</div>
 			<div class="install-row">
 				<a class="button button-primary" href="https://github.com/benelser/docent#quick-start">
@@ -406,9 +406,9 @@
 			<div>
 				<div class="footer-col-head">packages</div>
 				<ul>
-					<li><a href="https://www.npmjs.com/package/@docent/kit">@docent/kit</a></li>
-					<li><a href="https://www.npmjs.com/package/@docent/core">@docent/core</a></li>
-					<li><a href="https://www.npmjs.com/package/@docent/cli">@docent/cli</a></li>
+					<li><a href="https://www.npmjs.com/package/@bjelser/kit">@bjelser/kit</a></li>
+					<li><a href="https://www.npmjs.com/package/@bjelser/core">@bjelser/core</a></li>
+					<li><a href="https://www.npmjs.com/package/@bjelser/cli">@bjelser/cli</a></li>
 				</ul>
 			</div>
 			<div>

@@ -1,13 +1,13 @@
-# @docent/tts-elevenlabs
+# @bjelser/tts-elevenlabs
 
-ElevenLabs TTS provider for `@docent/kit`. Synthesizes per-beat narration with ElevenLabs voices and exposes **word-level alignment** for karaoke-style passage / read-along scenes.
+ElevenLabs TTS provider for `@bjelser/kit`. Synthesizes per-beat narration with ElevenLabs voices and exposes **word-level alignment** for karaoke-style passage / read-along scenes.
 
 ## Install
 
 ```bash
-npm install @docent/tts-elevenlabs @elevenlabs/elevenlabs-js
+npm install @bjelser/tts-elevenlabs @elevenlabs/elevenlabs-js
 # or
-bun add @docent/tts-elevenlabs @elevenlabs/elevenlabs-js
+bun add @bjelser/tts-elevenlabs @elevenlabs/elevenlabs-js
 ```
 
 `@elevenlabs/elevenlabs-js` is a **peer dependency** — bring your own SDK version.
@@ -16,8 +16,8 @@ bun add @docent/tts-elevenlabs @elevenlabs/elevenlabs-js
 
 ```ts
 // docent.config.ts
-import {corePlugins} from '@docent/core';
-import {elevenlabsTtsProvider} from '@docent/tts-elevenlabs';
+import {corePlugins} from '@bjelser/core';
+import {elevenlabsTtsProvider} from '@bjelser/tts-elevenlabs';
 
 export default {
   plugins: [...corePlugins, elevenlabsTtsProvider],

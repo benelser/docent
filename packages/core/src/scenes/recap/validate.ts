@@ -15,7 +15,7 @@
 // objection must precede the recap) are film-wide rules and stay on the
 // engine's spec-level validator, not on this per-scene plugin.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 export interface RecapScene extends Scene {
   type: 'recap';

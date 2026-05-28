@@ -12,7 +12,7 @@
 // appears in the spec, so the n/a semantics fall out of the registry
 // dispatch.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 const experienceIsLoadBearing: JudgeDimension = {
   id: 'experience-is-load-bearing',

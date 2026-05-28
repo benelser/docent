@@ -8,7 +8,7 @@
 
 import type {JSONSchema7} from 'json-schema';
 
-import type {Scene} from '@docent/kit';
+import type {Scene} from '@bjelser/kit';
 
 import type {OhlcBar} from '../ohlc/schema';
 

@@ -14,7 +14,7 @@
 //
 // MIRROR of `packages/engine/src/scenes/EmbeddedScene.tsx` — the per-type
 // renderers are visually tuned in that file; this module reproduces them
-// inside @docent/core so every host plugin reaches the same code path.
+// inside @bjelser/core so every host plugin reaches the same code path.
 // The six host scenes (`compare`, `journey-map`, `landscape`, `structure`,
 // `timeline`, `tree`) re-export from this module via a one-liner
 // `_embedded-scene.tsx` shim, or import directly through `../../_shared`.
@@ -27,7 +27,7 @@
 // accident.
 
 import React from 'react';
-import type {ResolvedStyle} from '@docent/kit';
+import type {ResolvedStyle} from '@bjelser/kit';
 
 import {fitFontSize, truncateForSlot} from './fitted-text';
 import {glow, paletteSceneHex} from './helpers';

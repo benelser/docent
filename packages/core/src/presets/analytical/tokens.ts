@@ -7,7 +7,7 @@
 // Inherited fields (typography.family.serif, typography.size, typography.weight)
 // come from neutralTokens unchanged.
 
-import type {DesignTokens} from '@docent/kit';
+import type {DesignTokens} from '@bjelser/kit';
 
 export const tokens: DesignTokens = {
   bg: {

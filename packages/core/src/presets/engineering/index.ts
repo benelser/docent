@@ -7,7 +7,7 @@
 // Shape: the standard PresetPlugin. `extends` is R4 forward-compat and
 // intentionally left undefined.
 
-import type {PresetPlugin} from '@docent/kit';
+import type {PresetPlugin} from '@bjelser/kit';
 
 import {tokens} from './tokens';
 

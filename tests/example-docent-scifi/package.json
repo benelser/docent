@@ -1,7 +1,7 @@
 {
   "name": "@example/docent-scifi",
   "version": "0.1.0",
-  "description": "Third-party plugin pack — the acceptance test that proves docent's framework/implementation split. Ships a custom scene type (holodeck) and a custom preset (scifi-noir) registered through @docent/kit's public protocol — NEVER reaching into @docent/core.",
+  "description": "Third-party plugin pack — the acceptance test that proves docent's framework/implementation split. Ships a custom scene type (holodeck) and a custom preset (scifi-noir) registered through @bjelser/kit's public protocol — NEVER reaching into @bjelser/core.",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -10,7 +10,7 @@
   },
   "files": ["src", "films"],
   "dependencies": {
-    "@docent/kit": "workspace:*"
+    "@bjelser/kit": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

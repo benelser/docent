@@ -10,7 +10,7 @@
 // Migrated under the Phase B fan-out (B.preset.neutral) per
 // docs/design/migration-brief-templates.md Template 2.
 
-import type {DesignTokens} from '@docent/kit';
+import type {DesignTokens} from '@bjelser/kit';
 
 export const tokens: DesignTokens = {
   bg: {

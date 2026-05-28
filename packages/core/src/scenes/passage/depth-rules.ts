@@ -16,7 +16,7 @@
 // its highlight — the note adds substance the quote does not already
 // carry"), this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {PassageScene} from './validate';
 

@@ -13,7 +13,7 @@
 // "the takeaway is the FILM'S claim, not a generic platitude that could open
 // any deck on the topic"), this is where it lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

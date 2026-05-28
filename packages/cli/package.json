@@ -1,7 +1,7 @@
 {
-  "name": "@docent/cli",
+  "name": "@bjelser/cli",
   "version": "3.0.0",
-  "description": "docent's thin CLI shell. Subcommand routing on top of @docent/kit's public Engine surface; loads @docent/core and any user docent.config.ts plugins.",
+  "description": "docent's thin CLI shell. Subcommand routing on top of @bjelser/kit's public Engine surface; loads @bjelser/core and any user docent.config.ts plugins.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/benelser/docent",
@@ -21,8 +21,8 @@
     "README.md"
   ],
   "dependencies": {
-    "@docent/core": "^3.0.0",
-    "@docent/kit": "^3.0.0"
+    "@bjelser/core": "^3.0.0",
+    "@bjelser/kit": "^3.0.0"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

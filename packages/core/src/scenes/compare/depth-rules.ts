@@ -21,7 +21,7 @@
 // compare-specific depth rule (e.g. "every compare scene names ONE
 // winning column in the narration, not three"), this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {CompareScene} from './validate';
 

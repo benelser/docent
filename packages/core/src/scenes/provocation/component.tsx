@@ -4,7 +4,7 @@
 // Migrated from packages/engine/src/scenes/ProvocationScene.tsx as part of
 // the v3.0 plugin-architecture rip-and-replace. Behavior is UNCHANGED from
 // the v2.5.x renderer; only import paths and the prop shape were updated:
-//   - props receive `SceneRenderProps<ProvocationScene>` from @docent/kit
+//   - props receive `SceneRenderProps<ProvocationScene>` from @bjelser/kit
 //     (the kit-owned `{scene, common}` envelope), rather than the legacy
 //     `SceneProps` (the engine-owned `ts: TimedScene` envelope).
 //   - the engine-shared chrome (SceneFrame, Narration, FittedText, fonts,
@@ -32,7 +32,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import type {ResolvedStyle, SceneRenderProps} from '@docent/kit';
+import type {ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
 
 import {FittedText, Narration, SceneFrame, glow} from '../../_shared';
 import type {ProvocationScene as ProvocationSceneSpec} from './validate';

@@ -28,8 +28,8 @@ import type {
   TtsSynthesisResult,
   TtsVoice,
   TtsCapabilities,
-} from '@docent/kit';
-import {TtsProviderError} from '@docent/kit';
+} from '@bjelser/kit';
+import {TtsProviderError} from '@bjelser/kit';
 
 export const OPENAI_CAPABILITIES: TtsCapabilities = {
   nativeAlignment: 'none',

@@ -18,7 +18,7 @@
 // beat's highlight reaches past the code's line count so a spec author
 // catches a stale range.
 
-import type {Beat, Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Beat, Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 export interface CloseupScene extends Scene {
   type: 'closeup';

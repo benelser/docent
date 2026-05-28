@@ -2,13 +2,13 @@
 //
 // The acceptance test does NOT need this to be visually polished — it needs
 // to prove that the kit can register a scene type from a package other than
-// @docent/core and drive it through the render pipeline. A simple panel with
+// @bjelser/core and drive it through the render pipeline. A simple panel with
 // the scene's declared fields, fading in over the scene's lifetime, suffices.
 
 import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
 
-import type {SceneRenderProps} from '@docent/kit';
+import type {SceneRenderProps} from '@bjelser/kit';
 
 import type {HolodeckSceneSpec} from './schema';
 

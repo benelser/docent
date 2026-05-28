@@ -16,7 +16,7 @@
 //
 // If a mechanism scene contains zero such beats, the rule fails.
 
-import type {DepthRule, DepthFinding, Scene} from '@docent/kit';
+import type {DepthRule, DepthFinding, Scene} from '@bjelser/kit';
 
 const VISUAL_HANDLE =
   /\b(watch|see|now|here|this|the loop|the cycle|the cursor|the marker|the token|the phase|pause|paused|hold|holds|frozen|the motion|the step)\b/i;

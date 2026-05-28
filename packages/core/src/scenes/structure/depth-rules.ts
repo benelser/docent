@@ -17,7 +17,7 @@
 // relationship the line asserts, not just the existence of the line"),
 // this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {StructureScene} from './_types';
 

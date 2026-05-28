@@ -2,7 +2,7 @@
 //
 // Mirrors `packages/engine/src/style/styleSchema.ts` to preserve v2.x preset
 // data. The kit owns these interfaces; the values (preset bundles, intent
-// mappings, the resolver itself) live in `@docent/core` and `@docent/kit`'s
+// mappings, the resolver itself) live in `@bjelser/core` and `@bjelser/kit`'s
 // internal style resolver (Phase A.2-A.7).
 //
 // Pipeline order (top → bottom, later wins):

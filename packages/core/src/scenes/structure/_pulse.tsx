@@ -4,7 +4,7 @@
 // MIRROR of packages/engine/src/components/Pulse.tsx.
 
 import React from 'react';
-import type {ResolvedStyle} from '@docent/kit';
+import type {ResolvedStyle} from '@bjelser/kit';
 
 import {glow} from '../../_shared';
 import {edgePoint, type Box} from './_layout';

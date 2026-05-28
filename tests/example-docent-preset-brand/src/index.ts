@@ -14,8 +14,8 @@
 // `extends` field resolves a base-first chain at style-resolution time.
 // A consumer wires this pack into the engine via:
 //
-//   import {Engine} from '@docent/kit';
-//   import corePlugins from '@docent/core';
+//   import {Engine} from '@bjelser/kit';
+//   import corePlugins from '@bjelser/core';
 //   import brand from '@example/docent-preset-brand';
 //
 //   const engine = new Engine().use(corePlugins).use(brand);
@@ -25,7 +25,7 @@
 //   "style": {"preset": "acme"}        // brand, light
 //   "style": {"preset": "acme-dark"}   // brand, dark — composed from acme
 
-import type {Plugin} from '@docent/kit';
+import type {Plugin} from '@bjelser/kit';
 
 import {acmePreset} from './presets/acme';
 import {acmeDarkPreset} from './presets/acme-dark';

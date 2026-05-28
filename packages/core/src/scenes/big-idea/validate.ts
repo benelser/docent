@@ -14,7 +14,7 @@
 // `BIG_IDEA_ANCHOR_KINDS` allowlist; the position-contract checks remain at
 // the film level).
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 // The closed allowlist of anchor kinds. Mirror of the v2.5.x engine's
 // `BIG_IDEA_ANCHOR_KINDS` (validate.ts line 24). An anchor outside this list

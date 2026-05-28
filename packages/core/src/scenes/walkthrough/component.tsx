@@ -7,7 +7,7 @@
 // from the v2.5.x renderer; only import paths and the prop shape were
 // updated:
 //   - props receive `SceneRenderProps<WalkthroughScene>` from
-//     @docent/kit (the kit-owned `{scene, common}` envelope), rather
+//     @bjelser/kit (the kit-owned `{scene, common}` envelope), rather
 //     than the legacy `SceneProps` (the engine-owned `ts: TimedScene`
 //     envelope).
 //   - beat timing reads `b.startFrame` / `b.frames` (kit's
@@ -27,7 +27,7 @@
 
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {ResolvedStyle, SceneRenderProps} from '@docent/kit';
+import type {ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
 
 import {
   FittedText,

@@ -25,7 +25,7 @@
 
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {Beat, SceneRenderProps} from '@docent/kit';
+import type {Beat, SceneRenderProps} from '@bjelser/kit';
 
 import {
   FittedText,

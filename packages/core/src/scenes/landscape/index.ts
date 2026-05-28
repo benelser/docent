@@ -1,4 +1,4 @@
-// @docent/core — `landscape` scene plugin.
+// @bjelser/core — `landscape` scene plugin.
 //
 // The quadrant-analysis primitive: N options plotted on M dimensions in
 // 2-D. Cluster: `comparison` — landscape sits in the same family as
@@ -13,7 +13,7 @@
 // (axis-asymmetric + landscape-spread), and ./judge-dimensions.ts for
 // the LLM-judge axis (quadrant-honest).
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {LandscapeSceneComponent} from './component';
 import {depthRules} from './depth-rules';

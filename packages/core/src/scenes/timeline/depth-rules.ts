@@ -12,7 +12,7 @@
 // finding if the parser rejects it OR the string carries non-month alpha
 // content.
 
-import type {DepthRule, DepthFinding} from '@docent/kit';
+import type {DepthRule, DepthFinding} from '@bjelser/kit';
 
 import {parseTimelineDate} from './_time';
 import type {TimelineScene} from './validate';

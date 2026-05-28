@@ -16,7 +16,7 @@
 // Both rules are scene-scoped — they fire on every landscape scene in the
 // film independently.
 
-import type {DepthFinding, DepthRule, Scene} from '@docent/kit';
+import type {DepthFinding, DepthRule, Scene} from '@bjelser/kit';
 
 import type {LandscapeScene} from './validate';
 

@@ -10,7 +10,7 @@
 
 import React from 'react';
 import {useCurrentFrame, useVideoConfig} from 'remotion';
-import type {BeatTimelineSlot} from '@docent/kit';
+import type {BeatTimelineSlot} from '@bjelser/kit';
 
 import {tweenValue, type MetricFormat} from './helpers';
 

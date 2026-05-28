@@ -14,7 +14,7 @@
 // describes what the viewer is seeing, not what they should infer"),
 // this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {DemonstrateScene} from './validate';
 

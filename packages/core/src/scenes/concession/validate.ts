@@ -15,7 +15,7 @@
 // scene if any, and BEFORE any claim scene) is owned by the kit's
 // cross-scene validator and is not duplicated here.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 // The plugin-owned fields on the concession scene spec. The kit's `Scene`
 // keeps plugin-owned fields opaque (`[key: string]: unknown`); we narrow

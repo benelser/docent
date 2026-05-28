@@ -15,7 +15,7 @@
 //   quadrants:   when present, an object with optional tl/tr/bl/br each
 //                a non-empty string.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 /**
  * The universal accent keys — every preset re-declares these. Matches the

@@ -14,7 +14,7 @@
 // depth rule (e.g. "every chart names what the y-axis is measuring, not
 // just `y`"), this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {ChartScene} from './validate';
 

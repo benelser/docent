@@ -13,7 +13,7 @@
 // load-bearing phrases of the artifact, not decorative highlights"),
 // this is where it lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

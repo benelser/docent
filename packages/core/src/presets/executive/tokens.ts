@@ -9,7 +9,7 @@
 // `neutralTokens` values; overridden fields match the v2.5.x override block
 // verbatim.
 
-import type {DesignTokens} from '@docent/kit';
+import type {DesignTokens} from '@bjelser/kit';
 
 export const tokens: DesignTokens = {
   bg: {

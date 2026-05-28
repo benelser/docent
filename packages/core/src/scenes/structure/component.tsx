@@ -4,7 +4,7 @@
 // MIGRATED from packages/engine/src/scenes/StructureScene.tsx as part of the
 // v3.0 plugin-architecture rip-and-replace. Behaviour is UNCHANGED from the
 // v2.5.x renderer; only:
-//   - props receive `SceneRenderProps<StructureScene>` from @docent/kit (the
+//   - props receive `SceneRenderProps<StructureScene>` from @bjelser/kit (the
 //     kit-owned `{scene, common}` envelope), rather than the legacy
 //     `SceneProps` (the engine-owned `ts: TimedScene` envelope). The
 //     beat-timeline shape is the kit's `BeatTimelineSlot` (with
@@ -23,7 +23,7 @@
 
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {SceneRenderProps} from '@docent/kit';
+import type {SceneRenderProps} from '@bjelser/kit';
 
 import {Card, type CardState} from './_card';
 import {Connector, type EdgeState} from './_connector';
@@ -37,7 +37,7 @@ import {
   paletteGlowScale,
   paletteSceneHex,
 } from '../../_shared';
-import type {Beat} from '@docent/kit';
+import type {Beat} from '@bjelser/kit';
 import {
   hasTransform,
   morphTimeline,

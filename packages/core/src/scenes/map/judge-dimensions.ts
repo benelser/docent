@@ -12,7 +12,7 @@
 // handles that — a per-scene plugin's dimensions only fire when scenes of
 // that type are present).
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [
   {

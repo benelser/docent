@@ -1,7 +1,7 @@
 // Kit-provided default Remotion entry — a working reference path.
 //
 // This file IS the entry the kit ships for `remotion render`. The CLI
-// generates a per-render entry that statically imports `@docent/core` plus
+// generates a per-render entry that statically imports `@bjelser/core` plus
 // any user plugins and calls `registerKitRoot({plugins, spec})`. The kit
 // constructs the engine once at module-load time and binds the composition
 // to it via a context that survives Remotion's prop serialization.
@@ -80,7 +80,7 @@ const KitFilm: React.FC = () => {
           padding: 48,
         }}
       >
-        [@docent/kit] no engine/spec registered — call buildKitRoot() in the
+        [@bjelser/kit] no engine/spec registered — call buildKitRoot() in the
         entry before registerRoot().
       </div>
     );
@@ -103,8 +103,8 @@ const KitFilm: React.FC = () => {
  * @example The CLI-generated entry looks like:
  *
  *   import {registerRoot} from 'remotion';
- *   import {buildKitRoot} from '@docent/kit/remotion/entry';
- *   import corePlugins from '@docent/core';
+ *   import {buildKitRoot} from '@bjelser/kit/remotion/entry';
+ *   import corePlugins from '@bjelser/core';
  *   import userPlugins from '/abs/path/to/docent.config.ts';
  *   import spec from '/abs/path/to/film.json';
  *   registerRoot(buildKitRoot({plugins: [...corePlugins, ...userPlugins], spec}));

@@ -14,7 +14,7 @@
     "noEmit": true,
     "types": ["node"],
     "paths": {
-      "@docent/kit": ["../kit/src/index.ts"]
+      "@bjelser/kit": ["../kit/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

@@ -19,7 +19,7 @@ import type {
   FeaturePlugin,
   SceneFeatureProps,
   SceneOutput,
-} from '@docent/kit';
+} from '@bjelser/kit';
 
 import {Narration, type NarrationBeat} from './component.js';
 

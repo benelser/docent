@@ -14,7 +14,7 @@
 // specific judge axis (e.g. "the title earns the cognitive scenes that
 // follow"), this is where it lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

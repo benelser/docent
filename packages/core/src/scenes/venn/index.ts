@@ -1,4 +1,4 @@
-// @docent/core — `venn` scene plugin.
+// @bjelser/core — `venn` scene plugin.
 //
 // The overlap-analysis move: 2 or 3 named sets rendered as overlapping
 // circles, every region addressable by id so beats reveal/focus one zone
@@ -16,7 +16,7 @@
 // regex rule, and ./judge-dimensions.ts for the intersection-named LLM
 // judge dimension.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {VennSceneComponent} from './component';
 import {depthRules} from './depth-rules';

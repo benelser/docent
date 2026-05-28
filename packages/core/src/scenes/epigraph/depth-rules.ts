@@ -11,7 +11,7 @@
 // Migrated from `packages/engine/cli/depthcheck.ts` — the `epigraph-on-point`
 // block in the rhetorical-primitive depth contracts section.
 
-import type {DepthFinding, DepthRule, Scene} from '@docent/kit';
+import type {DepthFinding, DepthRule, Scene} from '@bjelser/kit';
 
 interface EpigraphScene extends Scene {
   type: 'epigraph';

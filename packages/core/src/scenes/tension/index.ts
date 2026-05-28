@@ -1,4 +1,4 @@
-// @docent/core — `tension` scene plugin.
+// @bjelser/core — `tension` scene plugin.
 //
 // The trade-off ledger: this path was taken, these alternatives were
 // rejected, this risk survives. Cluster: `categorization` — the scene's
@@ -19,7 +19,7 @@
 // a single tension scene in isolation. See ./depth-rules.ts for the
 // reasoning.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {TensionSceneComponent} from './component';
 import {depthRules} from './depth-rules';

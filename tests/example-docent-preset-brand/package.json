@@ -1,7 +1,7 @@
 {
   "name": "@example/docent-preset-brand",
   "version": "0.1.0",
-  "description": "A pure preset pack — Acme Corp's brand register, rendered through @docent/kit's PresetPlugin protocol. No custom scenes; the preset reskins the canonical 29.",
+  "description": "A pure preset pack — Acme Corp's brand register, rendered through @bjelser/kit's PresetPlugin protocol. No custom scenes; the preset reskins the canonical 29.",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -10,7 +10,7 @@
   },
   "files": ["src", "films"],
   "dependencies": {
-    "@docent/kit": "workspace:*"
+    "@bjelser/kit": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.0.0",

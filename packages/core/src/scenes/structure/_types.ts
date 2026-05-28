@@ -10,7 +10,7 @@
 // plugins) reads `StructureScene` and `StructureNode` straight off this
 // scene's index.ts. No engine import needed.
 
-import type {Scene} from '@docent/kit';
+import type {Scene} from '@bjelser/kit';
 
 /**
  * A node's representation — how its content is drawn inside its box. The

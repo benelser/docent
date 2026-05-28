@@ -13,7 +13,7 @@
 // rhetorical move the narration makes — a `causes` edge narrates causation,
 // an `entails` edge narrates necessity"), this is where it lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

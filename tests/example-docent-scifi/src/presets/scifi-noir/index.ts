@@ -3,9 +3,9 @@
 // Deep purples, neon cyan, mono-leading. Loud enough that you can SEE the
 // preset has taken effect when it's swapped in. The acceptance test mounts
 // this against the kit's style resolver to prove a third-party preset can
-// override the default tokens without forking @docent/core.
+// override the default tokens without forking @bjelser/core.
 
-import type {DesignTokens, PresetPlugin, VisualizationStyle} from '@docent/kit';
+import type {DesignTokens, PresetPlugin, VisualizationStyle} from '@bjelser/kit';
 
 const tokens: DesignTokens = {
   bg: {

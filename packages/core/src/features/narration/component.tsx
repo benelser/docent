@@ -15,7 +15,7 @@
 import React from 'react';
 import {Audio, Sequence, staticFile} from 'remotion';
 
-import type {ResolvedStyle} from '@docent/kit';
+import type {ResolvedStyle} from '@bjelser/kit';
 
 /**
  * The shape Narration consumes from a beat. Mirrors the four fields the

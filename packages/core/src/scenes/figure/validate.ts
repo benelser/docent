@@ -22,7 +22,7 @@
 // scene has no body to annotate. Everything else is a warning or
 // per-field error.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 export interface FigureCallout {
   id: string;

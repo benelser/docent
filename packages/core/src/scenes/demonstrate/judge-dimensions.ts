@@ -14,7 +14,7 @@
 // narration claims, not a tangentially related capture"), this is
 // where it lands.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [];
 

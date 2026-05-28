@@ -6,13 +6,13 @@
 // from that pair and writes the file alongside the rendered video.
 //
 // What this demonstrates: a feature plugin can ship a real post-render
-// side-effect without touching `@docent/core`, the CLI, or the render
+// side-effect without touching `@bjelser/core`, the CLI, or the render
 // pipeline. The protocol is the only contract.
 
 import {writeFileSync} from 'node:fs';
 import {basename, extname, join} from 'node:path';
 
-import type {AfterRenderContext, FeaturePlugin} from '@docent/kit';
+import type {AfterRenderContext, FeaturePlugin} from '@bjelser/kit';
 
 import {buildSrt} from './srt-writer';
 

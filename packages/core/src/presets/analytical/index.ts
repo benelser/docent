@@ -1,10 +1,10 @@
 // analytical — the chalkboard / Mathematica preset, registered as a
-// PresetPlugin against @docent/kit's public protocol.
+// PresetPlugin against @bjelser/kit's public protocol.
 //
 // Migrated from packages/engine/src/style/stylePresets.ts (v2.5.x). Tokens are
 // byte-identical to the resolved v2.5.x output.
 
-import type {PresetPlugin} from '@docent/kit';
+import type {PresetPlugin} from '@bjelser/kit';
 
 import {tokens} from './tokens';
 

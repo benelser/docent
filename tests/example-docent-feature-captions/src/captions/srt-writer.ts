@@ -5,7 +5,7 @@
 // text lines, separated by a blank line. The writer here owns ONLY the
 // formatting — the caller (feature.ts) decides which beats become cues.
 
-import type {AfterRenderBeat} from '@docent/kit';
+import type {AfterRenderBeat} from '@bjelser/kit';
 
 /**
  * Format a clock duration (in seconds) as the SRT timestamp shape:

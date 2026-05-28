@@ -1,4 +1,4 @@
-// _shared — chrome infrastructure consumed by every @docent/core scene.
+// _shared — chrome infrastructure consumed by every @bjelser/core scene.
 //
 // The 29 scenes used to each carry their own underscore-prefixed copies of
 // these helpers (SceneFrame, Narration, FittedText, fonts, glow, palette

@@ -1,5 +1,5 @@
 {
-  "name": "@docent/tts-elevenlabs",
+  "name": "@bjelser/tts-elevenlabs",
   "version": "3.0.0",
   "description": "The ElevenLabs TTS provider plugin for docent. Wraps the `elevenlabs` npm package's `convertWithTimestamps` for native character-level alignment, folded into word-level alignment for the engine.",
   "type": "module",
@@ -18,7 +18,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@docent/kit": "^3.0.0"
+    "@bjelser/kit": "^3.0.0"
   },
   "peerDependencies": {
     "elevenlabs": "^1.59.0"

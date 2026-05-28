@@ -8,7 +8,7 @@
 // docs/design/migration-brief-templates.md Template 2 and the strategic plan
 // §4.3 (PresetPlugin).
 
-import type {PresetPlugin, VisualizationStyle} from '@docent/kit';
+import type {PresetPlugin, VisualizationStyle} from '@bjelser/kit';
 
 import {tokens} from './tokens';
 

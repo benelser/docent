@@ -3,17 +3,17 @@
 // The contract: the config file default-exports `{plugins?: Plugin[]}`. The
 // CLI imports it via Bun's dynamic-import support (works for .ts because Bun
 // transpiles on the fly) and merges its `plugins` array into the Engine *on
-// top of* `@docent/core`.
+// top of* `@bjelser/core`.
 //
 // This is the third-party-pack on-ramp: a project that wants to register a
 // custom scene type or preset puts it in `docent.config.ts` and the CLI
-// picks it up without modifying `@docent/core`. The acceptance test
+// picks it up without modifying `@bjelser/core`. The acceptance test
 // (`tests/example-docent-scifi/`) exercises this path end to end.
 
 import {existsSync} from 'node:fs';
 import {resolve} from 'node:path';
 
-import type {Plugin} from '@docent/kit';
+import type {Plugin} from '@bjelser/kit';
 
 export interface DocentConfig {
   readonly plugins?: ReadonlyArray<Plugin>;
@@ -72,7 +72,7 @@ export const loadConfig = async (startDir: string): Promise<LoadedConfig> => {
   for (const p of plugins) {
     if (!p || typeof p !== 'object' || typeof (p as Plugin).kind !== 'string') {
       throw new Error(
-        `[@docent/cli] docent.config plugins[] contains an invalid entry: ` +
+        `[@bjelser/cli] docent.config plugins[] contains an invalid entry: ` +
           JSON.stringify(p).slice(0, 80) +
           `… (each entry must be a Plugin — {kind, name, version, ...}).`,
       );

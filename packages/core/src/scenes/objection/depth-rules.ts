@@ -10,7 +10,7 @@
 // Mirrors the `objection-steelmanned` rule in
 // packages/engine/cli/depthcheck.ts (v2.5.x, around line 734).
 
-import type {DepthFinding, DepthRule} from '@docent/kit';
+import type {DepthFinding, DepthRule} from '@bjelser/kit';
 
 import type {ObjectionSpec} from './component';
 

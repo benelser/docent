@@ -5,6 +5,6 @@
   "type": "module",
   "main": "src/index.ts",
   "peerDependencies": {
-    "@docent/kit": "workspace:*"
+    "@bjelser/kit": "workspace:*"
   }
 }

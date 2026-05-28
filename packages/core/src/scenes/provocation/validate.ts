@@ -17,7 +17,7 @@
 // film either COMMITS or HANDS OFF, never both) is owned by the kit's
 // cross-scene validator and is NOT duplicated here.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 /**
  * The provocation scene's spec. Plugin-owned fields layered on the kit's

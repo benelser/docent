@@ -8,7 +8,7 @@
 // One rule per principle. Stub-arrays were not the assignment; these are
 // the real contract.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {OhlcSceneSpec} from './schema';
 

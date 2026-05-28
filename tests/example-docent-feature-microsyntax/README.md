@@ -1,6 +1,6 @@
 # @example/docent-feature-microsyntax
 
-A **FeaturePlugin** that uses `preprocessSpec` to expand inline microsyntax directives in a film spec before the validator sees it. The R6 forward-compat hook in `@docent/kit`.
+A **FeaturePlugin** that uses `preprocessSpec` to expand inline microsyntax directives in a film spec before the validator sees it. The R6 forward-compat hook in `@bjelser/kit`.
 
 The pattern for any feature pack that wants to let authors write shorter or more domain-specific spec source and have the cascade expand it transparently — author shorthand, normalization passes, legacy field translators, microsyntax macros.
 

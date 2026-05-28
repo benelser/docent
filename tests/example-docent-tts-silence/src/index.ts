@@ -26,7 +26,7 @@ import type {
   TtsSynthesisOptions,
   TtsSynthesisResult,
   TtsVoice,
-} from '@docent/kit';
+} from '@bjelser/kit';
 
 // Words-per-minute estimator — kept identical to the kit's per-beat
 // estimator so synthetic clips match the cascade's tempo expectations.

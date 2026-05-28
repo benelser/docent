@@ -32,7 +32,7 @@
 // The orchestrator calls them in registration order. Identity is the
 // default: scenes without a `directives` array pass through unchanged.
 
-import type {FeaturePlugin, FilmSpec} from '@docent/kit';
+import type {FeaturePlugin, FilmSpec} from '@bjelser/kit';
 
 const DIRECTIVE_AUTO_ID = '@@@auto-id';
 const DIRECTIVE_REVEAL_ALL = '@@@reveal-all';

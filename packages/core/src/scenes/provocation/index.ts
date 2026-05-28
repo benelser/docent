@@ -1,4 +1,4 @@
-// @docent/core — `provocation` scene plugin.
+// @bjelser/core — `provocation` scene plugin.
 //
 // The rhetorical move: an incomplete closing that hands the open question
 // to the viewer. The right ending for a research-frontier or open-policy
@@ -17,7 +17,7 @@
 // position contract are film-wide rules owned by the kit's cross-scene
 // validator / depthcheck framework, not by this plugin.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {ProvocationSceneComponent} from './component';
 import {depthRules} from './depth-rules';

@@ -8,7 +8,7 @@
 
 import React from 'react';
 import {Highlight} from 'prism-react-renderer';
-import type {ResolvedStyle} from '@docent/kit';
+import type {ResolvedStyle} from '@bjelser/kit';
 
 import {codeTheme, glow, monoFamily} from '../../_shared';
 import type {Box} from './_layout';

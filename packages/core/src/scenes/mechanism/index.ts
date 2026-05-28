@@ -13,7 +13,7 @@
 // component, schema, validator, depth rules, and judge dimensions are each
 // faithful ports of the corresponding behaviour in the engine monolith.
 
-import type {ScenePlugin, Scene} from '@docent/kit';
+import type {ScenePlugin, Scene} from '@bjelser/kit';
 
 import {Component, type MechanismScene} from './component';
 import {schema} from './schema';

@@ -1,4 +1,4 @@
-// @docent/core — `big-idea` scene plugin.
+// @bjelser/core — `big-idea` scene plugin.
 //
 // The takeaway scene: the single sentence the viewer should leave with —
 // the claim that survives if everything else is forgotten. Cluster:
@@ -12,7 +12,7 @@
 // renderer, ./schema.ts for the spec branch, ./validate.ts for the
 // structural validator, and ./depth-rules.ts for the contract shape rule.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {BigIdeaSceneComponent} from './component';
 import {depthRules} from './depth-rules';

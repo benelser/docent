@@ -1,4 +1,4 @@
-// @docent/kit — public surface.
+// @bjelser/kit — public surface.
 //
 // Everything exported here is part of the public contract. Breaking any of
 // these is a major version bump.

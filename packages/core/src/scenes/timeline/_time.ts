@@ -1,7 +1,7 @@
 // Fault-tolerant date parsing for the `timeline` scene type.
 //
 // MIRROR of packages/engine/src/engine/time.ts, inlined here so the timeline
-// plugin is self-contained and carries no dependency on @docent/engine. The
+// plugin is self-contained and carries no dependency on @bjelser/engine. The
 // values and behavior are byte-equivalent to v2.5.x.
 //
 // A timeline carries an axis (`start`/`end`) and events/spans pinned to date

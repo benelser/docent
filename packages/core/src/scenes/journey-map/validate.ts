@@ -20,7 +20,7 @@
 // layers compose: JSON Schema fails fast on type errors, this validator
 // surfaces the structural contract failures the v2.5.x renderer relied on.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 // Closed allowlist — the engine's JOURNEY_EMOTIONS constant, preserved
 // byte-equivalently from packages/engine/cli/validate.ts line 20.

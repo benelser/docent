@@ -18,7 +18,7 @@
 // absent. `kicker` lives on the common scene shape (the chrome label) and
 // is not enforced here.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 export interface FrameScene extends Scene {
   type: 'frame';

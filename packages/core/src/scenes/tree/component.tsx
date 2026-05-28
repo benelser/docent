@@ -4,7 +4,7 @@
 // v3.0 plugin-architecture rip-and-replace. Behavior is UNCHANGED from
 // the v2.5.x renderer; the only differences allowed by the migration
 // brief are:
-//   - props receive `SceneRenderProps<TreeSceneSpec>` from @docent/kit
+//   - props receive `SceneRenderProps<TreeSceneSpec>` from @bjelser/kit
 //     (the kit-owned `{scene, common}` envelope), rather than the legacy
 //     engine-owned `SceneProps` (`{ts: TimedScene, …}`).
 //   - the engine-shared chrome (SceneFrame, Narration, FittedText, fonts,
@@ -40,7 +40,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import type {Beat, SceneRenderProps} from '@docent/kit';
+import type {Beat, SceneRenderProps} from '@bjelser/kit';
 
 import {EmbeddedScene} from './_embedded-scene';
 import type {EmbeddedSceneSpec} from './_embedded-scene';

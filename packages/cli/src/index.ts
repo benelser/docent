@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
-// @docent/cli — the thin CLI shell for docent.
+// @bjelser/cli — the thin CLI shell for docent.
 //
-// Subcommand routing on top of `@docent/kit`'s public Engine surface. Every
+// Subcommand routing on top of `@bjelser/kit`'s public Engine surface. Every
 // subcommand is a few lines: parse args, call into a command module, exit
 // with a meaningful code.
 //
 // The CLI is INTENTIONALLY THIN. It owns no domain logic — that lives in
-// `@docent/kit` (the framework) and `@docent/core` (the default plugin
-// pack). The CLI's only opinionated choice: loading `@docent/core` by
+// `@bjelser/kit` (the framework) and `@bjelser/core` (the default plugin
+// pack). The CLI's only opinionated choice: loading `@bjelser/core` by
 // default, plus any `docent.config.ts` the project ships.
 
 import {runBuild} from './commands/build';
@@ -20,7 +20,7 @@ import {runSceneFitList, runSceneFitRecommend} from './commands/scene-fit';
 import {runStyleList, runStyleRecommend} from './commands/style';
 import {runValidate} from './commands/validate';
 
-const USAGE = `docent — render explanatory films via @docent/kit.
+const USAGE = `docent — render explanatory films via @bjelser/kit.
 
 USAGE
   docent <command> [args]

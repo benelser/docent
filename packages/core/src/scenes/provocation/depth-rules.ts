@@ -15,7 +15,7 @@
 // big-idea plugin / the kit's cross-scene depthcheck framework, not to
 // this scene plugin. We do NOT duplicate it here.
 
-import type {DepthFinding, DepthRule} from '@docent/kit';
+import type {DepthFinding, DepthRule} from '@bjelser/kit';
 
 import type {ProvocationScene} from './validate';
 

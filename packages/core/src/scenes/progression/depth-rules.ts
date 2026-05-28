@@ -17,7 +17,7 @@
 // gate stage carries narration that names the milestone"), this is where
 // it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {ProgressionScene} from './validate';
 

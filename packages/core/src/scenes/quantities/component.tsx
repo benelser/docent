@@ -11,11 +11,11 @@
 //     style}`. The engine's prior `SceneProps & {style}` bag is gone.
 //   - Chrome (SceneFrame, Narration, FittedText, BoundValue) and the
 //     palette/cadence/numeric-reveal helpers are sourced from
-//     `@docent/core/_shared`. There is no path back into `packages/engine/`.
+//     `@bjelser/core/_shared`. There is no path back into `packages/engine/`.
 
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {Scene, SceneRenderProps} from '@docent/kit';
+import type {Scene, SceneRenderProps} from '@bjelser/kit';
 
 import {
   BoundValue,

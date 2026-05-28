@@ -1,6 +1,6 @@
 // Map scene–local helpers — only the bits not consolidated into
 // `../../_shared`. The shared chrome (glow, activeBeatIndex, SceneFrame,
-// Narration, FittedText, fonts) is now imported from `@docent/core/_shared`.
+// Narration, FittedText, fonts) is now imported from `@bjelser/core/_shared`.
 //
 // `STAGE` (the rectangle every diagram type renders inside) is a per-scene
 // geometry constant used by the map scene's topology and grid layouts;

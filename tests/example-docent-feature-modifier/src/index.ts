@@ -31,7 +31,7 @@ import type {
   FeaturePlugin,
   ModifierContext,
   ModifierRegistry,
-} from '@docent/kit';
+} from '@bjelser/kit';
 
 // The kit's FilmMeta / Scene / Beat types are open-ended (they carry
 // `[key: string]: unknown`), so a modifier patch can introduce a new

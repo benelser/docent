@@ -1,9 +1,9 @@
 // TTS protocol — recapitulated from Build A's `packages/engine/src/tts/types.ts`.
 //
-// The kit OWNS the canonical shape of the TTS contract. `@docent/core` and
-// every `@docent/tts-*` package implement against this. The current
+// The kit OWNS the canonical shape of the TTS contract. `@bjelser/core` and
+// every `@bjelser/tts-*` package implement against this. The current
 // `packages/engine/src/tts/types.ts` is the source of truth that this file
-// mirrors; once the engine is ripped out and replaced with `@docent/core`,
+// mirrors; once the engine is ripped out and replaced with `@bjelser/core`,
 // those types move to live HERE — but the values do not change.
 //
 // **The kit's TtsProviderPlugin is the canonical one.** This file's
@@ -83,7 +83,7 @@ export interface TtsProviderContext {
  * shape; it lets `docent doctor` inspect capabilities without paying the
  * cost of credential checks.
  *
- * **The shape every `@docent/tts-*` package exports.** A future migration
+ * **The shape every `@bjelser/tts-*` package exports.** A future migration
  * of Build A's existing four providers (kokoro, openai, elevenlabs,
  * openai-compatible) into the new package layout is mechanical — add
  * `kind: 'tts'` + `name`, leave everything else untouched.

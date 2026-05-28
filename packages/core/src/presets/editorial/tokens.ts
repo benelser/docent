@@ -9,7 +9,7 @@
 // every neutralTokens field that survives unchanged (typography.size,
 // typography.weight, letterSpacing, mono family).
 
-import type {DesignTokens} from '@docent/kit';
+import type {DesignTokens} from '@bjelser/kit';
 
 export const tokens: DesignTokens = {
   bg: {

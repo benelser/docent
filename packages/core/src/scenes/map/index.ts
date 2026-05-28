@@ -1,4 +1,4 @@
-// @docent/core — `map` scene plugin.
+// @bjelser/core — `map` scene plugin.
 //
 // The spatial-argument move: position carries information. Cluster:
 // `connection` — alongside structure, walkthrough, tree, the map argues
@@ -12,7 +12,7 @@
 // (position-meaningful), ./judge-dimensions.ts for the judge's
 // space-is-load-bearing dimension.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {MapSceneComponent} from './component';
 import {depthRules} from './depth-rules';

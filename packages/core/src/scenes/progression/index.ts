@@ -1,4 +1,4 @@
-// @docent/core — `progression` scene plugin.
+// @bjelser/core — `progression` scene plugin.
 //
 // An ordered timeline track: stages laid along a path, each a marker with
 // a label, sub, and optional segment duration. The `flow` field picks the
@@ -12,7 +12,7 @@
 // the structural validator (the "at least 1 stage" body-required rule
 // plus the per-stage track-is-0-or-1 check).
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {ProgressionSceneComponent} from './component';
 import {depthRules} from './depth-rules';

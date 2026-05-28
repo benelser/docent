@@ -1,5 +1,5 @@
 // ohlcPlugin — the OHLC (Open-High-Low-Close) chart, expressed as a
-// ScenePlugin per the @docent/kit §4.2 contract.
+// ScenePlugin per the @bjelser/kit §4.2 contract.
 //
 // Cluster: `comparison`. OHLC bars place quantified price claims on shared
 // axes — the same family `chart`, `compare`, `landscape`, `quantities`,
@@ -9,7 +9,7 @@
 // arc at beat granularity (the depth rule fires when it doesn't). Default
 // chunk-level alignment is sufficient.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {OhlcSceneComponent} from './component';
 import {depthRules} from './depth-rules';

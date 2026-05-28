@@ -3,17 +3,17 @@
 // Ships one custom scene (`holodeck`) and one custom preset (`scifi-noir`).
 // A consumer wires it into the engine via:
 //
-//   import {Engine} from '@docent/kit';
-//   import corePlugins from '@docent/core';
+//   import {Engine} from '@bjelser/kit';
+//   import corePlugins from '@bjelser/core';
 //   import scifi from '@example/docent-scifi';
 //
 //   const engine = new Engine().use(corePlugins).use(scifi);
 //
-// This package does NOT touch `@docent/core`. The architectural proof: a
+// This package does NOT touch `@bjelser/core`. The architectural proof: a
 // third party can extend the scene library through the same public protocol
-// `@docent/core` uses.
+// `@bjelser/core` uses.
 
-import type {Plugin} from '@docent/kit';
+import type {Plugin} from '@bjelser/kit';
 
 import {holodeckPlugin} from './scenes/holodeck';
 import {scifiNoirPreset} from './presets/scifi-noir';

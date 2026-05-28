@@ -7,7 +7,7 @@
 // Migrated from packages/engine/src/style/stylePresets.ts § `paper`.
 // The resolved DesignTokens are byte-identical to v2.5.x — see ./tokens.ts.
 
-import type {PresetPlugin} from '@docent/kit';
+import type {PresetPlugin} from '@bjelser/kit';
 
 import {tokens} from './tokens';
 

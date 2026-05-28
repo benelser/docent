@@ -3,7 +3,7 @@
 // The render subprocess re-builds the Engine from a module pointed at by
 // `DOCENT_PLUGINS_MODULE`. Two cases:
 //
-//   1. No user config — point directly at `@docent/core`'s package entry. The
+//   1. No user config — point directly at `@bjelser/core`'s package entry. The
 //      spawned process resolves it via its own node_modules tree (works for
 //      both workspaced + npm-installed setups).
 //
@@ -18,7 +18,7 @@ import {dirname, relative, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 /**
- * Resolve the absolute path of `@docent/core`'s entry — used as the default
+ * Resolve the absolute path of `@bjelser/core`'s entry — used as the default
  * `DOCENT_PLUGINS_MODULE`. We import.meta.resolve through Node's resolver to
  * avoid hard-coding a workspace layout.
  */
@@ -28,7 +28,7 @@ const resolveCoreEntry = async (): Promise<string> => {
   const meta = import.meta as any;
   if (typeof meta.resolve === 'function') {
     try {
-      const url = await meta.resolve('@docent/core');
+      const url = await meta.resolve('@bjelser/core');
       if (typeof url === 'string' && url.startsWith('file:')) {
         return fileURLToPath(url);
       }
@@ -42,10 +42,10 @@ const resolveCoreEntry = async (): Promise<string> => {
     const req = (
       Function('return require')() as NodeJS.Require
     );
-    return req.resolve('@docent/core');
+    return req.resolve('@bjelser/core');
   } catch {
     throw new Error(
-      '[@docent/cli] could not resolve @docent/core. Is it installed? ' +
+      '[@bjelser/cli] could not resolve @bjelser/core. Is it installed? ' +
         'In a workspace setup, ensure `bun install` ran from the repo root.',
     );
   }
@@ -86,7 +86,7 @@ export const resolvePluginsModule = async (
   const relCore = relative(dirname(gluePath), coreEntry).replace(/\\/g, '/');
 
   const source = `// AUTO-GENERATED — do not edit. Regenerated per render.
-// Combines @docent/core's plugins with the user's docent.config plugins.
+// Combines @bjelser/core's plugins with the user's docent.config plugins.
 import core from ${JSON.stringify(relCore.startsWith('.') ? relCore : './' + relCore)};
 import userConfig from ${JSON.stringify(relConfig.startsWith('.') ? relConfig : './' + relConfig)};
 

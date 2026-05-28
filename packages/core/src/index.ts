@@ -1,8 +1,8 @@
-// @docent/core — the default implementation of @docent/kit.
+// @bjelser/core — the default implementation of @bjelser/kit.
 //
 // The plugin manifest lives in `index.generated.ts` and is produced by
 // `scripts/gen-manifest.ts`. This file is a thin re-export so callers can
-// keep importing `@docent/core` (the package's main export). Regenerate
+// keep importing `@bjelser/core` (the package's main export). Regenerate
 // after adding/removing a plugin directory:
 //
 //   bun packages/core/scripts/gen-manifest.ts
@@ -11,8 +11,8 @@
 //
 // Loading:
 //
-//   import {Engine} from '@docent/kit';
-//   import {corePlugins} from '@docent/core';
+//   import {Engine} from '@bjelser/kit';
+//   import {corePlugins} from '@bjelser/core';
 //   const engine = new Engine().use(corePlugins);
 
 export {corePlugins} from './index.generated';

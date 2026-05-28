@@ -16,7 +16,7 @@
 // than at registration time) so the rule is preserved if a future mode
 // extension wants to honor it.
 
-import type {DepthRule, Scene} from '@docent/kit';
+import type {DepthRule, Scene} from '@bjelser/kit';
 
 /**
  * Reject evaluative novelty statements — the trap the brief calls out:

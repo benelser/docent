@@ -5,7 +5,7 @@
 // the v3.0 plugin-architecture rip-and-replace. Behaviour is UNCHANGED
 // from the v2.5.x renderer; only import paths and the prop shape were
 // updated:
-//   - props receive `SceneRenderProps<LandscapeScene>` from @docent/kit
+//   - props receive `SceneRenderProps<LandscapeScene>` from @bjelser/kit
 //     (the kit-owned `{scene, common}` envelope), rather than the legacy
 //     `SceneProps` (the engine-owned `ts: TimedScene` envelope).
 //   - the engine-shared chrome (SceneFrame, Narration, FittedText / SVG
@@ -35,7 +35,7 @@
 
 import React from 'react';
 import {AbsoluteFill, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {Beat, ResolvedStyle, SceneRenderProps} from '@docent/kit';
+import type {Beat, ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
 
 import {
   EmbeddedScene,

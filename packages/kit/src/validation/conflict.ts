@@ -59,7 +59,7 @@ export class RegistryConflictError extends Error {
     incomingPluginName: string,
   ) {
     super(
-      `[@docent/kit] Registry conflict: ${kind} "${id}" registered by ` +
+      `[@bjelser/kit] Registry conflict: ${kind} "${id}" registered by ` +
         `both "${existingPluginName}" and "${incomingPluginName}". ` +
         `Each ${kind} must be globally unique within the active engine. ` +
         `Resolve by removing or renaming one of the plugins.`,

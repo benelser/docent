@@ -7,7 +7,7 @@
 // proportional distance between dates does no work — fails this dimension.
 // Films with no timeline mark this n/a.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 export const judgeDimensions: ReadonlyArray<JudgeDimension> = [
   {

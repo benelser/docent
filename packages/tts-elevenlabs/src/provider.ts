@@ -27,8 +27,8 @@ import type {
   TtsVoice,
   WordAlignment,
   TtsCapabilities,
-} from '@docent/kit';
-import {TtsProviderError} from '@docent/kit';
+} from '@bjelser/kit';
+import {TtsProviderError} from '@bjelser/kit';
 
 export const ELEVENLABS_CAPABILITIES: TtsCapabilities = {
   nativeAlignment: 'character',

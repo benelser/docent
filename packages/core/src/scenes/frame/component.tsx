@@ -3,7 +3,7 @@
 // Migrated from packages/engine/src/scenes/FrameScene.tsx as part of the
 // v3.0 plugin-architecture rip-and-replace. Behavior is UNCHANGED from
 // the v2.5.x renderer; only import paths and the prop shape were updated:
-//   - props receive `SceneRenderProps<FrameSceneSpec>` from @docent/kit
+//   - props receive `SceneRenderProps<FrameSceneSpec>` from @bjelser/kit
 //     (the kit-owned `{scene, common}` envelope), rather than the legacy
 //     `SceneProps & {style}` (the engine-owned `ts: TimedScene` envelope
 //     with style threaded separately).
@@ -24,7 +24,7 @@
 
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {Beat, BeatTimelineSlot, ResolvedStyle, SceneRenderProps} from '@docent/kit';
+import type {Beat, BeatTimelineSlot, ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
 
 import {Narration, SceneFrame} from '../../_shared';
 import type {FrameScene as FrameSceneSpec} from './validate';

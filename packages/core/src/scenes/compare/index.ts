@@ -1,4 +1,4 @@
-// @docent/core — `compare` scene plugin.
+// @bjelser/core — `compare` scene plugin.
 //
 // The judgement table: options across the top (columns), criteria down
 // the left gutter (rows), cells in the grid. A `win` cell is
@@ -12,7 +12,7 @@
 // the renderer, ./schema.ts for the spec branch, and ./validate.ts for
 // the structural validator.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {CompareSceneComponent} from './component';
 import {depthRules} from './depth-rules';

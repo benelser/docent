@@ -11,7 +11,7 @@
 // ratio is below the floor. We declare `scope: 'film'` so the rule runs
 // once with the full film spec, identical to v2.5.x semantics.
 
-import type {DepthFinding, DepthRule, FilmSpec, Scene} from '@docent/kit';
+import type {DepthFinding, DepthRule, FilmSpec, Scene} from '@bjelser/kit';
 
 import type {MapScene} from './validate';
 

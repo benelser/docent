@@ -17,7 +17,7 @@
 // alone cannot express — mark-id uniqueness and the substring
 // constraint on quotes.
 
-import type {Scene, SceneIssue, SceneValidationContext} from '@docent/kit';
+import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
 export interface PassageMark {
   id: string;

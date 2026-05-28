@@ -13,7 +13,7 @@
 //
 // Films with no objection scene mark the dimension n/a.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 const objectionReal: JudgeDimension = {
   id: 'objection-real',

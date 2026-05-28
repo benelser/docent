@@ -341,7 +341,7 @@ export const survey = async (o: SurveyOpts): Promise<number> => {
     console.error(`\x1b[31m✗\x1b[0m films/${o.id}.json is not valid JSON: ${e}`);
     return 1;
   }
-  // Validate + depthcheck via subprocess to the v3 @docent/cli — no engine
+  // Validate + depthcheck via subprocess to the v3 @bjelser/cli — no engine
   // imports remain. Skip warnings (severity 'warning') as in v2.
   const cli = ['bun', 'run', 'docent'];
   const validateProc = Bun.spawnSync({

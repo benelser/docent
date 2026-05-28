@@ -1,4 +1,4 @@
-// @docent/core — `diff` scene plugin.
+// @bjelser/core — `diff` scene plugin.
 //
 // The PR-review move: a unified diff. Cluster: `flow` (control/data-flow
 // changes — what the patch alters in the system's behavior, not its
@@ -9,7 +9,7 @@
 // renderer, ./schema.ts for the spec branch, and ./validate.ts for the
 // structural validator.
 
-import type {ScenePlugin} from '@docent/kit';
+import type {ScenePlugin} from '@bjelser/kit';
 
 import {DiffSceneComponent} from './component';
 import {depthRules} from './depth-rules';

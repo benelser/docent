@@ -23,7 +23,7 @@ import {
   COGNITIVE_CLUSTERS,
   isCognitiveCluster,
   type ScenePlugin,
-} from '@docent/kit';
+} from '@bjelser/kit';
 
 type Severity = 'error' | 'warn' | 'info';
 

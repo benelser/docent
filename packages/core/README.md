@@ -1,19 +1,19 @@
-# @docent/core
+# @bjelser/core
 
 > docent's default implementation. The 29 canonical scene plugins, 6 presets,
 > the Kokoro TTS adapter, and the default narration + audio-rhythm features.
-> Depends on `@docent/kit`; registers everything through the framework's
+> Depends on `@bjelser/kit`; registers everything through the framework's
 > public API.
 
-There is no private path. If `@docent/core` ever has to reach into
-`@docent/kit` internals to register a scene, the API is wrong — fix the
+There is no private path. If `@bjelser/core` ever has to reach into
+`@bjelser/kit` internals to register a scene, the API is wrong — fix the
 API, not the workaround.
 
 ## Loading
 
 ```ts
-import {Engine} from '@docent/kit';
-import * as core from '@docent/core';
+import {Engine} from '@bjelser/kit';
+import * as core from '@bjelser/core';
 
 const engine = new Engine().use(core);
 ```

@@ -10,7 +10,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
 
-import type {SceneRenderProps} from '@docent/kit';
+import type {SceneRenderProps} from '@bjelser/kit';
 
 import type {CandlestickSceneSpec} from './schema';
 

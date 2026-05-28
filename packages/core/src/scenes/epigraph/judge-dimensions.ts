@@ -8,7 +8,7 @@
 // Migrated from `packages/engine/cli/judge.ts` — the `epigraph-earned` entry
 // in the rhetorical-primitive judge dimensions block.
 
-import type {JudgeDimension} from '@docent/kit';
+import type {JudgeDimension} from '@bjelser/kit';
 
 const epigraphEarned: JudgeDimension = {
   id: 'epigraph-earned',

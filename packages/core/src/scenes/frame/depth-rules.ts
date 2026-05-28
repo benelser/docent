@@ -15,7 +15,7 @@
 // specific depth rule (e.g. "every frame title states the subject in
 // fewer than 8 words"), this is where it lands.
 
-import type {DepthRule} from '@docent/kit';
+import type {DepthRule} from '@bjelser/kit';
 
 import type {FrameScene} from './validate';
 

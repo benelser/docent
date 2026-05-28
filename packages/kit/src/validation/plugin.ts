@@ -32,7 +32,7 @@ const VALID_KINDS: readonly PluginKind[] = [
 export function assertPluginBase(value: unknown): asserts value is Plugin {
   if (value === null || typeof value !== 'object') {
     throw new Error(
-      `[@docent/kit] engine.use() expects a Plugin object; received ${describe(
+      `[@bjelser/kit] engine.use() expects a Plugin object; received ${describe(
         value,
       )}.`,
     );
@@ -40,21 +40,21 @@ export function assertPluginBase(value: unknown): asserts value is Plugin {
   const v = value as Record<string, unknown>;
   if (typeof v.name !== 'string' || v.name.length === 0) {
     throw new Error(
-      `[@docent/kit] engine.use() expects plugin.name as a non-empty string; received ${describe(
+      `[@bjelser/kit] engine.use() expects plugin.name as a non-empty string; received ${describe(
         v.name,
       )}.`,
     );
   }
   if (typeof v.version !== 'string' || v.version.length === 0) {
     throw new Error(
-      `[@docent/kit] engine.use() expects plugin.version as a non-empty string (plugin "${String(
+      `[@bjelser/kit] engine.use() expects plugin.version as a non-empty string (plugin "${String(
         v.name,
       )}"); received ${describe(v.version)}.`,
     );
   }
   if (typeof v.kind !== 'string' || !(VALID_KINDS as readonly string[]).includes(v.kind)) {
     throw new Error(
-      `[@docent/kit] engine.use() expects plugin.kind to be one of ` +
+      `[@bjelser/kit] engine.use() expects plugin.kind to be one of ` +
         `${VALID_KINDS.map((k) => `"${k}"`).join(' | ')} ` +
         `(plugin "${String(v.name)}"); received ${describe(v.kind)}. ` +
         `Note: 'modifier' is NOT a plugin kind — register modifiers via ` +
@@ -79,27 +79,27 @@ export function assertScenePluginShape(plugin: PluginBase): void {
   const v = plugin as unknown as Record<string, unknown>;
   if (typeof v.sceneType !== 'string' || v.sceneType.length === 0) {
     throw new Error(
-      `[@docent/kit] ScenePlugin "${plugin.name}" must declare a non-empty sceneType; ` +
+      `[@bjelser/kit] ScenePlugin "${plugin.name}" must declare a non-empty sceneType; ` +
         `received ${describe(v.sceneType)}.`,
     );
   }
   if (typeof v.component !== 'function') {
     throw new Error(
-      `[@docent/kit] ScenePlugin "${plugin.name}" (sceneType "${String(
+      `[@bjelser/kit] ScenePlugin "${plugin.name}" (sceneType "${String(
         v.sceneType,
       )}") must declare a React component; received ${describe(v.component)}.`,
     );
   }
   if (v.schema === null || typeof v.schema !== 'object') {
     throw new Error(
-      `[@docent/kit] ScenePlugin "${plugin.name}" (sceneType "${String(
+      `[@bjelser/kit] ScenePlugin "${plugin.name}" (sceneType "${String(
         v.sceneType,
       )}") must declare a JSON Schema; received ${describe(v.schema)}.`,
     );
   }
   if (!('cluster' in v)) {
     throw new Error(
-      `[@docent/kit] ScenePlugin "${plugin.name}" (sceneType "${String(
+      `[@bjelser/kit] ScenePlugin "${plugin.name}" (sceneType "${String(
         v.sceneType,
       )}") must declare a cluster (one of the 7 closed cognitive clusters, ` +
         `or null for chrome-only scenes like 'frame' and 'recap').`,

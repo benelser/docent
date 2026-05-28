@@ -1,6 +1,6 @@
 // editorial — preset plugin.
 //
-// One of the 6 default presets in `@docent/core`. Registers a token bundle
+// One of the 6 default presets in `@bjelser/core`. Registers a token bundle
 // and visualization knobs under the `'editorial'` preset name, consumable by
 // `FilmSpec.style.preset = 'editorial'`.
 //
@@ -9,7 +9,7 @@
 // reading line-height, soft book-like radii, and an accent family running
 // burgundy → ochre → deep sage.
 
-import type {PresetPlugin} from '@docent/kit';
+import type {PresetPlugin} from '@bjelser/kit';
 
 import {tokens} from './tokens';
 

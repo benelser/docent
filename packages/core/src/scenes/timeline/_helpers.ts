@@ -1,7 +1,7 @@
 // Timeline scene–local helpers — only the bits not consolidated into
 // `../../_shared`. The shared chrome (glow, activeBeatIndex, SceneFrame,
 // Narration, FittedText, palette resolvers, fonts) is now imported from
-// `@docent/core/_shared`.
+// `@bjelser/core/_shared`.
 //
 // `STAGE` (the rectangle every diagram type renders inside) stays scoped
 // to timeline; other scenes (chart, map, tension, tree) re-declare the
