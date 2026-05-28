@@ -344,6 +344,40 @@ export class Engine {
   }
 
   /**
+   * Run every registered {@link FeaturePlugin}'s `preprocessSpec` hook
+   * over the given spec, in registration order, returning the final
+   * transformed spec. Each feature receives the output of the previous.
+   *
+   * Use cases for preprocessSpec features: expand inline microsyntax
+   * shortcuts (e.g. `@@@reveal-all`, `@@@auto-id`), apply user shorthand,
+   * normalize legacy fields, etc. THE rule: identity is the default; a
+   * feature with nothing to preprocess MUST return the input spec
+   * unchanged. The cascade orchestrator calls this same method at the
+   * start of every render so the validator + renderer see the expanded
+   * form. CLI callers that pre-validate should call this method first.
+   *
+   * Throws if any feature's hook throws — the cascade refuses to run an
+   * incomplete preprocessing chain.
+   *
+   * @see docs/design/plugin-architecture-strategy.md §4.5
+   */
+  preprocessSpec(spec: FilmSpec): FilmSpec {
+    let current = spec;
+    for (const f of this.features.all()) {
+      if (typeof f.preprocessSpec !== 'function') continue;
+      try {
+        current = f.preprocessSpec(current);
+      } catch (e) {
+        throw new Error(
+          `[@docent/kit] preprocessSpec failed in feature '${f.name}': ` +
+            (e instanceof Error ? e.message : String(e)),
+        );
+      }
+    }
+    return current;
+  }
+
+  /**
    * Resolve a film spec's style to a frozen {@link ResolvedStyle}.
    *
    * **This is the A.7 SIMPLE resolver — neutral baseline composition.**

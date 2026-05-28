@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "id": "microsyntax-demo",
+    "title": "Microsyntax preprocessor",
+    "subject": "A demo of the R6 preprocessSpec hook. The film below renders normally; the proof is that the @example/docent-feature-microsyntax feature is registered and its preprocessSpec runs in the cascade.",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "style": {
+    "preset": "engineering"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "frame",
+      "title": "Microsyntax",
+      "heading": "Tighter spec, same render",
+      "kicker": "DEMO // 01",
+      "footnote": "FeaturePlugin.preprocessSpec — R6 forward-compat. Identity by default.",
+      "beats": [
+        {
+          "id": "frame-1",
+          "narration": "The microsyntax feature is registered. Its preprocessSpec hook ran before this film validated and rendered."
+        },
+        {
+          "id": "frame-2",
+          "narration": "Three directives ship in the demo pack: @@@auto-id derives stable ids from labels; @@@reveal-all auto-fills a beat's reveal array; @@@beat-stride splits a long narration into N beats by sentence."
+        },
+        {
+          "id": "frame-3",
+          "narration": "Identity is the default. A scene without a directives array passes through unchanged."
+        }
+      ]
+    },
+    {
+      "id": "summary",
+      "type": "recap",
+      "kicker": "DEMO // 02",
+      "heading": "What the preprocessor bought",
+      "points": [
+        "Tighter source — authors write labels; ids are derived. No id collisions across renames.",
+        "Author shortcuts compile down to the canonical spec before the validator sees them.",
+        "Multiple features can chain preprocessSpec — the cascade runs them in registration order."
+      ],
+      "beats": [
+        {
+          "id": "rec-1",
+          "narration": "Spec stays tight. The validator sees the expanded form."
+        },
+        {
+          "id": "rec-2",
+          "narration": "Multiple features can chain. Identity is the default."
+        },
+        {
+          "id": "rec-3",
+          "narration": "Preprocessor is the R6 surface that holds it."
+        }
+      ]
+    }
+  ]
+}

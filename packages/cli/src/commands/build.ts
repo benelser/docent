@@ -79,8 +79,14 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
       (configPath ? ` (+${userPlugins.length} from ${configPath})` : ''),
   );
 
+  // R6: run any registered FeaturePlugin.preprocessSpec hooks first so
+  // the pre-validate sees the same expanded spec the cascade will render.
+  // Identity by default — features that don't preprocess return the spec
+  // unchanged.
+  const expandedSpec = engine.preprocessSpec(spec);
+
   // Pre-validate so a structural failure surfaces BEFORE the slow render.
-  const issues = engine.validate(spec);
+  const issues = engine.validate(expandedSpec);
   const errors = issues.filter((i) => i.severity === 'error');
   if (errors.length > 0) {
     log(`\x1b[31m✗ spec validation failed:\x1b[0m`);
@@ -124,7 +130,7 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
   }
 
   try {
-    const result = await engine.render(spec, {
+    const result = await engine.render(expandedSpec, {
       entryPath,
       outputDir: args.outputDir ?? join(projectRoot, 'out'),
       renderCwd: remotionRoot,

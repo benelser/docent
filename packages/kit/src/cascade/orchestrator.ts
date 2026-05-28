@@ -41,7 +41,7 @@ import {runRenderStage} from './render-stage';
 
 /** A summarized record of what each stage did — surfaced for diagnostics. */
 export interface CascadeStageRecord {
-  readonly name: 'validate' | 'resolveStyle' | 'tts' | 'render';
+  readonly name: 'preprocessSpec' | 'validate' | 'resolveStyle' | 'tts' | 'render';
   readonly seconds: number;
   /** Stage-specific summary line (e.g. "12 beats · 3.4s narration"). */
   readonly summary?: string;
@@ -86,6 +86,28 @@ export const runCascade = async (
   opts: RenderOptions = {},
 ): Promise<RenderResult> => {
   const stages: CascadeStageRecord[] = [];
+
+  // ─── 0. preprocessSpec — R6 microsyntax chain ─────────────────────────
+  // Delegate to engine.preprocessSpec() so the CLI's pre-validate step and
+  // the cascade see the same expansion. A feature with no preprocessSpec
+  // hook is invisible to this stage.
+  {
+    const t0 = performance.now();
+    const features = engine.features.all();
+    const chainCount = features.filter(
+      (f) => typeof f.preprocessSpec === 'function',
+    ).length;
+    spec = engine.preprocessSpec(spec);
+    const seconds = (performance.now() - t0) / 1000;
+    stages.push({
+      name: 'preprocessSpec',
+      seconds,
+      summary:
+        chainCount === 0
+          ? 'no preprocessSpec features registered'
+          : `${chainCount} feature(s) ran`,
+    });
+  }
 
   // ─── 1. validate ─────────────────────────────────────────────────────
   // The spec contract gate. Hard-fail on errors; surface warnings.
