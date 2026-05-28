@@ -6,14 +6,17 @@ Two ways to contribute, two on-ramps.
 
 You **don't need to fork** docent. The plugin architecture is the contract — your pack lives in its own repo, declares `peerDependencies: { "@docent/kit": "^3.0.0" }`, and registers through the framework's public API exactly the way `@docent/core` does.
 
-Four runnable reference packs live under [`tests/example-docent-*/`](tests/). Pick the one whose shape matches yours:
+Seven runnable reference packs live under [`tests/example-docent-*/`](tests/). Pick the one whose shape matches yours:
 
 | Pack | What to fork it for |
 |---|---|
 | [`tests/example-docent-scifi/`](tests/example-docent-scifi/) | A scene + preset pack — the simplest complete shape. The §10 acceptance test. |
-| [`tests/example-docent-finance/`](tests/example-docent-finance/) | A vertical scene pack with multiple scene types in one cluster. |
-| [`tests/example-docent-preset-brand/`](tests/example-docent-preset-brand/) | A brand preset pack with no scene code. |
+| [`tests/example-docent-finance/`](tests/example-docent-finance/) | A vertical scene pack with multiple scene types + `scene-fit` cues/signals. |
+| [`tests/example-docent-preset-brand/`](tests/example-docent-preset-brand/) | A brand preset pack with **R4 composition** (`acme-dark extends acme`). |
 | [`tests/example-docent-feature-captions/`](tests/example-docent-feature-captions/) | A FeaturePlugin with a post-render sidecar writer (`afterRender` hook). |
+| [`tests/example-docent-feature-microsyntax/`](tests/example-docent-feature-microsyntax/) | A FeaturePlugin using **`preprocessSpec` (R6)** to expand inline directives. |
+| [`tests/example-docent-feature-modifier/`](tests/example-docent-feature-modifier/) | A FeaturePlugin using **`registerModifiers` (R3)** for film/scene/beat tiers. |
+| [`tests/example-docent-tts-silence/`](tests/example-docent-tts-silence/) | A community-built `TtsProviderPlugin` — the starter for any real TTS adapter. |
 
 Each pack has its own README naming the contract obligations its plugins honor.
 

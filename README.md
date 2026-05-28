@@ -212,16 +212,19 @@ interface PluginBase {
 }
 ```
 
-Four runnable reference packs live under [`tests/example-docent-*/`](tests/) — each is a complete `@example/docent-*` package with a working film, ready to fork.
+Seven runnable reference packs live under [`tests/example-docent-*/`](tests/) — each is a complete `@example/docent-*` package with a working film, ready to fork. Every documented hook in the framework has a demo:
 
 | Pack | What it demonstrates | Film |
 |---|---|---|
 | [`tests/example-docent-scifi/`](tests/example-docent-scifi/) | A third-party **scene + preset** pack (one `holodeck` scene, one `scifi-noir` preset) — the §10 acceptance test that proves you can extend the surface without forking `@docent/core`. | `scifi-demo.json` |
-| [`tests/example-docent-finance/`](tests/example-docent-finance/) | A **vertical scene pack** — two new `scene.type` discriminators (`ohlc`, `candlestick`), each with its own schema branch, depth rules, and judge dimensions. The pattern for `docent-scenes-<vertical>`. | `finance-primer.json` |
-| [`tests/example-docent-preset-brand/`](tests/example-docent-preset-brand/) | A **brand preset** (`acme`, navy + gold) — design tokens + visualization style, no scene code. The pattern for `docent-preset-<brand>`. | `acme-quarterly.json` |
-| [`tests/example-docent-feature-captions/`](tests/example-docent-feature-captions/) | A **feature plugin** that writes a sidecar SRT next to the rendered mp4 via the `FeaturePlugin.afterRender` hook. The pattern for cross-cutting concerns (captions, transcripts, chapter markers). | `captions-demo.json` |
+| [`tests/example-docent-finance/`](tests/example-docent-finance/) | A **vertical scene pack** — two new `scene.type` discriminators (`ohlc`, `candlestick`), each with its own schema branch, depth rules, judge dimensions, and `scene-fit` cues + signals. The pattern for `docent-scenes-<vertical>`. | `finance-primer.json` |
+| [`tests/example-docent-preset-brand/`](tests/example-docent-preset-brand/) | A **brand preset pack** with `acme` (deep navy + gold) and `acme-dark` that **composes via `extends: "acme"` (R4)** — overrides only `bg.*`, inherits the rest. | `acme-quarterly.json`, `acme-quarterly-dark.json` |
+| [`tests/example-docent-feature-captions/`](tests/example-docent-feature-captions/) | A **feature plugin** writing a sidecar SRT next to the mp4 via the `FeaturePlugin.afterRender` hook. The pattern for transcripts, chapter markers, lower-thirds. | `captions-demo.json` |
+| [`tests/example-docent-feature-microsyntax/`](tests/example-docent-feature-microsyntax/) | A **feature plugin** using `FeaturePlugin.preprocessSpec` **(R6)** to expand inline directives — `@@@auto-id`, `@@@reveal-all`, `@@@beat-stride`. Author shorthand compiles to canonical spec before validation. | `microsyntax-demo.json` |
+| [`tests/example-docent-feature-modifier/`](tests/example-docent-feature-modifier/) | A **feature plugin** using `FeaturePlugin.registerModifiers` **(R3)** to advertise inline directives across all three tiers — film (`kicker-prefix`), scene (`highlight`), beat (`pace-override`). | `modifier-demo.json` |
+| [`tests/example-docent-tts-silence/`](tests/example-docent-tts-silence/) | A **community-built `TtsProviderPlugin`** — synthetic WAV silence sized to text length. The starter for any real TTS adapter (replace `synth` with the API call). | `silence-demo.json` |
 
-Treat scifi as the simplest fork point. Reach for finance/brand/captions when your plugin shape matches theirs.
+Treat **scifi** as the simplest fork point. Reach for the others when your plugin shape matches theirs.
 
 ### The four plugin kinds
 
