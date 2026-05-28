@@ -1,8 +1,7 @@
 {
   "name": "@docent/tts-openai",
-  "version": "3.0.0-rc.0",
+  "version": "3.0.0",
   "description": "The OpenAI TTS provider plugin for docent. Wraps the official `openai` npm package's `audio.speech.create()` and exposes it through @docent/kit's TtsProviderPlugin contract.",
-  "private": true,
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/benelser/docent",
@@ -19,7 +18,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@docent/kit": "workspace:*"
+    "@docent/kit": "^3.0.0"
   },
   "peerDependencies": {
     "openai": "^6.39.0"

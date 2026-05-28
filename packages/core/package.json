@@ -1,8 +1,7 @@
 {
   "name": "@docent/core",
-  "version": "3.0.0-rc.0",
+  "version": "3.0.0",
   "description": "docent's default implementation: 29 canonical scene plugins, 6 presets, the Kokoro TTS adapter, and the default narration + audio-rhythm features. Depends on @docent/kit; registers everything through the framework's public API.",
-  "private": true,
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/benelser/docent",
@@ -27,7 +26,7 @@
     "gen:manifest:check": "bun scripts/gen-manifest.ts && git diff --exit-code -- src/index.generated.ts"
   },
   "dependencies": {
-    "@docent/kit": "workspace:*",
+    "@docent/kit": "^3.0.0",
     "kokoro-js": "^1.2.1",
     "prism-react-renderer": "^2.4.1",
     "roughjs": "^4.6.6"

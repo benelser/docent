@@ -1,8 +1,7 @@
 {
   "name": "@docent/kit",
-  "version": "3.0.0-rc.0",
+  "version": "3.0.0",
   "description": "docent's framework: protocols, registries, the Engine. Zero opinions, zero implementations. Every scene, preset, TTS provider, and feature in @docent/core (and every third-party plugin pack) is registered through this package's public API.",
-  "private": true,
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/benelser/docent",
