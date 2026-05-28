@@ -79,11 +79,12 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
       (configPath ? ` (+${userPlugins.length} from ${configPath})` : ''),
   );
 
-  // R6: run any registered FeaturePlugin.preprocessSpec hooks first so
-  // the pre-validate sees the same expanded spec the cascade will render.
-  // Identity by default — features that don't preprocess return the spec
-  // unchanged.
-  const expandedSpec = engine.preprocessSpec(spec);
+  // R6: preprocessSpec expansion + R3: modifier-merge. The pre-validate
+  // sees the same spec the cascade will render. Identity by default —
+  // features that don't preprocess return the spec unchanged; an empty
+  // modifier registry passes the spec through (only stripping the
+  // `modifiers` keys for validator hygiene).
+  const expandedSpec = engine.applyModifiers(engine.preprocessSpec(spec));
 
   // Pre-validate so a structural failure surfaces BEFORE the slow render.
   const issues = engine.validate(expandedSpec);

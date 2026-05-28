@@ -41,7 +41,13 @@ import {runRenderStage} from './render-stage';
 
 /** A summarized record of what each stage did — surfaced for diagnostics. */
 export interface CascadeStageRecord {
-  readonly name: 'preprocessSpec' | 'validate' | 'resolveStyle' | 'tts' | 'render';
+  readonly name:
+    | 'preprocessSpec'
+    | 'applyModifiers'
+    | 'validate'
+    | 'resolveStyle'
+    | 'tts'
+    | 'render';
   readonly seconds: number;
   /** Stage-specific summary line (e.g. "12 beats · 3.4s narration"). */
   readonly summary?: string;
@@ -106,6 +112,28 @@ export const runCascade = async (
         chainCount === 0
           ? 'no preprocessSpec features registered'
           : `${chainCount} feature(s) ran`,
+    });
+  }
+
+  // ─── 0b. applyModifiers — R3 modifier registry ────────────────────────
+  // Walk the three-tier registry and merge per-key patches into film meta /
+  // scenes / beats. Strip the `modifiers` keys so the validator sees a
+  // clean spec. Identity when no modifiers are registered.
+  {
+    const t0 = performance.now();
+    const totalMods =
+      engine.modifiers.film.size +
+      engine.modifiers.scene.size +
+      engine.modifiers.beat.size;
+    spec = engine.applyModifiers(spec);
+    const seconds = (performance.now() - t0) / 1000;
+    stages.push({
+      name: 'applyModifiers',
+      seconds,
+      summary:
+        totalMods === 0
+          ? 'no modifiers registered'
+          : `${totalMods} modifier(s) (film:${engine.modifiers.film.size}, scene:${engine.modifiers.scene.size}, beat:${engine.modifiers.beat.size})`,
     });
   }
 

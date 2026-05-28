@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "id": "modifier-demo",
+    "title": "Modifier registry",
+    "subject": "A demo of R3 — three modifiers registered (film/scene/beat) and applied by the cascade before validation.",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "style": {
+    "preset": "engineering"
+  },
+  "modifiers": {
+    "kicker-prefix": "MODIFIER"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "frame",
+      "title": "Modifiers",
+      "heading": "Three tiers, registry-driven",
+      "kicker": "DEMO // 01",
+      "modifiers": {
+        "highlight": 1
+      },
+      "beats": [
+        {
+          "id": "frame-1",
+          "narration": "Three modifiers are registered. The cascade applies them before validation."
+        },
+        {
+          "id": "frame-2",
+          "narration": "Film tier: kicker-prefix sets a default token the renderer can prepend. Scene tier: highlight marks an emphasis. Beat tier: pace-override forces the rhythm.",
+          "modifiers": {
+            "pace-override": "hold"
+          }
+        }
+      ]
+    },
+    {
+      "id": "summary",
+      "type": "recap",
+      "kicker": "DEMO // 02",
+      "heading": "What the registry bought",
+      "points": [
+        "Author shorthand — declare intent at the modifier id, let a feature pack do the heavy lifting.",
+        "Three tiers: film (FilmMeta), scene (Scene), beat (Beat). Each tier has its own registry map.",
+        "Unknown ids are silent. A film that names a modifier no feature registered renders without that modifier — the cascade doesn't trip."
+      ],
+      "beats": [
+        {
+          "id": "rec-1",
+          "narration": "Registry is registered, walked, and stripped before validation."
+        },
+        {
+          "id": "rec-2",
+          "narration": "Multiple features can register modifiers; the registry merges them at engine.use time."
+        },
+        {
+          "id": "rec-3",
+          "narration": "R3 is now real."
+        }
+      ]
+    }
+  ]
+}

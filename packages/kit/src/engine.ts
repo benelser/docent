@@ -344,6 +344,114 @@ export class Engine {
   }
 
   /**
+   * Apply every registered modifier (R3) to the given spec. Walks the
+   * three-tier {@link ModifierRegistry} — film, scene, beat — and merges
+   * each modifier's returned patch into the corresponding target.
+   *
+   * Modifier discovery convention:
+   *   - Film-tier modifiers come from `spec.modifiers: Record<key, value>`.
+   *     Each entry's key is looked up in `engine.modifiers.film`; the
+   *     returned `Partial<FilmMeta>` patches `spec.meta`.
+   *   - Scene-tier modifiers come from each `scene.modifiers`.
+   *     The returned `Partial<Scene>` patches the scene.
+   *   - Beat-tier modifiers come from each `beat.modifiers`.
+   *     The returned `Partial<Beat>` patches the beat.
+   *
+   * Unknown modifier keys are silently ignored — a spec that names a
+   * modifier no feature registered renders without that modifier
+   * applied. The validator never sees the `modifiers` field; it is
+   * stripped from the returned spec.
+   *
+   * Identity by default — when no modifiers are registered, the spec
+   * passes through unchanged (only the `modifiers` keys are stripped if
+   * present).
+   *
+   * @see docs/design/plugin-architecture-strategy.md §4.6
+   */
+  applyModifiers(spec: FilmSpec): FilmSpec {
+    const registry = this.modifiers;
+    let result = spec;
+
+    // Film tier — scan spec.modifiers, merge into spec.meta.
+    const filmMods = (spec as {modifiers?: Record<string, unknown>}).modifiers;
+    if (filmMods && typeof filmMods === 'object') {
+      let metaPatch: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(filmMods)) {
+        const fn = registry.film.get(key);
+        if (!fn) continue;
+        const ctx = {tier: 'film' as const, filmSpec: spec};
+        metaPatch = {...metaPatch, ...(fn(value, ctx) as Record<string, unknown>)};
+      }
+      if (Object.keys(metaPatch).length > 0) {
+        result = {...result, meta: {...result.meta, ...metaPatch}} as FilmSpec;
+      }
+    }
+
+    // Scene tier + beat tier — walk every scene/beat.
+    if (Array.isArray(result.scenes)) {
+      const newScenes = result.scenes.map((scene, sceneIndex) => {
+        // Scene-tier patches
+        const sceneMods = (scene as {modifiers?: Record<string, unknown>}).modifiers;
+        let updatedScene: typeof scene = scene;
+        if (sceneMods && typeof sceneMods === 'object') {
+          let scenePatch: Record<string, unknown> = {};
+          for (const [key, value] of Object.entries(sceneMods)) {
+            const fn = registry.scene.get(key);
+            if (!fn) continue;
+            const ctx = {tier: 'scene' as const, filmSpec: spec, sceneIndex};
+            scenePatch = {...scenePatch, ...(fn(value, ctx) as Record<string, unknown>)};
+          }
+          if (Object.keys(scenePatch).length > 0) {
+            updatedScene = {...scene, ...scenePatch} as typeof scene;
+          }
+        }
+
+        // Beat-tier patches
+        if (Array.isArray(updatedScene.beats)) {
+          const newBeats = updatedScene.beats.map((beat, beatIndex) => {
+            const beatMods = (beat as {modifiers?: Record<string, unknown>}).modifiers;
+            if (!beatMods || typeof beatMods !== 'object') return beat;
+            let beatPatch: Record<string, unknown> = {};
+            for (const [key, value] of Object.entries(beatMods)) {
+              const fn = registry.beat.get(key);
+              if (!fn) continue;
+              const ctx = {tier: 'beat' as const, filmSpec: spec, sceneIndex, beatIndex};
+              beatPatch = {...beatPatch, ...(fn(value, ctx) as Record<string, unknown>)};
+            }
+            if (Object.keys(beatPatch).length === 0) {
+              // Still strip the modifiers key for validator hygiene.
+              const {modifiers: _, ...rest} = beat as {modifiers?: unknown} & Record<string, unknown>;
+              void _;
+              return rest as typeof beat;
+            }
+            const {modifiers: _, ...rest} = {...beat, ...beatPatch} as {
+              modifiers?: unknown;
+            } & Record<string, unknown>;
+            void _;
+            return rest as typeof beat;
+          });
+          updatedScene = {...updatedScene, beats: newBeats};
+        }
+
+        // Strip scene-level modifiers key
+        const {modifiers: _stripScene, ...sceneRest} = updatedScene as {
+          modifiers?: unknown;
+        } & Record<string, unknown>;
+        void _stripScene;
+        return sceneRest as typeof scene;
+      });
+      result = {...result, scenes: newScenes};
+    }
+
+    // Strip film-level modifiers key
+    const {modifiers: _stripFilm, ...filmRest} = result as unknown as {
+      modifiers?: unknown;
+    } & Record<string, unknown>;
+    void _stripFilm;
+    return filmRest as unknown as FilmSpec;
+  }
+
+  /**
    * Run every registered {@link FeaturePlugin}'s `preprocessSpec` hook
    * over the given spec, in registration order, returning the final
    * transformed spec. Each feature receives the output of the previous.
