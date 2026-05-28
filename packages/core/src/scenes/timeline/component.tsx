@@ -223,8 +223,22 @@ export const TimelineSceneComponent: React.FC<
   const hasFocus = focusIds.size > 0;
 
   // Lane y — lane 0 is the band closest to the axis; higher lanes float up.
+  // Lane spacing scales down when many lanes are needed so the topmost card
+  // never collides with the scene title. The card-top safe ceiling is the
+  // scene title's bottom edge (~y=210) plus a 20px breathing margin.
+  const maxLaneUsed = lanedEvents.reduce(
+    (m, e) => Math.max(m, e._autoLane),
+    0,
+  );
+  const laneStackCeiling = 230;
+  const baseLane0Y = axisY - 80;
+  const availableHeight = baseLane0Y - laneStackCeiling;
+  const effectiveLaneH =
+    maxLaneUsed > 0
+      ? Math.min(LANE_H, availableHeight / maxLaneUsed)
+      : LANE_H;
   const laneY = (lane: number): number =>
-    axisY - 80 - Math.max(0, lane) * LANE_H;
+    baseLane0Y - Math.max(0, lane) * effectiveLaneH;
 
   // Span y — spans sit BELOW the axis as a ground band; if multiple spans
   // overlap, lane stacks them downward.
