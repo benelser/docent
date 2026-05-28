@@ -3,20 +3,21 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node", "react"],
     "resolveJsonModule": true,
     "noEmit": true,
     "isolatedModules": true,
-    "allowImportingTsExtensions": false,
-    "jsx": "react-jsx",
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
     "paths": {
-      "@docent/kit": ["../../packages/kit/src/index.ts"],
-      "@docent/core": ["../../packages/core/src/index.ts"]
+      "@docent/kit": ["../../packages/kit/src/index.ts"]
     }
   },
-  "include": ["src/**/*", "docent.config.ts"]
+  "include": ["src", "docent.config.ts"]
 }
