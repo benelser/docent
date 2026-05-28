@@ -21,10 +21,10 @@ import type {
   SceneOutput,
 } from '@bjelser/kit';
 
-import {Narration, type NarrationBeat} from './component.js';
+import {Narration, type NarrationBeat} from './component';
 
-export {Narration} from './component.js';
-export type {NarrationBeat, NarrationProps} from './component.js';
+export {Narration} from './component';
+export type {NarrationBeat, NarrationProps} from './component';
 
 /**
  * Composition-side adapter: turn each `BeatTimelineSlot` into the shape the
