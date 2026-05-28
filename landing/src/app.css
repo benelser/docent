@@ -626,11 +626,15 @@ code {
 	background: linear-gradient(180deg, var(--bg-ground) 0%, var(--bg-paper) 100%);
 }
 
+.demo-stages {
+	margin: 3rem 0 2.5rem;
+}
+
 .demo-pair {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 2rem;
-	margin-top: 4rem;
+	margin-top: 0;
 	align-items: stretch;
 }
 

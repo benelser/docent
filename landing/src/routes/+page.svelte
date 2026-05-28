@@ -4,6 +4,7 @@
 	import { FILMS } from '$lib/films';
 	import TypingJson from '$lib/TypingJson.svelte';
 	import Counter from '$lib/Counter.svelte';
+	import CascadeStages from '$lib/CascadeStages.svelte';
 
 	onMount(() => {
 		const reveals = document.querySelectorAll('.reveal');
@@ -229,10 +230,13 @@
 			<span class="section-kicker">the cascade</span>
 			<h2 class="section-title">JSON in. <em>Narrated MP4 out.</em></h2>
 			<p class="section-lead">
-				The spec is the source. The render is the artifact. Validate, preprocess, resolve style,
-				synthesize the narration in any voice, render with Remotion. Same path whether the film
-				is a PR review, a documentary, or a brand opener.
+				The spec is the source. The render is the artifact. Same path whether the film is a PR
+				review, a documentary, or a brand opener.
 			</p>
+		</div>
+
+		<div class="demo-stages reveal">
+			<CascadeStages />
 		</div>
 
 		<div class="demo-pair reveal">
