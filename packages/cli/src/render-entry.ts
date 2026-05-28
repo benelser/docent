@@ -82,8 +82,19 @@ export const generateRenderEntry = async (
   // Resolve absolute paths to @bjelser/kit and @bjelser/core so the generated
   // entry can import them as filesystem paths. This sidesteps any node-
   // modules resolution surprises inside the tmp dir.
+  //
+  // For core, prefer the browser-safe sub-export (`@bjelser/core/browser`)
+  // when it exists — that file omits the TTS provider so webpack's
+  // chrome-headless bundle never tries to resolve `node:fs`/`node:path`/
+  // `node:child_process`. Falls back to the full entry for older versions
+  // (which will fail at bundle time with a clearer error).
   const kitEntry = await resolvePackageEntry('@bjelser/kit');
-  const coreEntry = await resolvePackageEntry('@bjelser/core');
+  let coreEntry: string;
+  try {
+    coreEntry = await resolvePackageEntry('@bjelser/core/browser');
+  } catch {
+    coreEntry = await resolvePackageEntry('@bjelser/core');
+  }
 
   // Compute relative paths from the entry's directory to each target.
   const relSpec = relative(dirname(entryPath), opts.specPath).replace(/\\/g, '/');

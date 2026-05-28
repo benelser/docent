@@ -1,6 +1,6 @@
 {
   "name": "@bjelser/core",
-  "version": "3.0.2",
+  "version": "3.0.4",
   "description": "docent's default implementation: 29 canonical scene plugins, 6 presets, the Kokoro TTS adapter, and the default narration + audio-rhythm features. Depends on @bjelser/kit; registers everything through the framework's public API.",
   "type": "module",
   "license": "MIT",
@@ -12,10 +12,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./scenes/*": "./src/scenes/*/index.ts",
-    "./presets/*": "./src/presets/*/index.ts",
-    "./features/*": "./src/features/*/index.ts",
-    "./tts/*": "./src/tts/*/index.ts"
+    "./browser": "./src/index.browser.ts"
   },
   "files": [
     "src",

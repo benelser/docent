@@ -60,13 +60,45 @@ export const resolveLayout = (
   nodes: StructureNode[],
   cols: number,
 ): StructureNode[] => {
-  const owners = new Map<string, string>();
+  // Auto-fill col/row for nodes that omit them. A new user pasting a spec
+  // from `docent init` shouldn't have to think about grid positions before
+  // they see their first render. Strategy: walk the nodes in spec order,
+  // hand each unpositioned node the next free cell in row-major order
+  // across the requested cols. Nodes that DO specify col/row are honored
+  // verbatim and reserve their slot first so auto-positioned nodes flow
+  // around them.
+  const taken = new Set<string>();
   for (const n of nodes) {
+    if (typeof n.col === 'number' && typeof n.row === 'number') {
+      taken.add(`${n.col},${n.row}`);
+    }
+  }
+  let cursor = 0;
+  const nextFree = (): {col: number; row: number} => {
+    while (true) {
+      const col = cursor % cols;
+      const row = Math.floor(cursor / cols);
+      cursor++;
+      if (!taken.has(`${col},${row}`)) {
+        taken.add(`${col},${row}`);
+        return {col, row};
+      }
+    }
+  };
+  const positioned = nodes.map((n) => {
+    if (typeof n.col === 'number' && typeof n.row === 'number') return n;
+    const {col, row} = nextFree();
+    return {...n, col, row};
+  });
+
+  // Existing wide-collision pass — preserved.
+  const owners = new Map<string, string>();
+  for (const n of positioned) {
     if (typeof n.col === 'number' && typeof n.row === 'number') {
       owners.set(`${n.col},${n.row}`, n.id);
     }
   }
-  return nodes.map((n) => {
+  return positioned.map((n) => {
     if (!n.wide) return n;
     const nextCol = (n.col ?? 0) + 1;
     const collision = owners.get(`${nextCol},${n.row}`);

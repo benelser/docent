@@ -15,6 +15,7 @@ import {runDepthcheck} from './commands/depthcheck';
 import {runDoctor} from './commands/doctor';
 import {runGrammarCheck} from './commands/grammar-check';
 import {runHermetic} from './commands/hermetic';
+import {runInit} from './commands/init';
 import {runRenderCheck} from './commands/render-check';
 import {runSceneFitList, runSceneFitRecommend} from './commands/scene-fit';
 import {runStyleList, runStyleRecommend} from './commands/style';
@@ -26,6 +27,11 @@ USAGE
   docent <command> [args]
 
 COMMANDS
+  init <film-id>          Scaffold a starter spec at films/<film-id>.json.
+                          The fastest path from "bun add" to a rendered MP4 —
+                          drops a working 4-scene film (frame, structure,
+                          tension, recap) that builds out of the box. Edit
+                          the narration + nodes, then "docent build <id>".
   build <film-id>         Render a film to MP4 at out/<film-id>.mp4.
   validate <film-id>      Structurally validate a film spec via engine.validate().
   depthcheck <film-id>    Aggregate every plugin's depthRules over a film spec.
@@ -111,6 +117,22 @@ const main = async (): Promise<number> => {
   if (command === 'help' || command === '--help' || command === '-h') {
     process.stdout.write(USAGE);
     return 0;
+  }
+
+  if (command === 'init') {
+    const filmId = positional[0];
+    if (!filmId) {
+      process.stderr.write('docent init: missing <film-id>\n' + USAGE);
+      return 64;
+    }
+    return runInit({
+      filmId,
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+      ...(flags.force ? {force: true} : {}),
+    });
   }
 
   if (command === 'build') {
