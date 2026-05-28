@@ -7,20 +7,6 @@
 	import CascadeStages from '$lib/CascadeStages.svelte';
 
 	onMount(() => {
-		const reveals = document.querySelectorAll('.reveal');
-		const io = new IntersectionObserver(
-			(entries) => {
-				for (const e of entries) {
-					if (e.isIntersecting) {
-						e.target.classList.add('in');
-						io.unobserve(e.target);
-					}
-				}
-			},
-			{ threshold: 0.12, rootMargin: '0px 0px -10% 0px' }
-		);
-		reveals.forEach((el) => io.observe(el));
-
 		// Lazy autoplay films when they scroll into view, pause when they leave —
 		// keeps the tab quiet + bandwidth low while still feeling alive.
 		const filmObs = new IntersectionObserver(
