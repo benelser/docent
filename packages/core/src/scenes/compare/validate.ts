@@ -62,6 +62,39 @@ export const validate = (
   const columns = Array.isArray(scene.columns) ? scene.columns : [];
   const rows = Array.isArray(scene.rows) ? scene.rows : [];
 
+  // DevEx normalization — accept a flat scene-level `cells: [{col, row, text}]`
+  // table as an alternate input shape. The natural author intuition is a flat
+  // list of "this cell is at col X, row Y, says Z" — the renderer requires the
+  // per-row `cells: [...]` form. Mutate scene in place so downstream sees the
+  // canonical shape.
+  const flat = (scene as Record<string, unknown>).cells;
+  if (Array.isArray(flat) && rows.length > 0 && columns.length > 0) {
+    const needsNormalization = rows.some(
+      (r) => !Array.isArray((r as Record<string, unknown>).cells),
+    );
+    if (needsNormalization) {
+      const colOrder = columns.map((c) => c.id);
+      const cellsByRow = new Map<string, Map<string, unknown>>();
+      for (const cell of flat as Array<Record<string, unknown>>) {
+        const colId = String(cell.col);
+        const rowId = String(cell.row);
+        if (!cellsByRow.has(rowId)) cellsByRow.set(rowId, new Map());
+        cellsByRow.get(rowId)!.set(colId, {
+          text: cell.text,
+          ...(cell.kind !== undefined ? {kind: cell.kind} : {}),
+        });
+      }
+      for (const r of rows) {
+        const rec = r as Record<string, unknown>;
+        if (Array.isArray(rec.cells)) continue;
+        const byCol = cellsByRow.get(r.id);
+        if (!byCol) continue;
+        rec.cells = colOrder.map((cId) => byCol.get(cId) ?? {text: ''});
+      }
+      delete (scene as Record<string, unknown>).cells;
+    }
+  }
+
   // ----- minimal-body check (the engine's per-type shape rule) -------------
   if (columns.length < 1 || rows.length < 1) {
     issues.push({

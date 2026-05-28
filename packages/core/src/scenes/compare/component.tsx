@@ -89,10 +89,15 @@ export const CompareSceneComponent: React.FC<SceneRenderProps<CompareSceneSpec>>
   );
   const hasFocus = focusIds.size > 0;
 
-  // Table geometry — a left gutter for criteria, even column widths.
-  const tableW = 1500;
+  // Table geometry — a tight left gutter for criteria, wide column cards.
+  // The gutter used to be 380px (≈25% of the table), which left a dead band
+  // between the criterion text and its row of data; the eye lost the
+  // mapping. Shrunk to 220px and the gutter content right-aligns against
+  // the first data column so the label sits in conversation with its row.
+  // The table itself widens to 1620 so the columns breathe.
+  const tableW = 1620;
   const tableX = (1920 - tableW) / 2;
-  const gutterW = 380;
+  const gutterW = 220;
   const colW = (tableW - gutterW) / Math.max(1, columns.length);
   const headerH = 96;
   const rowH = Math.min(118, 620 / Math.max(1, rows.length));
@@ -207,6 +212,7 @@ export const CompareSceneComponent: React.FC<SceneRenderProps<CompareSceneSpec>>
                   width: gutterW,
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'flex-end',
                   paddingRight: 22,
                 }}
               >

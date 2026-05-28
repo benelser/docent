@@ -106,6 +106,62 @@ export const TimelineSceneComponent: React.FC<
   const dateToX = (ms: number): number =>
     plotL + ((ms - sMs) / (eMs - sMs)) * (plotR - plotL);
 
+  // Auto-laning — when events cluster on the date axis their cards collide
+  // horizontally. The schema lets authors set `lane` (0..N) to push events
+  // into stacked rows, but a fresh author shouldn't have to compute lanes
+  // by hand. Walk the events in date order, estimate the card footprint
+  // (label-length-aware), and assign the next-free lane whenever the
+  // previous event's right edge would overrun this event's left edge.
+  // Events whose author DID set a lane are honored verbatim and treated
+  // as occupied slots for the collision check.
+  const eventCardWidth = (ev: TimelineEvent): number => {
+    const titleLen = (ev.label ?? '').length;
+    const subLen = (ev.sub ?? '').length;
+    return Math.max(220, Math.min(420, Math.max(titleLen, subLen) * 11 + 60));
+  };
+  type LanedEvent = TimelineEvent & {_autoLane: number};
+  const lanedEvents: LanedEvent[] = (() => {
+    const byDate = events
+      .map((e) => ({e, ms: parseTimelineDate(e.date)}))
+      .filter((x): x is {e: TimelineEvent; ms: number} => x.ms !== null)
+      .sort((a, b) => a.ms - b.ms);
+    // laneOccupants[lane] = the x at which the lane becomes free again.
+    const laneOccupants: number[] = [];
+    const out: LanedEvent[] = [];
+    for (const {e, ms} of byDate) {
+      const x = dateToX(ms);
+      const w = eventCardWidth(e);
+      const leftEdge = x - w * 0.45;
+      if (typeof e.lane === 'number' && e.lane >= 0) {
+        laneOccupants[e.lane] = Math.max(
+          laneOccupants[e.lane] ?? 0,
+          x + w * 0.55,
+        );
+        out.push({...e, _autoLane: e.lane});
+        continue;
+      }
+      let placed = -1;
+      for (let i = 0; i < laneOccupants.length; i++) {
+        if ((laneOccupants[i] ?? 0) <= leftEdge) {
+          placed = i;
+          break;
+        }
+      }
+      if (placed === -1) placed = laneOccupants.length;
+      laneOccupants[placed] = x + w * 0.55;
+      out.push({...e, _autoLane: placed});
+    }
+    // Re-stitch in original spec order (callers rely on declaration order).
+    const byId = new Map(out.map((x) => [x.id, x] as const));
+    return events
+      .map((e) => byId.get(e.id))
+      .filter((x): x is LanedEvent => x !== undefined);
+  })();
+  const eventLane = (id: string): number => {
+    const e = lanedEvents.find((x) => x.id === id);
+    return e?._autoLane ?? 0;
+  };
+
   // Tick list: authored ticks parsed verbatim, else auto-spaced years across
   // the span. We pick 5–7 ticks for a span <= 20 years, every 5–10 years
   // otherwise. The author can override by passing `axis.ticks`.
@@ -340,7 +396,7 @@ export const TimelineSceneComponent: React.FC<
             const opacity = a * (dim ? 0.36 : 1);
             const scale = interpolate(a, [0, 1], [0.84, 1]);
             const breathe = focused ? 0.5 + 0.5 * Math.sin((frame / fps) * 3.2) : 0;
-            const y = laneY(e.lane ?? 0);
+            const y = laneY(eventLane(e.id));
 
             return (
               <React.Fragment key={e.id}>

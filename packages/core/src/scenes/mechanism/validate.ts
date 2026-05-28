@@ -27,7 +27,7 @@ export const validate = (
   const issues: SceneIssue[] = [];
   // `at` is a logical scene-relative path; the central validator prepends the
   // film/scene index when surfacing.
-  const at = 'scene';
+  const at = '';
 
   // ----- parts — 2-10 entries with unique ids and normalized positions ----
   const partIds = new Set<string>();
