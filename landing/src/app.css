@@ -166,6 +166,15 @@ code {
 	max-width: 22ch;
 	letter-spacing: -0.025em;
 	margin-bottom: 2rem;
+	text-wrap: balance;
+}
+
+.counter-num {
+	display: inline-block;
+	color: var(--accent);
+	font-variant-numeric: tabular-nums;
+	min-width: 2.4ch;
+	text-align: right;
 }
 
 .section-lead {
@@ -185,6 +194,7 @@ code {
 	display: flex;
 	align-items: center;
 	background: var(--bg-ground);
+	padding-top: 4rem; /* offset for fixed nav */
 }
 
 .hero-film {
@@ -249,14 +259,15 @@ code {
 	font-family: var(--font-display);
 	font-style: italic;
 	font-weight: 400;
-	font-size: clamp(3.5rem, 9vw, 8rem);
-	line-height: 0.95;
+	font-size: clamp(4rem, 11vw, 9.5rem);
+	line-height: 0.92;
 	color: var(--ink-hi);
-	letter-spacing: -0.035em;
+	letter-spacing: -0.045em;
 	margin: 0 0 2.5rem;
 	max-width: 14ch;
 	opacity: 0;
-	animation: rise 1.1s 0.25s ease-out forwards;
+	animation: rise 1.2s 0.25s ease-out forwards;
+	text-wrap: balance;
 }
 
 .hero-headline .accent {

@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { CLUSTERS, TOTAL_SCENES } from '$lib/data';
 	import { FILMS } from '$lib/films';
+	import TypingJson from '$lib/TypingJson.svelte';
+	import Counter from '$lib/Counter.svelte';
 
 	onMount(() => {
 		const reveals = document.querySelectorAll('.reveal');
@@ -117,11 +119,14 @@
 	<div class="shell">
 		<div class="catalog-intro reveal">
 			<span class="section-kicker">the grammar</span>
-			<h2 class="section-title">{TOTAL_SCENES} moves. <em>The vocabulary of video.</em></h2>
+			<h2 class="section-title">
+				<span class="counter-num"><Counter value={TOTAL_SCENES} /></span> moves.
+				<em>The vocabulary of video.</em>
+			</h2>
 			<p class="section-lead">
 				Connection. Time. Flow. Comparison. Categorization. Experience. Narrative. Seven clusters
-				of cognition — enough to compose any film. Adding a thirtieth move is a major version bump.
-				That restraint <em>is</em> the format.
+				of cognition — enough to compose any film. Adding a thirtieth move is a major version
+				bump. That restraint <em>is</em> the format.
 			</p>
 		</div>
 
@@ -236,7 +241,7 @@
 					<span class="dot"></span>films/openclaw-ar.json
 				</div>
 				<div class="demo-pane-body">
-					<pre class="demo-code">{demoSpec}</pre>
+					<TypingJson source={demoSpec} />
 				</div>
 			</div>
 			<div class="demo-pane video">
