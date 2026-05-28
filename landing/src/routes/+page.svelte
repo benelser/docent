@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { CLUSTERS, TOTAL_SCENES } from '$lib/data';
+	import { FILMS } from '$lib/films';
 
 	onMount(() => {
 		const reveals = document.querySelectorAll('.reveal');
@@ -16,6 +17,23 @@
 			{ threshold: 0.12, rootMargin: '0px 0px -10% 0px' }
 		);
 		reveals.forEach((el) => io.observe(el));
+
+		// Lazy autoplay films when they scroll into view, pause when they leave —
+		// keeps the tab quiet + bandwidth low while still feeling alive.
+		const filmObs = new IntersectionObserver(
+			(entries) => {
+				for (const e of entries) {
+					const v = e.target as HTMLVideoElement;
+					if (e.isIntersecting) {
+						v.play().catch(() => {});
+					} else {
+						v.pause();
+					}
+				}
+			},
+			{ threshold: 0.25 }
+		);
+		document.querySelectorAll('video.lazy').forEach((v) => filmObs.observe(v));
 	});
 
 	const demoSpec = `{
@@ -146,6 +164,60 @@
 	</div>
 </section>
 
+<section class="section gallery" id="gallery">
+	<div class="shell">
+		<div class="reveal" style="max-width: 920px;">
+			<span class="section-kicker">four films</span>
+			<h2 class="section-title">
+				Same engine. <em>Four worlds.</em>
+			</h2>
+			<p class="section-lead">
+				A software architecture review. A security essay walked through. A research paper rendered.
+				Docent reviewing itself. Different subjects, different scene compositions, one cascade.
+			</p>
+		</div>
+
+		<div class="film-grid">
+			{#each FILMS as film, i (film.id)}
+				<a
+					class="film-card reveal"
+					href="https://github.com/benelser/docent/releases/download/v3.0.0-rc.0/{film.id}.mp4"
+					style="animation-delay: {i * 100}ms;"
+				>
+					<div class="film-card-video">
+						<video
+							class="lazy"
+							muted
+							loop
+							playsinline
+							preload="metadata"
+							poster="/films/{film.id}-poster.jpg"
+						>
+							<source src="/films/{film.id}.webm" type="video/webm" />
+							<source src="/films/{film.id}.mp4" type="video/mp4" />
+						</video>
+						<span class="film-card-duration">{film.duration}</span>
+					</div>
+					<div class="film-card-body">
+						<h3 class="film-card-title">
+							{film.title}
+							<span class="film-card-subject">— {film.subject}</span>
+						</h3>
+						<p class="film-card-domain">{film.domain}</p>
+						<div class="film-card-scenes">
+							{#each film.scenes as s, j (j + s)}
+								<span class="scene-chip">{s}</span>{#if j < film.scenes.length - 1}<span
+										class="scene-sep">·</span
+									>{/if}
+							{/each}
+						</div>
+					</div>
+				</a>
+			{/each}
+		</div>
+	</div>
+</section>
+
 <section class="section demo">
 	<div class="shell">
 		<div class="reveal" style="max-width: 920px;">
@@ -172,9 +244,16 @@
 					<span class="dot"></span>out/openclaw-ar.mp4
 				</div>
 				<div class="demo-pane-body">
-					<video autoplay muted loop playsinline preload="metadata" poster="/films/hero-poster.jpg">
-						<source src="/films/hero.webm" type="video/webm" />
-						<source src="/films/hero.mp4" type="video/mp4" />
+					<video
+						class="lazy"
+						muted
+						loop
+						playsinline
+						preload="metadata"
+						poster="/films/openclaw-ar-poster.jpg"
+					>
+						<source src="/films/openclaw-ar.webm" type="video/webm" />
+						<source src="/films/openclaw-ar.mp4" type="video/mp4" />
 					</video>
 				</div>
 			</div>

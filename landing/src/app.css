@@ -496,6 +496,119 @@ code {
 	opacity: 0.85;
 }
 
+/* ─── Film gallery ──────────────────────────────────────────────── */
+
+.gallery {
+	background: linear-gradient(180deg, var(--bg-paper) 0%, var(--bg-ground) 100%);
+}
+
+.film-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
+	gap: 1.5rem;
+	margin-top: 4rem;
+}
+
+.film-card {
+	background: var(--bg-paper);
+	border: 1px solid var(--bg-line);
+	border-radius: 12px;
+	overflow: hidden;
+	transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+	border-bottom: 1px solid var(--bg-line);
+	color: var(--ink-mid);
+	display: flex;
+	flex-direction: column;
+}
+
+.film-card:hover {
+	border-color: var(--accent);
+	transform: translateY(-3px);
+	box-shadow: 0 22px 60px rgba(230, 169, 73, 0.18);
+}
+
+.film-card-video {
+	position: relative;
+	aspect-ratio: 16 / 9;
+	background: #000;
+	overflow: hidden;
+}
+
+.film-card-video video {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.film-card-duration {
+	position: absolute;
+	right: 0.85rem;
+	top: 0.85rem;
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	letter-spacing: 0.12em;
+	color: var(--ink-hi);
+	background: rgba(12, 10, 8, 0.85);
+	padding: 0.3rem 0.55rem;
+	border-radius: 4px;
+	backdrop-filter: blur(8px);
+}
+
+.film-card-body {
+	padding: 1.5rem 1.5rem 1.75rem;
+}
+
+.film-card-title {
+	font-family: var(--font-display);
+	font-size: 1.65rem;
+	color: var(--ink-hi);
+	margin-bottom: 0.4rem;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+}
+
+.film-card-subject {
+	font-family: var(--font-display);
+	font-style: italic;
+	color: var(--ink-mid);
+	font-size: 1.2rem;
+	font-weight: 300;
+}
+
+.film-card-domain {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--accent);
+	margin: 0 0 1rem;
+}
+
+.film-card-scenes {
+	font-family: var(--font-mono);
+	font-size: 0.78rem;
+	line-height: 1.7;
+	color: var(--ink-low);
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 0.45rem;
+	align-items: baseline;
+}
+
+.scene-chip {
+	color: var(--ink-mid);
+}
+
+.film-card:hover .scene-chip {
+	color: var(--accent-bright);
+	transition: color 0.4s ease;
+}
+
+.scene-sep {
+	color: var(--ink-faint);
+}
+
 /* ─── Spec → render demo ────────────────────────────────────────── */
 
 .demo {
