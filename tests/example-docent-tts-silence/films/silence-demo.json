@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "id": "silence-demo",
+    "title": "Silence TTS",
+    "subject": "A minimal third-party TtsProvider — synthetic WAV silence sized to narration length. The smallest realistic shape a community-built TTS adapter ships in.",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "silence",
+    "tts": {
+      "provider": "silence",
+      "voice": "silence"
+    }
+  },
+  "style": {
+    "preset": "engineering"
+  },
+  "scenes": [
+    {
+      "id": "title",
+      "type": "frame",
+      "title": "Silence TTS",
+      "heading": "A community-built TtsProvider",
+      "kicker": "DEMO // 01",
+      "beats": [
+        {
+          "id": "frame-1",
+          "narration": "This film synthesizes audio through the silence TtsProvider — a community pack. The bytes are real WAV; the duration matches text length; the cascade treats it like any other provider."
+        }
+      ]
+    },
+    {
+      "id": "summary",
+      "type": "recap",
+      "kicker": "DEMO // 02",
+      "heading": "What the silence pack proves",
+      "points": [
+        "Third-party providers register through the same TtsProviderPlugin contract @docent/tts-{openai,elevenlabs,compatible} use.",
+        "Capabilities are declared at the plugin level — the engine cross-binds against scene requiresTtsCapabilities.",
+        "Provider creation is async and can throw on missing config; the cascade surfaces it before the slow render."
+      ],
+      "beats": [
+        {
+          "id": "rec-1",
+          "narration": "The TtsProvider contract is small. Implement synth, listVoices, capabilities. That's enough."
+        }
+      ]
+    }
+  ]
+}

@@ -16,7 +16,8 @@
     "tests/example-docent-preset-brand",
     "tests/example-docent-feature-captions",
     "tests/example-docent-feature-microsyntax",
-    "tests/example-docent-feature-modifier"
+    "tests/example-docent-feature-modifier",
+    "tests/example-docent-tts-silence"
   ],
   "scripts": {
     "docent": "bun packages/cli/src/index.ts"
