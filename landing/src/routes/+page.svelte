@@ -1,23 +1,272 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import { onMount } from 'svelte';
+	import { CLUSTERS, TOTAL_SCENES } from '$lib/data';
 
-	let { data }: { data: PageData } = $props();
+	onMount(() => {
+		const reveals = document.querySelectorAll('.reveal');
+		const io = new IntersectionObserver(
+			(entries) => {
+				for (const e of entries) {
+					if (e.isIntersecting) {
+						e.target.classList.add('in');
+						io.unobserve(e.target);
+					}
+				}
+			},
+			{ threshold: 0.12, rootMargin: '0px 0px -10% 0px' }
+		);
+		reveals.forEach((el) => io.observe(el));
+	});
+
+	const demoSpec = `{
+  "meta": {
+    "id": "openclaw-ar",
+    "title": "OpenClaw",
+    "subject": "One local daemon, twenty-two channels",
+    "fps": 30,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    { "type": "frame", "title": "OpenClaw" },
+    { "type": "prior-art", "systems": [...], "dimensions": [...] },
+    { "type": "structure", "nodes": [...], "edges": [...] },
+    { "type": "walkthrough", "actors": [...], "steps": [...] },
+    { "type": "tension",
+      "chosen":   ["..."],
+      "rejected": ["..."],
+      "risks":    ["..."]
+    },
+    { "type": "quantities", "figures": [...] },
+    { "type": "recap", "points": ["..."] }
+  ]
+}`;
+
+	const have = new Set([
+		'big-idea',
+		'causal-loop',
+		'chart',
+		'closeup',
+		'compare',
+		'concession',
+		'demonstrate',
+		'diff',
+		'epigraph',
+		'figure',
+		'frame',
+		'journey-map',
+		'landscape',
+		'map',
+		'objection',
+		'passage',
+		'prior-art',
+		'probe',
+		'progression',
+		'provocation',
+		'quantities',
+		'recap',
+		'structure',
+		'tension',
+		'timeline',
+		'tree',
+		'walkthrough'
+	]);
+	const stillExists = (id: string): boolean => have.has(id);
 </script>
 
-<main class="shell">
-	<span class="kicker">docent.studio</span>
-	<div class="manifesto">
-		{@html data.manifestoHtml}
+<section class="hero">
+	<div class="hero-film">
+		<video autoplay muted loop playsinline preload="auto" poster="/films/hero-poster.jpg">
+			<source src="/films/hero.webm" type="video/webm" />
+			<source src="/films/hero.mp4" type="video/mp4" />
+		</video>
 	</div>
-	<footer class="footer">
-		<span>docent.studio</span>
-		<span><a href="https://github.com/benelser/docent">github</a></span>
-		<span>MIT</span>
-	</footer>
-</main>
+	<div class="shell hero-content">
+		<div class="hero-mark">docent.studio</div>
+		<h1 class="hero-headline">
+			Markdown<br />for <span class="accent">video</span>.<br />Built for
+			<span class="accent">LLMs</span>.
+		</h1>
+		<p class="hero-sub">
+			A file format for <strong>structured explainer video</strong>. You write JSON. A grammar of
+			cognitive moves keeps the form coherent. A depth contract keeps the content honest.
+		</p>
+		<div class="hero-cta">
+			<a class="button button-primary" href="#install">
+				install <span class="arrow">→</span>
+			</a>
+			<a class="button button-ghost" href="#grammar">
+				see the grammar <span class="arrow">↓</span>
+			</a>
+		</div>
+	</div>
+</section>
 
-<style>
-	.manifesto :global(h1) {
-		margin-top: 0;
-	}
-</style>
+<section class="section">
+	<div class="shell">
+		<div class="reveal" style="max-width: 920px;">
+			<span class="section-kicker">the format</span>
+			<h2 class="section-title">One JSON file. <em>One rendered argument.</em></h2>
+			<p class="section-lead">
+				Most video tools start with the canvas — a timeline, layers, keyframes. Docent starts with
+				<strong>the moves an explanation can make</strong>. You declare them. The engine renders.
+			</p>
+			<p class="section-lead">
+				The format is the surface an LLM can author against without the output drifting into slop.
+				Every scene declares its schema. Every scene declares its depth rules. A film that doesn't
+				argue something doesn't ship.
+			</p>
+		</div>
+	</div>
+</section>
+
+<section class="section" id="grammar">
+	<div class="shell">
+		<div class="catalog-intro reveal">
+			<span class="section-kicker">the grammar</span>
+			<h2 class="section-title">{TOTAL_SCENES} cognitive moves. <em>Closed taxonomy.</em></h2>
+			<p class="section-lead">
+				Connection. Time. Flow. Comparison. Categorization. Experience. Narrative. Seven clusters.
+				Twenty-nine moves. Adding a thirtieth is a major version bump — that restraint <em>is</em>
+				the format.
+			</p>
+		</div>
+
+		{#each CLUSTERS as cluster (cluster.name)}
+			<div class="cluster reveal">
+				<div class="cluster-head">
+					<span class="cluster-name">{cluster.name}</span>
+					<span class="cluster-count">{cluster.scenes.length} moves</span>
+					<span class="cluster-cue">{cluster.cue}</span>
+				</div>
+				<div class="tile-grid">
+					{#each cluster.scenes as scene (scene.id)}
+						<a
+							class="tile"
+							href="https://github.com/benelser/docent/tree/main/packages/core/src/scenes/{scene.id}"
+							title={scene.cue}
+						>
+							{#if stillExists(scene.id)}
+								<img
+									class="tile-still"
+									src="/stills/{scene.id}.jpg"
+									alt="{scene.id} scene example"
+									loading="lazy"
+									decoding="async"
+								/>
+							{:else}
+								<div class="tile-placeholder">{scene.id}</div>
+							{/if}
+							<div class="tile-label">
+								<span class="tile-name">{scene.id}</span>
+								{#if scene.rut}
+									<span class="tile-rut">default rut</span>
+								{/if}
+							</div>
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/each}
+	</div>
+</section>
+
+<section class="section demo">
+	<div class="shell">
+		<div class="reveal" style="max-width: 920px;">
+			<span class="section-kicker">the cascade</span>
+			<h2 class="section-title">JSON in. <em>Narrated MP4 out.</em></h2>
+			<p class="section-lead">
+				The spec is the source. The render is the artifact. The cascade — validate, preprocess,
+				resolve style, synthesize narration, render — turns one into the other
+				deterministically.
+			</p>
+		</div>
+
+		<div class="demo-pair reveal">
+			<div class="demo-pane">
+				<div class="demo-pane-header">
+					<span class="dot"></span>films/openclaw-ar.json
+				</div>
+				<div class="demo-pane-body">
+					<pre class="demo-code">{demoSpec}</pre>
+				</div>
+			</div>
+			<div class="demo-pane video">
+				<div class="demo-pane-header">
+					<span class="dot"></span>out/openclaw-ar.mp4
+				</div>
+				<div class="demo-pane-body">
+					<video autoplay muted loop playsinline preload="metadata" poster="/films/hero-poster.jpg">
+						<source src="/films/hero.webm" type="video/webm" />
+						<source src="/films/hero.mp4" type="video/mp4" />
+					</video>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="section" id="install">
+	<div class="shell">
+		<div class="install reveal">
+			<span class="section-kicker">try it</span>
+			<h2 class="section-title">Author a docent. <em>In an hour.</em></h2>
+			<p class="section-lead">
+				Three packages: the framework, the default implementation, the binary. Write a spec at
+				<code>films/&lt;id&gt;.json</code>. Run <code>docent build &lt;id&gt;</code>. Watch.
+			</p>
+			<div class="install-cmd">
+				<span class="prompt">$</span> bun add @docent/cli @docent/core @docent/kit
+			</div>
+			<div class="install-row">
+				<a class="button button-primary" href="https://github.com/benelser/docent#quick-start">
+					quick start <span class="arrow">→</span>
+				</a>
+				<a class="button button-ghost" href="https://github.com/benelser/docent">
+					github <span class="arrow">↗</span>
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+<footer class="footer">
+	<div class="shell">
+		<div class="footer-grid">
+			<div>
+				<span class="footer-mark">docent</span>
+				<p class="footer-tag">
+					A file format for structured explainer video. Built for LLMs. Open source under MIT.
+				</p>
+			</div>
+			<div>
+				<div class="footer-col-head">packages</div>
+				<ul>
+					<li><a href="https://www.npmjs.com/package/@docent/kit">@docent/kit</a></li>
+					<li><a href="https://www.npmjs.com/package/@docent/core">@docent/core</a></li>
+					<li><a href="https://www.npmjs.com/package/@docent/cli">@docent/cli</a></li>
+				</ul>
+			</div>
+			<div>
+				<div class="footer-col-head">extend</div>
+				<ul>
+					<li><a href="https://github.com/benelser/docent/tree/main/tests">reference packs</a></li>
+					<li><a href="https://github.com/benelser/docent/blob/main/CONTRIBUTING.md">contribute</a></li>
+					<li><a href="https://github.com/benelser/docent/blob/main/packages/kit/src/protocols.ts">protocols</a></li>
+				</ul>
+			</div>
+			<div>
+				<div class="footer-col-head">roadmap</div>
+				<ul>
+					<li><a href="https://github.com/benelser/docent/blob/main/docs/design/v3-roadmap.md">v3 plan</a></li>
+					<li><a href="https://github.com/benelser/docent/blob/main/docs/design/v3-stabilization.COMPLETE.md">v3 stabilization</a></li>
+					<li><a href="https://github.com/benelser/docent/releases">releases</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="footer-bottom">
+			<span>© docent · MIT</span>
+			<span>docent.studio</span>
+		</div>
+	</div>
+</footer>
