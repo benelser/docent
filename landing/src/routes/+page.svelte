@@ -41,36 +41,8 @@
   ]
 }`;
 
-	const have = new Set([
-		'big-idea',
-		'causal-loop',
-		'chart',
-		'closeup',
-		'compare',
-		'concession',
-		'demonstrate',
-		'diff',
-		'epigraph',
-		'figure',
-		'frame',
-		'journey-map',
-		'landscape',
-		'map',
-		'objection',
-		'passage',
-		'prior-art',
-		'probe',
-		'progression',
-		'provocation',
-		'quantities',
-		'recap',
-		'structure',
-		'tension',
-		'timeline',
-		'tree',
-		'walkthrough'
-	]);
-	const stillExists = (id: string): boolean => have.has(id);
+	// Every canonical scene now has a still — extracted from a real render.
+	const stillExists = (_id: string): boolean => true;
 </script>
 
 <section class="hero">
