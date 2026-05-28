@@ -418,6 +418,53 @@ export const validate = (
     });
   }
 
+  // DevEx — warn on bounding-box overlap between topology regions. A common
+  // first-touch mistake is centering two regions at the same normalized
+  // position (saturn at 0.5,0.5 + a wide thin "rings" band at 0.5,0.5
+  // makes the band cross the planet card). Honest topology authors expect
+  // the regions to live in distinct places; flagging overlap loudly is
+  // friendlier than letting the renderer stack cards in a clunky muddle.
+  if (
+    (layout === 'topology' || layout === undefined) &&
+    Array.isArray(regions) &&
+    regions.length >= 2
+  ) {
+    const halfBox = (r: Record<string, any>): {hw: number; hh: number} => ({
+      hw: (typeof r?.pos?.w === 'number' ? r.pos.w : 0.18) / 2,
+      hh: (typeof r?.pos?.h === 'number' ? r.pos.h : 0.18) / 2,
+    });
+    for (let i = 0; i < regions.length; i++) {
+      for (let j = i + 1; j < regions.length; j++) {
+        const a = regions[i] as Record<string, any>;
+        const b = regions[j] as Record<string, any>;
+        if (!a?.pos || !b?.pos) continue;
+        if (
+          typeof a.pos.x !== 'number' ||
+          typeof a.pos.y !== 'number' ||
+          typeof b.pos.x !== 'number' ||
+          typeof b.pos.y !== 'number'
+        ) {
+          continue;
+        }
+        const ah = halfBox(a);
+        const bh = halfBox(b);
+        const dx = Math.abs(a.pos.x - b.pos.x);
+        const dy = Math.abs(a.pos.y - b.pos.y);
+        if (dx < ah.hw + bh.hw && dy < ah.hh + bh.hh) {
+          issues.push({
+            path: `${at}.regions[${j}].pos`,
+            message:
+              `region "${b.id}" overlaps region "${a.id}" in topology layout — ` +
+              `they share canvas space and will render on top of each other. ` +
+              `Move "${b.id}" to a different (x, y) so position remains a load-bearing argument.`,
+            severity: 'warning',
+            code: 'map/region-overlap',
+          });
+        }
+      }
+    }
+  }
+
   return issues;
 };
 
