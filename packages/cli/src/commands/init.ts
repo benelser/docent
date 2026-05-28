@@ -34,8 +34,13 @@ const starterSpec = (filmId: string): unknown => ({
       title: 'Your subject — make it one phrase',
       tagline: 'A one-line framing of why this matters.',
       footnote: 'context note · author · date',
-      narration:
-        'Open with the question. State the subject. Tell the viewer in one breath what they will know in three minutes.',
+      beats: [
+        {
+          id: 'open',
+          narration:
+            'Open with the question. State the subject. Tell the viewer in one breath what they will know in three minutes.',
+        },
+      ],
     },
     {
       type: 'structure',
@@ -50,8 +55,24 @@ const starterSpec = (filmId: string): unknown => ({
         {id: 'ab', from: 'a', to: 'b', kind: 'relation', label: 'flows into'},
         {id: 'bc', from: 'b', to: 'c', kind: 'relation', label: 'returns to'},
       ],
-      narration:
-        'Name the components. Show how they connect. The diagram does the heavy lifting — narration just walks the viewer through what their eye is already on.',
+      beats: [
+        {
+          id: 's1',
+          narration: 'Name the first component and what it does in the system.',
+          reveal: ['a'],
+        },
+        {
+          id: 's2',
+          narration: 'Add the second component. The eye picks up the relation by itself.',
+          reveal: ['b', 'ab'],
+        },
+        {
+          id: 's3',
+          narration:
+            'Close the loop with the third. Say one sentence about why this shape matters — the diagram already did the rest.',
+          reveal: ['c', 'bc'],
+        },
+      ],
     },
     {
       type: 'tension',
@@ -62,8 +83,26 @@ const starterSpec = (filmId: string): unknown => ({
         {id: 'r1', label: 'A real alternative', sub: 'why it was rejected', kind: 'rejected'},
         {id: 'k1', label: 'A residual risk', sub: 'what the choice did not resolve', kind: 'risk'},
       ],
-      narration:
-        'Every design names what it is NOT. Surface the alternative the author considered and rejected. Name the risk the chosen path still carries.',
+      beats: [
+        {
+          id: 't1',
+          narration:
+            'Surface the chosen path. The author committed to this — explain in one sentence why.',
+          reveal: ['c1'],
+        },
+        {
+          id: 't2',
+          narration:
+            'Name the alternative considered and rejected. The honest move is to say what was on the table.',
+          reveal: ['r1'],
+        },
+        {
+          id: 't3',
+          narration:
+            'Name the risk the chosen path still carries. Every design has one — surfacing it is the credibility.',
+          reveal: ['k1'],
+        },
+      ],
     },
     {
       type: 'recap',
@@ -74,8 +113,13 @@ const starterSpec = (filmId: string): unknown => ({
         'The second thing to remember.',
         'The single sentence that carries off the page.',
       ],
-      narration:
-        'Restate the through-line. Three points, each short enough to survive the viewer leaving the page.',
+      beats: [
+        {
+          id: 'r1',
+          narration:
+            'Restate the through-line. Three points, each short enough to survive the viewer leaving the page.',
+        },
+      ],
     },
   ],
 });
