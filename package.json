@@ -5,7 +5,6 @@
   "description": "Turn a codebase or a pull request into a narrated, animated explainer.",
   "workspaces": [
     "packages/kit",
-    "packages/engine",
     "packages/agent",
     "packages/core",
     "packages/cli",
@@ -19,8 +18,7 @@
     "tests/example-docent-feature-microsyntax"
   ],
   "scripts": {
-    "docent": "bun packages/cli/src/index.ts",
-    "docent-legacy": "bun packages/engine/cli/docent.ts"
+    "docent": "bun packages/cli/src/index.ts"
   },
   "license": "MIT"
 }

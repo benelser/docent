@@ -26,9 +26,6 @@
 import {existsSync, statSync} from 'node:fs';
 import {basename, join, resolve} from 'node:path';
 import {REPO_ROOT, paths} from './paths';
-import {validateSpec} from './validate';
-import {runDepthCheck, depthSummary} from './depthcheck';
-import {fetchSource} from './fetch-source';
 
 export type SurveyMode = 'pr' | 'ar' | 'ex';
 
@@ -344,29 +341,39 @@ export const survey = async (o: SurveyOpts): Promise<number> => {
     console.error(`\x1b[31m✗\x1b[0m films/${o.id}.json is not valid JSON: ${e}`);
     return 1;
   }
-  // Mirror cascade.ts / hermetic.ts / treatment.ts: severity:'warning'
-  // issues (layout overlap, wide-at-last-col) surface but do NOT block.
-  // Without the split, the survey would lock the authoring agent in a
-  // loop "fixing" what was never a hard fail.
-  const issues = validateSpec(spec);
-  const hardFails = issues.filter((i) => i.severity !== 'warning');
-  const softWarns = issues.filter((i) => i.severity === 'warning');
-  const ds = depthSummary(runDepthCheck(spec as Parameters<typeof runDepthCheck>[0]));
+  // Validate + depthcheck via subprocess to the v3 @docent/cli — no engine
+  // imports remain. Skip warnings (severity 'warning') as in v2.
+  const cli = ['bun', 'run', 'docent'];
+  const validateProc = Bun.spawnSync({
+    cmd: [...cli, 'validate', o.id],
+    cwd: REPO_ROOT,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+  const depthProc = Bun.spawnSync({
+    cmd: [...cli, 'depthcheck', o.id],
+    cwd: REPO_ROOT,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
   console.log(
     `  schema:  ${
-      hardFails.length === 0
-        ? softWarns.length === 0
-          ? '\x1b[32mvalid\x1b[0m'
-          : `\x1b[33mvalid (${softWarns.length} warning${softWarns.length === 1 ? '' : 's'})\x1b[0m`
-        : `\x1b[31m${hardFails.length} issue(s)\x1b[0m`
+      validateProc.exitCode === 0
+        ? '\x1b[32mvalid\x1b[0m'
+        : `\x1b[31m${validateProc.exitCode} issue(s)\x1b[0m`
     }`,
   );
-  for (const i of hardFails) console.log(`    \x1b[31m✗\x1b[0m ${i.path || '(root)'}: ${i.message}`);
-  for (const w of softWarns) console.log(`    \x1b[33m⚠\x1b[0m ${w.path || '(root)'}: ${w.message}`);
+  if (validateProc.exitCode !== 0) {
+    console.log(new TextDecoder().decode(validateProc.stdout).trim());
+  }
   console.log(
-    `  depth:   ${ds.fail === 0 ? `\x1b[32mcontract met ${ds.ok}/${ds.total}\x1b[0m` : `\x1b[31m${ds.fail} fail\x1b[0m`}`,
+    `  depth:   ${
+      depthProc.exitCode === 0
+        ? '\x1b[32mcontract met\x1b[0m'
+        : '\x1b[31mdepth failures (see depthcheck output)\x1b[0m'
+    }`,
   );
-  const ok = hardFails.length === 0 && ds.fail === 0;
+  const ok = validateProc.exitCode === 0 && depthProc.exitCode === 0;
   console.log(ok ? `\x1b[32m✔ survey produced a valid, depth-clean spec\x1b[0m` : `\x1b[31m✗ spec needs work\x1b[0m`);
   return ok ? 0 : 1;
 };

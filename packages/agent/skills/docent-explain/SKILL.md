@@ -111,7 +111,7 @@ those only when the user explicitly wants to pause between stages.
 4. **Treatment.**
 
    ```bash
-   bun run docent-legacy treatment <id>
+   bun packages/agent/scripts/treatment.ts <id>
    ```
 
    This writes a plain-language outline to `treatments/<id>.md` — the
@@ -122,8 +122,8 @@ those only when the user explicitly wants to pause between stages.
 5. **Spec — and interrogate it.**
 
    ```bash
-   bun run docent-legacy treatment <id> --to-spec
-   bun run docent-legacy review <id> --max-rounds 2
+   bun packages/agent/scripts/treatment.ts <id> --to-spec
+   bun packages/agent/scripts/flywheel.ts <id> --max-rounds 2
    ```
 
    The first compiles the treatment into `films/<id>.json`. The second is

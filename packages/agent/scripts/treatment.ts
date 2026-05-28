@@ -28,8 +28,6 @@
 import {existsSync, mkdirSync} from 'node:fs';
 import {join} from 'node:path';
 import {REPO_ROOT, paths} from './paths';
-import {validateSpec} from './validate';
-import {runDepthCheck, depthSummary} from './depthcheck';
 
 // treatments/ is a content directory alongside films/ and analysis/. It is not
 // declared in paths.ts (which this module must not modify), so it is resolved
@@ -323,30 +321,35 @@ export const treatmentToSpec = async (o: TreatmentOpts): Promise<number> => {
     console.error(`\x1b[31m✗\x1b[0m films/${o.id}.json is not valid JSON: ${e}`);
     return 1;
   }
-  const issues = validateSpec(spec);
-  // Mirror cascade.ts / hermetic.ts: severity:'warning' issues (layout
-  // overlap, wide-at-last-col — things resolveLayout handles at render
-  // time) are surfaced but do NOT block the verdict. Only contract-level
-  // errors block. Without this split, the authoring agent loops for
-  // minutes trying to 'fix' a warning that was never a hard fail.
-  const hardFails = issues.filter((i) => i.severity !== 'warning');
-  const softWarns = issues.filter((i) => i.severity === 'warning');
-  const ds = depthSummary(runDepthCheck(spec as Parameters<typeof runDepthCheck>[0]));
+  // Validate + depthcheck via subprocess to the v3 @docent/cli — no engine
+  // imports remain.
+  const cli = ['bun', 'run', 'docent'];
+  const validateProc = Bun.spawnSync({
+    cmd: [...cli, 'validate', o.id],
+    cwd: REPO_ROOT,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+  const depthProc = Bun.spawnSync({
+    cmd: [...cli, 'depthcheck', o.id],
+    cwd: REPO_ROOT,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+  const validateOk = validateProc.exitCode === 0;
+  const depthOk = depthProc.exitCode === 0;
   console.log(
     `  schema:  ${
-      hardFails.length === 0
-        ? softWarns.length === 0
-          ? '\x1b[32mvalid\x1b[0m'
-          : `\x1b[33mvalid (${softWarns.length} warning${softWarns.length === 1 ? '' : 's'})\x1b[0m`
-        : `\x1b[31m${hardFails.length} issue(s)\x1b[0m`
+      validateOk ? '\x1b[32mvalid\x1b[0m' : `\x1b[31m${validateProc.exitCode} issue(s)\x1b[0m`
     }`,
   );
-  for (const i of hardFails) console.log(`    \x1b[31m✗\x1b[0m ${i.path || '(root)'}: ${i.message}`);
-  for (const w of softWarns) console.log(`    \x1b[33m⚠\x1b[0m ${w.path || '(root)'}: ${w.message}`);
+  if (!validateOk) {
+    console.log(new TextDecoder().decode(validateProc.stdout).trim());
+  }
   console.log(
-    `  depth:   ${ds.fail === 0 ? `\x1b[32mcontract met ${ds.ok}/${ds.total}\x1b[0m` : `\x1b[31m${ds.fail} fail\x1b[0m`}`,
+    `  depth:   ${depthOk ? '\x1b[32mcontract met\x1b[0m' : '\x1b[31mdepth failures (see depthcheck output)\x1b[0m'}`,
   );
-  const ok = hardFails.length === 0 && ds.fail === 0;
+  const ok = validateOk && depthOk;
   console.log(
     ok
       ? `\x1b[32m✔ treatment authored a valid, depth-clean spec\x1b[0m`

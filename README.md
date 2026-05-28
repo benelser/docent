@@ -63,9 +63,10 @@ each film commits to.
 
 ## What changed in v3.0
 
-`v2.5.x` was a monolithic Remotion app: one `packages/engine/`, a 29-arm
+`v2.5.x` was a monolithic Remotion app: a single `engine` package, a 29-arm
 switch in `Film.tsx`, a hand-written `film.schema.json`, every TTS
-provider and preset hard-coded inside the bin.
+provider and preset hard-coded inside the bin. The monolith was retired
+in v3.0-rc.0 — the codebase ships only the kit/core/cli split below.
 
 `v3.0` carves that monolith into:
 

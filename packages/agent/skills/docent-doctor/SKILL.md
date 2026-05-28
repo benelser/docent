@@ -55,7 +55,7 @@ see what's happening; do not paste the whole block silently.
    weights, and `bun install` materializes Remotion. Allow 3-8 minutes
    on a warm machine, longer on a cold one.
    ```bash
-   cd "$DOCENT_HOME" && bun run docent-legacy doctor --install --yes
+   cd "$DOCENT_HOME" && bun packages/agent/scripts/doctor.ts --install --yes
    ```
    That command installs uv, ffmpeg, gh, apm if missing; writes
    `~/.local/bin/docent` (the shim that lets you call `docent <cmd>`
