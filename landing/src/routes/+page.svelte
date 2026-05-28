@@ -59,8 +59,8 @@
 			<span class="accent">LLMs</span>.
 		</h1>
 		<p class="hero-sub">
-			A file format for <strong>structured explainer video</strong>. You write JSON. A grammar of
-			cognitive moves keeps the form coherent. A depth contract keeps the content honest.
+			A file format for <strong>video</strong>. You write JSON. An engine renders it. A grammar of
+			cognitive moves makes any film composable. A contract keeps it from being slop.
 		</p>
 		<div class="hero-cta">
 			<a class="button button-primary" href="#install">
@@ -77,15 +77,19 @@
 	<div class="shell">
 		<div class="reveal" style="max-width: 920px;">
 			<span class="section-kicker">the format</span>
-			<h2 class="section-title">One JSON file. <em>One rendered argument.</em></h2>
+			<h2 class="section-title">
+				One JSON file. <em>Any film you can think of.</em>
+			</h2>
 			<p class="section-lead">
 				Most video tools start with the canvas — a timeline, layers, keyframes. Docent starts with
-				<strong>the moves an explanation can make</strong>. You declare them. The engine renders.
+				<strong>the moves any piece of thought can make</strong>. You declare them. The engine
+				renders. The same grammar handles a code review, a brand quarterly, a poetry close
+				reading, a sci-fi short, a quarterly earnings walk, a documentary.
 			</p>
 			<p class="section-lead">
 				The format is the surface an LLM can author against without the output drifting into slop.
 				Every scene declares its schema. Every scene declares its depth rules. A film that doesn't
-				argue something doesn't ship.
+				say anything doesn't ship.
 			</p>
 		</div>
 	</div>
@@ -95,11 +99,11 @@
 	<div class="shell">
 		<div class="catalog-intro reveal">
 			<span class="section-kicker">the grammar</span>
-			<h2 class="section-title">{TOTAL_SCENES} cognitive moves. <em>Closed taxonomy.</em></h2>
+			<h2 class="section-title">{TOTAL_SCENES} moves. <em>The vocabulary of video.</em></h2>
 			<p class="section-lead">
-				Connection. Time. Flow. Comparison. Categorization. Experience. Narrative. Seven clusters.
-				Twenty-nine moves. Adding a thirtieth is a major version bump — that restraint <em>is</em>
-				the format.
+				Connection. Time. Flow. Comparison. Categorization. Experience. Narrative. Seven clusters
+				of cognition — enough to compose any film. Adding a thirtieth move is a major version bump.
+				That restraint <em>is</em> the format.
 			</p>
 		</div>
 
@@ -148,9 +152,9 @@
 			<span class="section-kicker">the cascade</span>
 			<h2 class="section-title">JSON in. <em>Narrated MP4 out.</em></h2>
 			<p class="section-lead">
-				The spec is the source. The render is the artifact. The cascade — validate, preprocess,
-				resolve style, synthesize narration, render — turns one into the other
-				deterministically.
+				The spec is the source. The render is the artifact. Validate, preprocess, resolve style,
+				synthesize the narration in any voice, render with Remotion. Same path whether the film
+				is a PR review, a documentary, or a brand opener.
 			</p>
 		</div>
 
@@ -182,10 +186,11 @@
 	<div class="shell">
 		<div class="install reveal">
 			<span class="section-kicker">try it</span>
-			<h2 class="section-title">Author a docent. <em>In an hour.</em></h2>
+			<h2 class="section-title">Write your first film. <em>In an hour.</em></h2>
 			<p class="section-lead">
 				Three packages: the framework, the default implementation, the binary. Write a spec at
 				<code>films/&lt;id&gt;.json</code>. Run <code>docent build &lt;id&gt;</code>. Watch.
+				Ship.
 			</p>
 			<div class="install-cmd">
 				<span class="prompt">$</span> bun add @docent/cli @docent/core @docent/kit
@@ -208,7 +213,8 @@
 			<div>
 				<span class="footer-mark">docent</span>
 				<p class="footer-tag">
-					A file format for structured explainer video. Built for LLMs. Open source under MIT.
+					The format for LLM-authored video. A2A for agents, MCP for tools, docent for film.
+					Open source under MIT.
 				</p>
 			</div>
 			<div>
