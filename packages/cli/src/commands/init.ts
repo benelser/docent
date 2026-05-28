@@ -113,12 +113,13 @@ const starterSpec = (filmId: string): unknown => ({
         'The second thing to remember.',
         'The single sentence that carries off the page.',
       ],
+      // The recap's per-beat `reveal` is a 1-based NUMERIC point index
+      // (not a string[] like other scenes). Each beat reveals the point
+      // matching its number — beat with reveal:1 shows point 1, etc.
       beats: [
-        {
-          id: 'r1',
-          narration:
-            'Restate the through-line. Three points, each short enough to survive the viewer leaving the page.',
-        },
+        {id: 'rp1', reveal: 1, narration: 'Restate the first point. Why it mattered.'},
+        {id: 'rp2', reveal: 2, narration: 'The second point. The piece you cannot leave behind.'},
+        {id: 'rp3', reveal: 3, narration: 'And the single sentence that carries off the page.'},
       ],
     },
   ],

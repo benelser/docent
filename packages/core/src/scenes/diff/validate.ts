@@ -28,7 +28,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   const code = typeof scene.code === 'string' ? scene.code : '';
   if (!code.trim()) {

@@ -29,7 +29,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   if (typeof scene.clip !== 'string' || !scene.clip.trim()) {
     issues.push({

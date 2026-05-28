@@ -38,7 +38,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   // text — must be a string; required body check (non-empty) is the
   // engine's required-body rule for `passage`.

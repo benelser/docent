@@ -1,6 +1,6 @@
 {
   "name": "@bjelser/kit",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "docent's framework: protocols, registries, the Engine. Zero opinions, zero implementations. Every scene, preset, TTS provider, and feature in @bjelser/core (and every third-party plugin pack) is registered through this package's public API.",
   "type": "module",
   "license": "MIT",

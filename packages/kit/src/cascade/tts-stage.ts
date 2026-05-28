@@ -232,7 +232,28 @@ export const runTtsStage = async (
     const scenes: Scene[] = spec.scenes ?? [];
     for (let sceneIndex = 0; sceneIndex < scenes.length; sceneIndex++) {
       const scene = scenes[sceneIndex];
-      if (!scene || !Array.isArray(scene.beats)) continue;
+      if (!scene) continue;
+
+      // Defensive DevEx — a common new-user mistake is putting narration at
+      // the scene level instead of in beats[]. The cascade silently ignores
+      // it and the render falls back to default frame count (a 2-second
+      // silent film). Surface a clear warning, then auto-promote: synthesize
+      // a single synthetic beat from the scene-level narration so the user's
+      // intent still produces an audible film while they learn the shape.
+      if (!Array.isArray(scene.beats)) {
+        const sceneNarration = (scene as {narration?: unknown}).narration;
+        if (typeof sceneNarration === 'string' && sceneNarration.trim().length > 0) {
+          process.stderr.write(
+            `[tts] scene[${sceneIndex}] (type=${scene.type}) has scene-level \`narration\` ` +
+              `but no beats[]. The cascade only reads narration from \`beats[].narration\`. ` +
+              `Promoting your scene-level narration to a synthetic beat — but you should ` +
+              `lift it into \`beats: [{narration: "..."}]\` to control timing properly.\n`,
+          );
+          scene.beats = [{narration: sceneNarration} as Beat];
+        } else {
+          continue;
+        }
+      }
       const sceneBeats = scene.beats as Beat[];
       for (let beatIndex = 0; beatIndex < sceneBeats.length; beatIndex++) {
         const beat = sceneBeats[beatIndex];

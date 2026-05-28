@@ -57,7 +57,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   // ---- variations (hard-fail body contract) -------------------------------
   if (!Array.isArray(scene.variations) || scene.variations.length < 1) {

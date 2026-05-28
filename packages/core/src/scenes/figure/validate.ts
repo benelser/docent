@@ -44,7 +44,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   // image — required body. The engine's required-body table fails the
   // scene if it's absent or empty after trim.

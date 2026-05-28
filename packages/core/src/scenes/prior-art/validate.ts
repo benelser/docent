@@ -36,7 +36,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
   // The kit hands us a plain `Scene` (open shape); narrow per-type fields
   // through a record cast — every read is shape-checked locally.
   const sc = scene as unknown as Record<string, unknown>;

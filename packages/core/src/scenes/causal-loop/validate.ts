@@ -59,7 +59,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   // ----- variables — 3-8 entries with unique ids ----------------------------
   const variableIds = new Set<string>();

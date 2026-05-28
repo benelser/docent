@@ -40,7 +40,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   if (typeof scene.statement !== 'string' || !scene.statement.trim()) {
     issues.push({

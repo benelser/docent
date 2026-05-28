@@ -34,7 +34,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   const hasCode = typeof scene.code === 'string' && scene.code.trim().length > 0;
   const hasFile = typeof scene.file === 'string' && scene.file.trim().length > 0;

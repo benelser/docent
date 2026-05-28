@@ -34,7 +34,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   if (!Array.isArray(scene.scope) || scene.scope.length < 1) {
     issues.push({

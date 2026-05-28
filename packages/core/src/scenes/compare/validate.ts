@@ -57,7 +57,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   const columns = Array.isArray(scene.columns) ? scene.columns : [];
   const rows = Array.isArray(scene.rows) ? scene.rows : [];

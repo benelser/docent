@@ -56,7 +56,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   // ----- axes ----------------------------------------------------------------
   // Each axis is a labelled domain (kind/label/min/max [/ticks]). `kind:

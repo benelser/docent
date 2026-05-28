@@ -62,7 +62,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   // ----- axes — both required, kind: 'landscape', non-empty labels --------
   const checkAxis = (

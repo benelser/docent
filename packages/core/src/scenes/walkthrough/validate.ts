@@ -62,7 +62,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   // v2.5.x parity — at least 2 actors. JSON Schema (./schema.ts) carries
   // the same rule via `minItems: 2`; we re-assert here so a caller that

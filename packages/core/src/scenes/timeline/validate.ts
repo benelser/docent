@@ -63,7 +63,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
   const sc = scene as unknown as {
     axis?: {start?: unknown; end?: unknown; ticks?: unknown};
     events?: unknown;

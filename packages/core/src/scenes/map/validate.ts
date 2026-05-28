@@ -67,7 +67,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   // The narrowed open-shape view of the scene we work with. The kit's Scene
   // index signature gives every other field as `unknown`; we coerce locally

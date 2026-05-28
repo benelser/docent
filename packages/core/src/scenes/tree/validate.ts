@@ -61,7 +61,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   // orientation — closed enum. The renderer branches on this value; an
   // unknown value would silently fall through to the vertical default.

@@ -54,7 +54,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   // Body required — at least one stage. Without it the scene renders a void
   // with audio playing over the void; the validator's job to prevent.

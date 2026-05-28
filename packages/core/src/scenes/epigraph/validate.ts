@@ -25,7 +25,7 @@ export function validate(
   ctx: SceneValidationContext,
 ): SceneIssue[] {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   if (typeof scene.quote !== 'string' || !scene.quote.trim()) {
     issues.push({

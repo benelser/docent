@@ -33,7 +33,7 @@ export const validate = (
   ctx: SceneValidationContext,
 ): SceneIssue[] => {
   const issues: SceneIssue[] = [];
-  const at = `scenes[${ctx.sceneIndex}]`;
+  const at = ``;
 
   const title = typeof scene.title === 'string' ? scene.title : '';
   if (!title.trim()) {
