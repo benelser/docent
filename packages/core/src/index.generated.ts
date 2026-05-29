@@ -9,7 +9,7 @@
 // canonical plugin-load order — see CATEGORIES in the generator for the
 // per-category ordering rules.
 //
-// Total plugins: 38
+// Total plugins: 39
 
 import type {Plugin} from '@bjelser/kit';
 
@@ -22,9 +22,10 @@ import {paperPreset} from './presets/paper';
 import {analyticalPreset} from './presets/analytical';
 import {executivePreset} from './presets/executive';
 
-// Features (2)
+// Features (3)
 import {narrationFeature} from './features/narration';
 import {audioRhythmFeature} from './features/audio-rhythm';
+import {audioBedFeature} from './features/audio-bed';
 
 // TTS providers (1)
 import {kokoroTtsPlugin} from './tts/kokoro';
@@ -65,7 +66,7 @@ import {walkthroughPlugin} from './scenes/walkthrough';
 export {neutralPreset, engineeringPreset, editorialPreset, paperPreset, analyticalPreset, executivePreset};
 
 // Features
-export {narrationFeature, audioRhythmFeature};
+export {narrationFeature, audioRhythmFeature, audioBedFeature};
 
 // TTS providers
 export {kokoroTtsPlugin};
@@ -88,9 +89,10 @@ export const corePlugins: readonly Plugin[] = [
   paperPreset,
   analyticalPreset,
   executivePreset,
-  // Features (2)
+  // Features (3)
   narrationFeature,
   audioRhythmFeature,
+  audioBedFeature,
   // TTS providers (1)
   kokoroTtsPlugin,
   // Scenes (29)

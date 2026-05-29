@@ -55,6 +55,8 @@ export type {
   SceneOutput,
   RenderContext,
   SceneFeatureProps,
+  FilmFeatureProps,
+  FilmFeatureBeatSlot,
   AfterRenderBeat,
   AfterRenderContext,
 

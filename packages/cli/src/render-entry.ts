@@ -41,7 +41,31 @@ export interface GenerateEntryOptions {
 }
 
 /** Resolve the absolute path of a package's package.json `main`. */
-const resolvePackageEntry = async (name: string): Promise<string> => {
+/**
+ * Resolve a package subpath to its absolute on-disk entry.
+ *
+ * `fromDir` should be the *consumer's* project root (where their
+ * node_modules lives). When the CLI is itself symlinked from a
+ * file:-linked dep (a hermetic dogfood install), `import.meta.resolve`
+ * runs in the CLI's REAL path — which is the worktree, not the
+ * consumer — so a subpath like `@bjelser/core/browser` fails because
+ * the worktree doesn't carry @bjelser/core in node_modules (it IS the
+ * source). Resolving via `module.createRequire(<fromDir>)` instead
+ * uses the consumer's resolution context, which is what we want for
+ * any link layout (npm install, bun install file:, symlinks).
+ */
+const resolvePackageEntry = async (
+  name: string,
+  fromDir: string,
+): Promise<string> => {
+  try {
+    const {createRequire} = await import('node:module');
+    const req = createRequire(`${fromDir}/__entry__`);
+    return req.resolve(name);
+  } catch {
+    // Fall through to import.meta.resolve for environments where
+    // node:module isn't available.
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const meta = import.meta as any;
   if (typeof meta.resolve === 'function') {
@@ -54,14 +78,9 @@ const resolvePackageEntry = async (name: string): Promise<string> => {
       // fall through
     }
   }
-  try {
-    const req = Function('return require')() as NodeJS.Require;
-    return req.resolve(name);
-  } catch {
-    throw new Error(
-      `[@bjelser/cli] could not resolve "${name}" — is it installed?`,
-    );
-  }
+  throw new Error(
+    `[@bjelser/cli] could not resolve "${name}" — is it installed in ${fromDir}?`,
+  );
 };
 
 /**
@@ -88,12 +107,18 @@ export const generateRenderEntry = async (
   // chrome-headless bundle never tries to resolve `node:fs`/`node:path`/
   // `node:child_process`. Falls back to the full entry for older versions
   // (which will fail at bundle time with a clearer error).
-  const kitEntry = await resolvePackageEntry('@bjelser/kit');
+  const kitEntry = await resolvePackageEntry(
+    '@bjelser/kit',
+    opts.projectRoot,
+  );
   let coreEntry: string;
   try {
-    coreEntry = await resolvePackageEntry('@bjelser/core/browser');
+    coreEntry = await resolvePackageEntry(
+      '@bjelser/core/browser',
+      opts.projectRoot,
+    );
   } catch {
-    coreEntry = await resolvePackageEntry('@bjelser/core');
+    coreEntry = await resolvePackageEntry('@bjelser/core', opts.projectRoot);
   }
 
   // Compute relative paths from the entry's directory to each target.

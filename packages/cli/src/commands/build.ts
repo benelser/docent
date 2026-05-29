@@ -87,7 +87,10 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
   const expandedSpec = engine.applyModifiers(engine.preprocessSpec(spec));
 
   // Pre-validate so a structural failure surfaces BEFORE the slow render.
-  const issues = engine.validate(expandedSpec);
+  // Thread `projectRoot` so fs-aware validators (figure → image-on-disk,
+  // audio-bed → music-on-disk) can surface missing files now rather than
+  // on first frame.
+  const issues = engine.validate(expandedSpec, {projectRoot});
   const errors = issues.filter((i) => i.severity === 'error');
   if (errors.length > 0) {
     log(`\x1b[31m✗ spec validation failed:\x1b[0m`);
@@ -136,6 +139,7 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
       outputDir: args.outputDir ?? join(projectRoot, 'out'),
       renderCwd: remotionRoot,
       publicDir,
+      projectRoot,
       // Post-TTS hook — regenerate the entry so it can `import` the freshly-
       // written per-film tts manifest. Without this the narration feature
       // sees no audio paths (the manifest is written by the TTS stage that
