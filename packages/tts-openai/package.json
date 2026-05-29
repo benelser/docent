@@ -1,6 +1,6 @@
 {
   "name": "@bjelser/tts-openai",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "The OpenAI TTS provider plugin for docent. Wraps the official `openai` npm package's `audio.speech.create()` and exposes it through @bjelser/kit's TtsProviderPlugin contract.",
   "type": "module",
   "license": "MIT",
