@@ -22,33 +22,46 @@
 // scene has no body to annotate. Everything else is a warning or
 // per-field error.
 
-import * as nodeFs from 'node:fs';
-import * as nodePath from 'node:path';
-
 import type {Scene, SceneIssue, SceneValidationContext} from '@bjelser/kit';
 
-// The figure validator runs Node-side from the CLI's `docent validate` /
-// `docent build` paths — but the module that exports `FigureScene` (this
-// one) is also pulled into the browser bundle via `./component.tsx`'s
-// type-only import of `FigureScene`. The `core` package.json's `browser`
-// field stubs `node:fs`/`node:path` to `false`, so when webpack bundles
-// for chrome-headless `existsSync` resolves to `undefined`. The probe
-// below is defensive: it skips silently if the fs functions aren't
-// callable, which is harmless because the browser bundle never invokes
-// `validate()` anyway — validate runs Node-side, pre-render.
-const safeExistsSync = (
-  p: string,
-): boolean | undefined => {
-  const fn = (nodeFs as {existsSync?: (p: string) => boolean}).existsSync;
-  return typeof fn === 'function' ? fn(p) : undefined;
+// Webpack-opaque indirect require for the Node-side fs probe. This file
+// is pulled into the browser bundle transitively (./index.ts re-exports
+// FigureScene type from here, and FigureSceneComponent imports the type).
+// A direct `import {existsSync} from 'node:fs'` triggers
+// UnhandledSchemeError at webpack bundle time even when the `browser`
+// field stubs `fs`/`path` — the `node:` scheme isn't covered by that
+// substitution. `new Function('id', 'return require(id)')` hides the
+// require from static analysis; the call still works at runtime in
+// Node where `require('node:fs')` resolves.
+const safeExistsSync = (p: string): boolean | undefined => {
+  try {
+    const req = new Function('id', 'return require(id)') as (id: string) => {
+      existsSync: (p: string) => boolean;
+    };
+    return req('node:fs').existsSync(p);
+  } catch {
+    return undefined;
+  }
 };
 const safeIsAbsolute = (p: string): boolean => {
-  const fn = (nodePath as {isAbsolute?: (p: string) => boolean}).isAbsolute;
-  return typeof fn === 'function' ? fn(p) : p.startsWith('/');
+  try {
+    const req = new Function('id', 'return require(id)') as (id: string) => {
+      isAbsolute: (p: string) => boolean;
+    };
+    return req('node:path').isAbsolute(p);
+  } catch {
+    return p.startsWith('/');
+  }
 };
 const safeJoin = (...parts: string[]): string => {
-  const fn = (nodePath as {join?: (...parts: string[]) => string}).join;
-  return typeof fn === 'function' ? fn(...parts) : parts.join('/');
+  try {
+    const req = new Function('id', 'return require(id)') as (id: string) => {
+      join: (...parts: string[]) => string;
+    };
+    return req('node:path').join(...parts);
+  } catch {
+    return parts.join('/');
+  }
 };
 
 export interface FigureCallout {

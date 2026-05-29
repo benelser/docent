@@ -23,26 +23,6 @@ import type {
 
 import {AudioBed} from './component';
 
-// Lazy node:fs probe — same pattern as the figure validator. The
-// `browser` field in core's package.json stubs `node:fs` so this returns
-// `undefined` in chromium bundles; the validator never runs there
-// anyway, but we stay defensive.
-import * as nodeFs from 'node:fs';
-import * as nodePath from 'node:path';
-
-const safeExistsSync = (p: string): boolean | undefined => {
-  const fn = (nodeFs as {existsSync?: (p: string) => boolean}).existsSync;
-  return typeof fn === 'function' ? fn(p) : undefined;
-};
-const safeIsAbsolute = (p: string): boolean => {
-  const fn = (nodePath as {isAbsolute?: (p: string) => boolean}).isAbsolute;
-  return typeof fn === 'function' ? fn(p) : p.startsWith('/');
-};
-const safeJoin = (...parts: string[]): string => {
-  const fn = (nodePath as {join?: (...parts: string[]) => string}).join;
-  return typeof fn === 'function' ? fn(...parts) : parts.join('/');
-};
-
 export {AudioBed} from './component';
 export type {AudioBedProps} from './component';
 
@@ -77,46 +57,27 @@ const AudioBedOverlay: React.FC<FilmFeatureProps> = ({
 };
 
 /**
- * Pre-render fs probe: when `meta.music` is set, verify the file
- * actually resolves to disk before the slow render. A miss surfaces as
- * a WARNING (not an error) — the feature gracefully no-ops at render
- * time if the asset is missing, so the film still renders silently
- * rather than crashing. The warning gives the author the exact path
- * the bed will look for so they can drop the file in.
- *
- * URLs and absent `meta.music` are no-ops here.
+ * Pre-render fs probe lives in `./_probe.ts` (Node-only). Loaded via a
+ * webpack-opaque indirect require so the browser bundle never tries to
+ * resolve `node:fs`. The `validateSpec` hook only runs server-side
+ * during the cascade, so this code path is unreachable in chrome-
+ * headless.
  */
 const validateMusic = (
   spec: FilmSpec,
   ctx: {readonly filmId: string; readonly projectRoot?: string},
 ): ReadonlyArray<SceneIssue> => {
-  const music =
-    typeof spec.meta.music === 'string' ? spec.meta.music.trim() : '';
-  if (!music) return [];
-  if (/^https?:\/\//i.test(music)) return []; // URLs aren't probed
-  if (!ctx.projectRoot) return []; // no fs root → skip the probe
-  // Resolution mirrors component.tsx's `resolveMusicUrl`: a bare filename
-  // resolves under public/audio/, an explicit path resolves under public/.
-  const candidate = safeIsAbsolute(music)
-    ? music
-    : music.includes('/')
-      ? safeJoin(ctx.projectRoot, 'public', music)
-      : safeJoin(ctx.projectRoot, 'public', 'audio', music);
-  const hit = safeExistsSync(candidate);
-  if (hit === false) {
-    return [
-      {
-        path: 'meta.music',
-        message:
-          `audio-bed: music asset not found on disk — expected at ${candidate}. ` +
-          `The feature will no-op at render time, so the film still renders, ` +
-          `but the bg-music bed will be silent.`,
-        severity: 'warning',
-        code: 'audio-bed/music-missing-on-disk',
-      },
-    ];
+  // Webpack's static analyzer can't see through `new Function('return require')()` —
+  // the probe module only loads when the cascade actually calls into the
+  // validator (server-side), never during render-entry bundling.
+  try {
+    const req = new Function('id', 'return require(id)') as (id: string) => {
+      probeMusicAsset: typeof import('./_probe').probeMusicAsset;
+    };
+    return req('./_probe').probeMusicAsset(spec, ctx);
+  } catch {
+    return [];
   }
-  return [];
 };
 
 export const audioBedFeature: FeaturePlugin = {
