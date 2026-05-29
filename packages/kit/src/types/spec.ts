@@ -62,6 +62,16 @@ export interface FilmMeta {
    */
   tts?: FilmTtsConfig;
   /**
+   * Translation provider selection + optional default target language.
+   * When absent, the cascade falls back to the `'noop'` provider (which
+   * passes narration through unchanged + warns once).
+   *
+   * `RenderOptions.lang` overrides `meta.translation.lang`; this field is
+   * a convenience so a spec can declare its preferred target language
+   * without requiring the CLI flag on every build.
+   */
+  translation?: FilmTranslationConfig;
+  /**
    * The mode tag — used by the agent layer's prompts; the engine itself
    * doesn't branch on it but it survives in the spec.
    */
@@ -117,6 +127,24 @@ export interface FilmTtsConfig {
    * resolution to throw. When `false` (default), it emits a warning.
    */
   strict?: boolean;
+}
+
+/**
+ * Translation configuration carried on `meta.translation`. The cascade
+ * reads `provider` to pick a TranslationProviderPlugin; `lang` is the
+ * default target language when `RenderOptions.lang` is not set.
+ *
+ * See `docs/translation.md` for the full workflow.
+ */
+export interface FilmTranslationConfig {
+  /** Matches a registered TranslationProviderPlugin's `providerId`. */
+  provider?: string;
+  /** Provider-specific model id (e.g. `'gpt-4o-mini'`). */
+  model?: string;
+  /** Default target language (ISO 639-1: `'es'`, `'fr'`, `'ja'`). */
+  lang?: string;
+  /** Pass-through provider-specific options. */
+  providerOptions?: Record<string, unknown>;
 }
 
 // ----- scenes --------------------------------------------------------------

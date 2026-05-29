@@ -10,6 +10,7 @@ import {dirname, join, resolve} from 'node:path';
 
 import {createEngine} from '../engine-factory';
 import {generateRenderEntry} from '../render-entry';
+import {defaultVoiceForLang} from '@bjelser/kit';
 import type {FilmSpec} from '@bjelser/kit';
 
 /**
@@ -53,6 +54,22 @@ export interface BuildArgs {
   readonly skipTts?: boolean;
   /** Override the project root for entry-file generation + config lookup. */
   readonly projectRoot?: string;
+  /**
+   * Target narration language (ISO 639-1: 'es', 'fr', 'ja', 'zh', ...).
+   * When set, runs the translate stage before TTS; the output filename
+   * becomes `<filmId>-<lang>.mp4`.
+   */
+  readonly lang?: string;
+  /**
+   * Voice id override (e.g. 'af_heart', 'bm_george'). When `lang` is set
+   * but `voice` is not, the CLI consults the built-in lang→voice map.
+   */
+  readonly voice?: string;
+  /**
+   * Translation provider id override. Defaults to `meta.translation.provider`
+   * or `'noop'` when absent.
+   */
+  readonly translationProvider?: string;
 }
 
 const log = (s: string) => process.stdout.write(`${s}\n`);
@@ -75,7 +92,8 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
   const {engine, configPath, userPlugins} = await createEngine(projectRoot);
   log(
     `  engine: ${engine.scenes.all().length} scenes · ${engine.presets.all().length} presets · ` +
-      `${engine.tts.all().length} tts · ${engine.features.all().length} features` +
+      `${engine.tts.all().length} tts · ${engine.translations.all().length} translation · ` +
+      `${engine.features.all().length} features` +
       (configPath ? ` (+${userPlugins.length} from ${configPath})` : ''),
   );
 
@@ -133,6 +151,23 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
     log(`  remotion-config: ${join(remotionRoot, 'remotion.config.*')}`);
   }
 
+  // Resolve voice precedence when --lang is set without an explicit --voice.
+  // The lang→voice map (DEFAULT_LANG_TO_VOICE in @bjelser/kit) points every
+  // ISO-639-1 code at a Kokoro voice; non-English entries currently all
+  // alias to the kokoro default (an English-accented voice). Users with a
+  // multilingual TTS provider should pass --voice explicitly or register
+  // a provider that owns its own voice routing.
+  const resolvedVoice: string | undefined =
+    args.voice ??
+    (args.lang ? defaultVoiceForLang(args.lang) : undefined);
+  if (args.lang) {
+    log(
+      `  translation: lang=${args.lang}` +
+        (resolvedVoice ? ` voice=${resolvedVoice}` : '') +
+        (args.translationProvider ? ` provider=${args.translationProvider}` : ''),
+    );
+  }
+
   try {
     const result = await engine.render(expandedSpec, {
       entryPath,
@@ -158,6 +193,11 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
       ...(args.concurrency !== undefined ? {concurrency: args.concurrency} : {}),
       ...(args.still !== undefined ? {still: args.still} : {}),
       ...(args.skipTts ? {skipTts: true} : {}),
+      ...(args.lang ? {lang: args.lang} : {}),
+      ...(resolvedVoice !== undefined ? {voice: resolvedVoice} : {}),
+      ...(args.translationProvider !== undefined
+        ? {translationProvider: args.translationProvider}
+        : {}),
     });
     log(
       `\x1b[32m✓ rendered ${result.outPath}\x1b[0m  ${(result.durationMs / 1000).toFixed(1)}s`,

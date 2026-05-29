@@ -34,12 +34,14 @@ import type {
   RenderResult,
   ResolvedStyle,
   SceneRegistry,
+  TranslationRegistry,
   TtsRegistry,
 } from './protocols';
 import {FeatureRegistryImpl} from './registries/feature';
 import {ModifierRegistryImpl} from './registries/modifier';
 import {PresetRegistryImpl} from './registries/preset';
 import {SceneRegistryImpl} from './registries/scene';
+import {TranslationRegistryImpl} from './registries/translation';
 import {TtsRegistryImpl} from './registries/tts';
 import {validateSpec} from './frameworks/validate';
 import {computeSchema} from './schema/from-registry';
@@ -173,6 +175,13 @@ export class Engine {
   readonly presets: PresetRegistry;
   /** The TTS-provider registry. Discriminator: `TtsProviderPlugin.providerId`. */
   readonly tts: TtsRegistry;
+  /**
+   * The translation-provider registry. Discriminator:
+   * `TranslationProviderPlugin.providerId`. Used when `RenderOptions.lang`
+   * is set; the cascade runs a translate stage BEFORE TTS that maps every
+   * beat's narration through the resolved provider.
+   */
+  readonly translations: TranslationRegistry;
   /** The feature-plugin registry. Discriminator: `FeaturePlugin.name`. */
   readonly features: FeatureRegistry;
   /**
@@ -190,6 +199,7 @@ export class Engine {
     this.scenes = new SceneRegistryImpl();
     this.presets = new PresetRegistryImpl();
     this.tts = new TtsRegistryImpl();
+    this.translations = new TranslationRegistryImpl();
     this.features = new FeatureRegistryImpl();
     this.modifiers = new ModifierRegistryImpl();
   }
@@ -263,6 +273,10 @@ export class Engine {
         this.tts.register(plugin);
         return;
       }
+      case 'translation': {
+        this.translations.register(plugin);
+        return;
+      }
       case 'feature': {
         this.features.register(plugin);
         // A feature plugin may register children in any of the 4 main
@@ -273,6 +287,9 @@ export class Engine {
         if (plugin.registerPresets) plugin.registerPresets(this.presets);
         if (plugin.registerTtsProviders) {
           plugin.registerTtsProviders(this.tts);
+        }
+        if (plugin.registerTranslationProviders) {
+          plugin.registerTranslationProviders(this.translations);
         }
         if (plugin.registerModifiers) {
           plugin.registerModifiers(this.modifiers);

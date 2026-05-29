@@ -61,6 +61,13 @@ export interface TtsStageOptions {
   publicDir?: string;
   /** Required for persistence — the film id used to scope the audio dir. */
   filmId?: string;
+  /**
+   * Voice id override. When set, this voice is passed to the provider
+   * instead of resolving from `meta.tts.providerOptions.voice` or
+   * `meta.voice`. The CLI uses this together with `--voice` so a
+   * translated film can pick a voice that speaks the target language.
+   */
+  voice?: string;
 }
 
 /** Map a media type to a filesystem extension. */
@@ -155,10 +162,13 @@ export const runTtsStage = async (
   const legacyTts = spec.tts ?? {};
   const providerId: string = metaTts.provider ?? legacyTts.provider ?? 'kokoro';
 
-  // Voice precedence — meta.tts.voice (if set in provider options) >
-  // meta.voice > 'af_heart' (the kokoro default). Provider plugins that
-  // need a different default expose it on their TtsCapabilities.
+  // Voice precedence — opts.voice (CLI / cascade override) >
+  // meta.tts.providerOptions.voice > meta.voice > 'af_heart' (the kokoro
+  // default). The override slot lets a `--voice` flag survive past
+  // schedule-resolution time. Provider plugins that need a different
+  // default expose it on their TtsCapabilities.
   const voice: string =
+    opts.voice ??
     (metaTts.providerOptions?.voice as string | undefined) ??
     spec.meta?.voice ??
     'af_heart';
