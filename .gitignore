@@ -56,6 +56,7 @@ films/*
 !films/rhetorical-primer.json
 !films/sprint-b-composition-demo.json
 !films/prior-art-primer.json
+!films/brand-pack-tutorial.json
 
 # Per-pack films under tests/example-docent-*/films/ stay tracked — they
 # travel with the pack. Same blanket pattern: ignored except for the JSON

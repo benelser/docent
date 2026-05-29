@@ -1,0 +1,50 @@
+================================================================
+  brand-pack-tutorial -- validation transcript
+  captured: 2026-05-29T16:52:07Z
+  cwd: /Users/belser/ventures/archcast/.claude/worktrees/agent-ab0a7b57560ff4629
+  config: ./docent.config.ts
+================================================================
+
+$ bunx docent doctor
+▶ docent doctor — plugin conformance + setup
+
+  engine: 29 scenes · 7 presets · 1 tts · 2 features (+1 from /Users/belser/ventures/archcast/.claude/worktrees/agent-ab0a7b57560ff4629/docent.config.ts)
+
+  Cluster distribution (scenes)
+    connection       4
+    time             2
+    flow             3
+    comparison       7
+    categorization   1
+    experience       2
+    narrative        8
+    chrome           2
+
+  ✓ No structural errors
+
+  ✓ No conformance warnings
+
+✓ doctor PASSED — every registered plugin honors the protocol
+
+----------------------------------------------------------------
+$ bunx docent validate brand-pack-tutorial
+▶ docent validate brand-pack-tutorial
+  config: /Users/belser/ventures/archcast/.claude/worktrees/agent-ab0a7b57560ff4629/docent.config.ts (+1 plugins)
+✓ spec validates clean — 7 scene(s)
+
+----------------------------------------------------------------
+$ bunx docent depthcheck brand-pack-tutorial
+▶ docent depthcheck brand-pack-tutorial
+  config: /Users/belser/ventures/archcast/.claude/worktrees/agent-ab0a7b57560ff4629/docent.config.ts (+1 plugins)
+✓ depth contract met — every scene cleared every rule
+
+----------------------------------------------------------------
+$ bunx docent doctor --json | jq '.engine'
+{
+  "scenes": 29,
+  "presets": 7,
+  "features": 2,
+  "tts": 1,
+  "userPlugins": 1,
+  "configPath": "/Users/belser/ventures/archcast/.claude/worktrees/agent-ab0a7b57560ff4629/docent.config.ts"
+}
