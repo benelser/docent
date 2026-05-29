@@ -25,6 +25,7 @@ import {executivePreset} from './presets/executive';
 // Features
 import {narrationFeature} from './features/narration';
 import {audioRhythmFeature} from './features/audio-rhythm';
+import {audioBedFeature} from './features/audio-bed';
 
 // Scenes — same 29 as index.generated
 import {bigIdeaPlugin} from './scenes/big-idea';
@@ -68,6 +69,7 @@ export const corePluginsBrowser: ReadonlyArray<Plugin> = [
   // Features
   narrationFeature,
   audioRhythmFeature,
+  audioBedFeature,
   // Scenes
   bigIdeaPlugin,
   causalLoopPlugin,

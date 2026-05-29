@@ -307,6 +307,16 @@ export interface SceneValidationContext {
   readonly filmId: string;
   /** 0-based index of the scene being validated. */
   readonly sceneIndex: number;
+  /**
+   * Absolute path to the project root, when the caller knows it. The CLI
+   * passes this through from its `--project-root` flag (or cwd). Scene
+   * validators that want to check filesystem state (e.g. the figure scene
+   * verifying its image lives under `<projectRoot>/public/figures/`) read
+   * this. Validators that work on any spec without filesystem state simply
+   * ignore it. Optional so the kit's smoke tests and pure-spec consumers
+   * can still call `engine.validate(spec)` without a project root.
+   */
+  readonly projectRoot?: string;
 }
 
 /**
@@ -1055,6 +1065,53 @@ export interface SceneFeatureProps {
 }
 
 /**
+ * Props the kit passes to a {@link FeaturePlugin.wrapsFilm} component. The
+ * component is mounted ONCE at film scope (outside the per-scene Sequence
+ * stack); it receives the whole timeline so it can lay continuous overlays
+ * (e.g. a background-music bed that ducks while narration plays).
+ *
+ * `beats` is a flattened view of every beat slot across every scene, each
+ * carrying its absolute start frame and persisted-audio path — so a feature
+ * can compute "is narration playing at frame N" without re-walking the
+ * spec or the schedule.
+ *
+ * @see docs/design/plugin-architecture-strategy.md §4.5
+ */
+export interface FilmFeatureProps {
+  /** Film meta block. */
+  readonly meta: FilmMeta;
+  /** Total film length in frames. */
+  readonly totalFrames: number;
+  /** Composition fps (mirror of `meta.resolution.fps` after defaulting). */
+  readonly fps: number;
+  /** Resolved style bundle. */
+  readonly style: ResolvedStyle;
+  /**
+   * Every beat across every scene, projected to absolute film frames.
+   * Lets the feature compute timeline-wide windows (narration ducking,
+   * caption windows, chapter markers) in one pass.
+   */
+  readonly beats: ReadonlyArray<FilmFeatureBeatSlot>;
+}
+
+/**
+ * One beat slot as projected to film-absolute frame coordinates for
+ * consumption by {@link FilmFeatureProps}.
+ */
+export interface FilmFeatureBeatSlot {
+  /** 0-based scene index in the film. */
+  readonly sceneIndex: number;
+  /** 0-based beat index within the scene. */
+  readonly beatIndex: number;
+  /** Absolute film frame the beat starts at. */
+  readonly startFrame: number;
+  /** Beat window length in frames. */
+  readonly frames: number;
+  /** Path to a persisted per-beat audio clip (absent until TTS runs). */
+  readonly audio?: string;
+}
+
+/**
  * The FeaturePlugin — cross-cutting concerns that touch multiple registries
  * (captions, watermarks, music, lower-thirds, narration overlay).
  *
@@ -1136,6 +1193,44 @@ export interface FeaturePlugin extends PluginBase {
   readonly wrapsScenes?: React.ComponentType<SceneFeatureProps>;
 
   /**
+   * Optional component the composition mounts ONCE at film scope, OUTSIDE
+   * the per-scene `<Sequence>` stack. The mount point is global: the
+   * component spans the entire film timeline, sees absolute frames via
+   * `useCurrentFrame()`, and can mount overlays (bg-music bed, watermark,
+   * lower-thirds, intro/outro stings) that should not restart at scene
+   * boundaries.
+   *
+   * Contrast with {@link wrapsScenes}, which mounts INSIDE each scene's
+   * Sequence (so per-scene state is scene-relative).
+   *
+   * Sized to the film's resolution — the component receives the resolved
+   * film meta + total frame count + a flat list of beat slots so audio /
+   * caption work can react to the actual narration timing.
+   */
+  readonly wrapsFilm?: React.ComponentType<FilmFeatureProps>;
+
+  /**
+   * Optional film-level validation hook. The validator dispatches every
+   * spec to every registered feature's `validateSpec?` so cross-cutting
+   * concerns (a music bed referencing a missing file, a captions feature
+   * checking the spec carries narrations) surface BEFORE the slow
+   * render. Receives `{filmId, projectRoot}` so fs-aware checks (e.g.
+   * "does <publicDir>/audio/<meta.music> exist on disk") can run.
+   *
+   * Return an empty array (or `undefined`) for "no issues". The returned
+   * {@link SceneIssue}s are re-rooted under `meta.…` (or wherever the
+   * `path` says) and surface as plain {@link Issue}s on
+   * `engine.validate(spec)`.
+   *
+   * Optional so most features don't pay for it. The orchestrator
+   * tolerates throws (turned into a single error-severity issue).
+   */
+  validateSpec?(
+    spec: FilmSpec,
+    ctx: {readonly filmId: string; readonly projectRoot?: string},
+  ): ReadonlyArray<SceneIssue>;
+
+  /**
    * Post-render side-effect hook. Called by the cascade orchestrator AFTER
    * `runRenderStage` returns and the mp4 (or still) has landed on disk.
    * Receives the per-beat TTS timings + the spec's narration text, so a
@@ -1205,6 +1300,14 @@ export interface RenderOptions {
    * Remotion's `staticFile()` to overlay `<Audio>` during render.
    */
   publicDir?: string;
+  /**
+   * Absolute path to the consumer's project root. Threaded into
+   * `engine.validate(spec, {projectRoot})` so fs-aware scene/feature
+   * validators (figure → image, audio-bed → music) can probe disk.
+   * When omitted, those validators degrade to no-ops for the fs part
+   * (the structural part still runs).
+   */
+  projectRoot?: string;
   /** Path to the `remotion` bin. Defaults to a walked-up node_modules lookup. */
   remotionBin?: string;
   /**

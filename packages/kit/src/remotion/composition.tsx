@@ -25,6 +25,7 @@ import type {Engine} from '../engine';
 import type {
   BeatTimelineSlot,
   CommonSceneProps,
+  FilmFeatureBeatSlot,
   ScenePlugin,
   TimelineSlot,
 } from '../protocols';
@@ -182,9 +183,50 @@ export const DocentFilm: React.FC<DocentFilmInternalProps> = ({
   // component identity is stable across scenes — React reconciliation needs
   // the same type to avoid remounting on every scene boundary.
   const sceneFeatures = engine.features.all().filter((f) => !!f.wrapsScenes);
+  // Features that mount ONCE at film scope (bg-music bed, watermark, …).
+  // Mounted outside the per-scene Sequence stack so they see absolute
+  // frames and don't restart at scene boundaries.
+  const filmFeatures = engine.features.all().filter((f) => !!f.wrapsFilm);
+
+  // Flat beat list in ABSOLUTE film coordinates — handed to wrapsFilm
+  // features (the audio-bed plugin reads this to detect narration windows
+  // for ducking).
+  const filmBeats: FilmFeatureBeatSlot[] = [];
+  for (const entry of schedule.scenes) {
+    for (const b of entry.beats) {
+      filmBeats.push({
+        sceneIndex: entry.sceneIndex,
+        beatIndex: b.beatIndex,
+        startFrame: b.startFrame, // schedule emits absolute frames internally
+        frames: b.frames,
+        // BeatSchedule.audio is `string | null | undefined`; project to
+        // the narrower `string | undefined` for FilmFeatureBeatSlot —
+        // `null` (legacy sentinel) and `undefined` (no clip) both mean
+        // "no audio".
+        ...(typeof b.audio === 'string' && b.audio.length > 0
+          ? {audio: b.audio}
+          : {}),
+      });
+    }
+  }
+  const totalFrames = schedule.totalFrames;
+  const fps = spec.meta.resolution?.fps ?? 30;
 
   return (
     <AbsoluteFill>
+      {filmFeatures.map((feature) => {
+        const FilmComponent = feature.wrapsFilm!;
+        return (
+          <FilmComponent
+            key={`film-feature-${feature.name}`}
+            meta={spec.meta}
+            totalFrames={totalFrames}
+            fps={fps}
+            style={resolvedStyle}
+            beats={filmBeats}
+          />
+        );
+      })}
       {schedule.scenes.map((entry) => {
         const plugin = engine.scenes.get(entry.scene.type);
         const ts = toTimelineSlot(entry);

@@ -78,7 +78,9 @@ const CATEGORIES: readonly CategoryConfig[] = [
     // narration lands before audio-rhythm because narration owns the
     // canonical chunk timing audio-rhythm reads; alphabetical would invert
     // a real dependency in spirit (not in the loader, but in mental model).
-    orderOverride: ['narration', 'audio-rhythm'],
+    // audio-bed comes last — it consumes the schedule's per-beat audio
+    // refs (set by the narration overlay path) for its duck windows.
+    orderOverride: ['narration', 'audio-rhythm', 'audio-bed'],
     label: 'Features',
   },
   {

@@ -146,7 +146,12 @@ export const runCascade = async (
     let issues: Issue[] = [];
     let validateRan = true;
     try {
-      issues = engine.validate(spec);
+      issues = engine.validate(
+        spec,
+        opts.projectRoot !== undefined
+          ? {projectRoot: opts.projectRoot}
+          : undefined,
+      );
     } catch (e) {
       if (isNotImplementedSentinel(e)) {
         validateRan = false;

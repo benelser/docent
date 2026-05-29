@@ -68,6 +68,22 @@ export interface FilmMeta {
   mode?: 'pr' | 'ar' | 'ex' | string;
   /** A subsystem name passed through to scene components. */
   subsystem?: string;
+  /**
+   * Background-music bed. Read by the `audio-bed` feature plugin. The
+   * value is a path resolved under the film's `<publicDir>/audio/` — so
+   * `"theme.mp3"` resolves to `<publicDir>/audio/theme.mp3`. Absolute
+   * paths under `public/` (e.g. `"audio/scores/sparse.mp3"`) and
+   * absolute URLs (`https://…`) are also accepted; the feature passes
+   * them to Remotion's `staticFile()` (or directly, for URLs).
+   *
+   * When absent the audio-bed feature is a no-op. When the path is set
+   * but the file is missing, the feature warns at validate time and
+   * skips mounting the bed at render time. Volume is film-wide and
+   * ducks while per-beat narration is playing (see the feature).
+   *
+   * @see packages/core/src/features/audio-bed for the consumer.
+   */
+  music?: string;
 }
 
 /**

@@ -36,7 +36,7 @@ export const runValidate = async (args: ValidateArgs): Promise<number> => {
     log(`  config: ${configPath} (+${userPlugins.length} plugins)`);
   }
 
-  const issues = engine.validate(spec);
+  const issues = engine.validate(spec, {projectRoot});
   const errors = issues.filter((i) => i.severity === 'error');
   const warnings = issues.filter((i) => i.severity === 'warning');
 

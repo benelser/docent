@@ -333,14 +333,22 @@ export class Engine {
    * structural validator.
    *
    * @param spec An unknown value — the validator confirms it's an object first.
+   * @param opts Optional caller context. The CLI threads `projectRoot`
+   *   through so scene validators can probe the filesystem (e.g. the
+   *   figure scene's `<projectRoot>/public/figures/<image>` existence
+   *   check). When omitted, fs-aware validators degrade to a no-op for
+   *   the filesystem part — the structural part still runs.
    * @returns A flat `Issue[]`. Empty array = clean. Severity `'error'`
    * means the spec is unsafe to render; `'warning'` means it renders but
    * the author should look.
    *
    * @see docs/design/plugin-architecture-strategy.md §4.7
    */
-  validate(spec: unknown): Issue[] {
-    return validateSpec(spec, this);
+  validate(
+    spec: unknown,
+    opts?: {readonly projectRoot?: string},
+  ): Issue[] {
+    return validateSpec(spec, this, opts);
   }
 
   /**

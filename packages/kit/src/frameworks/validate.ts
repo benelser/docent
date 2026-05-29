@@ -27,7 +27,7 @@
 // should look.
 
 import type {Engine} from '../engine';
-import type {Issue, SceneIssue, ScenePlugin} from '../protocols';
+import type {FeaturePlugin, Issue, SceneIssue, ScenePlugin} from '../protocols';
 import type {FilmSpec, Scene} from '../types/spec';
 
 /**
@@ -48,7 +48,11 @@ import type {FilmSpec, Scene} from '../types/spec';
  *
  * @see docs/design/plugin-architecture-strategy.md §4.7
  */
-export function validateSpec(spec: unknown, engine: Engine): Issue[] {
+export function validateSpec(
+  spec: unknown,
+  engine: Engine,
+  opts?: {readonly projectRoot?: string},
+): Issue[] {
   const issues: Issue[] = [];
 
   // ---- film-level structural checks ----------------------------------------
@@ -161,6 +165,9 @@ export function validateSpec(spec: unknown, engine: Engine): Issue[] {
       const sceneIssues = runPluginValidate(plugin, sc as Scene, {
         filmId,
         sceneIndex,
+        ...(opts?.projectRoot !== undefined
+          ? {projectRoot: opts.projectRoot}
+          : {}),
       });
       for (const si of sceneIssues) {
         issues.push(reroot(si, path, plugin.name));
@@ -168,7 +175,52 @@ export function validateSpec(spec: unknown, engine: Engine): Issue[] {
     }
   });
 
+  // ---- feature-level film validation --------------------------------------
+  // Every registered feature gets a chance to surface film-scope issues —
+  // the audio-bed feature uses this to verify `meta.music` resolves to a
+  // file on disk before the slow render. A throw is caught and surfaced
+  // as a structured error attributed to the plugin (same pattern as the
+  // per-scene runner).
+  const features = engine.features.all();
+  for (const feature of features) {
+    if (!feature.validateSpec) continue;
+    const filmIssues = runFeatureValidate(feature, s as unknown as FilmSpec, {
+      filmId,
+      ...(opts?.projectRoot !== undefined
+        ? {projectRoot: opts.projectRoot}
+        : {}),
+    });
+    for (const si of filmIssues) {
+      issues.push(reroot(si, '', feature.name));
+    }
+  }
+
   return issues;
+}
+
+/**
+ * Invoke a feature's `validateSpec` hook, catching any throw so a
+ * misbehaving plugin doesn't take down the whole validator.
+ */
+function runFeatureValidate(
+  feature: FeaturePlugin,
+  spec: FilmSpec,
+  ctx: {filmId: string; projectRoot?: string},
+): ReadonlyArray<SceneIssue> {
+  try {
+    return feature.validateSpec!(spec, ctx) ?? [];
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return [
+      {
+        path: '',
+        message:
+          `FeaturePlugin "${feature.name}" threw while validating: ${message}`,
+        severity: 'error',
+        code: 'plugin.validate.threw',
+      },
+    ];
+  }
 }
 
 /**
@@ -179,7 +231,7 @@ export function validateSpec(spec: unknown, engine: Engine): Issue[] {
 function runPluginValidate(
   plugin: ScenePlugin<any>,
   scene: Scene,
-  ctx: {filmId: string; sceneIndex: number},
+  ctx: {filmId: string; sceneIndex: number; projectRoot?: string},
 ): SceneIssue[] {
   try {
     return plugin.validate!(scene, ctx) ?? [];
@@ -207,7 +259,9 @@ function reroot(issue: SceneIssue, scenePath: string, source: string): Issue {
   const path = issue.path
     ? issue.path.startsWith('[') || issue.path.startsWith('.')
       ? `${scenePath}${issue.path}`
-      : `${scenePath}.${issue.path}`
+      : scenePath
+        ? `${scenePath}.${issue.path}`
+        : issue.path
     : scenePath;
   return {
     path,
