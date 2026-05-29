@@ -47,7 +47,9 @@ import {
   truncateForSlot,
 } from '../../_shared';
 import {parseTimelineDate, yearOf} from './_time';
-import {STAGE} from './_helpers';
+import {STAGE as _STAGE_DEFAULT} from './_helpers';
+import {useStage} from '@bjelser/kit';
+void _STAGE_DEFAULT;
 import type {
   TimelineEvent,
   TimelineScene as TimelineSceneSpec,
@@ -72,6 +74,8 @@ export const TimelineSceneComponent: React.FC<
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const {ts, sceneIndex, sceneCount, style} = common;
+  // Aspect-aware STAGE — the rectangle the timeline plots inside.
+  const STAGE = useStage();
   // paletteSceneHex reads the resolved-style accent table (or falls back to
   // theme.ts ACCENTS when style is undefined). Threading `style` makes a
   // preset's accent overrides reach this scene.
@@ -264,7 +268,7 @@ export const TimelineSceneComponent: React.FC<
       <AbsoluteFill>
         <svg
           style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
-          viewBox="0 0 1920 1080"
+          viewBox={`0 0 ${STAGE.worldW} ${STAGE.worldH}`}
         >
           {/* the axis — the spine. A dashed line in sketch/whiteboard so it
               reads as drawn, a solid stroke otherwise. */}
@@ -423,7 +427,7 @@ export const TimelineSceneComponent: React.FC<
                     height: '100%',
                     pointerEvents: 'none',
                   }}
-                  viewBox="0 0 1920 1080"
+                  viewBox={`0 0 ${STAGE.worldW} ${STAGE.worldH}`}
                 >
                   <line
                     x1={x}
@@ -554,7 +558,7 @@ export const TimelineSceneComponent: React.FC<
                         pointerEvents: 'none',
                         opacity,
                       }}
-                      viewBox="0 0 1920 1080"
+                      viewBox={`0 0 ${STAGE.worldW} ${STAGE.worldH}`}
                     >
                       <EmbeddedScene
                         embed={e.embed!}

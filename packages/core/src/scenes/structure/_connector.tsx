@@ -13,6 +13,7 @@ import type {Beat, ResolvedStyle} from '@bjelser/kit';
 
 import {fitFontSize, glow, monoFamily, truncateForSlot} from '../../_shared';
 import {connectorPath, curvedPath, type Box} from './_layout';
+import {useStage} from '@bjelser/kit';
 
 type Cadence = Beat['cadence'];
 
@@ -33,6 +34,7 @@ export const Connector: React.FC<{
   void style;
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
+  const stage = useStage();
   const local = frame - enterFrame;
   const drawMass = cadence === 'snap' ? 0.32 : 0.5;
   const draw =
@@ -85,7 +87,7 @@ export const Connector: React.FC<{
   return (
     <svg
       style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
-      viewBox="0 0 1920 1080"
+      viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
     >
       <path
         d={path.d}

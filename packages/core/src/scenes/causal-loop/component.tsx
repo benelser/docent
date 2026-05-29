@@ -53,6 +53,7 @@ import {
   paletteSceneHex,
   truncateForSlot,
 } from '../../_shared';
+import {useStage} from '@bjelser/kit';
 import type {
   CausalEdge,
   CausalLoop,
@@ -63,9 +64,9 @@ import type {
 // ----- ring layout ---------------------------------------------------------
 
 // The stage where the loop lives — a centred circle inside the standard
-// stage band. The radius is set so 3 variables (the minimum) sit
-// comfortably apart and 8 (the maximum) don't crowd.
-const RING = {cx: 960, cy: 612, r: 230};
+// stage band. The default values mirror the 16:9 layout; the component
+// rebinds RING from `useStage()` for portrait / square renders.
+const RING_DEFAULT = {cx: 960, cy: 612, r: 230};
 const NODE_R = 86; // variable disc radius
 const ARROW_GAP = 14; // pixels between the arrow tip and the node edge
 
@@ -74,11 +75,15 @@ const ARROW_GAP = 14; // pixels between the arrow tip and the node edge
 const angleOf = (i: number, n: number): number =>
   -Math.PI / 2 + (i * 2 * Math.PI) / Math.max(1, n);
 
-const nodeCenter = (i: number, n: number): {x: number; y: number} => {
+const nodeCenter = (
+  i: number,
+  n: number,
+  ring: {cx: number; cy: number; r: number},
+): {x: number; y: number} => {
   const a = angleOf(i, n);
   return {
-    x: RING.cx + RING.r * Math.cos(a),
-    y: RING.cy + RING.r * Math.sin(a),
+    x: ring.cx + ring.r * Math.cos(a),
+    y: ring.cy + ring.r * Math.sin(a),
   };
 };
 
@@ -107,13 +112,14 @@ const edgePoints = (
 const arcPath = (
   start: {x: number; y: number},
   end: {x: number; y: number},
+  ring: {cx: number; cy: number; r: number},
   bulge = 60,
 ): {d: string; mid: {x: number; y: number}} => {
   const mx = (start.x + end.x) / 2;
   const my = (start.y + end.y) / 2;
-  // Outward normal — away from RING.cx, RING.cy. The arc bows outward.
-  const ox = mx - RING.cx;
-  const oy = my - RING.cy;
+  // Outward normal — away from ring centre. The arc bows outward.
+  const ox = mx - ring.cx;
+  const oy = my - ring.cy;
   const olen = Math.hypot(ox, oy) || 1;
   const cx = mx + (ox / olen) * bulge;
   const cy = my + (oy / olen) * bulge;
@@ -130,6 +136,17 @@ export const CausalLoopSceneComponent: React.FC<
   const {fps} = useVideoConfig();
   const {ts, sceneIndex, sceneCount, style} = common;
   const {bg, ink, accent: accentTokens} = style.tokens;
+  // Aspect-aware ring center — at 16:9 this resolves to {960, 612}; in
+  // portrait / square the ring centres on the canvas centroid + STAGE.y.
+  const stage = useStage();
+  const RING = stage.worldW === 1920
+    ? RING_DEFAULT
+    : {
+        cx: stage.worldW / 2,
+        cy: stage.y + stage.h / 2,
+        // shrink ring radius for narrower canvases
+        r: Math.min(RING_DEFAULT.r, Math.min(stage.w, stage.h) / 2.8),
+      };
   const accentOf = (k?: string): string =>
     (k && (accentTokens as unknown as Record<string, string>)[k]) ||
     (accentTokens as unknown as Record<string, string>).blue ||
@@ -146,7 +163,7 @@ export const CausalLoopSceneComponent: React.FC<
     varIndex[v.id] = i;
   });
   const centerOf = (id: string): {x: number; y: number} =>
-    nodeCenter(varIndex[id] ?? 0, n);
+    nodeCenter(varIndex[id] ?? 0, n, RING);
 
   // ----- reveal frames — variables / edges / loops are all named ids -------
   // A beat's `reveal` is the *set* of ids it brings on screen at its start
@@ -224,7 +241,7 @@ export const CausalLoopSceneComponent: React.FC<
       <AbsoluteFill>
         <svg
           style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
-          viewBox="0 0 1920 1080"
+          viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
         >
           {/* ----- edges — drawn first so they sit behind the variable discs */}
           {edges.map((e) => {
@@ -233,7 +250,7 @@ export const CausalLoopSceneComponent: React.FC<
             const to = centerOf(e.to);
             if (!from || !to) return null;
             const {start, end} = edgePoints(from, to);
-            const {d, mid} = arcPath(start, end, 60);
+            const {d, mid} = arcPath(start, end, RING, 60);
             const draw = drawProgress(e.id);
             const fromFocus = hasFocus && focusIds.has(e.id);
             const dim =
@@ -442,7 +459,7 @@ export const CausalLoopSceneComponent: React.FC<
             variable breathes; a dimmed one fades to background; an
             unrevealed one is hidden. */}
         {variables.map((v, i) => {
-          const p = nodeCenter(i, n);
+          const p = nodeCenter(i, n, RING);
           const appear = variableAppear(v.id);
           if (appear <= 0) return null;
           const focused = focusIds.has(v.id);

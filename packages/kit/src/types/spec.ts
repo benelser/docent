@@ -49,6 +49,18 @@ export interface FilmMeta {
   voice?: string;
   /** Overall mood — biases scene defaults. */
   register?: FilmRegister;
+  /**
+   * Aspect ratio — picks the rendered canvas size:
+   *  - `'16:9'`  → 1920x1080 (landscape, the default — every legacy film)
+   *  - `'9:16'`  → 1080x1920 (portrait — phone-vertical / TikTok-shape)
+   *  - `'1:1'`   → 1080x1080 (square — Instagram-feed shape)
+   *
+   * The composition reads this and resolves to the canvas dimensions; the
+   * `useStage()` hook in `@bjelser/kit` then returns an aspect-aware STAGE
+   * rectangle every scene renders inside. When absent, defaults to `'16:9'`
+   * so every existing film renders identically.
+   */
+  aspect?: '16:9' | '9:16' | '1:1';
   /** Resolution overrides; defaults to 1920x1080 at 30fps. */
   resolution?: {
     width: number;

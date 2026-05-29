@@ -31,6 +31,7 @@ import {
   useVideoConfig,
 } from 'remotion';
 import type {DesignTokens, ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {
   EmbeddedScene,
@@ -108,6 +109,8 @@ export const JourneyMapSceneComponent: React.FC<
   const {fps} = useVideoConfig();
   const {ts, sceneIndex, sceneCount, style} = common;
   const {bg, ink} = style.tokens;
+  // Aspect-aware world dims — used for SVG viewBoxes throughout the scene.
+  const stage = useStage();
   const emotionPalette = buildEmotionPalette(style.tokens);
   const emotionHex = (e: JourneyEmotion): string =>
     emotionPalette[e]?.hex ?? ink.low;
@@ -144,12 +147,13 @@ export const JourneyMapSceneComponent: React.FC<
 
   // The journey band's geometry. Stages sit evenly along a horizontal
   // axis; the emotion curve runs in a band above them, the chips ride on
-  // the axis, the touchpoint cards stack below.
-  const left = 220;
-  const right = 1700;
-  const axisY = 580;
-  const curveTop = 240; // y for curveValue == 1 (best emotion)
-  const curveBot = 460; // y for curveValue == 0 (worst emotion)
+  // the axis, the touchpoint cards stack below. At 16:9 these resolve to
+  // the legacy {220, 1700, 580, 240, 460} numbers.
+  const left = stage.worldW === 1920 ? 220 : stage.x + 20;
+  const right = stage.worldW === 1920 ? 1700 : stage.x + stage.w - 20;
+  const axisY = stage.worldW === 1920 ? 580 : stage.y + stage.h * 0.42;
+  const curveTop = stage.worldW === 1920 ? 240 : stage.y;
+  const curveBot = stage.worldW === 1920 ? 460 : stage.y + stage.h * 0.3;
   const n = Math.max(1, stages.length);
   const stageX = (i: number): number =>
     n === 1 ? (left + right) / 2 : left + (i * (right - left)) / (n - 1);
@@ -198,7 +202,7 @@ export const JourneyMapSceneComponent: React.FC<
       <AbsoluteFill>
         <svg
           style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
-          viewBox="0 0 1920 1080"
+          viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
         >
           {/* curve band — faint guide rails at top (good) and bottom (bad) */}
           <line
@@ -554,7 +558,7 @@ export const JourneyMapSceneComponent: React.FC<
                     pointerEvents: 'none',
                     opacity,
                   }}
-                  viewBox="0 0 1920 1080"
+                  viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
                 >
                   <EmbeddedScene
                     embed={s.embed as EmbeddedSceneSpec}

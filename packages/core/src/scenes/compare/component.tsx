@@ -46,6 +46,7 @@ import {
   paletteGlowScale,
   paletteSceneHex,
 } from '../../_shared';
+import {useStage} from '@bjelser/kit';
 import type {CompareScene as CompareSceneSpec} from './validate';
 
 export const CompareSceneComponent: React.FC<SceneRenderProps<CompareSceneSpec>> = ({
@@ -90,18 +91,17 @@ export const CompareSceneComponent: React.FC<SceneRenderProps<CompareSceneSpec>>
   const hasFocus = focusIds.size > 0;
 
   // Table geometry — a tight left gutter for criteria, wide column cards.
-  // The gutter used to be 380px (≈25% of the table), which left a dead band
-  // between the criterion text and its row of data; the eye lost the
-  // mapping. Shrunk to 220px and the gutter content right-aligns against
-  // the first data column so the label sits in conversation with its row.
-  // The table itself widens to 1620 so the columns breathe.
-  const tableW = 1620;
-  const tableX = (1920 - tableW) / 2;
-  const gutterW = 220;
+  // Aspect-aware: at 16:9 these resolve to the legacy 1620 / 150 / 220
+  // numbers; on a narrower canvas the table shrinks to STAGE.w and the
+  // gutter / table-y are recomputed.
+  const stage = useStage();
+  const tableW = stage.worldW === 1920 ? 1620 : stage.w + 40;
+  const tableX = (stage.worldW - tableW) / 2;
+  const gutterW = stage.worldW === 1920 ? 220 : Math.min(220, stage.w * 0.22);
   const colW = (tableW - gutterW) / Math.max(1, columns.length);
   const headerH = 96;
   const rowH = Math.min(118, 620 / Math.max(1, rows.length));
-  const tableY = 322;
+  const tableY = stage.worldW === 1920 ? 322 : stage.y - 16;
 
   const intro = spring({frame, fps, config: {damping: 200}});
 
@@ -336,7 +336,7 @@ export const CompareSceneComponent: React.FC<SceneRenderProps<CompareSceneSpec>>
                           <svg
                             width="100%"
                             height="100%"
-                            viewBox="0 0 1920 1080"
+                            viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
                             preserveAspectRatio="xMidYMid meet"
                             style={{position: 'absolute', inset: 0}}
                           >

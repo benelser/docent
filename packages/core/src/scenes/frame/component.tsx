@@ -25,6 +25,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {Beat, BeatTimelineSlot, ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {Narration, SceneFrame} from '../../_shared';
 import type {FrameScene as FrameSceneSpec} from './validate';
@@ -73,17 +74,27 @@ export const FrameSceneComponent: React.FC<SceneRenderProps<FrameSceneSpec>> = (
   const taglineA = rise(enterOf('tagline'));
   const footA = rise(enterOf('footnote'));
   const blink = Math.floor(frame / 18) % 2 === 0;
+  // Aspect-aware width caps — at 16:9 these resolve to the legacy
+  // 1680/1500/1480 numbers; portrait / square scale down.
+  const stage = useStage();
+  const titleMaxW = stage.worldW === 1920 ? 1680 : stage.worldW - 120;
+  const taglineMaxW = stage.worldW === 1920 ? 1500 : stage.worldW - 140;
+  const footMaxW = stage.worldW === 1920 ? 1480 : stage.worldW - 160;
 
   // Auto-fit the title — long titles (a poem name, a multi-clause subject)
   // would otherwise blow through the safe band at the static 158px size and
   // run flush to the frame edges. Shrink in steps; clamp the box.
   const titleText = scene.title ?? '';
-  const titleFont =
-    titleText.length <= 15 ? 158 :
-    titleText.length <= 22 ? 132 :
-    titleText.length <= 30 ? 108 :
-    titleText.length <= 40 ? 88 :
-    72;
+  const titleFont = (() => {
+    const base16x9 =
+      titleText.length <= 15 ? 158 :
+      titleText.length <= 22 ? 132 :
+      titleText.length <= 30 ? 108 :
+      titleText.length <= 40 ? 88 :
+      72;
+    // Scale down for narrower canvases — proportional to titleMaxW / 1680.
+    return Math.round(base16x9 * Math.min(1, titleMaxW / 1680));
+  })();
 
   return (
     <SceneFrame
@@ -136,7 +147,7 @@ export const FrameSceneComponent: React.FC<SceneRenderProps<FrameSceneSpec>> = (
             opacity: titleA,
             transform: `scale(${interpolate(titleA, [0, 1], [0.92, 1])})`,
             textShadow: `0 30px 90px ${accentHex}30`,
-            maxWidth: 1680,
+            maxWidth: titleMaxW,
             textAlign: 'center',
             lineHeight: 1.05,
             padding: '0 16px',
@@ -178,7 +189,7 @@ export const FrameSceneComponent: React.FC<SceneRenderProps<FrameSceneSpec>> = (
                 opacity: taglineA,
                 transform: `translateY(${(1 - taglineA) * 14}px)`,
                 fontFamily: sansFamily,
-                maxWidth: 1500,
+                maxWidth: taglineMaxW,
                 textAlign: 'center',
                 lineHeight: 1.32,
                 padding: '0 24px',
@@ -209,7 +220,7 @@ export const FrameSceneComponent: React.FC<SceneRenderProps<FrameSceneSpec>> = (
                 transform: `translateY(${(1 - footA) * 12}px)`,
                 marginTop: 70,
                 letterSpacing: 1,
-                maxWidth: 1480,
+                maxWidth: footMaxW,
                 textAlign: 'center',
                 lineHeight: 1.4,
                 padding: '0 16px',

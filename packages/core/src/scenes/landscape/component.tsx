@@ -51,12 +51,14 @@ import {
   truncateForSlot,
   type EmbeddedSceneSpec,
 } from '../../_shared';
+import {useStage} from '@bjelser/kit';
 import type {LandscapeScene as LandscapeSceneSpec, LandscapeSubjectSpec} from './validate';
 
 // The plot rectangle inside the 1920×1080 stage. Pulled in from the
 // SceneFrame header band at top and the wordmark/progress band at bottom;
-// left/right gutters hold the axis lowLabel/highLabel phrases.
-const PLOT = {x: 280, y: 308, w: 1360, h: 608};
+// left/right gutters hold the axis lowLabel/highLabel phrases. The 16:9
+// fallback; the component recomputes for portrait / square.
+const PLOT_DEFAULT = {x: 280, y: 308, w: 1360, h: 608};
 
 export const LandscapeSceneComponent: React.FC<SceneRenderProps<LandscapeSceneSpec>> = ({
   scene,
@@ -67,6 +69,12 @@ export const LandscapeSceneComponent: React.FC<SceneRenderProps<LandscapeSceneSp
   const {ts, sceneIndex, sceneCount, style} = common;
   const {bg, ink, accent: accentTokens} = style.tokens;
   const viz = style.visualization;
+  // Aspect-aware plot rectangle — at 16:9 this resolves to {280, 308,
+  // 1360, 608}. On a narrower canvas the plot tracks STAGE.
+  const stage = useStage();
+  const PLOT = stage.worldW === 1920
+    ? PLOT_DEFAULT
+    : {x: stage.x, y: stage.y, w: stage.w, h: stage.h};
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
   const accentHex = paletteSceneHex(undefined, undefined, style);
@@ -151,7 +159,7 @@ export const LandscapeSceneComponent: React.FC<SceneRenderProps<LandscapeSceneSp
       <AbsoluteFill>
         <svg
           style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
-          viewBox="0 0 1920 1080"
+          viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
         >
           {/* the soft gridlines — quartering the plot, faintly. `visualization.
               gridLines` (a style knob) gates them: an executive deck can drop

@@ -15,6 +15,7 @@
 import React, {useMemo} from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {ResolvedStyle} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {FittedText} from './fitted-text';
 import {glow} from './helpers';
@@ -96,6 +97,15 @@ export const SceneFrame: React.FC<{
   const {bg, ink} = style.tokens;
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
+  // Aspect-aware world dims — drives the SVG viewBoxes for the starfield
+  // and motes layers, and shifts the title band up in portrait so the
+  // heading lands inside the chrome's safe area.
+  const stage = useStage();
+  const isPortrait = stage.worldH > stage.worldW;
+  // In 16:9 / square the heading sits at 86 / 180; in portrait we lift it
+  // to give the diagram more room — there's no horizontal headroom to
+  // spare when the canvas is tall and narrow.
+  const titleTop = isPortrait ? 80 : 86;
   const intro = interpolate(frame, [0, 18], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -121,7 +131,7 @@ export const SceneFrame: React.FC<{
     >
       {/* deep starfield — the farthest layer, barely parallaxes */}
       <AbsoluteFill style={{transformOrigin: '50% 50%', transform: par(cam, 0.1)}}>
-        <svg width="100%" height="100%" viewBox="0 0 1920 1080">
+        <svg width="100%" height="100%" viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}>
           {STARS.map((s, i) => (
             <circle key={i} cx={s.x} cy={s.y} r={s.rad} fill="#aab6d0" opacity={s.o} />
           ))}
@@ -165,7 +175,7 @@ export const SceneFrame: React.FC<{
 
       {/* drifting motes — the nearest ambient layer */}
       <AbsoluteFill style={{transformOrigin: '50% 50%', transform: par(cam, 0.46)}}>
-        <svg width="100%" height="100%" viewBox="0 0 1920 1080">
+        <svg width="100%" height="100%" viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}>
           {motes.map((m, i) => (
             <circle
               key={i}
@@ -193,8 +203,9 @@ export const SceneFrame: React.FC<{
       <div
         style={{
           position: 'absolute',
-          left: 120,
-          top: 86,
+          left: isPortrait ? 60 : 120,
+          top: titleTop,
+          right: isPortrait ? 60 : undefined,
           opacity: intro,
           transform: `translateX(${(1 - intro) * -18}px)`,
         }}
@@ -215,7 +226,7 @@ export const SceneFrame: React.FC<{
               helper falls back to ellipsis rather than overflowing. */}
           <FittedText
             text={kicker}
-            maxWidth={1480}
+            maxWidth={isPortrait ? stage.worldW - 140 : 1480}
             basePx={21}
             floorPx={13}
             charAdvance={0.78}
@@ -238,20 +249,20 @@ export const SceneFrame: React.FC<{
           // long ones, so the auto-shrink doesn't degrade the common case.
           <FittedText
             text={heading}
-            maxWidth={1680}
+            maxWidth={isPortrait ? stage.worldW - 120 : 1680}
             basePx={
               heading.length <= 38
-                ? 54
+                ? (isPortrait ? 44 : 54)
                 : heading.length <= 50
-                  ? 46
+                  ? (isPortrait ? 38 : 46)
                   : heading.length <= 64
-                    ? 40
-                    : 34
+                    ? (isPortrait ? 32 : 40)
+                    : (isPortrait ? 28 : 34)
             }
-            floorPx={26}
+            floorPx={isPortrait ? 22 : 26}
             charAdvance={0.55}
             mode="shrink-wrap"
-            maxLines={2}
+            maxLines={isPortrait ? 3 : 2}
             lineHeight={1.06}
             style={{
               fontWeight: 700,

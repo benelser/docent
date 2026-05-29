@@ -33,6 +33,7 @@ import {
   useVideoConfig,
 } from 'remotion';
 import type {ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {FittedText, Narration, SceneFrame, glow} from '../../_shared';
 import type {ProvocationScene as ProvocationSceneSpec} from './validate';
@@ -61,12 +62,18 @@ export const ProvocationSceneComponent: React.FC<
   const why = scene.why ?? '';
   const invitation = scene.invitation ?? '';
 
+  // Aspect-aware question width — at 16:9 stays at 1480.
+  const stage = useStage();
+  const questionMaxW = stage.worldW === 1920 ? 1480 : stage.worldW - 120;
+  const fsScale = Math.min(1, questionMaxW / 1480);
+
   // Tiered font size for the unresolved question — it is the visual centre.
-  const fontSize =
-    raw.length <= 50 ? 88 :
-    raw.length <= 90 ? 70 :
-    raw.length <= 140 ? 58 :
-    48;
+  const fontSize = Math.round(
+    (raw.length <= 50 ? 88 :
+     raw.length <= 90 ? 70 :
+     raw.length <= 140 ? 58 :
+     48) * fsScale
+  );
 
   // Three-stage enter — the question first (the eye lands on it), then the
   // why, then the invitation. The invitation arrives last and lingers.
@@ -97,13 +104,13 @@ export const ProvocationSceneComponent: React.FC<
           style={{
             opacity: questionEnter,
             transform: `translateY(${(1 - questionEnter) * 18}px)`,
-            maxWidth: 1480,
+            maxWidth: questionMaxW,
             textAlign: 'center',
           }}
         >
           <FittedText
             text={unresolved}
-            maxWidth={1480}
+            maxWidth={questionMaxW}
             basePx={fontSize}
             floorPx={36}
             charAdvance={0.55}

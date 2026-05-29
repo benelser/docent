@@ -27,6 +27,7 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {FittedText, Narration, SceneFrame, activeBeatIndex, glow} from '../../_shared';
 import type {ConcessionScene as ConcessionSceneSpec} from './validate';
@@ -65,9 +66,12 @@ export const ConcessionSceneComponent: React.FC<
       : spring({frame: local, fps, config: {damping: 200, mass: 1}});
   };
 
-  // Auto-fit per-item — each row is at most ~700px wide (two columns inside
-  // a 1680 safe band, with a comfortable gutter).
-  const colWidth = 720;
+  // Aspect-aware safe band — at 16:9 stays at the legacy 120/1680/720 numbers.
+  const stage = useStage();
+  const bandLeft = stage.worldW === 1920 ? 120 : 60;
+  const bandWidth = stage.worldW === 1920 ? 1680 : stage.worldW - bandLeft * 2;
+  // Auto-fit per-item — each row is at most ~half the band wide.
+  const colWidth = stage.worldW === 1920 ? 720 : (bandWidth - 60) / 2;
 
   // `heading` is optional on SceneFrame; build the prop bag conditionally so
   // future strictness flags don't break the call site (mirrors the pattern in
@@ -86,11 +90,11 @@ export const ConcessionSceneComponent: React.FC<
       <div
         style={{
           position: 'absolute',
-          left: 120,
-          top: 268,
-          width: 1680,
+          left: bandLeft,
+          top: stage.worldH === 1080 ? 268 : 320,
+          width: bandWidth,
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: stage.worldW === 1920 ? 'row' : 'column',
           gap: 60,
         }}
       >

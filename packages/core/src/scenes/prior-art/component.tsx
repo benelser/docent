@@ -26,6 +26,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {Beat, SceneRenderProps} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {
   FittedText,
@@ -145,13 +146,16 @@ export const Component: React.FC<SceneRenderProps<PriorArtScene>> = ({
   };
 
   // Table geometry — gutter for dimension labels, even columns for systems.
-  const tableW = 1620;
-  const tableX = (1920 - tableW) / 2;
-  const gutterW = 360;
+  // Aspect-aware: 16:9 keeps the legacy {1620, 360, 312} numbers; portrait
+  // / square shrink to STAGE.
+  const stage = useStage();
+  const tableW = stage.worldW === 1920 ? 1620 : stage.w + 40;
+  const tableX = (stage.worldW - tableW) / 2;
+  const gutterW = stage.worldW === 1920 ? 360 : Math.min(360, tableW * 0.32);
   const colW = (tableW - gutterW) / Math.max(1, systems.length);
   const headerH = 108;
   const rowH = Math.min(132, 560 / Math.max(1, dimensions.length));
-  const tableY = 312;
+  const tableY = stage.worldW === 1920 ? 312 : stage.y - 26;
 
   const intro = spring({frame, fps, config: {damping: 200}});
 

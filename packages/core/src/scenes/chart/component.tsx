@@ -36,7 +36,9 @@ import {
   monoFamily,
   truncateForSlot,
 } from '../../_shared';
-import {STAGE, tweenValue} from './_helpers';
+import {STAGE as _STAGE_DEFAULT, tweenValue} from './_helpers';
+import {useStage} from '@bjelser/kit';
+void _STAGE_DEFAULT;
 import type {
   ChartAxis as Axis,
   ChartScene as ChartSceneSpec,
@@ -108,6 +110,9 @@ export const ChartSceneComponent: React.FC<SceneRenderProps<ChartSceneSpec>> = (
   const {bg, ink} = style.tokens;
   const viz = style.visualization as unknown as ChartVisualizationKnobs;
   const accentHex = accentOf(style, undefined);
+  // Aspect-aware STAGE — shadow the imported default so all geometry below
+  // reads off the rectangle for the current composition.
+  const STAGE = useStage();
 
   // ChartScene reads its OWN axis variant — the numeric domain. Narrow the
   // widened `Axis | LandscapeAxis` via the `kind` discriminator; the
@@ -278,7 +283,7 @@ export const ChartSceneComponent: React.FC<SceneRenderProps<ChartSceneSpec>> = (
       <AbsoluteFill>
         <svg
           style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
-          viewBox="0 0 1920 1080"
+          viewBox={`0 0 ${STAGE.worldW} ${STAGE.worldH}`}
         >
           {/* ---- gridlines ---- */}
           {/* `visualization.gridLines` (a style knob) gates these. When the

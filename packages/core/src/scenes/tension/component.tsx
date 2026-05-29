@@ -57,7 +57,10 @@ import {
   monoFamily,
 } from '../../_shared';
 import {resolveLayout, STAGE, type Node} from './_helpers';
+import {useStage} from '@bjelser/kit';
+import type {StageRect} from '@bjelser/kit';
 import type {TensionScene as TensionSceneSpec} from './validate';
+void STAGE; // module-level default kept for the linker; runtime reads useStage()
 
 // ----- register palette -----------------------------------------------------
 //
@@ -186,7 +189,7 @@ type Slot = {
 
 // Compute the full ledger layout. `nodes` is already kind-bucketed; the
 // returned slots fit within STAGE and never overlap.
-const layoutLedger = (nodes: Node[]): Slot[] => {
+const layoutLedger = (nodes: Node[], STAGE: StageRect): Slot[] => {
   const chosen = nodes.filter((n) => laneOf(n) === 'chosen');
   const rejected = nodes.filter((n) => laneOf(n) === 'rejected');
   const risks = nodes.filter((n) => laneOf(n) === 'risk');
@@ -787,11 +790,14 @@ const SketchBackdrop: React.FC<{
   accentHex: string;
   bgLine: string;
   bgVoid: string;
-}> = ({accentHex, bgLine, bgVoid}) => (
+}> = ({accentHex, bgLine, bgVoid}) => {
+  // useStage() can't be called at the JSX site below, so resolve once here.
+  const stage = useStage();
+  return (
   <>
     {/* starfield */}
     <AbsoluteFill>
-      <svg width="100%" height="100%" viewBox="0 0 1920 1080">
+      <svg width="100%" height="100%" viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}>
         {STARS.map((s, i) => (
           <circle key={i} cx={s.x} cy={s.y} r={s.rad} fill="#aab6d0" opacity={s.o} />
         ))}
@@ -834,7 +840,8 @@ const SketchBackdrop: React.FC<{
       }}
     />
   </>
-);
+  );
+};
 
 const WhiteboardBackdrop: React.FC = () => (
   <>
@@ -952,6 +959,9 @@ export const TensionSceneComponent: React.FC<
   const frame = useCurrentFrame();
   const {ts, sceneIndex, sceneCount, style} = common;
   const {bg, accent: accentTokens} = style.tokens;
+  // Aspect-aware STAGE — passed to layoutLedger and Chrome so all column
+  // / lane / risk-band geometry scales with the rendering canvas.
+  const STAGE = useStage();
   const accentOf = (k?: string): string =>
     (k && ((accentTokens as unknown) as Record<string, string>)[k]) || accentTokens.blue;
   const accentHex = accentOf(undefined);
@@ -986,7 +996,7 @@ export const TensionSceneComponent: React.FC<
   const nodes = resolveLayout(layoutNodes, cols);
 
   // Group nodes by lane and lay out the ledger.
-  const slots = layoutLedger(nodes);
+  const slots = layoutLedger(nodes, STAGE);
   const slotById: Record<string, Slot> = {};
   slots.forEach((s) => {
     slotById[s.node.id] = s;

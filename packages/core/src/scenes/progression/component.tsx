@@ -32,6 +32,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 
 import type {Beat, BeatTimelineSlot, SceneRenderProps} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {
   FittedText,
@@ -114,10 +115,13 @@ export const ProgressionSceneComponent: React.FC<SceneRenderProps<ProgressionSce
   const hasFocus = focusIds.size > 0;
 
   // Track geometry. Stages sit evenly along a horizontal band; a cycle adds a
-  // returning arc below.
-  const left = 270;
-  const right = 1650;
-  const trackY = 560;
+  // returning arc below. Aspect-aware: at 16:9 these resolve to the legacy
+  // {270, 1650, 560} numbers; portrait / square shifts the band to land
+  // inside STAGE.
+  const stage = useStage();
+  const left = stage.worldW === 1920 ? 270 : stage.x + 40;
+  const right = stage.worldW === 1920 ? 1650 : stage.x + stage.w - 40;
+  const trackY = stage.worldW === 1920 ? 560 : stage.y + stage.h * 0.4;
   const n = Math.max(1, stages.length);
   const stageX = (i: number): number =>
     n === 1 ? (left + right) / 2 : left + (i * (right - left)) / (n - 1);
@@ -203,7 +207,7 @@ export const ProgressionSceneComponent: React.FC<SceneRenderProps<ProgressionSce
       <AbsoluteFill>
         <svg
           style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
-          viewBox="0 0 1920 1080"
+          viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
         >
           {braided ? (
             <>

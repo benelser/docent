@@ -38,7 +38,9 @@ import type {
   ResolvedStyle,
   Scene,
   SceneRenderProps,
+  StageRect,
 } from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 // ---------------------------------------------------------------------------
 // Per-type spec shape — the scene branch the mechanism plugin owns.
@@ -109,7 +111,12 @@ export interface MechanismScene extends Scene {
 // byte-equivalently from v2.5.x.
 // ---------------------------------------------------------------------------
 
-/** The stage: the rectangle within the 1920x1080 frame where diagrams live. */
+/**
+ * The drawable stage — the rectangle within the canvas where diagrams
+ * live. The legacy 16:9 numbers ({x:235, y:338, w:1450, h:560}) remain the
+ * module-level fallback for pure helpers; the rendered scene reads the
+ * aspect-aware STAGE via `useStage()` (kit) inside the component body.
+ */
 const STAGE = {x: 235, y: 338, w: 1450, h: 560};
 
 /** Translucent accent fill, for glows and panel washes. */
@@ -197,15 +204,21 @@ const SceneFrame: React.FC<SceneFrameProps> = ({
   const ink = style.tokens.ink;
   const bg = style.tokens.bg;
   const sansFamily = style.tokens.typography.family.sans;
+  // Aspect-aware STAGE — chrome margins scale with the aspect ratio so
+  // portrait / square renders don't crop the heading band.
+  const stage = useStage();
+  // Heading position — in 16:9 the original top is 140; in portrait the
+  // safe band is narrower so we land higher (80) to give the body room.
+  const headingTop = stage.worldH === 1920 ? 80 : 140;
   return (
     <AbsoluteFill style={{background: bg.base}}>
       {/* kicker / heading / scene-count chrome */}
       <div
         style={{
           position: 'absolute',
-          left: STAGE.x,
-          top: 140,
-          right: STAGE.x,
+          left: stage.x,
+          top: headingTop,
+          right: stage.x,
           color: ink.mid,
           fontFamily: sansFamily,
         }}
@@ -241,7 +254,7 @@ const SceneFrame: React.FC<SceneFrameProps> = ({
       <div
         style={{
           position: 'absolute',
-          right: STAGE.x,
+          right: stage.x,
           top: 80,
           fontSize: 12,
           fontFamily: style.tokens.typography.family.mono,
@@ -353,10 +366,12 @@ const FittedText: React.FC<FittedTextProps> = ({
 // ---------------------------------------------------------------------------
 
 // Normalize a 0..1 position over the STAGE rectangle. Parts in a spec carry
-// `pos: {x, y}` with both in 0..1; here we resolve them to pixel coords.
-const partXY = (p: MechanismPart): {x: number; y: number} => ({
-  x: STAGE.x + Math.max(0, Math.min(1, p.pos.x)) * STAGE.w,
-  y: STAGE.y + Math.max(0, Math.min(1, p.pos.y)) * STAGE.h,
+// `pos: {x, y}` with both in 0..1; here we resolve them to pixel coords
+// inside the (aspect-aware) STAGE — `stage` is whatever `useStage()` returns
+// for the current composition.
+const partXY = (p: MechanismPart, stage: StageRect): {x: number; y: number} => ({
+  x: stage.x + Math.max(0, Math.min(1, p.pos.x)) * stage.w,
+  y: stage.y + Math.max(0, Math.min(1, p.pos.y)) * stage.h,
 });
 
 // The integer length of the motion loop — used by freezes to address a
@@ -406,6 +421,11 @@ export const Component: React.FC<SceneRenderProps<MechanismScene>> = ({
   const {ts, sceneIndex, sceneCount, style} = common as CommonSceneProps;
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
+  // Aspect-aware STAGE — 16:9 returns the legacy band; 9:16 / 1:1 each
+  // return their own narrower rectangle. Shadows the module-level STAGE
+  // constant inside this component body so all geometry below picks up
+  // the right STAGE for the current composition.
+  const STAGE = useStage();
 
   const accentHex = sceneAccentHex(style);
   const parts: MechanismPart[] = scene.parts ?? [];
@@ -512,8 +532,8 @@ export const Component: React.FC<SceneRenderProps<MechanismScene>> = ({
     const a = partById.get(step.fromId);
     const b = partById.get(step.toId);
     if (!a || !b) return null;
-    const ap = partXY(a);
-    const bp = partXY(b);
+    const ap = partXY(a, STAGE);
+    const bp = partXY(b, STAGE);
     let tt = t;
     if (motion.kind === 'descend') {
       tt = phase === 1 ? 1 : 1 - Math.pow(1 - t, 1.8);
@@ -561,7 +581,7 @@ export const Component: React.FC<SceneRenderProps<MechanismScene>> = ({
             width: '100%',
             height: '100%',
           }}
-          viewBox="0 0 1920 1080"
+          viewBox={`0 0 ${STAGE.worldW} ${STAGE.worldH}`}
         >
           {/* ---- the loop path (cycle motion) ---- */}
           {motion.kind === 'cycle' && motion.path.length >= 2 && (
@@ -571,8 +591,8 @@ export const Component: React.FC<SceneRenderProps<MechanismScene>> = ({
                 const next = motion.path[(i + 1) % motion.path.length];
                 const b = next ? partById.get(next) : undefined;
                 if (!a || !b) return null;
-                const ap = partXY(a);
-                const bp = partXY(b);
+                const ap = partXY(a, STAGE);
+                const bp = partXY(b, STAGE);
                 return (
                   <line
                     key={`cyc-${i}`}
@@ -599,8 +619,8 @@ export const Component: React.FC<SceneRenderProps<MechanismScene>> = ({
                   const a = partById.get(step.fromId!);
                   const b = partById.get(step.toId!);
                   if (!a || !b) return null;
-                  const ap = partXY(a);
-                  const bp = partXY(b);
+                  const ap = partXY(a, STAGE);
+                  const bp = partXY(b, STAGE);
                   return (
                     <line
                       x1={ap.x}
@@ -620,7 +640,7 @@ export const Component: React.FC<SceneRenderProps<MechanismScene>> = ({
 
         {/* ---- parts: cards / values / tokens at named positions ---- */}
         {parts.map((p, i) => {
-          const xy = partXY(p);
+          const xy = partXY(p, STAGE);
           const col = partAccentHex(p, i);
           const isActive = step.activeIds.has(p.id);
           const kind = p.kind ?? 'node';
@@ -807,7 +827,12 @@ export const Component: React.FC<SceneRenderProps<MechanismScene>> = ({
               position: 'absolute',
               left: 0,
               right: 0,
-              bottom: 220,
+              // Land below the last part row. In 16:9 STAGE.y+STAGE.h = 898,
+              // worldH - 220 = 860 — close enough that the legacy hand-tuned
+              // bottom:220 sits a hair above the diagram's bottom. Compute
+              // from STAGE so portrait / square place this in the gap below
+              // the diagram instead of on top of the bottom-row card.
+              bottom: STAGE.worldH - (STAGE.y + STAGE.h) - 8,
               textAlign: 'center',
               opacity: 0.85 * intro,
             }}

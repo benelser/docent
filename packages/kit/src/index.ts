@@ -229,3 +229,21 @@ export type {
   BeatSchedule,
   TtsAudioMap,
 } from './remotion/schedule';
+
+// ---------- Aspect-aware canvas dimensions + STAGE -------------------------
+//
+// `meta.aspect` → canvas dims (`resolveDimensions`) → `useStage()` hook each
+// scene calls to retrieve its aspect-aware STAGE rectangle + world
+// dimensions. The composition reads `resolveDimensions`; every scene
+// component reads `useStage`.
+
+export {
+  STAGE_16_9,
+  STAGE_9_16,
+  STAGE_1_1,
+  resolveDimensions,
+  resolveStage,
+  useStage,
+} from './remotion/dimensions';
+
+export type {StageRect} from './remotion/dimensions';

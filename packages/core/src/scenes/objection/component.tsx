@@ -37,6 +37,7 @@ import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 
 import type {ResolvedStyle, Scene, SceneRenderProps} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {
   FittedText,
@@ -171,7 +172,10 @@ export const ObjectionSceneComponent: React.FC<SceneRenderProps<ObjectionSpec>> 
   const active = activeBeatIndex(ts.beats, frame);
   void active;
 
-  const SLOT_W = 1480;
+  // Aspect-aware: at 16:9 SLOT_W stays at 1480; on a 1080-wide canvas the
+  // claim/objection/response stack shrinks to fit STAGE.
+  const stage = useStage();
+  const SLOT_W = stage.worldW === 1920 ? 1480 : stage.w + 40;
 
   // Panel — the shared shape. `kind` drives accent + dim behaviour.
   const Panel: React.FC<{
@@ -267,7 +271,7 @@ export const ObjectionSceneComponent: React.FC<SceneRenderProps<ObjectionSpec>> 
       <div
         style={{
           position: 'absolute',
-          left: (1920 - SLOT_W) / 2,
+          left: (stage.worldW - SLOT_W) / 2,
           top: 248,
           display: 'flex',
           flexDirection: 'column',

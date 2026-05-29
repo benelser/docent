@@ -16,6 +16,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {Scene, SceneRenderProps} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {
   BoundValue,
@@ -425,13 +426,17 @@ export const QuantitiesScene: React.FC<SceneRenderProps<Scene>> = ({
   const colLabels: string[] = matrix?.colLabels ?? [];
   const cells: string[][] = matrix?.cells ?? [];
 
-  const gridW = 1480;
-  const gridX = (1920 - gridW) / 2;
-  const rowHeadW = 320;
+  // Aspect-aware grid geometry — at 16:9 these resolve to the legacy
+  // {1480, 220, 320, 84, 332} band; portrait / square shrinks the grid
+  // to STAGE.
+  const stage = useStage();
+  const gridW = stage.worldW === 1920 ? 1480 : stage.w + 40;
+  const gridX = (stage.worldW - gridW) / 2;
+  const rowHeadW = stage.worldW === 1920 ? 320 : Math.min(320, gridW * 0.3);
   const colW = (gridW - rowHeadW) / Math.max(1, colLabels.length);
   const colHeadH = 84;
   const cellH = Math.min(116, 600 / Math.max(1, rowLabels.length));
-  const gridY = 332;
+  const gridY = stage.worldW === 1920 ? 332 : stage.y - 6;
   const intro = spring({frame, fps, config: {damping: 200}});
 
   // Cells reveal in row-major order. `cadence` shapes how the cells a beat

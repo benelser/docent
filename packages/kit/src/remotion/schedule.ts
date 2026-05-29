@@ -26,8 +26,13 @@ import type {Engine} from '../engine';
 
 /** Default film resolution when `meta.resolution` is absent. */
 export const DEFAULT_FPS = 30;
-export const DEFAULT_WIDTH = 1920;
-export const DEFAULT_HEIGHT = 1080;
+// Aspect-aware canvas dims live in `./dimensions.ts`; re-exported here so
+// existing call-sites (`bindings.ts`, the entry) can keep importing
+// `DEFAULT_WIDTH` / `DEFAULT_HEIGHT` while the engine reads `meta.aspect`
+// for the modern path.
+export {DEFAULT_WIDTH, DEFAULT_HEIGHT, resolveDimensions} from './dimensions';
+
+import {DEFAULT_WIDTH, DEFAULT_HEIGHT, resolveDimensions} from './dimensions';
 
 /** Seconds of quiet at the head of every scene before its first beat. */
 const LEAD_SECONDS = 0.15;
@@ -161,8 +166,14 @@ export const buildFrameSchedule = (
 ): FrameSchedule => {
   const res = spec.meta.resolution;
   const fps = res?.fps ?? DEFAULT_FPS;
-  const width = res?.width ?? DEFAULT_WIDTH;
-  const height = res?.height ?? DEFAULT_HEIGHT;
+  // Honour `meta.resolution` first (explicit override); fall back to the
+  // `meta.aspect` resolver (modern path). Defaults to 1920x1080 (16:9).
+  const dims = resolveDimensions(spec.meta.aspect);
+  const width = res?.width ?? dims.w;
+  const height = res?.height ?? dims.h;
+  // Reference DEFAULT_WIDTH/HEIGHT so the re-export above is treated as used.
+  void DEFAULT_WIDTH;
+  void DEFAULT_HEIGHT;
   const leadFrames = Math.round(LEAD_SECONDS * fps);
 
   const scenes: SceneSchedule[] = [];

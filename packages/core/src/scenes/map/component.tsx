@@ -51,7 +51,9 @@ import {
   monoFamily,
   truncateForSlot,
 } from '../../_shared';
-import {STAGE} from './_helpers';
+import {STAGE as _STAGE_DEFAULT} from './_helpers';
+import {useStage} from '@bjelser/kit';
+void _STAGE_DEFAULT;
 import type {
   MapConnection,
   MapMarker,
@@ -79,6 +81,9 @@ export const MapSceneComponent: React.FC<SceneRenderProps<MapSceneSpec>> = ({
   const {bg, ink} = style.tokens;
   const accentHex = accentOf(style);
   const glowScale = 1;
+  // Aspect-aware STAGE — used by `regionRect` for grid-cell math and by the
+  // SVG `viewBox`. Shadows the module-scoped fallback.
+  const STAGE = useStage();
   const layout: 'topology' | 'grid' = scene.layout ?? 'topology';
   const regions: MapRegion[] = scene.regions ?? [];
   const markers: MapMarker[] = scene.markers ?? [];
@@ -531,7 +536,7 @@ export const MapSceneComponent: React.FC<SceneRenderProps<MapSceneSpec>> = ({
         <svg
           width="100%"
           height="100%"
-          viewBox="0 0 1920 1080"
+          viewBox={`0 0 ${STAGE.worldW} ${STAGE.worldH}`}
           style={{position: 'absolute', inset: 0}}
         >
           <rect

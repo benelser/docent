@@ -38,11 +38,8 @@ import {
   interFamily,
   monoFamily,
 } from '../../_shared';
+import {useStage} from '@bjelser/kit';
 import type {WalkthroughScene as WalkthroughSceneSpec} from './validate';
-
-// Mirror of packages/engine/src/engine/layout.ts:STAGE — the central
-// region inside the 1920×1080 frame the scene body draws within.
-const STAGE = {x: 235, y: 338, w: 1450, h: 560};
 
 interface WalkthroughMessage {
   from: string;
@@ -81,9 +78,15 @@ export const WalkthroughSceneComponent: React.FC<
   const {bg, ink} = style.tokens;
   const accentHex = accentOf(style, undefined);
   const actors = scene.actors ?? [];
+  // Aspect-aware STAGE — 16:9 returns the legacy {x:235, y:338, w:1450, h:560}
+  // band; 9:16/1:1 return their respective narrower stages.
+  const STAGE = useStage();
 
-  const lifeTop = 366;
-  const lifeBottom = 966;
+  // Lifelines span from just under the heading band down to just above the
+  // progress chrome. Derived from STAGE so the column scales with aspect.
+  // In 16:9 this resolves to 366 / 966 (the legacy hand-tuned numbers).
+  const lifeTop = STAGE.y + 28;
+  const lifeBottom = STAGE.y + STAGE.h + 68;
   const left = STAGE.x + 140;
   const right = STAGE.x + STAGE.w - 140;
   const actorX: Record<string, number> = {};
@@ -116,7 +119,7 @@ export const WalkthroughSceneComponent: React.FC<
     >
       <svg
         style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
-        viewBox="0 0 1920 1080"
+        viewBox={`0 0 ${STAGE.worldW} ${STAGE.worldH}`}
       >
         {/* lifelines */}
         {actors.map((a) => {

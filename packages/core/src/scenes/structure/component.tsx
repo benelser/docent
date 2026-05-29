@@ -45,6 +45,7 @@ import {
 } from './_helpers';
 import {nodeBox, resolveLayout, type Box} from './_layout';
 import {resolveCamera} from './_camera';
+import {useStage} from '@bjelser/kit';
 import {NodeRepresentation} from './_node-repr';
 import {Pulse} from './_pulse';
 import type {StructureNode, StructureScene} from './_types';
@@ -58,6 +59,9 @@ export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>>
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const {ts, sceneIndex, sceneCount, style} = common;
+  // Aspect-aware STAGE — passed through to nodeBox/cellCenter so the grid
+  // scales with the canvas.
+  const stage = useStage();
 
   // Resolve an accent key against the active token bundle. Mirrors the
   // historical `accent(k)` fallback: unknown / undefined → blue.
@@ -79,7 +83,7 @@ export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>>
 
   const boxes: Record<string, Box> = {};
   nodes.forEach((n) => {
-    boxes[n.id] = nodeBox(n, cols, rows);
+    boxes[n.id] = nodeBox(n, cols, rows, stage);
   });
 
   // First frame at which each node/edge id is revealed. `cadence` (a beat
@@ -193,8 +197,8 @@ export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>>
     // The container box tweens continuously between the two definitions'
     // geometry — the bounding box interpolates, so the morph reads as one
     // object changing rather than two objects swapping.
-    const fromBox = nodeBox(fromDef, cols, rows);
-    const toBox = nodeBox(toDef, cols, rows);
+    const fromBox = nodeBox(fromDef, cols, rows, stage);
+    const toBox = nodeBox(toDef, cols, rows, stage);
     const box: Box = {
       cx: fromBox.cx + (toBox.cx - fromBox.cx) * p,
       cy: fromBox.cy + (toBox.cy - fromBox.cy) * p,
@@ -296,7 +300,7 @@ export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>>
             owns); reveal/dim follows the host node's state. */}
         <svg
           style={{position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none'}}
-          viewBox="0 0 1920 1080"
+          viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
         >
           {nodes.map((n) => {
             if (!n.embed) return null;

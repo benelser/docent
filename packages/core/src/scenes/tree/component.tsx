@@ -57,7 +57,10 @@ import {
   paletteSceneHex,
 } from '../../_shared';
 import {STAGE} from './_helpers';
+import {useStage} from '@bjelser/kit';
+import type {StageRect} from '@bjelser/kit';
 import type {TreeNodeSpec, TreeScene as TreeSceneSpec} from './validate';
+void STAGE;
 
 // ----- layout: a depth-2 walk of the tree ----------------------------------
 // First pass — width: each leaf is 1, each internal node is the sum of its
@@ -182,10 +185,15 @@ const layoutTree = (root: TNode): Layout => {
 // Map a normalized (b, d) to STAGE pixel space, branching on orientation.
 // The breadth axis spans nearly the full STAGE on its dimension; the depth
 // axis uses padded margins so the root/leaf rows don't touch the edge.
+//
+// `stage` is the aspect-aware rectangle from `useStage()` — passed in by
+// the component rather than read off a module-scoped constant, so a 9:16
+// or 1:1 render maps onto its own narrower STAGE.
 const placeNode = (
   ln: LayoutNode,
   orientation: 'vertical' | 'horizontal',
   depthMax: number,
+  stage: StageRect,
 ): {cx: number; cy: number} => {
   // Padding on the depth axis (so the root and leaves breathe). The
   // breadth axis stays tight to the STAGE; nodes are centred on their
@@ -194,16 +202,16 @@ const placeNode = (
     const dPad = depthMax === 0 ? 0 : 0.06;
     const dx = dPad + ln.d * (1 - 2 * dPad);
     return {
-      cx: STAGE.x + dx * STAGE.w,
-      cy: STAGE.y + (0.08 + ln.b * 0.84) * STAGE.h,
+      cx: stage.x + dx * stage.w,
+      cy: stage.y + (0.08 + ln.b * 0.84) * stage.h,
     };
   }
   // vertical (default)
   const dPad = depthMax === 0 ? 0 : 0.06;
   const dy = dPad + ln.d * (1 - 2 * dPad);
   return {
-    cx: STAGE.x + (0.08 + ln.b * 0.84) * STAGE.w,
-    cy: STAGE.y + dy * STAGE.h,
+    cx: stage.x + (0.08 + ln.b * 0.84) * stage.w,
+    cy: stage.y + dy * stage.h,
   };
 };
 
@@ -215,21 +223,22 @@ const placeNode = (
 const nodeDims = (
   layout: Layout,
   orientation: 'vertical' | 'horizontal',
+  stage: StageRect,
 ): {w: number; h: number} => {
   const leaves = Math.max(1, layout.breadthTotal);
   if (orientation === 'horizontal') {
-    // breadth axis is vertical; divide STAGE.h by leaves to bound card height
-    const slotH = STAGE.h / leaves;
+    // breadth axis is vertical; divide stage.h by leaves to bound card height
+    const slotH = stage.h / leaves;
     const h = Math.min(110, Math.max(64, slotH - 18));
-    // card width — divide STAGE.w by (depthMax+1) so the depth axis fits cleanly
-    const slotW = STAGE.w / (layout.depthMax + 1);
+    // card width — divide stage.w by (depthMax+1) so depth fits cleanly
+    const slotW = stage.w / (layout.depthMax + 1);
     const w = Math.min(300, Math.max(180, slotW - 32));
     return {w, h};
   }
   // vertical — breadth axis is horizontal; tighten card width to fit
-  const slotW = STAGE.w / leaves;
+  const slotW = stage.w / leaves;
   const w = Math.min(280, Math.max(140, slotW - 24));
-  const slotH = STAGE.h / (layout.depthMax + 1);
+  const slotH = stage.h / (layout.depthMax + 1);
   const h = Math.min(110, Math.max(64, slotH - 28));
   return {w, h};
 };
@@ -298,6 +307,8 @@ export const TreeSceneComponent: React.FC<SceneRenderProps<TreeSceneSpec>> = ({
   const {fps} = useVideoConfig();
   const {ts, sceneIndex, sceneCount, style} = common;
   const {bg, ink, accent: accentTokens} = style.tokens;
+  // Aspect-aware STAGE — the rectangle the tree is laid out within.
+  const stage = useStage();
   void interFamily; // SceneFrame consumes it; keep import to mirror engine
   const accentOf = (k?: string): string =>
     (k && (accentTokens as unknown as Record<string, string>)[k]) ||
@@ -326,11 +337,11 @@ export const TreeSceneComponent: React.FC<SceneRenderProps<TreeSceneSpec>> = ({
   }
 
   const layout = layoutTree(rootNode);
-  const {w: nodeW, h: nodeH} = nodeDims(layout, orientation);
+  const {w: nodeW, h: nodeH} = nodeDims(layout, orientation, stage);
 
   // Resolve pixel positions for every node.
   const placed = layout.nodes.map((ln) => {
-    const {cx, cy} = placeNode(ln, orientation, layout.depthMax);
+    const {cx, cy} = placeNode(ln, orientation, layout.depthMax, stage);
     return {ln, cx, cy};
   });
   const byId = new Map(placed.map((p) => [p.ln.id, p]));
@@ -398,7 +409,7 @@ export const TreeSceneComponent: React.FC<SceneRenderProps<TreeSceneSpec>> = ({
     >
       {/* edges first, so nodes draw on top */}
       <AbsoluteFill>
-        <svg width="100%" height="100%" viewBox="0 0 1920 1080">
+        <svg width="100%" height="100%" viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}>
           {layout.edges.map((e) => {
             const from = byId.get(e.from);
             const to = byId.get(e.to);
@@ -563,7 +574,7 @@ export const TreeSceneComponent: React.FC<SceneRenderProps<TreeSceneSpec>> = ({
             horizontal trees place embeds to the left (toward the root). */}
         <svg
           style={{position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none'}}
-          viewBox="0 0 1920 1080"
+          viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
         >
           {placed.map((p) => {
             if (!p.ln.embed) return null;

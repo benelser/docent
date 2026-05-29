@@ -41,10 +41,12 @@ import {
   interFamily,
   monoFamily,
 } from '../../_shared';
+import {useStage} from '@bjelser/kit';
 import type {VennNovelty, VennRegion, VennScene as VennSceneSpec} from './validate';
 
 // Circle geometry — STAGE coordinates (1920×1080). Diagrams sit in the
-// upper-middle so the novelty note has room beneath.
+// upper-middle so the novelty note has room beneath. The fallback constants
+// are kept for back-compat; the component computes center from useStage().
 const CENTER_X = 960;
 const CENTER_Y = 540;
 const RADIUS_2 = 280; // 2-set: large enough that the intersection is readable
@@ -128,6 +130,14 @@ export const VennSceneComponent: React.FC<SceneRenderProps<VennSceneSpec>> = ({
   const {ts, sceneIndex, sceneCount, style} = common;
   const {ink} = style.tokens;
   const accentHex = accentOf(style);
+  // Aspect-aware world dims — venn circles centre on the canvas centroid
+  // and reuse the legacy 960/540 numbers verbatim at 16:9.
+  const stage = useStage();
+  // Local shadows of the module-level constants — keep the rest of the
+  // body unchanged, just rebind the centre to the current canvas. In 16:9
+  // these resolve to 960 / 540 (the legacy hand-tuned numbers).
+  const CENTER_X = stage.worldW / 2;
+  const CENTER_Y = stage.worldH * (540 / 1080);
   const sets = scene.sets ?? [];
   // VennScene reads its OWN regions variant — VennRegion (with `in`). The
   // spec union (MapRegion[] | VennRegion[]) is widened on Scene so the same
@@ -238,7 +248,7 @@ export const VennSceneComponent: React.FC<SceneRenderProps<VennSceneSpec>> = ({
       <svg
         width="100%"
         height="100%"
-        viewBox="0 0 1920 1080"
+        viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
         style={{position: 'absolute', inset: 0}}
       >
         {/* Defs — a soft blur for the dangerous-intersection glow ring. */}

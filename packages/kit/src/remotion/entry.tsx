@@ -21,10 +21,9 @@ import {Engine} from '../engine';
 import type {Plugin} from '../protocols';
 import type {FilmSpec} from '../types/spec';
 import {DocentFilm, type DocentFilmProps} from './composition';
+import {resolveDimensions} from './dimensions';
 import {
   DEFAULT_FPS,
-  DEFAULT_HEIGHT,
-  DEFAULT_WIDTH,
   buildFrameSchedule,
   type TtsAudioMap,
 } from './schedule';
@@ -124,8 +123,15 @@ export const buildKitRoot = (opts: BuildKitRootOptions): React.FC => {
     height?: number;
   };
   const fps = res?.fps ?? metaAny.fps ?? DEFAULT_FPS;
-  const width = res?.width ?? metaAny.width ?? DEFAULT_WIDTH;
-  const height = res?.height ?? metaAny.height ?? DEFAULT_HEIGHT;
+  // Three precedence levels for canvas size:
+  //   1. Explicit `meta.resolution.width/height` (legacy override).
+  //   2. Legacy bare `meta.width/height` (very old shape).
+  //   3. `meta.aspect` resolver — the modern path; defaults to 16:9.
+  // The aspect resolver returns 1920x1080 for `undefined` so every legacy
+  // film without `meta.aspect` continues to render byte-identically.
+  const dims = resolveDimensions(opts.spec.meta.aspect);
+  const width = res?.width ?? metaAny.width ?? dims.w;
+  const height = res?.height ?? metaAny.height ?? dims.h;
   const durationInFrames = Math.max(1, Math.round(schedule.totalFrames));
   const compositionId = opts.compositionId ?? opts.spec.meta.id;
 

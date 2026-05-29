@@ -4,9 +4,15 @@
 // the rectangle.
 
 import type {StructureNode} from './_types';
+import type {StageRect} from '@bjelser/kit';
 
-// The stage: the rectangle within the 1920x1080 frame where diagrams live.
-export const STAGE = {x: 235, y: 338, w: 1450, h: 560};
+/**
+ * The default 16:9 STAGE — preserved as the module-level default so any
+ * call-site that doesn't yet thread an aspect-aware STAGE through still
+ * gets the legacy band. Aspect-aware renders call `cellCenter` / `nodeBox`
+ * with a `stage` argument (from `useStage()`) for portrait / square.
+ */
+export const STAGE: StageRect = {x: 235, y: 338, w: 1450, h: 560, worldW: 1920, worldH: 1080};
 
 export type Box = {cx: number; cy: number; w: number; h: number};
 
@@ -21,15 +27,17 @@ export const nodeSize = (n: StructureNode): {w: number; h: number} => ({
 });
 
 // Grid cell center. `col`/`row` may be fractional (e.g. col 1.5 to centre a
-// node between two columns above it).
+// node between two columns above it). `stage` defaults to the 16:9 STAGE
+// for back-compat — the component layer threads its `useStage()` result.
 export const cellCenter = (
   col: number,
   row: number,
   cols: number,
   rows: number,
+  stage: StageRect = STAGE,
 ): {cx: number; cy: number} => ({
-  cx: STAGE.x + ((col + 0.5) / cols) * STAGE.w,
-  cy: STAGE.y + ((row + 0.5) / rows) * STAGE.h,
+  cx: stage.x + ((col + 0.5) / cols) * stage.w,
+  cy: stage.y + ((row + 0.5) / rows) * stage.h,
 });
 
 // Box geometry with a hard overlap guarantee.
@@ -39,16 +47,21 @@ export const cellCenter = (
 // NODE_W_WIDE (516) overlaps a 3-col grid even at the original size. Cap the
 // box to the cell's available pixels, minus a gutter. A wide box spans two
 // cells. The renderer (Card) then auto-fits text inside the resulting box.
-const clampedBoxWidth = (n: StructureNode, cols: number): number => {
-  const cellW = STAGE.w / cols;
+const clampedBoxWidth = (n: StructureNode, cols: number, stage: StageRect): number => {
+  const cellW = stage.w / cols;
   const desired = n.wide ? NODE_W_WIDE : NODE_W;
   const maxAllowed = (n.wide ? cellW * 2 : cellW) - CELL_GUTTER;
   return Math.min(desired, Math.max(180, maxAllowed));
 };
 
-export const nodeBox = (n: StructureNode, cols: number, rows: number): Box => {
-  const {cx, cy} = cellCenter(n.col, n.row, cols, rows);
-  const w = clampedBoxWidth(n, cols);
+export const nodeBox = (
+  n: StructureNode,
+  cols: number,
+  rows: number,
+  stage: StageRect = STAGE,
+): Box => {
+  const {cx, cy} = cellCenter(n.col, n.row, cols, rows, stage);
+  const w = clampedBoxWidth(n, cols, stage);
   return {cx, cy, w, h: NODE_H};
 };
 

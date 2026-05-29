@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {ResolvedStyle} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 // EpigraphScene — a cited authority opens the film.
 //
@@ -79,6 +80,11 @@ export const EpigraphSceneRenderer: React.FC<EpigraphSceneRendererProps> = ({
   const attrEnter = spring({frame: frame - 36, fps, config: {damping: 200, mass: 1.1}});
 
   const isPull = treatment === 'pull';
+  // Aspect-aware width caps — at 16:9 stay at the legacy 1400/1480/1340.
+  const stage = useStage();
+  const blockMaxW = stage.worldW === 1920 ? 1480 : stage.worldW - 120;
+  const pullMaxW = stage.worldW === 1920 ? 1400 : stage.worldW - 140;
+  const pullInnerMaxW = stage.worldW === 1920 ? 1340 : stage.worldW - 200;
 
   return (
     <AbsoluteFill
@@ -110,7 +116,7 @@ export const EpigraphSceneRenderer: React.FC<EpigraphSceneRendererProps> = ({
           display: 'flex',
           alignItems: 'flex-start',
           gap: isPull ? 30 : 0,
-          maxWidth: isPull ? 1400 : 1480,
+          maxWidth: isPull ? pullMaxW : blockMaxW,
           opacity: quoteEnter,
           transform: `translateY(${(1 - quoteEnter) * 14}px)`,
         }}
@@ -146,7 +152,7 @@ export const EpigraphSceneRenderer: React.FC<EpigraphSceneRendererProps> = ({
             textShadow: `0 12px 60px ${glow(accentHex, 0.18)}`,
             fontSize,
             lineHeight: 1.34,
-            maxWidth: isPull ? 1340 : 1480,
+            maxWidth: isPull ? pullInnerMaxW : blockMaxW,
           }}
         >
           {`“${quote}”`}

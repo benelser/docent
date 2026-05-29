@@ -26,6 +26,7 @@ import {
   DEFAULT_WIDTH,
   buildFrameSchedule,
 } from './schedule';
+import {resolveDimensions} from './dimensions';
 
 /**
  * The Remotion-shaped configuration `<Composition>` consumes. Mirrors the
@@ -83,13 +84,18 @@ export const mountComposition = (
 ): CompositionConfig => {
   const schedule = buildFrameSchedule(spec, engine);
   const res = spec.meta.resolution;
+  // `meta.aspect` resolves the canvas dims; `meta.resolution` (legacy) still
+  // wins when explicitly set. Defaults to 1920x1080 (16:9).
+  const dims = resolveDimensions(spec.meta.aspect);
+  void DEFAULT_WIDTH;
+  void DEFAULT_HEIGHT;
   return {
     id: opts.id ?? spec.meta.id,
     component: DocentFilm,
     durationInFrames: Math.max(1, Math.round(schedule.totalFrames)),
     fps: res?.fps ?? DEFAULT_FPS,
-    width: res?.width ?? DEFAULT_WIDTH,
-    height: res?.height ?? DEFAULT_HEIGHT,
+    width: res?.width ?? dims.w,
+    height: res?.height ?? dims.h,
     defaultProps: {
       spec,
       engine,

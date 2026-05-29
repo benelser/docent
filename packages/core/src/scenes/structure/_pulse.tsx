@@ -8,6 +8,7 @@ import type {ResolvedStyle} from '@bjelser/kit';
 
 import {glow} from '../../_shared';
 import {edgePoint, type Box} from './_layout';
+import {useStage} from '@bjelser/kit';
 
 export const Pulse: React.FC<{
   from: Box;
@@ -17,6 +18,7 @@ export const Pulse: React.FC<{
   style: ResolvedStyle;
 }> = ({from, to, accentHex, t, style}) => {
   void style;
+  const stage = useStage();
   if (t <= 0 || t >= 1) return null;
   const s = edgePoint(from, to.cx, to.cy);
   const e = edgePoint(to, from.cx, from.cy);
@@ -31,7 +33,7 @@ export const Pulse: React.FC<{
   return (
     <svg
       style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}
-      viewBox="0 0 1920 1080"
+      viewBox={`0 0 ${stage.worldW} ${stage.worldH}`}
     >
       {trail.map((d, i) => {
         const p = at(Math.max(0, t - d));

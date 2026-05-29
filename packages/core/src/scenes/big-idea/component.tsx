@@ -36,6 +36,7 @@ import {
   useVideoConfig,
 } from 'remotion';
 import type {ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {FittedText, Narration, SceneFrame, glow} from '../../_shared';
 import type {BigIdeaAnchor, BigIdeaScene as BigIdeaSceneSpec} from './validate';
@@ -342,6 +343,9 @@ export const BigIdeaSceneComponent: React.FC<SceneRenderProps<BigIdeaSceneSpec>>
   const {fps} = useVideoConfig();
   const {ts, sceneIndex, sceneCount, style} = common;
   const accentHex = accentOf(style, undefined);
+  // Aspect-aware width for the centred sentence — at 16:9 stays at 1480.
+  const stage = useStage();
+  const sentenceMaxW = stage.worldW === 1920 ? 1480 : stage.worldW - 120;
   // v2.4.0 — `treatment` is no longer authored. Big-idea renders in its
   // default register: no sketch/whiteboard skin (those went away with the
   // knob). The branches stay so a future style-driven re-introduction can
@@ -362,11 +366,15 @@ export const BigIdeaSceneComponent: React.FC<SceneRenderProps<BigIdeaSceneSpec>>
 
   // Auto-fit the sentence — ≤ 20 words still varies in character count. The
   // step-down keeps the line within the safe band at every legal length.
-  const fontSize =
-    statement.length <= 60 ? 78 :
-    statement.length <= 90 ? 66 :
-    statement.length <= 120 ? 56 :
-    48;
+  // Aspect-aware: scaled down for narrower canvases so the sentence wraps
+  // sensibly rather than ellipsing.
+  const fsScale = Math.min(1, sentenceMaxW / 1480);
+  const fontSize = Math.round(
+    (statement.length <= 60 ? 78 :
+     statement.length <= 90 ? 66 :
+     statement.length <= 120 ? 56 :
+     48) * fsScale
+  );
 
   // Enter springs — anchor first, sentence beneath. Two staggered springs so
   // the reader's eye lands on the anchor, then drops to the claim. Both ease
@@ -407,7 +415,7 @@ export const BigIdeaSceneComponent: React.FC<SceneRenderProps<BigIdeaSceneSpec>>
       {/* the sentence — centered, one accent, long held pause */}
       <div
         style={{
-          maxWidth: 1480,
+          maxWidth: sentenceMaxW,
           textAlign: 'center',
           opacity: sentenceEnter,
           transform: `translateY(${(1 - sentenceEnter) * 14}px)`,
@@ -418,7 +426,7 @@ export const BigIdeaSceneComponent: React.FC<SceneRenderProps<BigIdeaSceneSpec>>
             an extreme outlier from blowing the safe band. */}
         <FittedText
           text={statement}
-          maxWidth={1480}
+          maxWidth={sentenceMaxW}
           basePx={fontSize}
           floorPx={32}
           charAdvance={0.55}

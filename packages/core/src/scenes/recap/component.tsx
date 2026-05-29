@@ -23,6 +23,7 @@
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import type {ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
+import {useStage} from '@bjelser/kit';
 
 import {FittedText, Narration, SceneFrame, activeBeatIndex, glow} from '../../_shared';
 import type {RecapScene as RecapSceneSpec} from './validate';
@@ -55,6 +56,14 @@ export const RecapSceneComponent: React.FC<SceneRenderProps<RecapSceneSpec>> = (
   const bg = style.tokens.bg;
   const sansFamily = style.tokens.typography.family.sans;
   const monoFamily = style.tokens.typography.family.mono;
+  // Aspect-aware column width — at 16:9 the recap column is 1680 wide
+  // starting at left=120 (the legacy hand-tuned safe band). In portrait /
+  // square the column shrinks to the worldW minus chrome margins so the
+  // numbered points don't overflow.
+  const stage = useStage();
+  const colLeft = stage.worldW === 1920 ? 120 : 60;
+  const colWidth = stage.worldW === 1920 ? 1680 : stage.worldW - colLeft * 2;
+  const colTop = stage.worldH === 1080 ? 268 : 320;
 
   // The reveal frame for point i is the `startFrame` of the first beat
   // whose numeric `reveal` reaches i+1.
@@ -85,9 +94,9 @@ export const RecapSceneComponent: React.FC<SceneRenderProps<RecapSceneSpec>> = (
       <div
         style={{
           position: 'absolute',
-          left: 120,
-          top: 268,
-          width: 1680,
+          left: colLeft,
+          top: colTop,
+          width: colWidth,
           display: 'flex',
           flexDirection: 'column',
           gap: 28,
@@ -163,7 +172,7 @@ export const RecapSceneComponent: React.FC<SceneRenderProps<RecapSceneSpec>> = (
       <div
         style={{
           position: 'absolute',
-          left: 120,
+          left: colLeft,
           bottom: 130,
           fontFamily: monoFamily,
           fontSize: 22,
