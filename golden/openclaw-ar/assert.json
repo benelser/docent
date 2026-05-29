@@ -1,0 +1,67 @@
+{
+  "filmId": "openclaw-ar",
+  "threshold": 0.05,
+  "compareWidth": 480,
+  "mp4DurationSeconds": 741.525333,
+  "midpointSource": "check.json (/Users/belser/ventures/archcast/out/.render-check-openclaw-ar)",
+  "rows": [
+    {
+      "sceneIndex": 0,
+      "type": "frame",
+      "heading": "DOCENT // ARCHITECTURE REVIEW",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 1,
+      "type": "prior-art",
+      "heading": "Where OpenClaw stands in the field",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 2,
+      "type": "structure",
+      "heading": "One daemon, one control plane",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 3,
+      "type": "walkthrough",
+      "heading": "How a DM becomes a tool call — or doesn't",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 4,
+      "type": "structure",
+      "heading": "One process, every set of keys",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 5,
+      "type": "tension",
+      "heading": "Three failure modes named honestly",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 6,
+      "type": "quantities",
+      "heading": "The verdict's posture, as arithmetic",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 7,
+      "type": "recap",
+      "heading": "OpenClaw — approve with caveats, knowing what you signed up for",
+      "diff": 0,
+      "status": "pass"
+    }
+  ],
+  "pass": true,
+  "generatedAt": "2026-05-29T16:59:15.000Z"
+}
