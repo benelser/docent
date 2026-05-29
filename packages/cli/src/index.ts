@@ -19,6 +19,7 @@ import {runInit} from './commands/init';
 import {runRenderCheck} from './commands/render-check';
 import {runSceneFitList, runSceneFitRecommend} from './commands/scene-fit';
 import {runStyleList, runStyleRecommend} from './commands/style';
+import {runTreatment} from './commands/treatment';
 import {runValidate} from './commands/validate';
 
 const USAGE = `docent — render explanatory films via @bjelser/kit.
@@ -26,12 +27,32 @@ const USAGE = `docent — render explanatory films via @bjelser/kit.
 USAGE
   docent <command> [args]
 
+AUTHOR FLOW
+  The three-step author cycle is:
+
+      analysis/<id>.md   →   treatments/<id>.md   →   films/<id>.json
+        survey                 treatment                 spec
+
+  Survey by hand (or with the agent) into analysis/<id>.md. Run
+  \`docent treatment <id>\` to scaffold the plain-language treatment.
+  Edit it. Then \`docent treatment <id> --to-spec\` to compile to the
+  renderable spec. \`docent validate <id>\` and \`docent build <id>\`
+  finish the cycle.
+
 COMMANDS
   init <film-id>          Scaffold a starter spec at films/<film-id>.json.
                           The fastest path from "bun add" to a rendered MP4 —
                           drops a working 4-scene film (frame, structure,
                           tension, recap) that builds out of the box. Edit
                           the narration + nodes, then "docent build <id>".
+  treatment <id>          Scaffold treatments/<id>.md from analysis/<id>.md —
+                          a plain-language outline the human reads, edits,
+                          and steers WITHOUT ever seeing JSON. The
+                          human-in-the-loop layer of the author flow.
+  treatment <id> --to-spec
+                          Compile the approved treatments/<id>.md to
+                          films/<id>.json — walks the scene list and
+                          emits placeholder scenes for the spec author.
   build <film-id>         Render a film to MP4 at out/<film-id>.mp4.
   validate <film-id>      Structurally validate a film spec via engine.validate().
   depthcheck <film-id>    Aggregate every plugin's depthRules over a film spec.
@@ -150,6 +171,29 @@ const main = async (): Promise<number> => {
       ...(num(flags.still) !== undefined ? {still: num(flags.still)!} : {}),
       ...(flags['skip-tts'] ? {skipTts: true} : {}),
       ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+    });
+  }
+
+  if (command === 'treatment') {
+    const id = positional[0];
+    if (!id) {
+      process.stderr.write('docent treatment: missing <id>\n' + USAGE);
+      return 64;
+    }
+    return runTreatment({
+      id,
+      ...(flags['to-spec'] ? {toSpec: true} : {}),
+      ...(flags.force ? {force: true} : {}),
+      ...(str(flags['analysis-dir'])
+        ? {analysisDir: str(flags['analysis-dir'])!}
+        : {}),
+      ...(str(flags['treatments-dir'])
+        ? {treatmentsDir: str(flags['treatments-dir'])!}
+        : {}),
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
