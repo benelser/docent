@@ -17,6 +17,7 @@ import {runGrammarCheck} from './commands/grammar-check';
 import {runHelpScene} from './commands/help-scene';
 import {runHermetic} from './commands/hermetic';
 import {runInit} from './commands/init';
+import {runPreview} from './commands/preview';
 import {runRenderCheck} from './commands/render-check';
 import {runSceneFitList, runSceneFitRecommend} from './commands/scene-fit';
 import {runStyleList, runStyleRecommend} from './commands/style';
@@ -34,6 +35,10 @@ COMMANDS
                           tension, recap) that builds out of the box. Edit
                           the narration + nodes, then "docent build <id>".
   build <film-id>         Render a film to MP4 at out/<film-id>.mp4.
+  preview <film-id>       Launch Remotion Studio against the film spec for
+                          hot-reload editing. Component edits hot-reload via
+                          Studio's dev server; spec edits require re-running
+                          preview. Defaults to http://localhost:3000.
   validate <film-id>      Structurally validate a film spec via engine.validate().
   depthcheck <film-id>    Aggregate every plugin's depthRules over a film spec.
   render-check <film-id>  Render at low scale + assert every narrated scene
@@ -67,6 +72,11 @@ BUILD FLAGS
   --still <s>          Render a single still at second offset s.
   --skip-tts           Skip the TTS stage — produces a silent mp4.
   --output-dir <p>     Override the output directory.
+  --films-dir <p>      Override the films/ directory.
+  --project-root <p>   Override the project root (config + entry generation).
+
+PREVIEW FLAGS
+  --port <n>           Remotion Studio port. Default: 3000.
   --films-dir <p>      Override the films/ directory.
   --project-root <p>   Override the project root (config + entry generation).
 
@@ -164,6 +174,22 @@ const main = async (): Promise<number> => {
       ...(num(flags.still) !== undefined ? {still: num(flags.still)!} : {}),
       ...(flags['skip-tts'] ? {skipTts: true} : {}),
       ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+    });
+  }
+
+  if (command === 'preview') {
+    const filmId = positional[0];
+    if (!filmId) {
+      process.stderr.write('docent preview: missing <film-id>\n' + USAGE);
+      return 64;
+    }
+    return runPreview({
+      filmId,
+      ...(num(flags.port) !== undefined ? {port: num(flags.port)!} : {}),
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
