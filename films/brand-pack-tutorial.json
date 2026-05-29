@@ -1,0 +1,444 @@
+{
+  "meta": {
+    "id": "brand-pack-tutorial",
+    "title": "Inside docent — building a brand pack",
+    "subject": "How a third party ships a docent StylePreset without forking @bjelser/core, walked through end to end.",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart",
+    "register": "calm"
+  },
+  "style": {
+    "preset": "tutorial-brand",
+    "intent": {
+      "tone": "technical",
+      "audience": "technical",
+      "density": "comfortable",
+      "emphasis": "insight-first"
+    },
+    "rationale": "The film IS its own evidence. Setting preset to tutorial-brand means the broadsheet ivory / crimson / navy theme has to actually load from docent.config.ts and render every chrome surface of this film — if it does not, the tutorial fails the moment the viewer sees the title card."
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "kicker": "BRAND-PACK TUTORIAL // 00",
+      "title": "Inside docent",
+      "tagline": "Building a brand pack without forking the core",
+      "footnote": "A StylePreset · a docent.config.ts · one line in the film spec",
+      "beats": [
+        {
+          "id": "bp-frame-1",
+          "narration": "This is a tutorial film about building a docent brand pack. The film you are watching is rendered with the brand pack the film is about -- so if the chrome looks broadsheet-ivory rather than docent's default near-black, the extension worked.",
+          "show": "title"
+        },
+        {
+          "id": "bp-frame-2",
+          "narration": "Three artifacts, no fork of core. A style preset declaring tokens. A docent dot config dot T-S that hands the preset to the engine. And one field in the film spec that opts in. By the end you will know every seam these three touch.",
+          "show": "tagline"
+        },
+        {
+          "id": "bp-frame-3",
+          "narration": "The setup is real. A repo-root docent dot config dot T-S in this worktree registers the tutorial-brand preset. doctor confirms seven presets are loaded, where the unmodified engine ships six. Everything that follows is verified before it is shown.",
+          "show": "footnote"
+        }
+      ]
+    },
+    {
+      "id": "load-chain",
+      "type": "structure",
+      "kicker": "01 // THE LOAD CHAIN",
+      "heading": "What happens between docent.config.ts and a rendered pixel",
+      "grid": {"cols": 4, "rows": 3},
+      "nodes": [
+        {
+          "id": "config",
+          "label": "docent.config.ts",
+          "sub": "repo root · default export {plugins: [...]}",
+          "col": 0,
+          "row": 0,
+          "accent": "rose",
+          "weight": "primary"
+        },
+        {
+          "id": "loader",
+          "label": "load-config.ts",
+          "sub": "walks up from cwd · dynamic import",
+          "col": 1,
+          "row": 0,
+          "accent": "amber"
+        },
+        {
+          "id": "factory",
+          "label": "engine-factory.ts",
+          "sub": "corePlugins first, then user plugins",
+          "col": 2,
+          "row": 0,
+          "accent": "amber"
+        },
+        {
+          "id": "engine",
+          "label": "engine.use(preset)",
+          "sub": "sniff kind · route to PresetRegistry",
+          "col": 3,
+          "row": 0,
+          "accent": "blue"
+        },
+        {
+          "id": "spec",
+          "label": "FilmSpec.style.preset",
+          "sub": "the one field the film spec needs",
+          "col": 0,
+          "row": 1,
+          "accent": "rose",
+          "weight": "hero",
+          "wide": true
+        },
+        {
+          "id": "resolver",
+          "label": "resolveStyle()",
+          "sub": "neutral floor + preset tokens + intent",
+          "col": 2,
+          "row": 1,
+          "accent": "blue",
+          "wide": true
+        },
+        {
+          "id": "tokens",
+          "label": "ResolvedStyle.tokens",
+          "sub": "bg · ink · accent · typography",
+          "col": 0,
+          "row": 2,
+          "accent": "green",
+          "wide": true
+        },
+        {
+          "id": "render",
+          "label": "Every scene reads common.style.tokens",
+          "sub": "the pixel-level contract",
+          "col": 2,
+          "row": 2,
+          "accent": "green",
+          "weight": "primary",
+          "wide": true
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-cl",
+          "from": "config",
+          "to": "loader",
+          "kind": "causes",
+          "strength": "necessary"
+        },
+        {
+          "id": "e-lf",
+          "from": "loader",
+          "to": "factory",
+          "kind": "causes",
+          "strength": "necessary"
+        },
+        {
+          "id": "e-fe",
+          "from": "factory",
+          "to": "engine",
+          "kind": "causes",
+          "strength": "necessary"
+        },
+        {
+          "id": "e-sr",
+          "from": "spec",
+          "to": "resolver",
+          "kind": "causes",
+          "strength": "necessary",
+          "label": "looks up by name"
+        },
+        {
+          "id": "e-rt",
+          "from": "resolver",
+          "to": "tokens",
+          "kind": "causes",
+          "strength": "necessary"
+        },
+        {
+          "id": "e-tr",
+          "from": "tokens",
+          "to": "render",
+          "kind": "causes",
+          "strength": "necessary"
+        }
+      ],
+      "beats": [
+        {
+          "id": "bp-load-1",
+          "narration": "The chain starts at a single file. docent dot config dot T-S sits at the repo root. The C-L-I's loader walks up from the working directory, finds it, dynamic-imports it, and reads its default export's plugins array. No registration in package dot json. No environment variable. The file is the contract.",
+          "reveal": ["config", "loader"],
+          "focus": ["config"]
+        },
+        {
+          "id": "bp-load-2",
+          "narration": "The engine factory composes the engine in one fixed order. Core's twenty-nine scenes, seven presets, the kokoro T-T-S, and two features go in first. Then -- and only then -- the user plugins. If a brand pack reuses a preset name core already owns, the registry hard-fails at engine dot use. Both plugin names surface in the error.",
+          "reveal": ["factory", "engine"]
+        },
+        {
+          "id": "bp-load-3",
+          "narration": "And the film spec opts in with one field. Style dot preset, by name. The resolver looks the preset up in the registry, composes its tokens on top of a neutral floor, and produces a single resolved style every scene reads through common dot style dot tokens. That is the entire pixel-level surface a brand pack touches.",
+          "reveal": ["spec", "resolver", "tokens", "render", "e-sr", "e-rt", "e-tr"],
+          "focus": ["spec", "render"],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "the-six",
+      "type": "compare",
+      "kicker": "02 // THE BUILT-IN SET",
+      "heading": "Six registers core already ships -- and the gap they leave",
+      "columns": [
+        {"id": "preset", "label": "Preset"},
+        {"id": "ground", "label": "Background register"},
+        {"id": "ink", "label": "Ink colour"},
+        {"id": "accent", "label": "Headline accent"},
+        {"id": "family", "label": "Type family"}
+      ],
+      "rows": [
+        {
+          "id": "neutral",
+          "label": "neutral",
+          "cells": [
+            {"text": "neutral"},
+            {"text": "near-black, no warmth"},
+            {"text": "off-white"},
+            {"text": "blue (the floor)"},
+            {"text": "sans default"}
+          ]
+        },
+        {
+          "id": "engineering",
+          "label": "engineering",
+          "cells": [
+            {"text": "engineering"},
+            {"text": "console near-black"},
+            {"text": "code-white"},
+            {"text": "cyan"},
+            {"text": "monospace-forward"}
+          ]
+        },
+        {
+          "id": "editorial",
+          "label": "editorial",
+          "cells": [
+            {"text": "editorial"},
+            {"text": "warm walnut"},
+            {"text": "cream"},
+            {"text": "burgundy / ochre"},
+            {"text": "serif everywhere"}
+          ]
+        },
+        {
+          "id": "paper",
+          "label": "paper",
+          "cells": [
+            {"text": "paper"},
+            {"text": "cool paper-cream"},
+            {"text": "ink-black"},
+            {"text": "academic blue"},
+            {"text": "serif body, sans chrome"}
+          ]
+        },
+        {
+          "id": "analytical",
+          "label": "analytical",
+          "cells": [
+            {"text": "analytical"},
+            {"text": "deep-pane dark"},
+            {"text": "data-white"},
+            {"text": "green"},
+            {"text": "sans + mono"}
+          ]
+        },
+        {
+          "id": "executive",
+          "label": "executive",
+          "cells": [
+            {"text": "executive"},
+            {"text": "rich dark slate"},
+            {"text": "white"},
+            {"text": "gold"},
+            {"text": "premium sans"}
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "id": "bp-six-1",
+          "narration": "Six presets ship in core. Three dark grounds -- engineering, analytical, executive -- for code, dashboards, decks. Three light or warm grounds -- editorial, paper, neutral -- for prose, papers, defaults. Every column is a deliberate channel: ground, ink, accent, family. The preset's job is to pin all four in one coherent register.",
+          "reveal": 6
+        },
+        {
+          "id": "bp-six-2",
+          "narration": "The gap the brand pack fills is the seventh register the set does not cover. Newsprint. Ivory paper, crimson headline accent, condensed sans above transitional serif. Editorial gets close on the family but goes warm walnut, not ivory, and runs burgundy where this brand runs crimson. The brand pack is a different point in the space, not a tweak of one that already exists."
+        }
+      ]
+    },
+    {
+      "id": "the-config",
+      "type": "closeup",
+      "kicker": "03 // THE ENTRY POINT",
+      "heading": "docent.config.ts -- 19 lines, one default export",
+      "file": "docent.config.ts",
+      "lang": "typescript",
+      "code": "// docent.config.ts -- repo-root extension point for the brand-pack tutorial.\n//\n// The CLI walks UP from cwd looking for the first docent.config.{ts,tsx,js,mjs}.\n// When found, the default export's `plugins` array is registered on top of\n// @bjelser/core's corePlugins. The file IS the third-party-pack on-ramp.\n\nimport {tutorialBrandPreset} from './tutorials/brand-pack/presets/tutorial-brand';\n\nexport default {\n  plugins: [tutorialBrandPreset],\n};",
+      "beats": [
+        {
+          "id": "bp-config-1",
+          "narration": "Here is the actual config file in this repo. Nine lines of executable code. The default export is one object with one field -- plugins -- whose value is the array of every plugin the project wants to register beyond core.",
+          "highlight": [7, 11]
+        },
+        {
+          "id": "bp-config-2",
+          "narration": "The shape is intentional. The same file can register a custom scene type, a custom T-T-S provider, or a feature, by appending more entries to the array. The engine sniffs the kind field on each plugin and routes it to the right registry. The config file does not need to know the difference.",
+          "highlight": [9, 11],
+          "pace": "settle"
+        }
+      ]
+    },
+    {
+      "id": "the-tokens",
+      "type": "closeup",
+      "kicker": "04 // THE TOKENS",
+      "heading": "The preset itself -- four channels pinned, one identity",
+      "file": "tutorials/brand-pack/presets/tutorial-brand/tokens.ts",
+      "lang": "typescript",
+      "code": "import type {DesignTokens} from '@bjelser/kit';\n\nexport const tokens: DesignTokens = {\n  bg: {\n    base: '#f4ecd8',     // IVORY -- the page itself\n    panel: '#fbf6ea',    // raised paper\n    panelHi: '#ffffff',  // the focused panel\n    void: '#e8e1d2', line: '#c7b994', lineHi: '#a89469',\n  },\n  ink: {\n    hi:  '#10142b',      // deep navy-graphite -- the headline ink\n    mid: '#2c324a', low: '#5b6275', faint: '#8d92a3',\n  },\n  accent: {\n    rose:  '#a8232e',    // CRIMSON -- the headline accent\n    blue:  '#1d3b6e',    // ink blue -- the secondary brand\n    green: '#3f6b3a', amber: '#c2913d',\n    cyan:  '#5d7da3', violet: '#6e3a78',\n  },\n  typography: {\n    family: {\n      sans:  'Fjalla One, Oswald, sans-serif',      // condensed chrome\n      serif: 'Lora, Source Serif Pro, serif',       // transitional body\n      mono:  'JetBrains Mono, monospace',\n    },\n    size: {body: 19, heading: 34, display: 64, label: 21, small: 14, micro: 12},\n    weight: {body: 400, label: 500, heading: 700, display: 800},\n    lineHeight: 1.6,\n    letterSpacing: 0,\n  },\n  spacing: {xs: 4, sm: 8, md: 16, lg: 24, xl: 40, gutter: 32},\n  radius:  {sm: 2, md: 4, lg: 8},\n  stroke:  {hairline: 0.75, thin: 1, regular: 1.5, bold: 2.5},\n};",
+      "beats": [
+        {
+          "id": "bp-tok-1",
+          "narration": "The token bundle is structured, not free-form. The kit's DesignTokens type pins seven groups: background, ink, accent, typography, spacing, radius, stroke. Every scene component in core was written to read these groups by name. A brand pack that fills the bundle automatically reskins every one of the twenty-nine scenes.",
+          "highlight": [3, 9]
+        },
+        {
+          "id": "bp-tok-2",
+          "narration": "The ink and accent groups are where identity lives. Deep navy-graphite for headline ink reads as broadsheet, not corporate. Crimson at A-8-2-3-2-E is the channel a viewer registers as the brand's voice. Editorial's burgundy hits a near-by hue; the saturation and the contrast against ivory are where this preset diverges.",
+          "highlight": [10, 19]
+        },
+        {
+          "id": "bp-tok-3",
+          "narration": "Typography is the other identity channel. Fjalla One above, Lora below -- a condensed sans for chrome, a transitional serif for body. The pairing is the broadsheet headline-over-column idiom. Editorial uses serif for both. Engineering uses sans plus mono. Family choice is where a preset earns its distinctness.",
+          "highlight": [20, 30],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "tradeoffs",
+      "type": "tension",
+      "kicker": "05 // WHERE A PRESET STRAINS",
+      "heading": "Colour choices that look good in isolation and break in composition",
+      "cut": "hold",
+      "grid": {"cols": 2, "rows": 3},
+      "nodes": [
+        {
+          "id": "floor-contrast",
+          "label": "Risk -- ink fails AA on the lightest panel",
+          "sub": "ink.hi vs bg.panelHi must hold ≥ 4.5:1; many palette mocks pass on base but fail on panelHi",
+          "col": 0,
+          "row": 0,
+          "kind": "risk",
+          "wide": true
+        },
+        {
+          "id": "checked-floor",
+          "label": "Choice -- pin ink against the brightest panel",
+          "sub": "navy-graphite #10142b on white #ffffff clears 16:1 -- the headroom absorbs every lighter ground",
+          "col": 0,
+          "row": 1,
+          "accent": "green",
+          "weight": "primary",
+          "wide": true
+        },
+        {
+          "id": "accent-collision",
+          "label": "Risk -- one accent overwhelms a six-series chart",
+          "sub": "a crimson at full saturation drowns out every other series; the chart legends collapse to one colour",
+          "col": 0,
+          "row": 2,
+          "kind": "risk",
+          "wide": true
+        }
+      ],
+      "edges": [],
+      "beats": [
+        {
+          "id": "bp-tens-1",
+          "narration": "The hardest trade-off in a preset is not the ground or the headline accent. It is the contrast contract. A palette can look stunning on the base background and silently fail W-C-A-G double-A on the raised panel -- the focused card the viewer reads most. A brand pack that earns its keep pins ink against the brightest panel surface and works backward to the rest.",
+          "reveal": ["floor-contrast"],
+          "focus": ["floor-contrast"]
+        },
+        {
+          "id": "bp-tens-2",
+          "narration": "Here is how the tutorial preset handles it. The headline ink is navy-graphite, one-zero-one-four-two-B, set against pure white at the focused panel. Sixteen to one. Two and a half times the floor. The headroom absorbs every step down the ground hierarchy without re-tuning the ink. A reader on the ivory base, on a raised cream, or on the focused white all see the same headline weight.",
+          "reveal": ["checked-floor"],
+          "focus": ["checked-floor"]
+        },
+        {
+          "id": "bp-tens-3",
+          "narration": "And the live risk the preset cannot solve from inside its tokens. One accent at full saturation -- crimson at A-8-2-3-2-E -- carries every headline well, but if a six-series chart inherits it as the dominant colour, the other five series collapse into background. The brand pack has to either dampen accents at chart time, or accept that charts will pull a more muted palette than headlines do. The preset registers the trade-off; the renderer is what decides.",
+          "reveal": ["accent-collision"],
+          "focus": ["accent-collision"],
+          "pace": "hold",
+          "shot": "push"
+        }
+      ]
+    },
+    {
+      "id": "verdict",
+      "type": "recap",
+      "kicker": "RECAP // WHAT YOU NOW HAVE",
+      "heading": "A working brand pack in three files",
+      "points": [
+        "Three artifacts -- tokens.ts (the design tokens), index.ts (the PresetPlugin), docent.config.ts (the load-time wiring). Twenty lines of executable code, total.",
+        "One opt-in in the film spec -- style.preset = 'tutorial-brand'. Every scene reads tokens through common.style.tokens; no scene component needs to know the preset exists.",
+        "Verified before shipped -- docent doctor reports +1 plugin from docent.config.ts; docent validate brand-pack-tutorial clears clean; docent depthcheck brand-pack-tutorial clears clean.",
+        "The extension surface scales -- the same plugins array accepts custom ScenePlugin, FeaturePlugin, TtsProviderPlugin. The engine sniffs kind and routes; the config file does not change shape.",
+        "Watch the contrast contract -- a preset that passes AA on base and fails on panelHi is the failure mode the depth gate does not catch. Pin ink against the brightest surface.",
+        "Watch accent saturation in multi-series charts -- a brand colour at headline strength can starve every other series of colour. The preset is one knob; the visualization block is the other."
+      ],
+      "beats": [
+        {
+          "id": "bp-recap-1",
+          "narration": "Three files. Twenty lines of executable code. That is the cost of shipping a docent brand pack on top of an unmodified core.",
+          "reveal": 1
+        },
+        {
+          "id": "bp-recap-2",
+          "narration": "The opt-in is one field in the film spec. Style dot preset, by name. Every scene component reads tokens through common dot style dot tokens, so no scene needs to know your preset exists -- it just reads through.",
+          "reveal": 2
+        },
+        {
+          "id": "bp-recap-3",
+          "narration": "Everything in this film was verified before the film was rendered. doctor confirms the preset registered. validate confirms the spec is well-formed. depthcheck confirms every scene clears every rule. The chain runs cleanly end to end.",
+          "reveal": 3
+        },
+        {
+          "id": "bp-recap-4",
+          "narration": "And the same surface scales. Append a custom scene plugin to the plugins array and the engine routes it to the scene registry. Append a T-T-S provider and it lands in the T-T-S registry. The config file does not change shape; the kind field on each plugin is what decides.",
+          "reveal": 4
+        },
+        {
+          "id": "bp-recap-5",
+          "narration": "Two failure modes to watch. First: contrast on the brightest panel. A palette that clears A-A on the base ground and fails on the focused card is a brand pack that looks fine on the title scene and fails on the dense ones. Pin ink against the lightest panel.",
+          "reveal": 5
+        },
+        {
+          "id": "bp-recap-6",
+          "narration": "Second: accent saturation in charts. A headline accent at full strength drowns out every other series in a multi-series chart. The preset's accent palette and the visualization block together decide whether the brand reads as restrained or as overpowering. That is the line the brand pack owner walks.",
+          "reveal": 6,
+          "pace": "hold"
+        }
+      ]
+    }
+  ]
+}
