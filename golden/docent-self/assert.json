@@ -1,0 +1,67 @@
+{
+  "filmId": "docent-self",
+  "threshold": 0.02,
+  "compareWidth": 480,
+  "mp4DurationSeconds": 650.986667,
+  "midpointSource": "check.json (/Users/belser/ventures/archcast/out/.render-check-docent-self)",
+  "rows": [
+    {
+      "sceneIndex": 0,
+      "type": "frame",
+      "heading": "DOCENT // ARCHITECTURE REVIEW",
+      "diff": 0.03360859961268458,
+      "status": "fail"
+    },
+    {
+      "sceneIndex": 1,
+      "type": "prior-art",
+      "heading": "Where docent stands against the field",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 2,
+      "type": "structure",
+      "heading": "Explanation has a finite set of moves",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 3,
+      "type": "progression",
+      "heading": "What a draft has to clear before it ships",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 4,
+      "type": "compare",
+      "heading": "The free-form escape valve, and what closing it costs",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 5,
+      "type": "tension",
+      "heading": "The live risks the architecture cannot detect",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 6,
+      "type": "quantities",
+      "heading": "The arithmetic behind the verdict's posture",
+      "diff": 0,
+      "status": "pass"
+    },
+    {
+      "sceneIndex": 7,
+      "type": "recap",
+      "heading": "docent on docent -- approve with caveats",
+      "diff": 0,
+      "status": "pass"
+    }
+  ],
+  "pass": false,
+  "generatedAt": "2026-05-29T16:57:46.055Z"
+}

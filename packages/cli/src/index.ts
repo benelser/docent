@@ -10,6 +10,7 @@
 // pack). The CLI's only opinionated choice: loading `@bjelser/core` by
 // default, plus any `docent.config.ts` the project ships.
 
+import {runAssert} from './commands/assert';
 import {runBuild} from './commands/build';
 import {runDepthcheck} from './commands/depthcheck';
 import {runDoctor} from './commands/doctor';
@@ -39,6 +40,11 @@ COMMANDS
   render-check <film-id>  Render at low scale + assert every narrated scene
                           evolves visibly across its window. Guards against
                           chrome-only renders (audio without body).
+  assert <film-id>        Visual regression test: extract one frame per scene
+                          at its midpoint and diff each against the committed
+                          golden in golden/<film-id>/. First run (or --update)
+                          captures the goldens; subsequent runs exit 2 if any
+                          scene exceeds --threshold mean abs pixel diff.
   grammar-check           Run the cover-set of demo films and assert three
                           invariants across the registered scene library:
                           coverage (every plugin exercised), taxonomy
@@ -70,11 +76,22 @@ BUILD FLAGS
   --films-dir <p>      Override the films/ directory.
   --project-root <p>   Override the project root (config + entry generation).
 
+ASSERT FLAGS
+  --update             Capture mode: (re)write golden/<film-id>/ from the
+                       current out/<film-id>.mp4. First run does this
+                       implicitly when no goldens are present.
+  --threshold <n>      Mean abs pixel diff threshold in [0, 1]. Default 0.05.
+  --compare-width <n>  Width (px) frames are decoded to for diffing. Default 480.
+  --golden-dir <p>     Override the goldens root. Default <project>/golden.
+
 EXAMPLES
   docent build linear-algebra --scale 0.5
   docent validate kubernetes-pr
   docent depthcheck euclid-primes
   docent hermetic --scale 0.5
+  docent assert docent-self --update           # capture goldens
+  docent assert docent-self                    # diff against goldens
+  docent assert docent-self --threshold 0.02   # tighter regression bar
 `;
 
 interface ParsedArgs {
@@ -215,6 +232,28 @@ const main = async (): Promise<number> => {
         : {}),
       ...(num(flags.samples) !== undefined ? {samples: num(flags.samples)!} : {}),
       ...(flags['skip-tts'] ? {skipTts: true} : {}),
+      ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+    });
+  }
+
+  if (command === 'assert') {
+    const filmId = positional[0];
+    if (!filmId) {
+      process.stderr.write('docent assert: missing <film-id>\n' + USAGE);
+      return 64;
+    }
+    return runAssert({
+      filmId,
+      ...(flags.update ? {update: true} : {}),
+      ...(num(flags.threshold) !== undefined ? {threshold: num(flags.threshold)!} : {}),
+      ...(num(flags['compare-width']) !== undefined
+        ? {compareWidth: num(flags['compare-width'])!}
+        : {}),
+      ...(str(flags['golden-dir']) ? {goldenDir: str(flags['golden-dir'])!} : {}),
       ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['project-root'])

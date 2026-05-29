@@ -536,6 +536,10 @@ COMMANDS
   build <film-id>      Render a film to MP4 at out/<film-id>.mp4.
   validate <film-id>   Structurally validate a film spec via engine.validate().
   depthcheck <film-id> Aggregate every plugin's depthRules over a film spec.
+  render-check <id>    Render at low scale + assert every narrated scene
+                       evolves visibly across its window.
+  assert <film-id>     Visual regression: diff per-scene midpoint frames
+                       against golden/<id>/. --update to (re)capture.
   hermetic             Render the 4 gallery fixtures end to end.
   help                 Print this usage and exit.
 
@@ -553,6 +557,8 @@ EXAMPLES
   docent validate kubernetes-pr
   docent depthcheck euclid-primes
   docent render-check openclaw-ar
+  docent assert docent-self --update
+  docent assert docent-self --threshold 0.02
   docent grammar-check
   docent scene-fit list
   docent scene-fit recommend linear-algebra --top 8
@@ -601,6 +607,50 @@ docent render-check openclaw-ar
 Exit code 0 on full pass, 4 when at least one narrated scene is static.
 A per-film sidecar (`out/.render-check-<id>/check.json`) records every
 sample for follow-up forensics.
+
+### `docent assert`
+
+Holds the **visual-regression invariant**:
+
+> A film that built last time must still look like itself today.
+
+Where `render-check` guards *within a single render* (every scene must
+evolve), `assert` guards *across renders* — today's frames vs. the
+goldens committed alongside the spec. The killer case is the Cassini
+"rings overlap saturn" bug: a rendering regression that ships silently
+because no automated step compares this render to the last good one.
+
+Per scene, one key frame at the scene midpoint is extracted from
+`out/<id>.mp4` and diffed against the golden in
+`golden/<id>/scene-<NN>-<type>.jpg`. The diff metric is **mean absolute
+pixel difference** over rgb24 bytes, normalized to `[0, 1]` — no
+`sharp`, no `canvas`, just `ffmpeg` shell + a `Buffer` walk. Default
+threshold is `0.05` (5%).
+
+```bash
+# 1. First time, after the film renders cleanly: capture goldens.
+docent build docent-self
+docent assert docent-self --update          # writes golden/docent-self/
+
+# 2. On every subsequent build, diff today's frames against the goldens.
+docent build docent-self
+docent assert docent-self                   # exits 2 on regression
+
+# 3. Tune the bar for a tightly-controlled film.
+docent assert docent-self --threshold 0.02
+```
+
+Scene midpoints come from `out/.render-check-<id>/check.json` when it
+exists (the canonical sidecar `render-check` already writes); when it
+doesn't, the schedule is rebuilt from the spec on the fly. Commit
+`golden/<id>/` alongside `films/<id>.json` — the goldens are part of
+the film's contract.
+
+Exit codes: **0** pass (or capture succeeded), **1** missing inputs
+(no mp4 — run `docent build` first), **2** at least one scene's diff
+exceeds the threshold *or* the run has a missing golden, **4** ffmpeg
+extraction or decode error. A `golden/<id>/assert.json` sidecar records
+every per-scene diff for follow-up forensics.
 
 ### `docent doctor`
 
