@@ -9,7 +9,7 @@
 // canonical plugin-load order — see CATEGORIES in the generator for the
 // per-category ordering rules.
 //
-// Total plugins: 38
+// Total plugins: 39
 
 import type {Plugin} from '@bjelser/kit';
 
@@ -28,6 +28,9 @@ import {audioRhythmFeature} from './features/audio-rhythm';
 
 // TTS providers (1)
 import {kokoroTtsPlugin} from './tts/kokoro';
+
+// Translation providers (1)
+import {noopTranslationPlugin} from './translation/noop';
 
 // Scenes (29)
 import {bigIdeaPlugin} from './scenes/big-idea';
@@ -70,6 +73,9 @@ export {narrationFeature, audioRhythmFeature};
 // TTS providers
 export {kokoroTtsPlugin};
 
+// Translation providers
+export {noopTranslationPlugin};
+
 // Scenes
 export {bigIdeaPlugin, causalLoopPlugin, chartPlugin, closeupPlugin, comparePlugin, concessionPlugin, demonstratePlugin, diffPlugin, epigraphPlugin, figurePlugin, framePlugin, journeyMapPlugin, landscapePlugin, mapPlugin, mechanismPlugin, objectionPlugin, passagePlugin, priorArtPlugin, probePlugin, progressionPlugin, provocationPlugin, quantitiesPlugin, recapPlugin, structurePlugin, tensionPlugin, timelinePlugin, treePlugin, vennPlugin, walkthroughPlugin};
 
@@ -93,6 +99,8 @@ export const corePlugins: readonly Plugin[] = [
   audioRhythmFeature,
   // TTS providers (1)
   kokoroTtsPlugin,
+  // Translation providers (1)
+  noopTranslationPlugin,
   // Scenes (29)
   bigIdeaPlugin,
   causalLoopPlugin,

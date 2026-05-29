@@ -109,10 +109,18 @@ export const runRenderStage = async (
   const isStill = typeof opts.still === 'number';
   const ext = isStill ? 'png' : 'mp4';
   const explicit = (opts as RenderOptions).readOutPath;
+  // Language suffix — when `opts.lang` is set, the output filename gets a
+  // `-<lang>` suffix so multiple language renders can co-exist in `out/`
+  // (e.g. `out/foo.mp4`, `out/foo-es.mp4`, `out/foo-ja.mp4`). Stills get
+  // the suffix BEFORE the `-still` marker for the same reason.
+  const langSuffix = opts.lang ? `-${opts.lang}` : '';
   const outPath =
     explicit && isAbsolute(explicit)
       ? explicit
-      : join(outputDir, `${filmId}${isStill ? '-still' : ''}.${ext}`);
+      : join(
+          outputDir,
+          `${filmId}${langSuffix}${isStill ? '-still' : ''}.${ext}`,
+        );
 
   const remotionBin = opts.remotionBin ?? defaultRemotionBin(cwd);
   const entryPath = resolve(opts.entryPath);

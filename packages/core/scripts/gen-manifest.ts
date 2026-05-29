@@ -33,7 +33,7 @@ const __dirname = dirname(__filename);
 const SRC_DIR = resolve(__dirname, '..', 'src');
 const OUTPUT = join(SRC_DIR, 'index.generated.ts');
 
-type Kind = 'preset' | 'feature' | 'tts' | 'scene';
+type Kind = 'preset' | 'feature' | 'tts' | 'translation' | 'scene';
 
 interface CategoryConfig {
   /** Subdirectory under src/ that hosts these plugins. */
@@ -86,6 +86,12 @@ const CATEGORIES: readonly CategoryConfig[] = [
     kind: 'tts',
     suffix: 'TtsPlugin',
     label: 'TTS providers',
+  },
+  {
+    dir: 'translation',
+    kind: 'translation',
+    suffix: 'TranslationPlugin',
+    label: 'Translation providers',
   },
   {
     dir: 'scenes',

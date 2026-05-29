@@ -26,4 +26,12 @@ export const openaiTtsPlugin: TtsProviderPlugin = {
   create: async (ctx) => createOpenAIProvider(ctx),
 };
 
+// Translation provider — registered separately. Users wire either or both
+// in their docent.config.ts.
+export {
+  openaiTranslationPlugin,
+  createOpenAITranslationProvider,
+  OPENAI_TRANSLATION_CAPABILITIES,
+} from './translation';
+
 export default openaiTtsPlugin;

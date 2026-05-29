@@ -37,6 +37,7 @@ import type {
 import type {Beat, Scene} from '../types/spec';
 import type {ResolvedStyle} from '../types/style';
 import {runTtsStage, type TtsStageManifest} from './tts-stage';
+import {runTranslateStage} from './translate-stage';
 import {runRenderStage} from './render-stage';
 
 /** A summarized record of what each stage did — surfaced for diagnostics. */
@@ -46,6 +47,7 @@ export interface CascadeStageRecord {
     | 'applyModifiers'
     | 'validate'
     | 'resolveStyle'
+    | 'translate'
     | 'tts'
     | 'render';
   readonly seconds: number;
@@ -202,6 +204,37 @@ export const runCascade = async (
     });
   }
 
+  // ─── 2b. translate ──────────────────────────────────────────────────
+  // When a target language is set (via `opts.lang`, or `meta.translation.lang`
+  // as the spec-side default), run every beat's narration through the
+  // configured translation provider BEFORE the TTS stage sees the spec.
+  //
+  // The noop provider (the safe default in @bjelser/core) returns the
+  // input unchanged + warns once — so `--lang es` without an LLM provider
+  // produces a built film with source-language narration, not a hard fail.
+  const targetLang: string | undefined =
+    opts.lang ?? spec.meta?.translation?.lang;
+  if (targetLang) {
+    const t0 = performance.now();
+    const stageOpts: Parameters<typeof runTranslateStage>[2] = {
+      targetLang,
+    };
+    if (opts.translationProvider !== undefined) {
+      stageOpts.providerId = opts.translationProvider;
+    }
+    if (opts.cacheDir !== undefined) stageOpts.cacheDir = opts.cacheDir;
+    const tx = await runTranslateStage(spec, engine, stageOpts);
+    spec = tx.spec;
+    const seconds = (performance.now() - t0) / 1000;
+    stages.push({
+      name: 'translate',
+      seconds,
+      summary:
+        `${tx.manifest.translatedCount}/${tx.manifest.beats.length} beats translated → ` +
+        `${tx.manifest.targetLang} · ${tx.manifest.providerId}`,
+    });
+  }
+
   // ─── 3. tts ──────────────────────────────────────────────────────────
   // Synthesizes every beat. Throws a `TtsProviderError` if the provider
   // is missing or fails to initialize. The kit owns the contract; the
@@ -231,6 +264,10 @@ export const runCascade = async (
     // time so per-beat `<Audio>` overlays attach during the Remotion render.
     if (opts.publicDir !== undefined) stageOpts.publicDir = opts.publicDir;
     if (spec.meta?.id) stageOpts.filmId = spec.meta.id;
+    // Voice override (`--voice` flag) — propagate down so the TTS stage
+    // picks the right voice for the target language without requiring
+    // the author to edit `meta.voice`.
+    if (opts.voice !== undefined) stageOpts.voice = opts.voice;
     ttsManifest = await runTtsStage(spec, engine, stageOpts);
     const seconds = (performance.now() - t0) / 1000;
     stages.push({

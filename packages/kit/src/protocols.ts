@@ -34,6 +34,11 @@ import type {
   TtsProvider,
   TtsProviderPlugin,
 } from './types/tts';
+import type {
+  TranslationCapabilities,
+  TranslationProvider,
+  TranslationProviderPlugin,
+} from './types/translation';
 import type {VisualizationStyle} from './types/visualization-style';
 
 // Re-export to keep `import {…} from '@bjelser/kit'` flat for plugin authors.
@@ -42,6 +47,12 @@ export type {
   TtsProvider,
   TtsProviderPlugin,
 } from './types/tts';
+export type {
+  TranslationCapabilities,
+  TranslationProvider,
+  TranslationProviderPlugin,
+  TranslationProviderContext,
+} from './types/translation';
 export type {
   Beat,
   BeatPace,
@@ -110,7 +121,12 @@ export {
  *
  * @see docs/design/plugin-architecture-strategy.md §4.1
  */
-export type PluginKind = 'scene' | 'preset' | 'tts' | 'feature';
+export type PluginKind =
+  | 'scene'
+  | 'preset'
+  | 'tts'
+  | 'translation'
+  | 'feature';
 
 /**
  * The foundation every plugin extends. Modelled after Marpit's plugin shape:
@@ -861,6 +877,24 @@ export interface TtsRegistry {
 }
 
 /**
+ * The translation-provider-registry interface. Consumers interact through
+ * {@link Engine.translations}. Mirrors {@link TtsRegistry} — same shape,
+ * different discriminator (`providerId` over the translation namespace).
+ *
+ * @see docs/translation.md
+ */
+export interface TranslationRegistry {
+  /** Register a translation provider plugin. Throws {@link RegistryConflictError} on duplicate `providerId`. */
+  register(plugin: TranslationProviderPlugin): void;
+  /** Look up a provider plugin by id. Returns `undefined` if not registered. */
+  get(providerId: string): TranslationProviderPlugin | undefined;
+  /** Check whether a provider id is registered. */
+  has(providerId: string): boolean;
+  /** Iterate all registered providers, in registration order. */
+  all(): ReadonlyArray<TranslationProviderPlugin>;
+}
+
+/**
  * The feature-registry interface. Consumers interact through
  * {@link Engine.features}.
  *
@@ -1103,6 +1137,11 @@ export interface FeaturePlugin extends PluginBase {
   /** Register additional TTS providers (fires during `engine.use(this)`). */
   registerTtsProviders?(reg: TtsRegistry): void;
   /**
+   * Register additional translation providers (fires during
+   * `engine.use(this)`). Mirrors {@link registerTtsProviders}.
+   */
+  registerTranslationProviders?(reg: TranslationRegistry): void;
+  /**
    * **R3 forward-compat.** Populate the engine's {@link ModifierRegistry}.
    * The hook fires during `engine.use(this)` but the resolver currently
    * does not consult the registry — R3 lands by wiring it through.
@@ -1236,6 +1275,42 @@ export interface RenderOptions {
     readonly publicDir: string | undefined;
     readonly filmId: string;
   }) => Promise<string> | string;
+  /**
+   * Target narration language (ISO 639-1: `'es'`, `'fr'`, `'ja'`, `'zh'`,
+   * `'de'`, etc.). When set, the cascade runs a translation stage BEFORE
+   * TTS, mapping each beat's `narration` through the active
+   * {@link TranslationProvider}. When omitted, the cascade renders the
+   * narration as authored.
+   *
+   * The translation provider is resolved by precedence:
+   *   1. `RenderOptions.translationProvider` (CLI override).
+   *   2. `meta.translation.provider` on the spec.
+   *   3. The well-known `'noop'` fallback (ships in `@bjelser/core`).
+   *
+   * When the resolved provider is `'noop'`, the cascade emits a one-line
+   * warning (`no translation provider configured — narration unchanged`)
+   * and passes every beat through unchanged. This is the safe default: a
+   * user who passes `--lang es` without configuring an LLM provider gets a
+   * built film (with source-language narration) rather than a hard failure.
+   */
+  lang?: string;
+  /**
+   * Voice id override for the TTS stage. When set, the TTS stage uses this
+   * voice instead of `meta.voice`. The CLI uses this together with
+   * `--voice` to let a translated film pick a voice that speaks the target
+   * language.
+   *
+   * Precedence (highest first):
+   *   `RenderOptions.voice` > `meta.tts.providerOptions.voice` >
+   *   `meta.voice` > the provider's built-in default.
+   */
+  voice?: string;
+  /**
+   * Translation provider id to use. When omitted, the cascade reads
+   * `meta.translation.provider` (or falls back to `'noop'`). Surfaced on
+   * RenderOptions so a CLI flag can override the spec without editing it.
+   */
+  translationProvider?: string;
 }
 
 /**
@@ -1289,4 +1364,9 @@ export interface Issue {
  *
  * @see docs/design/plugin-architecture-strategy.md §4.1
  */
-export type Plugin = ScenePlugin<any> | PresetPlugin | TtsProviderPlugin | FeaturePlugin;
+export type Plugin =
+  | ScenePlugin<any>
+  | PresetPlugin
+  | TtsProviderPlugin
+  | TranslationProviderPlugin
+  | FeaturePlugin;

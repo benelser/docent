@@ -92,6 +92,23 @@ export type {
 
 export {TtsProviderError} from './types/tts';
 
+// ---------- Translation (one spec, N narration languages) -------------------
+
+export type {
+  TranslationCapabilities,
+  TranslationProvider,
+  TranslationProviderPlugin,
+  TranslationProviderContext,
+} from './types/translation';
+
+export {
+  TranslationProviderError,
+  DEFAULT_LANG_TO_VOICE,
+  defaultVoiceForLang,
+} from './types/translation';
+
+export type {TranslationRegistry} from './protocols';
+
 // ---------- Spec types ------------------------------------------------------
 
 export type {
@@ -99,6 +116,7 @@ export type {
   FilmMeta,
   FilmRegister,
   FilmTtsConfig,
+  FilmTranslationConfig,
   Scene,
   Beat,
   BeatPace,

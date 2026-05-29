@@ -62,13 +62,24 @@ COMMANDS
                           canonical example pulled from films/).
 
 BUILD FLAGS
-  --scale <n>          Render scale (0.25, 0.5, 1). Default: 1.
-  --concurrency <n>    Render frame concurrency. Default: Remotion's auto.
-  --still <s>          Render a single still at second offset s.
-  --skip-tts           Skip the TTS stage — produces a silent mp4.
-  --output-dir <p>     Override the output directory.
-  --films-dir <p>      Override the films/ directory.
-  --project-root <p>   Override the project root (config + entry generation).
+  --scale <n>             Render scale (0.25, 0.5, 1). Default: 1.
+  --concurrency <n>       Render frame concurrency. Default: Remotion's auto.
+  --still <s>             Render a single still at second offset s.
+  --skip-tts              Skip the TTS stage — produces a silent mp4.
+  --output-dir <p>        Override the output directory.
+  --films-dir <p>         Override the films/ directory.
+  --project-root <p>      Override the project root (config + entry generation).
+  --lang <code>           Translate narration into <code> (ISO 639-1:
+                          es, fr, de, ja, zh, ...). Output filename becomes
+                          out/<film-id>-<code>.mp4. Requires a translation
+                          provider; the default 'noop' provider warns and
+                          falls back to source narration.
+  --voice <id>            Override the TTS voice (e.g. af_heart, bm_george).
+                          With --lang, the CLI auto-picks from a built-in
+                          lang→voice map if --voice is not given.
+  --translation-provider <id>
+                          Pick a registered translation provider by id.
+                          Defaults to meta.translation.provider or 'noop'.
 
 EXAMPLES
   docent build linear-algebra --scale 0.5
@@ -167,6 +178,11 @@ const main = async (): Promise<number> => {
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+      ...(str(flags.lang) ? {lang: str(flags.lang)!} : {}),
+      ...(str(flags.voice) ? {voice: str(flags.voice)!} : {}),
+      ...(str(flags['translation-provider'])
+        ? {translationProvider: str(flags['translation-provider'])!}
         : {}),
     });
   }

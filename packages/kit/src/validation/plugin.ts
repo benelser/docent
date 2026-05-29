@@ -11,6 +11,7 @@ const VALID_KINDS: readonly PluginKind[] = [
   'scene',
   'preset',
   'tts',
+  'translation',
   'feature',
 ] as const;
 
