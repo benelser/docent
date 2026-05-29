@@ -14,6 +14,7 @@ import {runBuild} from './commands/build';
 import {runDepthcheck} from './commands/depthcheck';
 import {runDoctor} from './commands/doctor';
 import {runGrammarCheck} from './commands/grammar-check';
+import {runHelpScene} from './commands/help-scene';
 import {runHermetic} from './commands/hermetic';
 import {runInit} from './commands/init';
 import {runRenderCheck} from './commands/render-check';
@@ -55,6 +56,10 @@ COMMANDS
                           bad clusters, registry conflicts. Exit 6 on error.
   hermetic                Render the 4 gallery fixtures end to end.
   help                    Print this usage and exit.
+  help <scene-type>       Surface the schema docs for a registered scene
+                          plugin (description, required + optional fields,
+                          beat-level open-index hooks, depth rules, and a
+                          canonical example pulled from films/).
 
 BUILD FLAGS
   --scale <n>          Render scale (0.25, 0.5, 1). Default: 1.
@@ -115,6 +120,15 @@ const main = async (): Promise<number> => {
   const {command, positional, flags} = parseArgs(process.argv.slice(2));
 
   if (command === 'help' || command === '--help' || command === '-h') {
+    const sceneType = positional[0];
+    if (sceneType) {
+      return runHelpScene({
+        sceneType,
+        ...(str(flags['project-root'])
+          ? {projectRoot: str(flags['project-root'])!}
+          : {}),
+      });
+    }
     process.stdout.write(USAGE);
     return 0;
   }
