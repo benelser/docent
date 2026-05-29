@@ -21,6 +21,7 @@ import {runRenderCheck} from './commands/render-check';
 import {runSceneFitList, runSceneFitRecommend} from './commands/scene-fit';
 import {runStyleList, runStyleRecommend} from './commands/style';
 import {runValidate} from './commands/validate';
+import {runWatch} from './commands/watch';
 
 const USAGE = `docent — render explanatory films via @bjelser/kit.
 
@@ -34,6 +35,11 @@ COMMANDS
                           tension, recap) that builds out of the box. Edit
                           the narration + nodes, then "docent build <id>".
   build <film-id>         Render a film to MP4 at out/<film-id>.mp4.
+  watch <film-id>         Watch films/<id>.json (+ docent.config.ts if present)
+                          and re-run validate + depthcheck + build on every
+                          save. Pass --no-build to skip the render (pairs
+                          well with "docent preview", since Remotion Studio
+                          re-renders frames itself). Ctrl+C to stop.
   validate <film-id>      Structurally validate a film spec via engine.validate().
   depthcheck <film-id>    Aggregate every plugin's depthRules over a film spec.
   render-check <film-id>  Render at low scale + assert every narrated scene
@@ -69,6 +75,9 @@ BUILD FLAGS
   --output-dir <p>     Override the output directory.
   --films-dir <p>      Override the films/ directory.
   --project-root <p>   Override the project root (config + entry generation).
+
+WATCH FLAGS
+  --no-build           Re-validate + depthcheck on save; skip the render.
 
 EXAMPLES
   docent build linear-algebra --scale 0.5
@@ -163,6 +172,25 @@ const main = async (): Promise<number> => {
         : {}),
       ...(num(flags.still) !== undefined ? {still: num(flags.still)!} : {}),
       ...(flags['skip-tts'] ? {skipTts: true} : {}),
+      ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+    });
+  }
+
+  if (command === 'watch') {
+    const filmId = positional[0];
+    if (!filmId) {
+      process.stderr.write('docent watch: missing <film-id>\n' + USAGE);
+      return 64;
+    }
+    return runWatch({
+      filmId,
+      ...(num(flags.scale) !== undefined ? {scale: num(flags.scale)!} : {}),
+      ...(flags['skip-tts'] ? {skipTts: true} : {}),
+      ...(flags['no-build'] ? {noBuild: true} : {}),
       ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['project-root'])
