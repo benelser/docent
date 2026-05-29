@@ -1,0 +1,698 @@
+// `docent treatment <id>` — the human-in-the-loop author surface.
+//
+// docent's author flow has three steps:
+//
+//   analysis/<id>.md  →  treatments/<id>.md  →  films/<id>.json
+//      survey              treatment              spec
+//
+// The treatment is the steering surface. The human reads it, edits it,
+// approves it — and never has to look at JSON. It is a plain-language
+// outline of what the film will be about, what thread it will follow,
+// and what scenes (in order) it will make. The agent compiles the
+// approved treatment to the spec.
+//
+// Two modes:
+//
+//   docent treatment <id>
+//     reads analysis/<id>.md, scaffolds treatments/<id>.md with a
+//     starter set of 5-8 scenes inferred from the survey's section
+//     headings. Deterministic — no LLM call. The human edits it.
+//
+//   docent treatment <id> --to-spec
+//     reads the (approved) treatment at treatments/<id>.md and
+//     emits films/<id>.json. Walks the markdown's numbered scene
+//     list, reads each item's `<!-- scene-type: X -->` hint, and
+//     emits a placeholder scene object the human will fill in.
+//
+// This file is intentionally dumb: the smart layer is the human's
+// edits to the treatment, plus the later survey → film cycle the
+// docent agent runs. The CLI just shuttles markdown ↔ JSON.
+
+import {existsSync, mkdirSync, readFileSync, writeFileSync} from 'node:fs';
+import {basename, dirname, join, resolve} from 'node:path';
+
+const log = (s: string): void => process.stdout.write(`${s}\n`);
+const err = (s: string): void => process.stderr.write(`${s}\n`);
+
+export interface TreatmentArgs {
+  readonly id: string;
+  readonly toSpec?: boolean;
+  readonly projectRoot?: string;
+  readonly analysisDir?: string;
+  readonly treatmentsDir?: string;
+  readonly filmsDir?: string;
+  readonly force?: boolean;
+}
+
+// ----- markdown helpers ----------------------------------------------------
+
+interface ParsedSurvey {
+  readonly title: string;
+  readonly opener: string;
+  readonly throughLine: string;
+  readonly sections: ReadonlyArray<{heading: string; body: string}>;
+}
+
+/**
+ * Lightly parse a survey markdown — pull the title, the first
+ * meaningful paragraph (used as the opener), and every level-2
+ * section (used to seed scene proposals).
+ */
+const parseSurvey = (source: string, fallbackId: string): ParsedSurvey => {
+  const lines = source.split('\n');
+
+  // Title — first `# ...` heading, else the fallback id.
+  let title = fallbackId;
+  for (const ln of lines) {
+    const m = ln.match(/^#\s+(.+)$/);
+    if (m && m[1]) {
+      title = m[1].trim();
+      break;
+    }
+  }
+
+  // Opener — the first non-empty paragraph after the title that isn't
+  // a heading or a horizontal rule. Strip markdown emphasis lightly.
+  let opener = '';
+  {
+    let sawTitle = false;
+    const buf: string[] = [];
+    for (const ln of lines) {
+      if (!sawTitle && /^#\s+/.test(ln)) {
+        sawTitle = true;
+        continue;
+      }
+      if (!sawTitle) continue;
+      const trimmed = ln.trim();
+      if (trimmed === '' && buf.length > 0) break;
+      if (trimmed === '' || trimmed === '---' || /^#/.test(trimmed)) continue;
+      buf.push(trimmed);
+    }
+    opener = buf.join(' ').replace(/\*\*/g, '').trim();
+  }
+  if (!opener) {
+    opener = `The survey for ${title} did not include a short opening paragraph — write the one-line framing of why this film matters here.`;
+  }
+
+  // Sections — every `## ...` heading and the body until the next
+  // heading. Skip the "section 0 — content boundary" convention
+  // if present; it's scope, not a scene.
+  const sections: Array<{heading: string; body: string}> = [];
+  let current: {heading: string; body: string[]} | null = null;
+  for (const ln of lines) {
+    const m = ln.match(/^##\s+(.+)$/);
+    if (m && m[1]) {
+      if (current) sections.push({heading: current.heading, body: current.body.join('\n').trim()});
+      current = {heading: m[1].trim(), body: []};
+    } else if (current) {
+      current.body.push(ln);
+    }
+  }
+  if (current) sections.push({heading: current.heading, body: current.body.join('\n').trim()});
+
+  // Pull a candidate through-line: prefer a section whose heading
+  // contains "through", "claim", "thesis", "argument", "idea", or
+  // "load-bearing"; else first non-boundary section's first sentence.
+  let throughLine = '';
+  const tlNeedles = ['through', 'claim', 'thesis', 'argument', 'idea', 'load-bearing', 'load bearing'];
+  for (const s of sections) {
+    const h = s.heading.toLowerCase();
+    if (tlNeedles.some((n) => h.includes(n))) {
+      throughLine = firstSentence(s.body);
+      if (throughLine) break;
+    }
+  }
+  if (!throughLine && sections[0]) {
+    throughLine = firstSentence(sections[0].body) ||
+      'The single thread the film should follow — pull this from the survey, in one sentence.';
+  }
+  if (!throughLine) {
+    throughLine = 'The single thread the film should follow — pull this from the survey, in one sentence.';
+  }
+
+  return {title, opener, throughLine, sections};
+};
+
+const firstSentence = (body: string): string => {
+  // Take the first paragraph (up to a blank line), collapse internal
+  // newlines to spaces so we can match a sentence that wraps lines.
+  const stripped = body
+    .split(/\n\s*\n/)[0]!
+    .replace(/^[-*]\s+/gm, '')
+    .replace(/\*\*/g, '')
+    .replace(/`/g, '')
+    .replace(/\s*\n\s*/g, ' ')
+    .trim();
+  if (!stripped) return '';
+  // First sentence — stop at the first period followed by space/EOS.
+  const m = stripped.match(/^(.+?\.)(?:\s|$)/);
+  if (m && m[1]) return m[1].trim();
+  return stripped;
+};
+
+// ----- scene proposal heuristics -------------------------------------------
+
+/**
+ * The 15 canonical scene moves from the docent grammar. This list is
+ * deliberately SMALL — the treatment is a steering surface for a human,
+ * not a registry browser. The full plugin catalog (29 scenes) lives in
+ * `docent scene-fit list`.
+ */
+const SCENE_TYPES: ReadonlyArray<string> = [
+  'frame',
+  'structure',
+  'progression',
+  'walkthrough',
+  'compare',
+  'quantities',
+  'chart',
+  'probe',
+  'tension',
+  'closeup',
+  'passage',
+  'figure',
+  'demonstrate',
+  'recap',
+  'diff',
+];
+
+interface SceneProposal {
+  readonly sceneType: string;
+  readonly summary: string;
+}
+
+/**
+ * Map a heading + body to a scene-type guess. Deliberately coarse —
+ * the human's edits to the treatment are where intent gets sharpened.
+ */
+const guessSceneType = (heading: string): string => {
+  const h = heading.toLowerCase();
+  if (/^(0\.|introduction|boundary|scope|frame|setup)/.test(h)) return 'frame';
+  if (/(part|component|piece|architect|structure|anatomy|map|tree)/.test(h)) return 'structure';
+  if (/(progress|stage|phase|step|timeline|history|evolution)/.test(h)) return 'progression';
+  if (/(walk|trace|step.through|example|worked|instance)/.test(h)) return 'walkthrough';
+  if (/(compare|contrast|versus|vs\.|alternative|option)/.test(h)) return 'compare';
+  if (/(number|metric|count|quantit|measur|stat)/.test(h)) return 'quantities';
+  if (/(chart|plot|axis|curve|graph)/.test(h)) return 'chart';
+  if (/(probe|vary|sweep|sensitivity|what if)/.test(h)) return 'probe';
+  if (/(trade.?off|break|fail|risk|tension|weak|limit|where it (fails|breaks))/.test(h)) return 'tension';
+  if (/(code|closeup|annotat|listing|snippet)/.test(h)) return 'closeup';
+  if (/(quote|passage|prose|text|excerpt|line)/.test(h)) return 'passage';
+  if (/(figure|image|map|diagram|painting|photo)/.test(h)) return 'figure';
+  if (/(demo|run|play|see it|watch)/.test(h)) return 'demonstrate';
+  if (/(recap|verdict|takeaway|summary|conclusion)/.test(h)) return 'recap';
+  if (/(diff|change|before|after|delta)/.test(h)) return 'diff';
+  return 'structure';
+};
+
+/**
+ * Translate a scene-type guess + heading into a plain-language
+ * one-line summary the human can read without knowing the grammar.
+ */
+const proseForScene = (sceneType: string, heading: string, body: string): string => {
+  const focus = heading.replace(/^\d+\.\s*/, '').trim();
+  const sentence = firstSentence(body);
+  const tail = sentence ? ` ${sentence}` : '';
+  switch (sceneType) {
+    case 'frame':
+      return `Open the film. Set up "${focus}" so the viewer knows in one breath what we are after.${tail}`;
+    case 'structure':
+      return `Lay out the parts of ${focus}, and how they connect.${tail}`;
+    case 'progression':
+      return `Walk the stages of ${focus} — one step at a time, in order.${tail}`;
+    case 'walkthrough':
+      return `Take one concrete instance of ${focus} and trace it end to end.${tail}`;
+    case 'compare':
+      return `Place the options for ${focus} side by side and name what is at stake.${tail}`;
+    case 'quantities':
+      return `Surface the numbers that pin down ${focus}.${tail}`;
+    case 'chart':
+      return `Plot ${focus} on real axes — let the curve do the arguing.${tail}`;
+    case 'probe':
+      return `Vary one input and follow what happens to ${focus}.${tail}`;
+    case 'tension':
+      return `Name the trade-off in ${focus} — what was chosen, what was rejected, and what risk remains.${tail}`;
+    case 'closeup':
+      return `Annotate one code artifact tied to ${focus}, line by load-bearing line.${tail}`;
+    case 'passage':
+      return `Annotate the text of ${focus} phrase by phrase, in the order the reader meets it.${tail}`;
+    case 'figure':
+      return `Annotate the figure for ${focus} by region — guide the eye, do not narrate over it.${tail}`;
+    case 'demonstrate':
+      return `Show ${focus} actually running, not described — let the motion do the explaining.${tail}`;
+    case 'recap':
+      return `Close with the verdict on ${focus}: the disposition, the biggest residual risk, the line to carry off.${tail}`;
+    case 'diff':
+      return `Show what changed in ${focus} — before vs. after, the load-bearing 5%.${tail}`;
+    default:
+      return `Cover ${focus}.${tail}`;
+  }
+};
+
+/**
+ * Pick 5-8 scene proposals from the survey's sections. The first
+ * is always a frame; the last is always a recap; the body picks the
+ * best-fitting type per section. Section 0 ("content boundary") is
+ * skipped — it is scope, not a scene.
+ */
+const proposeScenes = (sections: ReadonlyArray<{heading: string; body: string}>): SceneProposal[] => {
+  const out: SceneProposal[] = [];
+
+  // Opening frame is mandatory.
+  out.push({
+    sceneType: 'frame',
+    summary:
+      'Open the film. State the subject in one breath, name the misconception we are about to kill, and tell the viewer what they will know by the recap.',
+  });
+
+  // Skip section-zero "content boundary" if it exists; it is scope.
+  const usable = sections.filter((s) => !/^0\./.test(s.heading));
+
+  // Pick up to 6 body scenes from sections, but cap the total film at 8.
+  const bodyCap = 6;
+  const picked: SceneProposal[] = [];
+  const seenTypes = new Set<string>(['frame']);
+  for (const s of usable) {
+    if (picked.length >= bodyCap) break;
+    const type = guessSceneType(s.heading);
+    if (type === 'frame' || type === 'recap') continue; // those are bracketing scenes
+    // Allow one repeat of structure; otherwise prefer variety.
+    if (seenTypes.has(type) && type !== 'structure') continue;
+    seenTypes.add(type);
+    picked.push({sceneType: type, summary: proseForScene(type, s.heading, s.body)});
+  }
+
+  // Always carry at least one tension scene — the depth bar requires it.
+  if (!picked.find((p) => p.sceneType === 'tension')) {
+    picked.push({
+      sceneType: 'tension',
+      summary:
+        'Name the trade-off. What was chosen, what was rejected on the way, and what residual risk the chosen path still carries. The film fails the depth bar without this.',
+    });
+  }
+
+  // Always carry at least one structure scene if nothing else.
+  if (picked.length === 0) {
+    picked.push({
+      sceneType: 'structure',
+      summary: 'Lay out the parts of the subject and how they connect.',
+    });
+  }
+
+  for (const p of picked) out.push(p);
+
+  // Closing recap is mandatory.
+  out.push({
+    sceneType: 'recap',
+    summary:
+      'Close with the verdict. State the disposition (sound? not sound? sound-with-a-watch?), the single biggest residual risk, and the one line to carry off the page.',
+  });
+
+  return out;
+};
+
+// ----- the treatment markdown ----------------------------------------------
+
+const renderTreatment = (id: string, survey: ParsedSurvey, scenes: ReadonlyArray<SceneProposal>): string => {
+  const lines: string[] = [];
+  lines.push(`# ${survey.title}`);
+  lines.push('');
+  lines.push(`<!-- docent-treatment id: ${id} -->`);
+  lines.push('');
+  lines.push('> A treatment is the steering surface between the survey and the spec.');
+  lines.push('> Read it. Edit it. When the scenes below say what this film should be,');
+  lines.push('> run `docent treatment ' + id + ' --to-spec` to compile to `films/' + id + '.json`.');
+  lines.push('');
+  lines.push('## What this film is about');
+  lines.push('');
+  lines.push(survey.opener);
+  lines.push('');
+  lines.push('## The through-line');
+  lines.push('');
+  lines.push(survey.throughLine);
+  lines.push('');
+  lines.push('## Proposed scenes');
+  lines.push('');
+  lines.push('Each item is one scene the film will make, in order.');
+  lines.push('Edit the prose freely. To change a scene\'s move, edit the `scene-type` HTML comment.');
+  lines.push('');
+  let i = 1;
+  for (const sc of scenes) {
+    lines.push(`${i}. <!-- scene-type: ${sc.sceneType} -->`);
+    lines.push(`   ${sc.summary}`);
+    lines.push('');
+    i++;
+  }
+  lines.push('## Notes for the human');
+  lines.push('');
+  lines.push('- Is the through-line above the *actual* thread, or is it a section heading dressed up?');
+  lines.push('- Does the scene list reach the trade-off, or does it tour the happy path?');
+  lines.push('- Are any of the proposed scenes the wrong move? Swap the `scene-type` hint and refine the prose.');
+  lines.push('- Drop scenes that do not earn their keep. Add scenes the survey demands but this scaffold missed.');
+  lines.push('- Aim for 6-8 scenes total. More than 9, the film loses its spine; fewer than 5, it is a slide deck.');
+  lines.push('');
+  return lines.join('\n');
+};
+
+// ----- treatment → spec -----------------------------------------------------
+
+interface ScenePick {
+  readonly sceneType: string;
+  readonly summary: string;
+}
+
+const parseTreatmentScenes = (source: string): ScenePick[] => {
+  const lines = source.split('\n');
+  const out: ScenePick[] = [];
+
+  // The "## Proposed scenes" section, until the next ## heading.
+  let inScenes = false;
+  let pending: {sceneType: string; lines: string[]} | null = null;
+
+  const flush = (): void => {
+    if (!pending) return;
+    const summary = pending.lines.join(' ').trim() || '(no summary)';
+    out.push({sceneType: pending.sceneType, summary});
+    pending = null;
+  };
+
+  for (const raw of lines) {
+    const ln = raw;
+    const headMatch = ln.match(/^##\s+(.+)$/);
+    if (headMatch) {
+      if (inScenes) {
+        flush();
+        break;
+      }
+      if (/proposed scenes/i.test(headMatch[1]!)) inScenes = true;
+      continue;
+    }
+    if (!inScenes) continue;
+
+    // A numbered list item — possibly with a `<!-- scene-type: X -->` hint.
+    const itemMatch = ln.match(/^\s*(\d+)\.\s*(.*)$/);
+    if (itemMatch) {
+      flush();
+      const rest = itemMatch[2] ?? '';
+      const hint = rest.match(/<!--\s*scene-type:\s*([a-z-]+)\s*-->/);
+      const sceneType = hint?.[1] ?? '';
+      // Strip the comment from the summary text on this line, if any.
+      const head = rest.replace(/<!--\s*scene-type:\s*[a-z-]+\s*-->/, '').trim();
+      pending = {sceneType, lines: head ? [head] : []};
+      continue;
+    }
+
+    // Continuation line — either prose or a stray comment.
+    if (pending) {
+      const trimmed = ln.trim();
+      if (trimmed === '') continue;
+      // Pick up a `<!-- scene-type: X -->` on its own line.
+      const hint = trimmed.match(/^<!--\s*scene-type:\s*([a-z-]+)\s*-->$/);
+      if (hint) {
+        if (!pending.sceneType) pending.sceneType = hint[1]!;
+        continue;
+      }
+      pending.lines.push(trimmed);
+    }
+  }
+  flush();
+
+  // Default unmarked scenes — first is frame, last is recap, middle is structure.
+  for (let i = 0; i < out.length; i++) {
+    if (out[i]!.sceneType) continue;
+    let fallback = 'structure';
+    if (i === 0) fallback = 'frame';
+    else if (i === out.length - 1) fallback = 'recap';
+    out[i] = {sceneType: fallback, summary: out[i]!.summary};
+  }
+  return out;
+};
+
+/**
+ * Build a placeholder scene object the human will fill in. Only the
+ * required schema fields are written; everything else is left for the
+ * spec author. We pick the fields most commonly required across the
+ * core scene grammar; the spec will still need `docent validate` to
+ * clear depthcheck.
+ */
+const placeholderScene = (i: number, pick: ScenePick): Record<string, unknown> => {
+  const idStem = `s${i + 1}`;
+  const base: Record<string, unknown> = {
+    id: idStem,
+    type: pick.sceneType,
+    kicker: `${String(i + 1).padStart(2, '0')} // EDIT ME`,
+    heading: pick.summary,
+    beats: [
+      {
+        id: `${idStem}-1`,
+        narration: pick.summary,
+      },
+    ],
+  };
+
+  switch (pick.sceneType) {
+    case 'frame':
+      base.title = 'Edit me — the film title';
+      base.tagline = pick.summary;
+      base.footnote = 'context note · author · date';
+      delete base.heading;
+      break;
+    case 'structure':
+      base.nodes = [
+        {id: 'a', label: 'First part', sub: 'what it does'},
+        {id: 'b', label: 'Second part', sub: 'what it does'},
+        {id: 'c', label: 'Third part', sub: 'what it does'},
+      ];
+      base.edges = [
+        {id: 'ab', from: 'a', to: 'b', kind: 'relation', label: 'flows into'},
+      ];
+      break;
+    case 'tension':
+      base.nodes = [
+        {id: 'chosen', label: 'The chosen path', sub: 'why this one'},
+        {id: 'rejected', label: 'A real alternative', sub: 'why it was rejected', kind: 'rejected'},
+        {id: 'risk', label: 'A residual risk', sub: 'what the choice did not resolve', kind: 'risk'},
+      ];
+      break;
+    case 'recap':
+      base.points = [
+        'Disposition — sound / not sound / sound-with-a-watch.',
+        'The single biggest residual risk.',
+        'The one line to carry off the page.',
+      ];
+      // recap beats use a numeric `reveal` (the 1-based point index).
+      base.beats = [
+        {id: `${idStem}-1`, reveal: 1, narration: 'Restate the disposition.'},
+        {id: `${idStem}-2`, reveal: 2, narration: 'Name the residual risk.'},
+        {id: `${idStem}-3`, reveal: 3, narration: 'Carry off the single line.'},
+      ];
+      break;
+    case 'compare':
+      base.columns = [
+        {id: 'col-a', label: 'Option A'},
+        {id: 'col-b', label: 'Option B'},
+      ];
+      base.rows = [
+        {
+          id: 'row-1',
+          label: 'A criterion to compare on',
+          cells: [{text: 'what A does here'}, {text: 'what B does here'}],
+        },
+      ];
+      break;
+    case 'quantities':
+      base.figures = [
+        {id: 'f1', label: 'A measured quantity', value: '0', unit: ''},
+      ];
+      break;
+    case 'progression':
+      base.stages = [
+        {id: 'p1', label: 'Stage one'},
+        {id: 'p2', label: 'Stage two'},
+        {id: 'p3', label: 'Stage three'},
+      ];
+      break;
+    case 'probe':
+      base.baseline = {label: 'The baseline state', outcome: 'what happens'};
+      base.variations = [
+        {
+          id: 'v1',
+          label: 'Vary the input',
+          change: 'what you changed',
+          outcome: 'what happened',
+        },
+      ];
+      break;
+    case 'chart':
+      base.xAxis = {kind: 'chart', label: 'x', min: 0, max: 10};
+      base.yAxis = {kind: 'chart', label: 'y', min: 0, max: 10};
+      base.series = [
+        {id: 'series-1', kind: 'line', fn: 'linear', accent: 'blue'},
+      ];
+      break;
+    case 'walkthrough':
+      base.actors = [
+        {id: 'caller', label: 'Caller', sub: 'edit me'},
+        {id: 'callee', label: 'Callee', sub: 'edit me'},
+      ];
+      break;
+    case 'closeup':
+      base.code = '// paste the code artifact here\n';
+      base.lang = 'ts';
+      break;
+    case 'demonstrate':
+      base.clip = 'public/clips/edit-me.mp4';
+      break;
+    case 'passage':
+      base.text = 'Paste the source text here, line by line.';
+      base.marks = [];
+      break;
+    case 'figure':
+      base.image = 'public/figures/edit-me.png';
+      base.callouts = [];
+      break;
+    case 'diff':
+      base.code =
+        '--- a/path/to/file\n+++ b/path/to/file\n@@ -1,1 +1,1 @@\n-the before line\n+the after line';
+      break;
+    default:
+      break;
+  }
+  return base;
+};
+
+const buildSpec = (id: string, title: string, picks: ReadonlyArray<ScenePick>): unknown => ({
+  meta: {
+    id,
+    title,
+    subject: 'Edit me — the one-line description that goes under the title',
+    fps: 30,
+    voice: 'af_heart',
+  },
+  scenes: picks.map((p, i) => placeholderScene(i, p)),
+});
+
+// ----- the CLI surface ------------------------------------------------------
+
+export const runTreatment = async (args: TreatmentArgs): Promise<number> => {
+  const cwd = process.cwd();
+  const projectRoot = args.projectRoot ?? cwd;
+  const analysisDir = args.analysisDir ?? join(projectRoot, 'analysis');
+  const treatmentsDir = args.treatmentsDir ?? join(projectRoot, 'treatments');
+  const filmsDir = args.filmsDir ?? join(projectRoot, 'films');
+
+  if (args.toSpec) {
+    return runTreatmentToSpec({
+      id: args.id,
+      treatmentsDir,
+      filmsDir,
+      force: args.force ?? false,
+    });
+  }
+  return runTreatmentScaffold({
+    id: args.id,
+    analysisDir,
+    treatmentsDir,
+    force: args.force ?? false,
+  });
+};
+
+interface ScaffoldArgs {
+  readonly id: string;
+  readonly analysisDir: string;
+  readonly treatmentsDir: string;
+  readonly force: boolean;
+}
+
+const runTreatmentScaffold = async (args: ScaffoldArgs): Promise<number> => {
+  const surveyPath = resolve(args.analysisDir, `${args.id}.md`);
+  const treatmentPath = resolve(args.treatmentsDir, `${args.id}.md`);
+
+  if (!existsSync(surveyPath)) {
+    err(`\x1b[31m✗ analysis/${args.id}.md not found at ${surveyPath}\x1b[0m`);
+    err('  Run the survey first — write the deep notes at analysis/<id>.md.');
+    return 1;
+  }
+  if (existsSync(treatmentPath) && !args.force) {
+    err(`\x1b[31m✗ ${treatmentPath} already exists. Pass --force to overwrite.\x1b[0m`);
+    return 1;
+  }
+
+  let source: string;
+  try {
+    source = readFileSync(surveyPath, 'utf-8');
+  } catch (e) {
+    err(`treatment error: ${surveyPath}: ${e instanceof Error ? e.message : String(e)}`);
+    return 1;
+  }
+
+  const fallbackTitle = basename(surveyPath, '.md');
+  const survey = parseSurvey(source, fallbackTitle);
+  const scenes = proposeScenes(survey.sections);
+  const md = renderTreatment(args.id, survey, scenes);
+
+  mkdirSync(dirname(treatmentPath), {recursive: true});
+  writeFileSync(treatmentPath, md, 'utf-8');
+
+  log(`\x1b[32m✓ wrote ${treatmentPath}\x1b[0m`);
+  log('');
+  log('  Next:');
+  log(`    1. Open ${treatmentPath} and steer the outline — the human-readable layer.`);
+  log(`    2. \x1b[36mbunx docent treatment ${args.id} --to-spec\x1b[0m   — compile to films/${args.id}.json`);
+  log(`    3. \x1b[36mbunx docent validate ${args.id}\x1b[0m              — check the spec`);
+  return 0;
+};
+
+interface ToSpecArgs {
+  readonly id: string;
+  readonly treatmentsDir: string;
+  readonly filmsDir: string;
+  readonly force: boolean;
+}
+
+const runTreatmentToSpec = async (args: ToSpecArgs): Promise<number> => {
+  const treatmentPath = resolve(args.treatmentsDir, `${args.id}.md`);
+  const specPath = resolve(args.filmsDir, `${args.id}.json`);
+
+  if (!existsSync(treatmentPath)) {
+    err(`\x1b[31m✗ treatments/${args.id}.md not found at ${treatmentPath}\x1b[0m`);
+    err(`  Run \`docent treatment ${args.id}\` first to scaffold the treatment.`);
+    return 1;
+  }
+  if (existsSync(specPath) && !args.force) {
+    err(`\x1b[31m✗ ${specPath} already exists. Pass --force to overwrite.\x1b[0m`);
+    return 1;
+  }
+
+  let source: string;
+  try {
+    source = readFileSync(treatmentPath, 'utf-8');
+  } catch (e) {
+    err(`treatment error: ${treatmentPath}: ${e instanceof Error ? e.message : String(e)}`);
+    return 1;
+  }
+
+  // Pull the title — the treatment's first `# ...` heading.
+  let title = args.id;
+  for (const ln of source.split('\n')) {
+    const m = ln.match(/^#\s+(.+)$/);
+    if (m && m[1]) {
+      title = m[1].trim();
+      break;
+    }
+  }
+
+  const picks = parseTreatmentScenes(source);
+  if (picks.length === 0) {
+    err(`\x1b[31m✗ no proposed scenes found under "## Proposed scenes" in ${treatmentPath}.\x1b[0m`);
+    return 1;
+  }
+
+  const spec = buildSpec(args.id, title, picks);
+
+  mkdirSync(dirname(specPath), {recursive: true});
+  writeFileSync(specPath, JSON.stringify(spec, null, 2), 'utf-8');
+
+  log(`wrote films/${args.id}.json — run docent validate ${args.id} next.`);
+  return 0;
+};
