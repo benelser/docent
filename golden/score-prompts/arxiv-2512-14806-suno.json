@@ -1,0 +1,16 @@
+{
+  "prompt": "A cinematic orchestral instrumental score, 683 seconds long. Opens with a bold sustained string chord and a soft timpani hit. Low strings sustain beneath a held brass chord. At 210.6 seconds, a single rising string figure marks the measured claim. At 283.2 seconds, the orchestra pulls back briefly before the next motion. At 511.3 seconds, a brief pull-back to quiet sustained strings for four seconds. At 515.3 seconds, one massive thundering orchestral boom — a single enormous impact with deep bass and timpani, followed by a powerful sustained chord underneath. At 549.1 seconds, the chord resolves with finality and slowly fades to silence by 683 seconds. Style: grand cinematic orchestra, no vocals, no electronic elements, powerful and emotional.",
+  "tags": [
+    "cinematic",
+    "orchestral",
+    "instrumental",
+    "epic",
+    "powerful",
+    "brass",
+    "strings",
+    "timpani",
+    "peak-at-515s"
+  ],
+  "makeInstrumental": true,
+  "duration": 683
+}

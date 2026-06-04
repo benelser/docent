@@ -1,0 +1,56 @@
+{
+  "prompt": "A gentle orchestral score for warm strings and piano, 254 seconds long. Opens with a soft sustained string chord beneath a delicate piano figure. Low strings sustain beneath a held brass chord. [build] At 25.9 seconds, a repeating string figure begins beneath the brass. [build] At 56.8 seconds, a repeating string figure begins beneath the brass. [build] At 89 seconds, a repeating string figure begins beneath the brass. [turn] At 123.8 seconds, the orchestra pulls back briefly before the next motion. [breath] At 189.2 seconds, a brief pull-back to quiet sustained strings for about four seconds. [peak] At 193.2 seconds, a single bright orchestral accent — a clear chord with timpani, followed by a sustained warm chord underneath. [resolve] At 205.5 seconds, the chord resolves with finality and slowly fades to silence by 254 seconds. Style: gentle orchestral score for strings and piano, no vocals, no electronic elements, restrained and contemplative.",
+  "tags": [
+    "cinematic",
+    "orchestral",
+    "instrumental",
+    "no vocals",
+    "gentle",
+    "warm",
+    "piano",
+    "soft strings"
+  ],
+  "duration": 254,
+  "sections": [
+    {
+      "tag": "[intro]",
+      "atSeconds": 0,
+      "action": "low strings sustain beneath a held brass chord"
+    },
+    {
+      "tag": "[build]",
+      "atSeconds": 25.9,
+      "action": "a repeating string figure begins beneath the brass"
+    },
+    {
+      "tag": "[build]",
+      "atSeconds": 56.8,
+      "action": "a repeating string figure begins beneath the brass"
+    },
+    {
+      "tag": "[build]",
+      "atSeconds": 89,
+      "action": "a repeating string figure begins beneath the brass"
+    },
+    {
+      "tag": "[turn]",
+      "atSeconds": 123.8,
+      "action": "the orchestra pulls back briefly before the next motion"
+    },
+    {
+      "tag": "[breath]",
+      "atSeconds": 189.2,
+      "action": "a brief pull-back to quiet sustained strings"
+    },
+    {
+      "tag": "[peak]",
+      "atSeconds": 193.2,
+      "action": "a single bright orchestral accent — a clear chord with timpani, followed by a sustained warm chord underneath"
+    },
+    {
+      "tag": "[resolve]",
+      "atSeconds": 205.5,
+      "action": "the chord resolves with finality and slowly fades to silence"
+    }
+  ]
+}

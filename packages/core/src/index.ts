@@ -73,3 +73,20 @@ export type {
   LintFilmInput,
   LintFilmResult,
 } from './narrative-quality/lint-rules';
+
+// ---------- Score prompt (R9 — timeline-annotated music-gen) ----------------
+//
+// `buildScorePrompt` + the four provider adapters + the content-filter
+// validator. The CLI's `docent score` and any third-party music-gen
+// integration import from here.
+export {
+  buildScorePrompt,
+  wordsInFilm,
+  validatePromptBody,
+  autofixPromptBody,
+  renderTemplate,
+  renderAiva,
+  renderUdio,
+  renderSuno,
+  renderScorePrompt,
+} from './score';

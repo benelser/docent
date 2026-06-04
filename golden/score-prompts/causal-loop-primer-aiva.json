@@ -1,0 +1,65 @@
+{
+  "genre": "cinematic",
+  "moods": [
+    "contemplative",
+    "gentle",
+    "warm"
+  ],
+  "key": "F major",
+  "tempo": 72,
+  "timeSignature": "4/4",
+  "duration": 254,
+  "instruments": [
+    "piano",
+    "warm strings",
+    "woodwinds"
+  ],
+  "forbid": [
+    "vocals",
+    "lyrics",
+    "electronic drums"
+  ],
+  "description": "A gentle orchestral score for warm strings and piano, 254 seconds long. Opens with a soft sustained string chord beneath a delicate piano figure. Low strings sustain beneath a held brass chord. At 25.9 seconds, a repeating string figure begins beneath the brass. At 56.8 seconds, a repeating string figure begins beneath the brass. At 89 seconds, a repeating string figure begins beneath the brass. At 123.8 seconds, the orchestra pulls back briefly before the next motion. At 189.2 seconds, a brief pull-back to quiet sustained strings for about four seconds. At 193.2 seconds, a single bright orchestral accent — a clear chord with timpani, followed by a sustained warm chord underneath. At 205.5 seconds, the chord resolves with finality and slowly fades to silence by 254 seconds. Style: gentle orchestral score for strings and piano, no vocals, no electronic elements, restrained and contemplative.",
+  "sections": [
+    {
+      "atSeconds": 0,
+      "label": "intro",
+      "action": "low strings sustain beneath a held brass chord"
+    },
+    {
+      "atSeconds": 25.9,
+      "label": "develop",
+      "action": "a repeating string figure begins beneath the brass"
+    },
+    {
+      "atSeconds": 56.8,
+      "label": "develop",
+      "action": "a repeating string figure begins beneath the brass"
+    },
+    {
+      "atSeconds": 89,
+      "label": "develop",
+      "action": "a repeating string figure begins beneath the brass"
+    },
+    {
+      "atSeconds": 123.8,
+      "label": "turn",
+      "action": "the orchestra pulls back briefly before the next motion"
+    },
+    {
+      "atSeconds": 189.2,
+      "label": "pull-back",
+      "action": "a brief pull-back to quiet sustained strings"
+    },
+    {
+      "atSeconds": 193.2,
+      "label": "peak",
+      "action": "a single bright orchestral accent — a clear chord with timpani, followed by a sustained warm chord underneath"
+    },
+    {
+      "atSeconds": 205.5,
+      "label": "resolve",
+      "action": "the chord resolves with finality and slowly fades to silence"
+    }
+  ]
+}

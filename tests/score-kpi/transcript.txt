@@ -1,0 +1,116 @@
+R9 — timeline-annotated music-gen prompt KPI
+  films:     causal-loop-primer, kubernetes-pr, arxiv-2512-14806
+  providers: template, aiva, udio, suno
+  goldens:   /Users/belser/ventures/archcast/.claude/worktrees/agent-afad590482c3ab3d8/golden/score-prompts
+  mode:      compare goldens
+
+▶ causal-loop-primer / template
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 7 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 144 words
+  ✓ boom-in-range — 193.2s
+  golden: match
+  body: 144 words, boom@193.2s
+
+▶ causal-loop-primer / aiva
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 7 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 144 words
+  ✓ boom-in-range — 193.2s
+  golden: match
+  body: 144 words, boom@193.2s
+
+▶ causal-loop-primer / udio
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 7 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 151 words
+  ✓ boom-in-range — 193.2s
+  golden: match
+  body: 151 words, boom@193.2s
+
+▶ causal-loop-primer / suno
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 4 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 110 words
+  ✓ boom-in-range — 193.2s
+  golden: match
+  body: 110 words, boom@193.2s
+
+▶ kubernetes-pr / template
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 7 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 145 words
+  ✓ boom-in-range — 388.6s
+  golden: match
+  body: 145 words, boom@388.6s
+
+▶ kubernetes-pr / aiva
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 7 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 145 words
+  ✓ boom-in-range — 388.6s
+  golden: match
+  body: 145 words, boom@388.6s
+
+▶ kubernetes-pr / udio
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 7 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 152 words
+  ✓ boom-in-range — 388.6s
+  golden: match
+  body: 152 words, boom@388.6s
+
+▶ kubernetes-pr / suno
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 3 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 94 words
+  ✓ boom-in-range — 388.6s
+  golden: match
+  body: 94 words, boom@388.6s
+
+▶ arxiv-2512-14806 / template
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 8 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 151 words
+  ✓ boom-in-range — 515.3s
+  golden: match
+  body: 151 words, boom@515.3s
+
+▶ arxiv-2512-14806 / aiva
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 8 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 151 words
+  ✓ boom-in-range — 515.3s
+  golden: match
+  body: 151 words, boom@515.3s
+
+▶ arxiv-2512-14806 / udio
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 8 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 159 words
+  ✓ boom-in-range — 515.3s
+  golden: match
+  body: 159 words, boom@515.3s
+
+▶ arxiv-2512-14806 / suno
+  ✓ boom-alignment
+  ✓ timestamps-parseable — 5 timestamp(s)
+  ✓ content-filter-clean
+  ✓ word-cap — 118 words
+  ✓ boom-in-range — 515.3s
+  golden: match
+  body: 118 words, boom@515.3s
+
+──── KPI verdict ────
+  12/12 prompt cases passed every check

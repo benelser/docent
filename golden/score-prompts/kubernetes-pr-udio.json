@@ -1,0 +1,56 @@
+{
+  "prompt": "A gentle orchestral score for warm strings and piano, 415 seconds long. Opens with a soft sustained string chord beneath a delicate piano figure. Low strings sustain beneath a held brass chord. [build] At 26.3 seconds, french horns enter beneath the strings, voices layering one by one. [build] At 74.3 seconds, a low string pulse establishes underneath the brass. [build] At 142.7 seconds, a low string pulse establishes underneath the brass. [build] At 196.4 seconds, french horns enter beneath the strings, voices layering one by one. [turn] At 281.7 seconds, the orchestra pulls back briefly before the next motion. [breath] At 384.6 seconds, a brief pull-back to quiet sustained strings for about four seconds. [peak] At 388.6 seconds, a single bright orchestral accent — a clear chord with timpani, followed by a sustained warm chord underneath. Style: gentle orchestral score for strings and piano, no vocals, no electronic elements, restrained and contemplative.",
+  "tags": [
+    "cinematic",
+    "orchestral",
+    "instrumental",
+    "no vocals",
+    "gentle",
+    "warm",
+    "piano",
+    "soft strings"
+  ],
+  "duration": 415,
+  "sections": [
+    {
+      "tag": "[intro]",
+      "atSeconds": 0,
+      "action": "low strings sustain beneath a held brass chord"
+    },
+    {
+      "tag": "[build]",
+      "atSeconds": 26.3,
+      "action": "french horns enter beneath the strings, voices layering one by one"
+    },
+    {
+      "tag": "[build]",
+      "atSeconds": 74.3,
+      "action": "a low string pulse establishes underneath the brass"
+    },
+    {
+      "tag": "[build]",
+      "atSeconds": 142.7,
+      "action": "a low string pulse establishes underneath the brass"
+    },
+    {
+      "tag": "[build]",
+      "atSeconds": 196.4,
+      "action": "french horns enter beneath the strings, voices layering one by one"
+    },
+    {
+      "tag": "[turn]",
+      "atSeconds": 281.7,
+      "action": "the orchestra pulls back briefly before the next motion"
+    },
+    {
+      "tag": "[breath]",
+      "atSeconds": 384.6,
+      "action": "a brief pull-back to quiet sustained strings"
+    },
+    {
+      "tag": "[peak]",
+      "atSeconds": 388.6,
+      "action": "a single bright orchestral accent — a clear chord with timpani, followed by a sustained warm chord underneath"
+    }
+  ]
+}
