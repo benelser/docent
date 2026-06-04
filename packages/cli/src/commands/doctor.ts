@@ -23,6 +23,7 @@ import {describeSearchPath} from '../load-config';
 import {
   COGNITIVE_CLUSTERS,
   isCognitiveCluster,
+  type Plugin,
   type ScenePlugin,
 } from '@bjelser/kit';
 
@@ -38,6 +39,30 @@ interface Finding {
 
 const log = (s: string): void => {
   process.stdout.write(`${s}\n`);
+};
+
+/**
+ * Pull the kind-specific identifier off a plugin — `sceneType` for scenes,
+ * `presetName` for presets, `providerId` for TTS. Features have no extra
+ * identity beyond `name`, so we return null and let the caller render a dim
+ * dash. Pure — does no I/O.
+ */
+const identifyPlugin = (
+  p: Plugin,
+): {readonly label: string; readonly value: string} | null => {
+  switch (p.kind) {
+    case 'scene':
+      return {label: 'sceneType', value: p.sceneType};
+    case 'preset':
+      return {label: 'presetName', value: p.presetName};
+    case 'tts':
+      return {label: 'providerId', value: p.providerId};
+    case 'feature':
+      return null;
+    default:
+      // Forward-compat: an unknown kind. Surface name only.
+      return null;
+  }
 };
 
 const cyan = (s: string): string => `\x1b[36m${s}\x1b[0m`;
@@ -302,6 +327,21 @@ export const runDoctor = async (args: DoctorArgs): Promise<number> => {
     log(dim('  scaffold one with: docent init-config'));
   }
   log('');
+
+  // USER PLUGINS — what the docent.config.ts added on top of core. The
+  // engine summary line above shows the count ("+1 from /…/docent.config.ts")
+  // but the user still has to read source to know WHICH plugin registered.
+  // This block names each one with its kind-specific identity (sceneType,
+  // presetName, providerId, or just the plugin name for features).
+  if (userPlugins.length > 0) {
+    log(bold('  User plugins'));
+    for (const p of userPlugins) {
+      const id = identifyPlugin(p);
+      const ident = id ? `${id.label}=${cyan(id.value)}` : dim('—');
+      log(`    ${p.kind.padEnd(8)} ${p.name.padEnd(28)} ${ident}`);
+    }
+    log('');
+  }
 
   // Cluster distribution — orientation aid
   log(bold('  Cluster distribution (scenes)'));
