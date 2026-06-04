@@ -13,6 +13,7 @@
 import {runAssert} from './commands/assert';
 import {runAssertNarrative} from './commands/assert-narrative';
 import {runBuild} from './commands/build';
+import {runCaptions, type CaptionFormat} from './commands/captions';
 import {runCi} from './commands/ci';
 import {runDepthcheck} from './commands/depthcheck';
 import {runDoctor} from './commands/doctor';
@@ -77,6 +78,16 @@ COMMANDS
                           films/<id>.json — walks the scene list and
                           emits placeholder scenes for the spec author.
   build <film-id>         Render a film to MP4 at out/<film-id>.mp4.
+  captions <film-id>      Emit subtitle sidecars (SRT / VTT / SCC) from the
+                          film's persisted TTS word timings (R5). Cue
+                          aggregation is broadcast-conventional — target
+                          ~2.5s per cue, max 42 chars per line, max 2 lines.
+                          Breaks on punctuation when within the target
+                          window; wraps on word boundaries when over. Falls
+                          back to per-beat cues when word timings are absent.
+                          --format srt|vtt|scc|all (default srt). --burn-in
+                          post-processes out/<id>.mp4 via ffmpeg into
+                          out/<id>-burned.mp4 (run \`docent build\` first).
   preview <film-id>       Launch Remotion Studio against the film spec for
                           hot-reload editing. Component edits hot-reload via
                           Studio's dev server; spec edits require re-running
@@ -372,6 +383,32 @@ const main = async (): Promise<number> => {
       ...(str(flags.voice) ? {voice: str(flags.voice)!} : {}),
       ...(str(flags['translation-provider'])
         ? {translationProvider: str(flags['translation-provider'])!}
+        : {}),
+    });
+  }
+
+  if (command === 'captions') {
+    const filmId = positional[0];
+    if (!filmId) {
+      process.stderr.write('docent captions: missing <film-id>\n' + USAGE);
+      return 64;
+    }
+    const formatRaw = str(flags.format);
+    const allowedFormats: ReadonlyArray<CaptionFormat> = ['srt', 'vtt', 'scc', 'all'];
+    if (formatRaw !== undefined && !allowedFormats.includes(formatRaw as CaptionFormat)) {
+      process.stderr.write(
+        `docent captions: --format must be one of ${allowedFormats.join(', ')} (got "${formatRaw}")\n`,
+      );
+      return 64;
+    }
+    return runCaptions({
+      filmId,
+      ...(formatRaw !== undefined ? {format: formatRaw as CaptionFormat} : {}),
+      ...(flags['burn-in'] ? {burnIn: true} : {}),
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
         : {}),
     });
   }
