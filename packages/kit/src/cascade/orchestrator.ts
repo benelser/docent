@@ -409,5 +409,6 @@ export const runCascade = async (
       wpm: b.wpm,
       clipSeconds: b.clipSeconds,
     })),
+    ...(result.loudness ? {loudness: result.loudness} : {}),
   };
 };

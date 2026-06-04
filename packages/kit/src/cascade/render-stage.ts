@@ -29,6 +29,10 @@ import type {Engine} from '../engine';
 import type {FilmSpec, RenderOptions, RenderResult} from '../protocols';
 import type {ResolvedStyle} from '../types/style';
 import type {TtsStageManifest} from './tts-stage';
+import {
+  buildNormalizedOutPath,
+  normalizeLoudness,
+} from './loudnorm';
 
 export interface RenderStageInput {
   readonly spec: FilmSpec;
@@ -162,6 +166,43 @@ export const runRenderStage = async (
   await runChild(remotionBin, args, env, renderCwd);
   const durationMs = performance.now() - t0;
 
+  // ─── R10 #2 — loudness normalization (LUFS) ────────────────────────────
+  // When `opts.lufs` is set AND the render produced an mp4 (stills skip),
+  // run the two-pass ffmpeg `loudnorm` against the rendered file. The
+  // normalized file lands at a sibling path with a `-lufs-<target>`
+  // suffix so the un-normalized original survives at `outPath` (callers
+  // that want only the normalized file can delete the original or read
+  // it from `loudness.normalizedPath`).
+  //
+  // Stills can't carry audio, so we short-circuit. Errors here surface
+  // as a render failure — the user asked for a normalized output, the
+  // render does not "half-succeed".
+  let loudness: RenderResult['loudness'] | undefined;
+  if (!isStill && typeof opts.lufs === 'number') {
+    const normalizedPath = buildNormalizedOutPath(outPath, opts.lufs);
+    process.stdout.write(
+      `  loudness: normalizing → ${opts.lufs} LUFS (target)\n`,
+    );
+    const {measurement, outputMeasurement} = await normalizeLoudness(
+      outPath,
+      normalizedPath,
+      {targetIntegrated: opts.lufs},
+    );
+    loudness = {
+      target: opts.lufs,
+      measured: measurement.integrated,
+      landed: outputMeasurement.integrated,
+      truePeak: outputMeasurement.truePeak,
+      normalizedPath,
+    };
+    process.stdout.write(
+      `  LUFS normalized: ${measurement.integrated.toFixed(1)}` +
+        `→${outputMeasurement.integrated.toFixed(1)} ` +
+        `(target ${opts.lufs}, true peak ${outputMeasurement.truePeak.toFixed(1)} dBTP)\n` +
+        `  loudness: wrote ${normalizedPath}\n`,
+    );
+  }
+
   return {
     outPath,
     durationMs,
@@ -171,5 +212,6 @@ export const runRenderStage = async (
       wpm: b.wpm,
       clipSeconds: b.clipSeconds,
     })),
+    ...(loudness ? {loudness} : {}),
   };
 };
