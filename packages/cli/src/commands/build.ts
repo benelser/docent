@@ -13,6 +13,11 @@ import {generateRenderEntry} from '../render-entry';
 import {defaultVoiceForLang} from '@bjelser/kit';
 import type {FilmSpec} from '@bjelser/kit';
 
+// Re-export for the CLI entry — it parses `--lufs <value>` before
+// constructing BuildArgs. Centralising the parse here keeps the CLI's
+// argv-walker thin and the validation single-source.
+export {resolveLoudnessTarget} from '@bjelser/kit';
+
 /**
  * Walk up from `start` to find the dir containing a `remotion.config.{ts,js,mjs}`.
  * Remotion's CLI uses cwd to locate this file; we run the render subprocess
@@ -77,6 +82,20 @@ export interface BuildArgs {
    * or `'noop'` when absent.
    */
   readonly translationProvider?: string;
+  /**
+   * Loudness-normalization target. Accepted forms (parsed in `index.ts`
+   * before this struct is built):
+   *
+   *   - A number (LUFS integrated): `-16`, `-23`, `-14`, …
+   *   - A preset name: `streaming`, `broadcast`, `youtube`, `atsc`, `cinema`
+   *   - `'none'` (or absent) — no normalization, audio passes through
+   *
+   * When set, the render-stage runs a two-pass ffmpeg `loudnorm` after
+   * the MP4 is written and produces a SECOND file at
+   * `<outputDir>/<filmId>-lufs-<target>.mp4` (the un-normalized original
+   * is preserved). KPI: rendered audio measures within ±0.5 LU of target.
+   */
+  readonly lufs?: number;
 }
 
 const log = (s: string) => process.stdout.write(`${s}\n`);
@@ -206,10 +225,27 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
       ...(args.translationProvider !== undefined
         ? {translationProvider: args.translationProvider}
         : {}),
+      ...(args.lufs !== undefined ? {lufs: args.lufs} : {}),
     });
     log(
       `\x1b[32m✓ rendered ${result.outPath}\x1b[0m  ${(result.durationMs / 1000).toFixed(1)}s`,
     );
+    if (result.loudness) {
+      const drift = result.loudness.landed - result.loudness.target;
+      const driftAbs = Math.abs(drift);
+      const tag =
+        driftAbs <= 0.5
+          ? '\x1b[32m✓\x1b[0m'
+          : driftAbs <= 1.0
+          ? '\x1b[33m⚠\x1b[0m'
+          : '\x1b[31m✗\x1b[0m';
+      log(
+        `  ${tag} LUFS normalized: ${result.loudness.measured.toFixed(1)}` +
+          `→${result.loudness.landed.toFixed(1)} (target ${result.loudness.target}, ` +
+          `drift ${drift >= 0 ? '+' : ''}${drift.toFixed(2)} LU)`,
+      );
+      log(`  normalized: ${result.loudness.normalizedPath}`);
+    }
     return 0;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

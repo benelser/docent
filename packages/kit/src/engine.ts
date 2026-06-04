@@ -796,4 +796,27 @@ export class Engine {
     const mod = await dynamicImport(spec_);
     return mod.runRender(this, spec, opts);
   }
+
+  /**
+   * Node-only: measure the integrated loudness of an mp4 / wav / any
+   * ffmpeg-readable file. Single-pass `loudnorm` against `inputPath`;
+   * returns the parsed measurement. The CLI's `docent loudness <id>`
+   * surface wraps this for audit reporting.
+   *
+   * Same dynamic-import dance as {@link render} so the browser/chromium
+   * bundle never sees `node:child_process`.
+   */
+  async measureLoudness(
+    inputPath: string,
+  ): Promise<import('./engine-loudness').LoudnessMeasurement> {
+    const part1 = './engine-';
+    const part2 = 'loudness';
+    const spec_ = part1 + part2;
+    const dynamicImport = new Function(
+      'p',
+      'return import(p)',
+    ) as (p: string) => Promise<typeof import('./engine-loudness')>;
+    const mod = await dynamicImport(spec_);
+    return mod.measureLoudness(inputPath);
+  }
 }

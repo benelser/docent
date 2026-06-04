@@ -1530,6 +1530,22 @@ export interface RenderOptions {
    * audio without changing the hash.
    */
   useTtsCache?: boolean;
+  /**
+   * Loudness normalization target — integrated LUFS. When set, the
+   * cascade runs a post-render two-pass ffmpeg `loudnorm` over the
+   * un-normalized MP4 and writes a SECOND file alongside it with a
+   * `-lufs-<target>` suffix (the original is preserved untouched). When
+   * omitted, audio passes through at whatever level the TTS + audio-bed
+   * mix produced — the legacy default that keeps existing renders byte-
+   * identical.
+   *
+   * The CLI parses the `--lufs <target>` flag and resolves preset names
+   * (`streaming` → -16, `broadcast` → -23, `youtube` → -14, etc.) to the
+   * numeric LUFS value via {@link resolveLoudnessTarget}.
+   *
+   * @see packages/kit/src/cascade/loudnorm.ts
+   */
+  lufs?: number;
 }
 
 /**
@@ -1553,6 +1569,21 @@ export interface RenderResult {
     /** Final clip duration in seconds (post-trim). */
     readonly clipSeconds: number;
   }>;
+  /**
+   * Loudness normalization summary — present only when `opts.lufs` is set.
+   * Carries the target, the pre-normalize integrated reading, the post-
+   * normalize integrated reading, and the path of the normalized MP4
+   * (the un-normalized original remains at {@link outPath}).
+   *
+   * KPI: `landed - target` should sit within ±0.5 LU.
+   */
+  readonly loudness?: {
+    readonly target: number;
+    readonly measured: number;
+    readonly landed: number;
+    readonly truePeak: number;
+    readonly normalizedPath: string;
+  };
 }
 
 /**

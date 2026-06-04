@@ -29,6 +29,10 @@ import type {Engine} from '../engine';
 import type {FilmSpec, RenderOptions, RenderResult} from '../protocols';
 import type {ResolvedStyle} from '../types/style';
 import type {TtsStageManifest} from './tts-stage';
+import {
+  buildNormalizedOutPath,
+  normalizeLoudness,
+} from './loudnorm';
 
 export interface RenderStageInput {
   readonly spec: FilmSpec;
@@ -359,11 +363,11 @@ export const runRenderStage = async (
   await runChild(remotionBin, args, env, renderCwd);
   const durationMs = performance.now() - t0;
 
-  // ─── R10.4 — color space tagging ───────────────────────────────────
-  // Stills (PNG) skip this — PNG carries its own sRGB color block via the
-  // sRGB chunk and we don't write to that. Only the video pass gets the
-  // ffmpeg post-process. Default (no meta.colorSpace) is a no-op — the
-  // file is exactly what Remotion wrote, byte-identical, no regression.
+  // ─── R10.4 — color space tagging ───────────────────────────────────────
+  // Tag the rendered mp4 in place first (default no-op if no meta.colorSpace).
+  // ffmpeg `-c copy` is metadata-only for SDR paths, so it's near-free; the
+  // LUFS pass below uses `-c:v copy` and therefore inherits these tags.
+  // Stills (PNG) skip — they carry their own sRGB cICP/sRGB chunk.
   if (!isStill) {
     const colorSpace = spec.meta?.colorSpace;
     const hdr = spec.meta?.hdr === true;
@@ -382,14 +386,49 @@ export const runRenderStage = async (
       }
     } catch (err) {
       // Tagging failure should NOT lose the rendered film. Surface a
-      // warning and keep the un-tagged file at outPath. (If the temp
-      // .colortag.mp4 survived, leave it for diagnostics.)
+      // warning and keep the un-tagged file at outPath.
       // eslint-disable-next-line no-console
       console.warn(
         `[@bjelser/kit] colorspace tag pass failed; mp4 left un-tagged at ${outPath}\n` +
           `  underlying: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
+  }
+
+  // ─── R10.2 — loudness normalization (LUFS) ─────────────────────────────
+  // When `opts.lufs` is set AND the render produced an mp4 (stills skip),
+  // run the two-pass ffmpeg `loudnorm` against the (now color-tagged) file.
+  // The normalized file lands at a sibling path with a `-lufs-<target>`
+  // suffix; the un-normalized original survives at `outPath`. Video stream
+  // is `-c:v copy`, so any R10.4 color tags propagate untouched.
+  //
+  // Stills can't carry audio → short-circuit. Errors here surface as a
+  // render failure: the user asked for a normalized output, the render
+  // does not "half-succeed".
+  let loudness: RenderResult['loudness'] | undefined;
+  if (!isStill && typeof opts.lufs === 'number') {
+    const normalizedPath = buildNormalizedOutPath(outPath, opts.lufs);
+    process.stdout.write(
+      `  loudness: normalizing → ${opts.lufs} LUFS (target)\n`,
+    );
+    const {measurement, outputMeasurement} = await normalizeLoudness(
+      outPath,
+      normalizedPath,
+      {targetIntegrated: opts.lufs},
+    );
+    loudness = {
+      target: opts.lufs,
+      measured: measurement.integrated,
+      landed: outputMeasurement.integrated,
+      truePeak: outputMeasurement.truePeak,
+      normalizedPath,
+    };
+    process.stdout.write(
+      `  LUFS normalized: ${measurement.integrated.toFixed(1)}` +
+        `→${outputMeasurement.integrated.toFixed(1)} ` +
+        `(target ${opts.lufs}, true peak ${outputMeasurement.truePeak.toFixed(1)} dBTP)\n` +
+        `  loudness: wrote ${normalizedPath}\n`,
+    );
   }
 
   return {
@@ -401,5 +440,6 @@ export const runRenderStage = async (
       wpm: b.wpm,
       clipSeconds: b.clipSeconds,
     })),
+    ...(loudness ? {loudness} : {}),
   };
 };

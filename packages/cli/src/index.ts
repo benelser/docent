@@ -12,8 +12,9 @@
 
 import {runAssert} from './commands/assert';
 import {runAssertNarrative} from './commands/assert-narrative';
-import {runBuild} from './commands/build';
+import {runBuild, resolveLoudnessTarget} from './commands/build';
 import {runCaptions, type CaptionFormat} from './commands/captions';
+import {runLoudness} from './commands/loudness';
 import {runCi} from './commands/ci';
 import {runDepthcheck} from './commands/depthcheck';
 import {runDoctor} from './commands/doctor';
@@ -78,6 +79,11 @@ COMMANDS
                           films/<id>.json — walks the scene list and
                           emits placeholder scenes for the spec author.
   build <film-id>         Render a film to MP4 at out/<film-id>.mp4.
+                          --lufs <target> writes a normalized sibling at
+                          out/<film-id>-lufs-<target>.mp4 (the un-normalized
+                          original is preserved). Target accepts a number
+                          (e.g. -16, -23), a preset (streaming|broadcast|
+                          youtube|atsc|cinema), or 'none' to skip.
   captions <film-id>      Emit subtitle sidecars (SRT / VTT / SCC) from the
                           film's persisted TTS word timings (R5). Cue
                           aggregation is broadcast-conventional — target
@@ -88,6 +94,13 @@ COMMANDS
                           --format srt|vtt|scc|all (default srt). --burn-in
                           post-processes out/<id>.mp4 via ffmpeg into
                           out/<id>-burned.mp4 (run \`docent build\` first).
+  loudness <film-id>      Measure-only audit: single-pass loudnorm against
+                          out/<film-id>.mp4, prints integrated / range /
+                          true-peak / M-stat / S-stat plus per-target
+                          compliance against every Hollywood preset.
+                          --variant <preset|number> measures the suffixed
+                          file the build wrote (e.g. --variant streaming
+                          reads out/<id>-lufs-n16.mp4). --json for tooling.
   preview <film-id>       Launch Remotion Studio against the film spec for
                           hot-reload editing. Component edits hot-reload via
                           Studio's dev server; spec edits require re-running
@@ -199,6 +212,15 @@ BUILD FLAGS
   --translation-provider <id>
                           Pick a registered translation provider by id.
                           Defaults to meta.translation.provider or 'noop'.
+  --lufs <target>         Loudness-normalize the rendered MP4 to the given
+                          integrated-LUFS target via two-pass ffmpeg
+                          loudnorm. Accepts a number (e.g. -16, -23, -14),
+                          a preset (streaming = -16, broadcast = -23,
+                          youtube = -14, atsc = -24, cinema = -27), or
+                          'none' to skip. Writes a sibling at
+                          out/<film-id>-lufs-<target>.mp4; the un-
+                          normalized original survives at out/<film-id>.mp4.
+                          KPI: lands within ±0.5 LU of target.
 
 PREVIEW FLAGS
   --port <n>           Remotion Studio port. Default: 3000.
@@ -365,6 +387,21 @@ const main = async (): Promise<number> => {
       process.stderr.write('docent build: missing <film-id>\n' + USAGE);
       return 64;
     }
+    // `--lufs` is opt-in: omitting it leaves audio passthrough untouched
+    // (legacy default). `--lufs none` is a explicit "no normalize". A
+    // number or preset name resolves to an integrated-LUFS target the
+    // render-stage feeds to ffmpeg's two-pass loudnorm.
+    let lufs: number | undefined;
+    const lufsRaw = str(flags.lufs);
+    if (lufsRaw !== undefined) {
+      try {
+        const resolved = resolveLoudnessTarget(lufsRaw);
+        if (resolved !== null) lufs = resolved;
+      } catch (e) {
+        process.stderr.write(`docent build: ${(e as Error).message}\n`);
+        return 64;
+      }
+    }
     return runBuild({
       filmId,
       ...(num(flags.scale) !== undefined ? {scale: num(flags.scale)!} : {}),
@@ -384,6 +421,24 @@ const main = async (): Promise<number> => {
       ...(str(flags['translation-provider'])
         ? {translationProvider: str(flags['translation-provider'])!}
         : {}),
+      ...(lufs !== undefined ? {lufs} : {}),
+    });
+  }
+
+  if (command === 'loudness') {
+    const filmId = positional[0];
+    if (!filmId) {
+      process.stderr.write('docent loudness: missing <film-id>\n' + USAGE);
+      return 64;
+    }
+    return runLoudness({
+      filmId,
+      ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+      ...(str(flags.variant) ? {variant: str(flags.variant)!} : {}),
+      ...(flags.json ? {json: true} : {}),
     });
   }
 

@@ -355,3 +355,13 @@ export type {
   ScoreFinding,
   RenderedScorePrompt,
 } from './types/score';
+
+// ---------- R10 — loudness normalization vocabulary -----------------------
+//
+// The pure preset map + the user-input resolver + the measurement shape.
+// The ffmpeg shell-out (`measureLoudness`, `normalizeLoudness`) is a
+// Node-only side-effect and stays behind `./engine-loudness.ts`, reached
+// via the engine's dynamic-import dance.
+
+export {LOUDNESS_PRESETS, resolveLoudnessTarget} from './types/loudness';
+export type {LoudnessMeasurement} from './types/loudness';
