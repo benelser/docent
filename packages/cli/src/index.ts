@@ -114,6 +114,13 @@ BUILD FLAGS
   --concurrency <n>       Render frame concurrency. Default: Remotion's auto.
   --still <s>             Render a single still at second offset s.
   --skip-tts              Skip the TTS stage — produces a silent mp4.
+  --no-tts-cache          Disable the content-hash TTS cache for this build.
+                          Default: caching is ON. Each beat is keyed by
+                          SHA256(text + voice + model + providerOptions),
+                          recorded in the per-film manifest, and reused
+                          verbatim on the next build when the hash matches.
+                          Pass this flag to force a full re-synth (e.g.
+                          after a provider version bump).
   --output-dir <p>        Override the output directory.
   --films-dir <p>         Override the films/ directory.
   --project-root <p>      Override the project root (config + entry generation).
@@ -252,6 +259,7 @@ const main = async (): Promise<number> => {
         : {}),
       ...(num(flags.still) !== undefined ? {still: num(flags.still)!} : {}),
       ...(flags['skip-tts'] ? {skipTts: true} : {}),
+      ...(flags['no-tts-cache'] ? {noTtsCache: true} : {}),
       ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['project-root'])

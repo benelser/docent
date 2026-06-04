@@ -24,14 +24,17 @@
 // the kokoro provider's `synth()` itself; other providers ship un-trimmed
 // audio. The kit makes no decisions about audio shape.
 //
-// **Caching is intentionally NOT done here.** The legacy engine cascade
-// caches based on text+provider+voice signatures and writes to a per-film
-// manifest; that's a CLI-layer concern. The kit's cascade re-synthesizes
-// every beat. A future feature plugin (or the CLI itself) layers caching
-// on top by inspecting the spec and short-circuiting beats that already
-// have a fresh audio file.
+// **Content-hash caching (R1).** Each beat's audio is keyed by
+// `SHA256(text | voice | model | stableJsonStringify(providerOptions))`
+// and the per-film manifest records that hash next to the persisted
+// `file`. On the next run, if the slot's recorded `contentHash` matches
+// the freshly-computed `wantHash` AND the file still exists on disk, the
+// stage SKIPS the API call and reuses the persisted bytes verbatim. This
+// is opt-out only — pass `opts.useCache = false` (CLI: `--no-tts-cache`)
+// to force a full re-synth.
 
-import {mkdirSync, writeFileSync, renameSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {existsSync, mkdirSync, readFileSync, writeFileSync, renameSync} from 'node:fs';
 import {join} from 'node:path';
 
 import type {Engine} from '../engine';
@@ -68,7 +71,88 @@ export interface TtsStageOptions {
    * translated film can pick a voice that speaks the target language.
    */
   voice?: string;
+  /**
+   * Content-hash cache (R1). When `true` (default), the stage looks up
+   * each beat in the existing per-film manifest by `<sceneIndex>-<beatIndex>`
+   * and reuses the persisted audio bytes if its `contentHash` matches a
+   * freshly-computed SHA256 over (text | voice | model | providerOptions)
+   * AND the file still exists on disk. Set to `false` to force every beat
+   * to re-synth (the CLI's `--no-tts-cache` flag wires this).
+   *
+   * Caching only applies when persistence is enabled (`publicDir` +
+   * `filmId` are supplied); without a manifest there's nothing to hit.
+   */
+  useCache?: boolean;
 }
+
+/** Deterministic JSON.stringify — sort object keys recursively so two
+ * equivalent objects with reordered keys hash identically. Arrays preserve
+ * order (their order is meaningful). `undefined` values are dropped (they
+ * disappear from JSON anyway). */
+const stableJsonStringify = (value: unknown): string => {
+  if (value === null || typeof value !== 'object') {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    return '[' + value.map((v) => stableJsonStringify(v)).join(',') + ']';
+  }
+  const obj = value as Record<string, unknown>;
+  const keys = Object.keys(obj).sort();
+  const parts: string[] = [];
+  for (const k of keys) {
+    const v = obj[k];
+    if (v === undefined) continue;
+    parts.push(JSON.stringify(k) + ':' + stableJsonStringify(v));
+  }
+  return '{' + parts.join(',') + '}';
+};
+
+/** Compute the content hash for a beat — the cache key. */
+const computeBeatHash = (
+  text: string,
+  voice: string,
+  model: string | undefined,
+  providerOptions: Record<string, unknown> | undefined,
+): string => {
+  const h = createHash('sha256');
+  h.update(text);
+  h.update('|');
+  h.update(voice);
+  h.update('|');
+  h.update(model ?? '');
+  h.update('|');
+  h.update(stableJsonStringify(providerOptions ?? {}));
+  return h.digest('hex');
+};
+
+/** Best-effort duration sniff for a `audio/wav` blob — the legacy kokoro
+ * provider ships WAVs without populating `durationMs` in some code paths.
+ * Returns `null` when the file isn't a recognizable RIFF/WAVE header. */
+const sniffWavSeconds = (bytes: Uint8Array): number | null => {
+  if (bytes.length < 44) return null;
+  // 'RIFF' at offset 0, 'WAVE' at offset 8
+  if (
+    bytes[0] !== 0x52 ||
+    bytes[1] !== 0x49 ||
+    bytes[2] !== 0x46 ||
+    bytes[3] !== 0x46
+  )
+    return null;
+  if (
+    bytes[8] !== 0x57 ||
+    bytes[9] !== 0x41 ||
+    bytes[10] !== 0x56 ||
+    bytes[11] !== 0x45
+  )
+    return null;
+  // fmt chunk usually at offset 12. Read sampleRate at offset 24, byteRate at 28.
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const byteRate = view.getUint32(28, true);
+  const dataStart = bytes.length >= 44 ? 44 : null;
+  if (byteRate === 0 || dataStart === null) return null;
+  const dataBytes = bytes.length - dataStart;
+  return dataBytes / byteRate;
+};
 
 /** Map a media type to a filesystem extension. */
 const fileExtensionForMediaType = (mediaType: string): string => {
@@ -104,6 +188,12 @@ export interface TtsBeatResult {
    * narration feature via Remotion's `staticFile()`.
    */
   readonly file?: string;
+  /**
+   * `true` when this beat was served from the content-hash cache — the
+   * persisted audio file was reused and `provider.synth()` was NOT called.
+   * `false` when the beat was synthesized in this run.
+   */
+  readonly cached: boolean;
 }
 
 /** The manifest the stage returns. */
@@ -127,6 +217,11 @@ export interface TtsStageManifest {
  *
  * Indexed by `<sceneIndex>-<beatIndex>` so a beat's slot is always
  * recoverable from the schedule, even when `Beat.id` is absent.
+ *
+ * R1: each beat carries a `contentHash` and the per-film `provider`
+ * descriptor used as the cache key. The next run re-derives the same SHA
+ * over (text + voice + model + providerOptions) and short-circuits the
+ * API call when it matches.
  */
 export interface TtsPersistedManifest {
   readonly filmId: string;
@@ -134,6 +229,22 @@ export interface TtsPersistedManifest {
   readonly voice: string;
   readonly totalSeconds: number;
   readonly beats: Readonly<Record<string, TtsPersistedBeat>>;
+  /**
+   * Provider descriptor — surfaced at the manifest level so a future
+   * build can recover the exact same hash input. Per-beat `contentHash`
+   * is the authoritative cache key; this is here for debuggability.
+   */
+  readonly provider?: TtsManifestProvider;
+}
+
+/**
+ * Provider descriptor recorded on the manifest. Mirrors the inputs to
+ * the SHA256 cache key so a stale manifest is recognizable on inspection.
+ */
+export interface TtsManifestProvider {
+  readonly id: string;
+  readonly model?: string;
+  readonly voiceSettings?: Record<string, unknown>;
 }
 
 export interface TtsPersistedBeat {
@@ -144,6 +255,12 @@ export interface TtsPersistedBeat {
   readonly file: string;
   readonly seconds: number;
   readonly mediaType: string;
+  /**
+   * SHA256 hex of `text | voice | model | stableJsonStringify(providerOptions)`.
+   * Optional for legacy manifests written before R1 — the cache treats a
+   * missing hash as a miss and re-synthesizes.
+   */
+  readonly contentHash?: string;
 }
 
 /**
@@ -234,9 +351,28 @@ export const runTtsStage = async (
     mkdirSync(audioDirAbs, {recursive: true});
   }
 
+  // R1: content-hash cache. Caching is opt-out — default ON. Only loads a
+  // prior manifest when persistence is on (no manifest = no cache hits).
+  const useCache = opts.useCache !== false;
+  const cacheManifestPath = persistEnabled ? join(audioDirAbs, 'manifest.json') : '';
+  let priorManifest: TtsPersistedManifest | undefined;
+  if (useCache && persistEnabled && existsSync(cacheManifestPath)) {
+    try {
+      const raw = readFileSync(cacheManifestPath, 'utf-8');
+      const parsed = JSON.parse(raw) as Partial<TtsPersistedManifest>;
+      if (parsed && typeof parsed === 'object' && parsed.beats && typeof parsed.beats === 'object') {
+        priorManifest = parsed as TtsPersistedManifest;
+      }
+    } catch {
+      // Corrupt or unreadable manifest — treat as no cache.
+    }
+  }
+
   const beats: TtsBeatResult[] = [];
   let totalSeconds = 0;
   const persisted: Record<string, TtsPersistedBeat> = {};
+  let synthCount = 0;
+  let cachedCount = 0;
 
   try {
     const scenes: Scene[] = spec.scenes ?? [];
@@ -271,6 +407,72 @@ export const runTtsStage = async (
         const text = beat.narration ?? '';
         if (text.length === 0) continue;
 
+        const slot = `${sceneIndex}-${beatIndex}`;
+
+        // ─── R1 cache lookup ─────────────────────────────────────────────
+        // Compute the hash now so we can compare against the manifest. Only
+        // a hit when (1) caching is on, (2) prior manifest exists, (3) slot
+        // has the same hash, AND (4) the persisted audio file is still on
+        // disk. Any miss falls through to synth.
+        const wantHash = computeBeatHash(text, voice, model, providerOptions);
+        if (useCache && persistEnabled && priorManifest) {
+          const priorBeat = priorManifest.beats[slot];
+          if (
+            priorBeat &&
+            priorBeat.contentHash === wantHash &&
+            priorBeat.file
+          ) {
+            const persistedAbs = join(opts.publicDir!, priorBeat.file);
+            if (existsSync(persistedAbs)) {
+              // Cache hit — read bytes from disk and skip the API call.
+              const bytes = readFileSync(persistedAbs);
+              // Reconstruct a minimal TtsSynthesisResult shape so the rest
+              // of the cascade (afterRender hooks, RenderResult.tts) sees
+              // the same fields it would on a fresh synth.
+              const cachedSeconds = priorBeat.seconds;
+              const cachedResult: TtsSynthesisResult = {
+                audio: new Uint8Array(
+                  bytes.buffer,
+                  bytes.byteOffset,
+                  bytes.byteLength,
+                ),
+                mediaType: priorBeat.mediaType,
+                durationMs: Math.round(cachedSeconds * 1000),
+                alignment: [],
+                alignmentSource: 'none',
+              };
+              const fileRel = priorBeat.file;
+              const persistedRow: TtsPersistedBeat = {
+                sceneIndex,
+                beatIndex,
+                file: fileRel,
+                seconds: cachedSeconds,
+                mediaType: priorBeat.mediaType,
+                contentHash: wantHash,
+                ...(beat.id !== undefined ? {beatId: beat.id} : {}),
+              };
+              persisted[slot] = persistedRow;
+              const row: TtsBeatResult = {
+                sceneIndex,
+                beatIndex,
+                clipSeconds: cachedSeconds,
+                wpm: null,
+                mediaType: priorBeat.mediaType,
+                alignmentSource: 'none',
+                synth: cachedResult,
+                cached: true,
+                ...(beat.id !== undefined ? {beatId: beat.id} : {}),
+                file: fileRel,
+              };
+              beats.push(row);
+              totalSeconds += cachedSeconds;
+              cachedCount++;
+              continue;
+            }
+          }
+        }
+        // ─── end cache lookup ────────────────────────────────────────────
+
         const synthOpts: TtsSynthesisOptions = {voice};
         if (beat.pace !== undefined) synthOpts.pace = beat.pace;
         let result: TtsSynthesisResult;
@@ -281,10 +483,19 @@ export const runTtsStage = async (
             `tts stage: synth failed for scene ${sceneIndex}, beat ${beatIndex} (${beat.id ?? '<no-id>'}) — ${e instanceof Error ? e.message : String(e)}`,
           );
         }
+        synthCount++;
 
         const m: TtsBeatMetrics | undefined = result.metrics;
-        const clipSeconds =
+        let clipSeconds =
           m?.clipSeconds ?? (result.durationMs > 0 ? result.durationMs / 1000 : 0);
+        // Defensive fallback — if the provider returned no metric AND no
+        // durationMs but the bytes are a WAV, sniff the header so the
+        // persisted cache row carries a meaningful seconds value (which
+        // the next-run cache-hit path then reuses verbatim).
+        if (clipSeconds === 0 && result.mediaType === 'audio/wav') {
+          const sniffed = sniffWavSeconds(result.audio);
+          if (sniffed !== null) clipSeconds = sniffed;
+        }
         const wpm = m?.wpm ?? null;
 
         // Persist the bytes if we have a destination. Filename uses
@@ -302,9 +513,10 @@ export const runTtsStage = async (
             file: fileRel,
             seconds: Number(clipSeconds.toFixed(3)),
             mediaType: result.mediaType,
+            contentHash: wantHash,
             ...(beat.id !== undefined ? {beatId: beat.id} : {}),
           };
-          persisted[`${sceneIndex}-${beatIndex}`] = persistedRow;
+          persisted[slot] = persistedRow;
         }
 
         const row: TtsBeatResult = {
@@ -315,6 +527,7 @@ export const runTtsStage = async (
           mediaType: result.mediaType,
           alignmentSource: result.alignmentSource,
           synth: result,
+          cached: false,
           ...(beat.id !== undefined ? {beatId: beat.id} : {}),
           ...(fileRel !== undefined ? {file: fileRel} : {}),
         };
@@ -337,17 +550,35 @@ export const runTtsStage = async (
   // written file is never observed by the render entry.
   let manifestPath: string | undefined;
   if (persistEnabled) {
+    const providerDescriptor: TtsManifestProvider = {
+      id: providerId,
+      ...(model !== undefined ? {model} : {}),
+      ...(providerOptions !== undefined ? {voiceSettings: providerOptions} : {}),
+    };
     const manifestOut: TtsPersistedManifest = {
       filmId,
       providerId,
       voice,
       totalSeconds: Number(totalSeconds.toFixed(3)),
       beats: persisted,
+      provider: providerDescriptor,
     };
     manifestPath = join(audioDirAbs, 'manifest.json');
     const tmp = `${manifestPath}.tmp`;
     writeFileSync(tmp, JSON.stringify(manifestOut, null, 2) + '\n');
     renameSync(tmp, manifestPath);
+  }
+
+  // R1: summary line — "TTS: N beats · X cached (P%) · Y synthesized".
+  // Prints to stderr so it interleaves with the cascade's progress output
+  // without polluting stdout-driven pipelines.
+  const totalBeats = beats.length;
+  if (totalBeats > 0) {
+    const pct = Math.round((cachedCount / totalBeats) * 100);
+    const cachePart = useCache
+      ? `${cachedCount} cached (${pct}%) · ${synthCount} synthesized`
+      : `${synthCount} synthesized · cache disabled`;
+    process.stderr.write(`TTS: ${totalBeats} beats · ${cachePart}\n`);
   }
 
   return {

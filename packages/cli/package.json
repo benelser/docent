@@ -1,6 +1,6 @@
 {
   "name": "@bjelser/cli",
-  "version": "3.0.12",
+  "version": "3.0.13",
   "description": "docent's thin CLI shell. Subcommand routing on top of @bjelser/kit's public Engine surface; loads @bjelser/core and any user docent.config.ts plugins.",
   "type": "module",
   "license": "MIT",

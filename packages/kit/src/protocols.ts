@@ -1414,6 +1414,15 @@ export interface RenderOptions {
    * RenderOptions so a CLI flag can override the spec without editing it.
    */
   translationProvider?: string;
+  /**
+   * Content-hash TTS cache. Defaults to `true` — every build reuses
+   * persisted per-beat audio bytes when the beat's (text + voice + model +
+   * providerOptions) hash matches the manifest. Set to `false` to force
+   * every beat to re-synthesize (CLI: `--no-tts-cache`). Useful when a
+   * provider version bump or an out-of-band post-process step changes the
+   * audio without changing the hash.
+   */
+  useTtsCache?: boolean;
 }
 
 /**
