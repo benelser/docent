@@ -57,6 +57,8 @@ export type {
   SceneFeatureProps,
   FilmFeatureProps,
   FilmFeatureBeatSlot,
+  FilmFeatureWordTimingSlot,
+  FilmFeatureSceneClusterSlot,
   AfterRenderBeat,
   AfterRenderContext,
 
