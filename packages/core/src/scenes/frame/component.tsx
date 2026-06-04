@@ -52,11 +52,19 @@ export const FrameSceneComponent: React.FC<SceneRenderProps<FrameSceneSpec>> = (
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const {ts, sceneIndex, sceneCount, meta, style} = common;
+  const {ts, sceneIndex, sceneCount, meta, style, variantTokens} = common;
   const accentHex = accentOf(style, undefined);
   const ink = style.tokens.ink;
   const sansFamily = style.tokens.typography.family.sans;
   const monoFamily = style.tokens.typography.family.mono;
+  // R3 — variant overlay. Each value is read at most once below.
+  const titleScale = variantTokens.titleScale;
+  const accentOpacity = variantTokens.accentOpacity;
+  // Convert ms → frames at the active fps. Floor at 1 so a `snap`
+  // entrance (entranceMs=0) still produces a 1-frame ramp the springs
+  // can read.
+  const entranceFrames = Math.max(1, Math.round((variantTokens.entranceMs / 1000) * fps));
+  const entranceShape = variantTokens.entranceShape;
 
   const enterOf = (name: string): number => {
     const slot: BeatTimelineSlot | undefined = ts.beats.find(
@@ -65,14 +73,44 @@ export const FrameSceneComponent: React.FC<SceneRenderProps<FrameSceneSpec>> = (
     return slot?.startFrame ?? 0;
   };
 
+  // Pick an entrance physics per the resolved variant. `snap` is a step
+  // function — 0 below the gate, 1 at or above; everything else honours
+  // the ramp duration `entranceFrames`.
+  const enter = (at: number, mass = 0.8): number => {
+    const local = frame - at;
+    if (local <= 0) return 0;
+    if (entranceShape === 'snap') return 1;
+    if (entranceShape === 'fade') {
+      return interpolate(local, [0, entranceFrames], [0, 1], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
+    }
+    if (entranceShape === 'translate') {
+      return interpolate(local, [0, entranceFrames], [0, 1], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
+    }
+    // 'spring' (the default before R3) — preserve byte-equivalent
+    // behaviour for the baseline (`STANDARD_VARIANT_TOKENS.entranceShape`
+    // is `'fade'`, NOT `'spring'`, so the legacy default is unchanged via
+    // the fade branch above — keep the spring path for explicit asks).
+    return spring({frame: local, fps, config: {damping: 200, mass}});
+  };
+
+  // Keep the legacy `rise()` shape as the BASELINE path — when no
+  // variant tag is set, render byte-identically to v1.
   const rise = (at: number, mass = 0.8) => {
     const local = frame - at;
     return local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass}});
   };
 
-  const titleA = rise(enterOf('title'), 1);
-  const taglineA = rise(enterOf('tagline'));
-  const footA = rise(enterOf('footnote'));
+  // Baseline path = byte-identical to v1. Tagged path = variant-driven.
+  const hasVariantTag = scene.variant !== undefined || scene.archetype !== undefined;
+  const titleA = hasVariantTag ? enter(enterOf('title'), 1) : rise(enterOf('title'), 1);
+  const taglineA = hasVariantTag ? enter(enterOf('tagline')) : rise(enterOf('tagline'));
+  const footA = hasVariantTag ? enter(enterOf('footnote')) : rise(enterOf('footnote'));
   const blink = Math.floor(frame / 18) % 2 === 0;
   // Aspect-aware width caps — at 16:9 these resolve to the legacy
   // 1680/1500/1480 numbers; portrait / square scale down.
@@ -93,14 +131,23 @@ export const FrameSceneComponent: React.FC<SceneRenderProps<FrameSceneSpec>> = (
       titleText.length <= 40 ? 88 :
       72;
     // Scale down for narrower canvases — proportional to titleMaxW / 1680.
-    return Math.round(base16x9 * Math.min(1, titleMaxW / 1680));
+    const baseScaled = base16x9 * Math.min(1, titleMaxW / 1680);
+    // R3 — variant overlay: `bold` multiplies the title by 1.25, `minimal`
+    // by 0.85, archetype nudges further. Untagged scenes (titleScale === 1)
+    // round to the same value as v1.
+    return Math.round(baseScaled * titleScale);
   })();
+
+  // R3 — `kickerVisible: false` on the variant (e.g. `minimal`) hides
+  // the chrome label entirely. Pass empty string so SceneFrame draws no
+  // kicker pill; the heading slot stays untouched.
+  const renderedKicker = variantTokens.kickerVisible ? (scene.kicker ?? '') : '';
 
   return (
     <SceneFrame
       style={style}
       accentHex={accentHex}
-      kicker={scene.kicker ?? ''}
+      kicker={renderedKicker}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
     >
@@ -146,7 +193,16 @@ export const FrameSceneComponent: React.FC<SceneRenderProps<FrameSceneSpec>> = (
             letterSpacing: -titleFont * 0.019,
             opacity: titleA,
             transform: `scale(${interpolate(titleA, [0, 1], [0.92, 1])})`,
-            textShadow: `0 30px 90px ${accentHex}30`,
+            // R3 — accentOpacity dials the title's accent halo. The hex
+            // alpha (30 = ~0.19) is multiplied by the resolved variant
+            // opacity (clamped at 0..1.25 in the resolver), then re-encoded
+            // as a 2-digit hex pair (so `bold` glows hotter; `minimal`
+            // softer).
+            textShadow: `0 30px 90px ${accentHex}${Math.round(
+              Math.min(255, 48 * accentOpacity),
+            )
+              .toString(16)
+              .padStart(2, '0')}`,
             maxWidth: titleMaxW,
             textAlign: 'center',
             lineHeight: 1.05,

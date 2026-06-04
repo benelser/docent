@@ -49,13 +49,18 @@ export const RecapSceneComponent: React.FC<SceneRenderProps<RecapSceneSpec>> = (
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const {ts, sceneIndex, sceneCount, style} = common;
+  const {ts, sceneIndex, sceneCount, style, variantTokens} = common;
   const accentHex = accentOf(style, undefined);
   const points = scene.points ?? [];
   const ink = style.tokens.ink;
   const bg = style.tokens.bg;
   const sansFamily = style.tokens.typography.family.sans;
   const monoFamily = style.tokens.typography.family.mono;
+  // R3 — variant overlay.
+  const titleScale = variantTokens.titleScale;
+  const entranceShape = variantTokens.entranceShape;
+  const entranceFrames = Math.max(1, Math.round((variantTokens.entranceMs / 1000) * fps));
+  const hasVariantTag = scene.variant !== undefined || scene.archetype !== undefined;
   // Aspect-aware column width — at 16:9 the recap column is 1680 wide
   // starting at left=120 (the legacy hand-tuned safe band). In portrait /
   // square the column shrinks to the worldW minus chrome margins so the
@@ -82,7 +87,7 @@ export const RecapSceneComponent: React.FC<SceneRenderProps<RecapSceneSpec>> = (
     <SceneFrame
       style={style}
       accentHex={accentHex}
-      kicker={scene.kicker ?? ''}
+      kicker={variantTokens.kickerVisible ? (scene.kicker ?? '') : ''}
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
@@ -104,11 +109,30 @@ export const RecapSceneComponent: React.FC<SceneRenderProps<RecapSceneSpec>> = (
       >
         {points.map((p, i) => {
           const local = frame - revealFrameFor(i);
-          const a =
-            local <= 0 ? 0 : spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+          // R3 — entrance shape honours the variant when tagged; baseline
+          // keeps the v1 byte-equivalent spring so untagged films don't
+          // shift.
+          const a = (() => {
+            if (local <= 0) return 0;
+            if (!hasVariantTag) {
+              return spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+            }
+            if (entranceShape === 'snap') return 1;
+            if (entranceShape === 'spring') {
+              return spring({frame: local, fps, config: {damping: 200, mass: 0.7}});
+            }
+            return interpolate(local, [0, entranceFrames], [0, 1], {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            });
+          })();
           // Auto-fit font: long points shrink so they don't wrap into many
-          // lines that push the next row out of the safe area.
-          const fs = p.length <= 70 ? 32 : p.length <= 110 ? 28 : 25;
+          // lines that push the next row out of the safe area. R3: variant
+          // titleScale scales every bullet — `bold` makes the recap loud,
+          // `minimal` softens it.
+          const fs = Math.round(
+            (p.length <= 70 ? 32 : p.length <= 110 ? 28 : 25) * titleScale,
+          );
           return (
             <div
               key={i}

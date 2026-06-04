@@ -181,6 +181,31 @@ export interface Scene {
   /** Scene-level style override — Marp's `<style scoped>` analogue. */
   style?: RenderStyleInput;
   /**
+   * Rhetorical archetype — the *narrative* function the scene performs,
+   * cross-cutting with the scene `type`. Optional; absent = no archetype
+   * nudge applied. A spec author tags a scene with the move it is making
+   * ("this is a `mirror` — it reflects back what the reader just said")
+   * and the engine resolves entrance shape, title scale, and accent
+   * strength to honour that intent. Same archetype × different `variant`
+   * produces visually distinct frames carrying the same meaning.
+   *
+   * @see {@link SceneArchetype}
+   * @see resolveSceneVariant (in `frameworks/scene-variants.ts`)
+   */
+  archetype?: SceneArchetype;
+  /**
+   * Visual variant — the *visual* function (the treatment) the scene wears.
+   * Optional; absent = `'standard'`. A `bold` variant cranks up scale and
+   * accent; `minimal` strips chrome and softens entrance; `stacked` favours
+   * a vertical layout (where the scene component honours it). Cross-cuts
+   * with archetype: variant decides *how loud*, archetype decides
+   * *what kind of move*.
+   *
+   * @see {@link SceneVariant}
+   * @see resolveSceneVariant
+   */
+  variant?: SceneVariant;
+  /**
    * Beat list. Required only when the scene type actually beats; chrome-only
    * scenes (e.g. `frame`, `recap`) may carry one synthetic beat or none.
    */
@@ -188,6 +213,44 @@ export interface Scene {
   /** Plugin-owned fields. The kit treats these as opaque. */
   [key: string]: unknown;
 }
+
+/**
+ * The closed set of rhetorical archetypes — the *narrative* moves a scene
+ * can declare, orthogonal to its concrete `type`. Borrowed from the prior
+ * /ventures/250 creative-work taxonomy and re-anchored to the docent
+ * grammar: each archetype names a move ("this is the *turn*"; "this is
+ * the *mirror*") that biases entrance shape, title scale, and accent
+ * strength via {@link resolveSceneVariant}'s ARCHETYPE_NUDGE table.
+ *
+ * - `provocation` — the cold open: a claim that should arrest the reader.
+ *   Pairs with `bold`/`snap` entrance.
+ * - `turn` — the pivot: a "but" or "however" that changes direction.
+ * - `question` — the open prompt; invites the reader to predict.
+ * - `list` — an enumeration; the engine softens entrance to cascade.
+ * - `history` — a backward look; pairs with a slower entrance.
+ * - `mirror` — reflects back the reader's likely interpretation; softest
+ *   entrance, smallest title.
+ */
+export type SceneArchetype =
+  | 'provocation'
+  | 'turn'
+  | 'question'
+  | 'list'
+  | 'history'
+  | 'mirror';
+
+/**
+ * The closed set of visual variants — the *treatment* a scene wears,
+ * orthogonal to its archetype and concrete `type`. Borrowed from the
+ * /ventures/250 visualStyle taxonomy.
+ *
+ * - `standard` — the default look, baseline title scale, fade entrance.
+ * - `bold` — large title, opaque accents, snap entrance.
+ * - `stacked` — vertical-leaning layout (scene components that honour it
+ *   tighten gap density).
+ * - `minimal` — small title, soft accent, kicker hidden, fade entrance.
+ */
+export type SceneVariant = 'standard' | 'bold' | 'stacked' | 'minimal';
 
 // ----- beats ---------------------------------------------------------------
 

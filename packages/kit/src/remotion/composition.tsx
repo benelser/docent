@@ -29,8 +29,9 @@ import type {
   ScenePlugin,
   TimelineSlot,
 } from '../protocols';
-import type {FilmSpec} from '../types/spec';
+import type {FilmSpec, Scene, SceneArchetype, SceneVariant} from '../types/spec';
 import type {ResolvedStyle} from '../types/style';
+import {resolveSceneVariant} from '../frameworks/scene-variants';
 import {buildFrameSchedule, type SceneSchedule} from './schedule';
 
 /**
@@ -230,12 +231,23 @@ export const DocentFilm: React.FC<DocentFilmInternalProps> = ({
       {schedule.scenes.map((entry) => {
         const plugin = engine.scenes.get(entry.scene.type);
         const ts = toTimelineSlot(entry);
+        // Resolve the archetype × variant overlay once per scene. The
+        // resolver is pure and returns a frozen bag; the byte-zero path
+        // (both tags absent) returns the same singleton every time, so
+        // existing films pay no extra cost.
+        const sceneTagged = entry.scene as Scene;
+        const variantTokens = resolveSceneVariant(
+          resolvedStyle,
+          sceneTagged.archetype as SceneArchetype | undefined,
+          sceneTagged.variant as SceneVariant | undefined,
+        );
         const common: CommonSceneProps = {
           ts,
           sceneIndex: entry.sceneIndex,
           sceneCount,
           meta: spec.meta,
           style: resolvedStyle,
+          variantTokens,
         };
         return (
           <Sequence

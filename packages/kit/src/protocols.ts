@@ -28,6 +28,7 @@ import type {
   FilmSpec,
   Scene,
 } from './types/spec';
+import type {SceneVariantTokens} from './frameworks/scene-variants';
 import type {ResolvedStyle, StyleIntent} from './types/style';
 import type {
   TtsCapabilities,
@@ -65,7 +66,10 @@ export type {
   FilmSpec,
   FilmTtsConfig,
   Scene,
+  SceneArchetype,
+  SceneVariant,
 } from './types/spec';
+export type {SceneVariantTokens} from './frameworks/scene-variants';
 export type {
   DesignTokens,
   DesignTokenOverrides,
@@ -228,6 +232,17 @@ export interface CommonSceneProps {
   readonly meta: FilmMeta;
   /** The resolved style bundle — tokens, intent, visualization. */
   readonly style: ResolvedStyle;
+  /**
+   * Resolved archetype × variant overlay — what title scale to multiply
+   * by, which entrance shape to use, whether to show the kicker, etc.
+   * Always populated by the composition layer (defaults to the
+   * baseline {@link STANDARD_VARIANT_TOKENS} when the scene declared
+   * neither `archetype` nor `variant`). Scene components read this
+   * without nullchecks.
+   *
+   * @see resolveSceneVariant (in `frameworks/scene-variants.ts`)
+   */
+  readonly variantTokens: SceneVariantTokens;
 }
 
 /**
