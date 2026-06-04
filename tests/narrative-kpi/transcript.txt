@@ -1,0 +1,201 @@
+====================================================
+  docent assert --narrative — KPI smoke transcript
+  generated: 2026-06-04T19:52:16Z
+====================================================
+
+== RUN 1 — clean-baseline film (causal-loop-primer) ==
+
+  injected "totally" at scene[0].beat[2] (global #2)
+  injected "obviously" at scene[2].beat[1] (global #7)
+  injected "literally" at scene[3].beat[2] (global #11)
+  injected "essentially" at scene[4].beat[3] (global #15)
+  injected "frankly" at scene[6].beat[1] (global #19)
+
+========================================
+  STAGE 1 — baseline
+========================================
+
+▶ docent assert causal-loop-primer-baseline --narrative
+  the invariant: narration must not drift voice and must not invent numbers the scene disagrees with
+▶ lint stage  (regex / structural)
+  no lint findings
+
+  beats walked: 23 · findings: 0 · per-rule: {}
+
+NARRATIVE GATE
+  lint       PASS    clean
+
+  verdict:    PASS
+  sidecar: /Users/belser/ventures/archcast/.claude/worktrees/agent-ad44d71c3eace19b0/out/narrative-causal-loop-primer-baseline.json
+
+========================================
+  STAGE 2 — ticked
+========================================
+
+▶ docent assert causal-loop-primer-ticked --narrative
+  the invariant: narration must not drift voice and must not invent numbers the scene disagrees with
+▶ lint stage  (regex / structural)
+
+  scene[0] frame
+    beat  rule                    sev    match
+    2     filler-transitions      WARN   Totally
+         → delete "Totally" — adds no information
+
+  scene[2] causal-loop — "The thermostat — odd negative count, self-correcting"
+    beat  rule                    sev    match
+    1     filler-transitions      WARN   Obviously
+         → delete "Obviously" — adds no information
+
+  scene[3] causal-loop — "Ice-albedo feedback — two minuses make a plus"
+    beat  rule                    sev    match
+    2     filler-transitions      WARN   Literally
+         → delete "Literally" — adds no information
+
+  scene[4] tension — "Where the abstraction fails"
+    beat  rule                    sev    match
+    3     filler-transitions      WARN   Essentially
+         → delete "Essentially" — adds no information
+
+  scene[6] recap — "What the loop tells you"
+    beat  rule                    sev    match
+    1     filler-transitions      WARN   Frankly
+         → delete "Frankly" — adds no information
+
+  beats walked: 23 · findings: 5 · per-rule: {"filler-transitions":5}
+
+NARRATIVE GATE
+  lint       REJECT  5 filler-transitions
+
+  verdict:    REJECT
+  sidecar: /Users/belser/ventures/archcast/.claude/worktrees/agent-ad44d71c3eace19b0/out/narrative-causal-loop-primer-ticked.json
+
+========================================
+  KPI VERDICT
+========================================
+  source film:                 causal-loop-primer
+  total beats (ticked):        23
+  injected positions:          5
+  baseline natural matches:    0
+  ticked filler matches:       5
+  flagged-injected:            5/5
+  flagged-non-injected beats:  0
+  net-new FP (subtract base):  0
+
+  RECALL:                      100.0%
+  FP_RATE (raw):               0.00%
+  FP_RATE (net-new vs base):   0.00%
+
+  PASS criterion: RECALL == 100% AND FP_RATE (net-new) <= 5%
+  recall:   PASS
+  fp_rate:  PASS
+  OVERALL:  PASS
+
+
+====================================================
+== RUN 2 — noisy-baseline film (euclid-primes) ==
+
+  injected "totally" at scene[0].beat[2] (global #2)
+  injected "obviously" at scene[2].beat[0] (global #7)
+  injected "literally" at scene[2].beat[4] (global #11)
+  injected "essentially" at scene[3].beat[2] (global #15)
+  injected "frankly" at scene[4].beat[3] (global #19)
+
+========================================
+  STAGE 1 — baseline
+========================================
+
+▶ docent assert euclid-primes-baseline --narrative
+  the invariant: narration must not drift voice and must not invent numbers the scene disagrees with
+▶ lint stage  (regex / structural)
+
+  scene[0] frame
+    beat  rule                    sev    match
+    2     filler-transitions      WARN   actually
+         → delete "actually" — adds no information
+
+  scene[2] walkthrough — "Why this proof is not a next-prime recipe"
+    beat  rule                    sev    match
+    4     filler-transitions      WARN   actually
+         → delete "actually" — adds no information
+
+  scene[6] recap — "Euclid's theorem — an honest verdict"
+    beat  rule                    sev    match
+    4     filler-transitions      WARN   actually
+         → delete "actually" — adds no information
+
+  beats walked: 28 · findings: 3 · per-rule: {"filler-transitions":3}
+
+NARRATIVE GATE
+  lint       REJECT  3 filler-transitions
+
+  verdict:    REJECT
+  sidecar: /Users/belser/ventures/archcast/.claude/worktrees/agent-ad44d71c3eace19b0/out/narrative-euclid-primes-baseline.json
+
+========================================
+  STAGE 2 — ticked
+========================================
+
+▶ docent assert euclid-primes-ticked --narrative
+  the invariant: narration must not drift voice and must not invent numbers the scene disagrees with
+▶ lint stage  (regex / structural)
+
+  scene[0] frame
+    beat  rule                    sev    match
+    2     filler-transitions      WARN   Totally
+         → delete "Totally" — adds no information
+    2     filler-transitions      WARN   actually
+         → delete "actually" — adds no information
+
+  scene[2] walkthrough — "Why this proof is not a next-prime recipe"
+    beat  rule                    sev    match
+    0     filler-transitions      WARN   Obviously
+         → delete "Obviously" — adds no information
+    4     filler-transitions      WARN   actually
+         → delete "actually" — adds no information
+    4     filler-transitions      WARN   Literally
+         → delete "Literally" — adds no information
+
+  scene[3] compare — "What people retell versus what the page says"
+    beat  rule                    sev    match
+    2     filler-transitions      WARN   Essentially
+         → delete "Essentially" — adds no information
+
+  scene[4] quantities — "Euclid proves existence; later theorems add location and density"
+    beat  rule                    sev    match
+    3     filler-transitions      WARN   Frankly
+         → delete "Frankly" — adds no information
+
+  scene[6] recap — "Euclid's theorem — an honest verdict"
+    beat  rule                    sev    match
+    4     filler-transitions      WARN   actually
+         → delete "actually" — adds no information
+
+  beats walked: 28 · findings: 8 · per-rule: {"filler-transitions":8}
+
+NARRATIVE GATE
+  lint       REJECT  8 filler-transitions
+
+  verdict:    REJECT
+  sidecar: /Users/belser/ventures/archcast/.claude/worktrees/agent-ad44d71c3eace19b0/out/narrative-euclid-primes-ticked.json
+
+========================================
+  KPI VERDICT
+========================================
+  source film:                 euclid-primes
+  total beats (ticked):        28
+  injected positions:          5
+  baseline natural matches:    3
+  ticked filler matches:       8
+  flagged-injected:            5/5
+  flagged-non-injected beats:  1
+  net-new FP (subtract base):  0
+
+  RECALL:                      100.0%
+  FP_RATE (raw):               4.35%
+  FP_RATE (net-new vs base):   0.00%
+
+  PASS criterion: RECALL == 100% AND FP_RATE (net-new) <= 5%
+  recall:   PASS
+  fp_rate:  PASS
+  OVERALL:  PASS
+

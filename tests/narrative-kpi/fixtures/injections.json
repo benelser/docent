@@ -1,0 +1,37 @@
+{
+  "sourceFilm": "causal-loop-primer",
+  "injectedPositions": [
+    {
+      "sceneIndex": 0,
+      "beatIndex": 2,
+      "word": "totally"
+    },
+    {
+      "sceneIndex": 2,
+      "beatIndex": 1,
+      "word": "obviously"
+    },
+    {
+      "sceneIndex": 3,
+      "beatIndex": 2,
+      "word": "literally"
+    },
+    {
+      "sceneIndex": 4,
+      "beatIndex": 3,
+      "word": "essentially"
+    },
+    {
+      "sceneIndex": 6,
+      "beatIndex": 1,
+      "word": "frankly"
+    }
+  ],
+  "injectedGlobalIndices": [
+    2,
+    7,
+    11,
+    15,
+    19
+  ]
+}

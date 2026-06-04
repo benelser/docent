@@ -18,3 +18,35 @@
 export {corePlugins} from './index.generated';
 export * from './index.generated';
 export {default} from './index.generated';
+
+// Narrative-quality cascade — the deterministic + LLM checks behind
+// `docent assert --narrative`. Surfaced as a sub-namespace so consumers
+// can `import {lintFilmNarration, noopJudgeProvider} from '@bjelser/core'`
+// without going through a deep path.
+export {
+  // lint rules
+  BEAT_LINT_RULES,
+  SCENE_LINT_RULES,
+  lintFilmNarration,
+  stripQuotes,
+  fillerTransitionsRule,
+  hedgeWordsRule,
+  bannedIntensifiersRule,
+  fillerOpenersRule,
+  exclamationMarksRule,
+  anaphoraOverloadRule,
+  structuralTicsRule,
+  // judge
+  noopJudgeProvider,
+} from './narrative-quality';
+
+export type {
+  Severity as NarrativeLintSeverity,
+  BeatLintFinding,
+  BeatLintInput,
+  SceneLintInput,
+  BeatRule,
+  SceneRule,
+  LintFilmInput,
+  LintFilmResult,
+} from './narrative-quality/lint-rules';

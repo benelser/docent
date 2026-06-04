@@ -1,0 +1,38 @@
+{
+  "sourceFilm": "causal-loop-primer",
+  "totalBeatsTicked": 23,
+  "injections": [
+    {
+      "index": 2,
+      "word": "totally"
+    },
+    {
+      "index": 7,
+      "word": "obviously"
+    },
+    {
+      "index": 11,
+      "word": "literally"
+    },
+    {
+      "index": 15,
+      "word": "essentially"
+    },
+    {
+      "index": 19,
+      "word": "frankly"
+    }
+  ],
+  "baselineFpCount": 0,
+  "tickedFillerMatches": 5,
+  "flaggedInjected": 5,
+  "flaggedNonInjectedBeats": 0,
+  "netNewFlaggedNonInjected": 0,
+  "recall": 1,
+  "rawFpRate": 0,
+  "netNewFpRate": 0,
+  "recallPass": true,
+  "fpRatePass": true,
+  "overallPass": true,
+  "generatedAt": "2026-06-04T19:53:05.229Z"
+}

@@ -34,4 +34,13 @@ export {
   OPENAI_TRANSLATION_CAPABILITIES,
 } from './translation';
 
+// Narrative-quality judge provider — registered separately. Surfaced by
+// `docent assert --narrative --judges --judge-provider openai`. Same
+// OPENAI_API_KEY env var as the TTS + translation providers.
+export {
+  openaiNarrativeJudgeProvider,
+  createOpenAINarrativeJudge,
+  type OpenAINarrativeJudgeOptions,
+} from './narrative-judge';
+
 export default openaiTtsPlugin;

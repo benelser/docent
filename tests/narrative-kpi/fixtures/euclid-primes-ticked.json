@@ -1,0 +1,642 @@
+{
+  "meta": {
+    "id": "euclid-primes-ticked",
+    "title": "Euclid's Theorem",
+    "subject": "Euclid's theorem — why no finite list can exhaust the primes",
+    "repo": "https://en.wikipedia.org/wiki/Euclid%27s_theorem",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "frame",
+      "type": "frame",
+      "kicker": "DOCENT // EXPLAINER",
+      "title": "Euclid's Theorem",
+      "tagline": "Primes do not run out because every finite list can be escaped",
+      "footnote": "Wikipedia source page   ·   reviewed as an idea, not a proof catalog   ·   surveyed past the common overclaim",
+      "beats": [
+        {
+          "id": "euclid-frame-1",
+          "narration": "The page says there are at least 200 proofs that primes never end. This film is about the one move that still carries the load: Euclid's original escape from any finite list.",
+          "show": "title"
+        },
+        {
+          "id": "euclid-frame-2",
+          "narration": "The misconception to kill is double. Euclid did not start by assuming he already had all primes, and he did not need product plus 1 to be the next prime.",
+          "show": "tagline"
+        },
+        {
+          "id": "euclid-frame-3",
+          "narration": "So the job is not to tour a museum of proofs.  Totally, it is to test what this theorem actually buys, where its elegance comes from, and where that elegance stops.",
+          "show": "footnote"
+        }
+      ]
+    },
+    {
+      "id": "escape",
+      "type": "structure",
+      "kicker": "01 // THE MOVE",
+      "heading": "No finite list stays closed",
+      "grid": {
+        "cols": 4,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "list",
+          "label": "Finite list of primes",
+          "sub": "p1, p2, ... , pn",
+          "col": 0,
+          "row": 0,
+          "accent": "blue",
+          "weight": "primary"
+        },
+        {
+          "id": "product",
+          "label": "Product P",
+          "sub": "multiply the whole list",
+          "col": 1,
+          "row": 0,
+          "accent": "cyan",
+          "as": "equation",
+          "expr": "P = p1 * p2 * ... * pn"
+        },
+        {
+          "id": "q",
+          "label": "q",
+          "sub": "one more than the product",
+          "col": 2,
+          "row": 0,
+          "accent": "green",
+          "weight": "hero",
+          "as": "equation",
+          "expr": "q = P + 1"
+        },
+        {
+          "id": "listed",
+          "label": "Any listed prime pi",
+          "sub": "already divides P",
+          "col": 0,
+          "row": 1,
+          "accent": "violet"
+        },
+        {
+          "id": "difference",
+          "label": "Difference",
+          "sub": "the decisive remainder",
+          "col": 1,
+          "row": 1,
+          "accent": "amber",
+          "as": "equation",
+          "expr": "q - P = 1"
+        },
+        {
+          "id": "factor",
+          "label": "Prime factor of q",
+          "sub": "used only when q is composite",
+          "col": 2,
+          "row": 1,
+          "accent": "amber",
+          "wide": true
+        },
+        {
+          "id": "outside",
+          "label": "Prime outside the list",
+          "sub": "either q itself or a factor of q",
+          "col": 0,
+          "row": 2,
+          "accent": "rose",
+          "weight": "hero",
+          "wide": true
+        },
+        {
+          "id": "infinite",
+          "label": "Infinitely many primes",
+          "sub": "no finite list is complete",
+          "col": 2,
+          "row": 2,
+          "accent": "green",
+          "wide": true
+        }
+      ],
+      "edges": [
+        {
+          "id": "e-list-product",
+          "from": "list",
+          "to": "product",
+          "kind": "relation"
+        },
+        {
+          "id": "e-product-q",
+          "from": "product",
+          "to": "q",
+          "kind": "relation"
+        },
+        {
+          "id": "e-list-listed",
+          "from": "list",
+          "to": "listed",
+          "kind": "relation"
+        },
+        {
+          "id": "e-product-difference",
+          "from": "product",
+          "to": "difference",
+          "kind": "entails"
+        },
+        {
+          "id": "e-q-difference",
+          "from": "q",
+          "to": "difference",
+          "kind": "entails"
+        },
+        {
+          "id": "e-q-factor",
+          "from": "q",
+          "to": "factor",
+          "kind": "relation"
+        },
+        {
+          "id": "e-difference-outside",
+          "from": "difference",
+          "to": "outside",
+          "kind": "entails"
+        },
+        {
+          "id": "e-factor-outside",
+          "from": "factor",
+          "to": "outside",
+          "kind": "entails"
+        },
+        {
+          "id": "e-outside-infinite",
+          "from": "outside",
+          "to": "infinite",
+          "kind": "entails"
+        }
+      ],
+      "beats": [
+        {
+          "id": "euclid-escape-1",
+          "narration": "Start with any finite list of primes. Euclid folds that whole list into one object, the product P, and then steps one unit away from it to q equals P plus 1.",
+          "reveal": [
+            "list",
+            "product",
+            "q",
+            "e-list-product",
+            "e-product-q"
+          ],
+          "focus": [
+            "list",
+            "product",
+            "q"
+          ]
+        },
+        {
+          "id": "euclid-escape-2",
+          "narration": "Now the divisibility trap closes. Any listed prime already divides P. If one also divided q, it would have to divide q minus P, which is 1. No prime can do that.",
+          "reveal": [
+            "listed",
+            "difference",
+            "e-list-listed",
+            "e-product-difference",
+            "e-q-difference"
+          ],
+          "focus": [
+            "listed",
+            "difference"
+          ],
+          "shot": "follow"
+        },
+        {
+          "id": "euclid-escape-3",
+          "narration": "That is why the theorem survives both branches. If q is prime, q itself is outside the list. If q is composite, any prime factor of q must be outside the list.",
+          "reveal": [
+            "factor",
+            "outside",
+            "e-q-factor",
+            "e-difference-outside",
+            "e-factor-outside"
+          ],
+          "focus": [
+            "q",
+            "factor",
+            "outside"
+          ]
+        },
+        {
+          "id": "euclid-escape-4",
+          "narration": "And because the starting list was arbitrary, this is not one lucky escape. No finite list can close the primes.",
+          "reveal": [
+            "infinite",
+            "e-outside-infinite"
+          ],
+          "focus": [
+            "outside",
+            "infinite"
+          ],
+          "pace": "hold",
+          "shot": "push"
+        }
+      ]
+    },
+    {
+      "id": "cases",
+      "type": "walkthrough",
+      "kicker": "02 // THE BOUNDARY",
+      "heading": "Why this proof is not a next-prime recipe",
+      "actors": [
+        {
+          "id": "question-actor",
+          "label": "Question",
+          "sub": "find the next prime after n"
+        },
+        {
+          "id": "list-actor",
+          "label": "Primes up to n",
+          "sub": "still only a finite list"
+        },
+        {
+          "id": "q-actor",
+          "label": "q = P + 1",
+          "sub": "built from that whole list"
+        },
+        {
+          "id": "factor-actor",
+          "label": "Prime factor r",
+          "sub": "used when q is composite"
+        },
+        {
+          "id": "answer-actor",
+          "label": "What Euclid returns",
+          "sub": "some prime outside the list"
+        }
+      ],
+      "beats": [
+        {
+          "id": "euclid-cases-1",
+          "narration": "To press the weak spot, ask Euclid for the next prime after some bound n.  Obviously, the only input he accepts is a finite list, so put on the table the primes up to n.",
+          "message": {
+            "from": "question-actor",
+            "to": "list-actor",
+            "label": "take the primes up to n",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "euclid-cases-2",
+          "narration": "Euclid answers the way he always answers: multiply that list to P, then step to q equals P plus 1.",
+          "message": {
+            "from": "list-actor",
+            "to": "q-actor",
+            "label": "multiply, then + 1",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "euclid-cases-3",
+          "narration": "Now the generator reading meets the hard case. If q is composite, the proof immediately stops treating q itself as the answer and asks only for a prime factor r of q.",
+          "message": {
+            "from": "q-actor",
+            "to": "factor-actor",
+            "label": "if composite, use a factor r",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "euclid-cases-4",
+          "narration": "That factor is still forced outside the list, because every listed prime divides P, and none can divide both P and P plus 1.",
+          "message": {
+            "from": "factor-actor",
+            "to": "answer-actor",
+            "label": "r is outside the list",
+            "kind": "forward"
+          }
+        },
+        {
+          "id": "euclid-cases-5",
+          "narration": "But notice what the proof has actually bought.  Literally, it has produced some prime beyond n, not certified the next prime after n.",
+          "message": {
+            "from": "answer-actor",
+            "to": "question-actor",
+            "label": "there exists a prime greater than n",
+            "kind": "reply"
+          }
+        },
+        {
+          "id": "euclid-cases-6",
+          "narration": "So the theorem breaks exactly as a locator. It proves existence, but it gives no interval and no next-prime recipe. Bertrand-Chebyshev is stronger because it can place a prime between n and 2n.",
+          "message": {
+            "from": "answer-actor",
+            "to": "question-actor",
+            "label": "not the next prime; no location",
+            "kind": "aside"
+          },
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "misread",
+      "type": "compare",
+      "kicker": "03 // THE COMMON MISREAD",
+      "heading": "What people retell versus what the page says",
+      "columns": [
+        {
+          "id": "retelling",
+          "label": "Common retelling"
+        },
+        {
+          "id": "actual",
+          "label": "What the page says"
+        }
+      ],
+      "rows": [
+        {
+          "id": "row-start",
+          "label": "Starting line",
+          "cells": [
+            {
+              "text": "suppose the list already contains all primes",
+              "verdict": "lose"
+            },
+            {
+              "text": "take any finite list of primes",
+              "verdict": "win"
+            }
+          ]
+        },
+        {
+          "id": "row-logic",
+          "label": "Logical shape",
+          "cells": [
+            {
+              "text": "indirect contradiction only",
+              "verdict": "lose"
+            },
+            {
+              "text": "direct proof by cases",
+              "verdict": "win"
+            }
+          ]
+        },
+        {
+          "id": "row-output",
+          "label": "What comes out",
+          "cells": [
+            {
+              "text": "P + 1 itself is the new prime",
+              "verdict": "lose"
+            },
+            {
+              "text": "P + 1 or one of its prime factors is new",
+              "verdict": "win"
+            }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "id": "euclid-misread-1",
+          "narration": "The first repair is the starting line. Euclid does not need all primes on the table. Any finite list is enough.",
+          "reveal": 1
+        },
+        {
+          "id": "euclid-misread-2",
+          "narration": "The second repair is the logic. Because q may be prime or composite, the page is right to call this a proof by cases, not contradiction theater for its own sake.",
+          "reveal": 2
+        },
+        {
+          "id": "euclid-misread-3",
+          "narration": "The third repair is the output.  Essentially, the theorem never needs q itself to be prime. A new factor outside the list is enough.",
+          "reveal": 3,
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "scale",
+      "type": "quantities",
+      "kicker": "04 // HOW MUCH MORE",
+      "heading": "Euclid proves existence; later theorems add location and density",
+      "metrics": [
+        {
+          "id": "m-proofs",
+          "label": "Later proof catalog",
+          "col": 0,
+          "row": 0,
+          "bind": "proofs",
+          "format": "int",
+          "unit": "proofs",
+          "accent": "blue"
+        },
+        {
+          "id": "m-extra",
+          "label": "Euclid's minimum guarantee",
+          "col": 1,
+          "row": 0,
+          "bind": "extra",
+          "format": "int",
+          "unit": "prime",
+          "accent": "green"
+        },
+        {
+          "id": "m-window",
+          "label": "Bertrand window edge",
+          "col": 2,
+          "row": 0,
+          "bind": "window",
+          "format": "int",
+          "unit": "n",
+          "accent": "amber"
+        }
+      ],
+      "beats": [
+        {
+          "id": "euclid-scale-1",
+          "narration": "The page opens with breadth: at least 200 proofs are known. Treat that as museum scale only. It tells you the theorem has many later variants, not that the original argument needs their help.",
+          "set": {
+            "proofs": {
+              "to": 200
+            }
+          },
+          "pace": "settle"
+        },
+        {
+          "id": "euclid-scale-2",
+          "narration": "Euclid's own quantitative promise is smaller and sharper. From any finite list he forces 1 more prime outside it, and the factorial variation makes that concrete: for every positive integer n, form n factorial plus 1, and some prime factor of it must exceed n.",
+          "set": {
+            "extra": {
+              "to": 1
+            }
+          }
+        },
+        {
+          "id": "euclid-scale-3",
+          "narration": "Bertrand-Chebyshev is already stronger because it upgrades some prime greater than n to a located one: for every n greater than 1, there is a prime between n and 2n.",
+          "set": {
+            "window": {
+              "to": 2
+            }
+          }
+        },
+        {
+          "id": "euclid-scale-4",
+          "narration": "The prime number theorem goes further still: pi of x grows like x over log x.  Frankly, euclid proves infinity; later number theory starts counting how densely that infinity arrives.",
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "tension",
+      "type": "tension",
+      "kicker": "05 // THE TRADE-OFF",
+      "heading": "This proof chooses elegance over census power",
+      "cut": "hold",
+      "grid": {
+        "cols": 3,
+        "rows": 3
+      },
+      "nodes": [
+        {
+          "id": "euclid-proof",
+          "label": "Euclid's escape proof",
+          "sub": "elementary and list-agnostic",
+          "col": 0,
+          "row": 0,
+          "accent": "green",
+          "weight": "hero",
+          "wide": true
+        },
+        {
+          "id": "density-view",
+          "label": "Euler and the stronger results",
+          "sub": "where primes lie, and how many there are",
+          "col": 2,
+          "row": 0,
+          "kind": "rejected",
+          "wide": true
+        },
+        {
+          "id": "generator-risk",
+          "label": "Risk — overread as a generator",
+          "sub": "q may be composite, so the next prime is not handed to you",
+          "col": 1,
+          "row": 1,
+          "kind": "risk",
+          "wide": true
+        },
+        {
+          "id": "why-euclid",
+          "label": "Why choose it",
+          "sub": "the mechanism is visible in one remainder: q minus P equals 1",
+          "col": 0,
+          "row": 2,
+          "accent": "cyan",
+          "wide": true
+        },
+        {
+          "id": "location-risk",
+          "label": "Risk — no map of the primes",
+          "sub": "it cannot say where the next prime lies or how dense the primes are",
+          "col": 2,
+          "row": 2,
+          "kind": "risk",
+          "wide": true
+        }
+      ],
+      "edges": [],
+      "beats": [
+        {
+          "id": "euclid-tension-1",
+          "narration": "Here is the trade-off. This account chooses Euclid's elementary escape proof over Euler's richer view because Euclid exposes the mechanism with almost no machinery.",
+          "reveal": [
+            "euclid-proof",
+            "density-view",
+            "why-euclid"
+          ],
+          "focus": [
+            "euclid-proof",
+            "why-euclid"
+          ]
+        },
+        {
+          "id": "euclid-tension-2",
+          "narration": "The cost is real. Euclid proves existence, not generation: q may be composite, so the argument can force a new prime factor without handing you the next prime number itself.",
+          "reveal": [
+            "generator-risk"
+          ],
+          "focus": [
+            "generator-risk"
+          ],
+          "shot": "push"
+        },
+        {
+          "id": "euclid-tension-3",
+          "narration": "And it cannot locate the new prime either. To ask where primes lie, or how many live below x, is to leave Euclid's theorem and enter Bertrand-Chebyshev or the prime number theorem. Elegance here is purchased by narrowness.",
+          "reveal": [
+            "location-risk"
+          ],
+          "focus": [
+            "generator-risk",
+            "location-risk"
+          ],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "type": "recap",
+      "kicker": "RECAP // THE VERDICT",
+      "heading": "Euclid's theorem — an honest verdict",
+      "points": [
+        "Disposition — decisive as a first proof that primes never run out.",
+        "Strongest move — any finite list is escaped because no listed prime divides both P and P + 1.",
+        "Common overclaim — the proof is not contradiction theater, and it does not promise P + 1 itself is prime.",
+        "Residual limit — it proves existence, not where the next prime lies or how densely primes occur.",
+        "Carry this skepticism — ask whether a proof found the new prime itself, or only a factor outside the list."
+      ],
+      "beats": [
+        {
+          "id": "euclid-recap-1",
+          "narration": "My ruling is favorable but narrow. As a first explanation of why primes do not run out, Euclid's theorem is decisive.",
+          "reveal": 1
+        },
+        {
+          "id": "euclid-recap-2",
+          "narration": "Its core move is exceptionally clean: any proposed finite list is escaped because a listed prime cannot divide both the product and the product plus 1.",
+          "reveal": 2
+        },
+        {
+          "id": "euclid-recap-3",
+          "narration": "The biggest repair viewers should make to common retellings is twofold. This is not contradiction theater, and it does not say the product plus 1 is always prime.",
+          "reveal": 3
+        },
+        {
+          "id": "euclid-recap-4",
+          "narration": "Its limit is equally clear. The theorem cannot tell you where the next prime lives, and it cannot tell you how densely primes persist.",
+          "reveal": 4
+        },
+        {
+          "id": "euclid-recap-5",
+          "narration": "So the durable skepticism is this: admire Euclid's proof for what it actually buys, and doubt any retelling that lends it a generator or a census it never had.",
+          "reveal": 5,
+          "pace": "hold"
+        }
+      ]
+    }
+  ],
+  "style": {
+    "preset": "paper",
+    "intent": {
+      "tone": "technical",
+      "audience": "technical"
+    },
+    "rationale": "Paper preset — a mathematical proof in explainer mode; the previous spec used treatment:whiteboard for the chalkboard skin, which v2.4 retires in favour of the paper preset's serif/marker register."
+  }
+}

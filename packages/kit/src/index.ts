@@ -76,6 +76,18 @@ export type {
   RenderOptions,
   RenderResult,
   Issue,
+
+  // Narrative-quality judges (opt-in CI surface)
+  JudgeKind,
+  JudgeInput,
+  JudgeOutput,
+  JudgeOutputBase,
+  JudgeVoiceOutput,
+  JudgeAccuracyOutput,
+  JudgeVizPlacementOutput,
+  AccuracyMismatch,
+  NarrativeJudgeProvider,
+  NarrativeJudgeRegistry,
 } from './protocols';
 
 // ---------- TTS (Build A's contract — recapitulated by the kit) -------------
@@ -110,6 +122,20 @@ export {
 } from './types/translation';
 
 export type {TranslationRegistry} from './protocols';
+
+// ---------- Narrative-quality judges (prompts + parsers) --------------------
+
+export {
+  VOICE_JUDGE_SYSTEM,
+  ACCURACY_JUDGE_SYSTEM,
+  VIZ_PLACEMENT_JUDGE_SYSTEM,
+  buildVoiceJudgePrompt,
+  buildAccuracyJudgePrompt,
+  buildVizPlacementJudgePrompt,
+  parseVoiceJudge,
+  parseAccuracyJudge,
+  parseVizPlacementJudge,
+} from './judges';
 
 // ---------- Spec types ------------------------------------------------------
 
