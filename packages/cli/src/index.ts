@@ -221,6 +221,23 @@ BUILD FLAGS
                           out/<film-id>-lufs-<target>.mp4; the un-
                           normalized original survives at out/<film-id>.mp4.
                           KPI: lands within ±0.5 LU of target.
+  --codec <id>            Delivery codec. Default: h264 (yuv420p .mp4).
+                          Consumer: h264, h265, vp8, vp9.
+                          Pro mezzanines (10-bit .mov, Avid/Premiere/Resolve
+                          source-of-truth):
+                            prores         alias for prores_hq
+                            prores_hq      ProRes 422 HQ (10-bit 4:2:2)
+                            prores_4444    ProRes 4444 (10-bit + alpha)
+                            dnxhr_hqx      Avid DNxHR HQX (10-bit 4:2:2)
+                            dnxhr_444      DNxHR 444 (10-bit 4:4:4)
+                          VFX image sequences (per-frame, directory output):
+                            dpx            10-bit DPX (gbrp10le, cinematic)
+                            exr            16-bit half-float OpenEXR
+                          Sequence outputs write to out/<film-id>/frame_*.<ext>
+                          with a sequence.json manifest (fps + dims + notes).
+                          DNxHR/DPX/EXR render via h264 intermediate +
+                          ffmpeg post-transcode (2-pass). Pro formats are
+                          large — pair with --scale 0.25 in smoke tests.
 
 PREVIEW FLAGS
   --port <n>           Remotion Studio port. Default: 3000.
@@ -402,6 +419,29 @@ const main = async (): Promise<number> => {
         return 64;
       }
     }
+    // Codec validation — refuse a typo at the CLI before kicking off a
+    // 90-second render that would die in the ffmpeg post-pass.
+    const codecRaw = str(flags.codec);
+    const allowedCodecs = [
+      'h264',
+      'h265',
+      'vp8',
+      'vp9',
+      'prores',
+      'prores_hq',
+      'prores_4444',
+      'dnxhr_hqx',
+      'dnxhr_444',
+      'dpx',
+      'exr',
+    ] as const;
+    if (codecRaw !== undefined && !(allowedCodecs as ReadonlyArray<string>).includes(codecRaw)) {
+      process.stderr.write(
+        `docent build: --codec must be one of: ${allowedCodecs.join(', ')} ` +
+          `(got "${codecRaw}")\n`,
+      );
+      return 64;
+    }
     return runBuild({
       filmId,
       ...(num(flags.scale) !== undefined ? {scale: num(flags.scale)!} : {}),
@@ -422,6 +462,9 @@ const main = async (): Promise<number> => {
         ? {translationProvider: str(flags['translation-provider'])!}
         : {}),
       ...(lufs !== undefined ? {lufs} : {}),
+      ...(codecRaw !== undefined
+        ? {codec: codecRaw as (typeof allowedCodecs)[number]}
+        : {}),
     });
   }
 

@@ -11,7 +11,31 @@ import {dirname, join, resolve} from 'node:path';
 import {createEngine} from '../engine-factory';
 import {generateRenderEntry} from '../render-entry';
 import {defaultVoiceForLang} from '@bjelser/kit';
-import type {FilmSpec} from '@bjelser/kit';
+import type {FilmSpec, RenderOptions} from '@bjelser/kit';
+
+/**
+ * The codec ids the CLI accepts on `--codec`. Mirrors `RenderOptions.codec`
+ * — kept narrow at the CLI boundary so a typo at the shell surfaces as a
+ * clear refusal rather than a confusing Remotion error 90 seconds in.
+ */
+const SUPPORTED_CODECS: ReadonlyArray<NonNullable<RenderOptions['codec']>> = [
+  'h264',
+  'h265',
+  'vp8',
+  'vp9',
+  'prores',
+  'prores_hq',
+  'prores_4444',
+  'dnxhr_hqx',
+  'dnxhr_444',
+  'dpx',
+  'exr',
+];
+
+const isSupportedCodec = (
+  v: string,
+): v is NonNullable<RenderOptions['codec']> =>
+  (SUPPORTED_CODECS as ReadonlyArray<string>).includes(v);
 
 // Re-export for the CLI entry — it parses `--lufs <value>` before
 // constructing BuildArgs. Centralising the parse here keeps the CLI's
@@ -96,6 +120,12 @@ export interface BuildArgs {
    * is preserved). KPI: rendered audio measures within ±0.5 LU of target.
    */
   readonly lufs?: number;
+  /**
+   * Delivery codec. Defaults to `'h264'` (unchanged behavior). Pro post
+   * pipelines require ProRes/DNxHR mezzanines or DPX/EXR image sequences;
+   * see `RenderOptions.codec` for the full set and trade-offs.
+   */
+  readonly codec?: NonNullable<RenderOptions['codec']>;
 }
 
 const log = (s: string) => process.stdout.write(`${s}\n`);
@@ -115,6 +145,9 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
   const spec: FilmSpec = JSON.parse(readFileSync(specPath, 'utf-8'));
 
   log(`\x1b[36m▶ docent build ${args.filmId}\x1b[0m`);
+  if (args.codec && args.codec !== 'h264') {
+    log(`  codec: ${args.codec} (pro delivery)`);
+  }
   const {engine, configPath, userPlugins} = await createEngine(projectRoot);
   log(
     `  engine: ${engine.scenes.all().length} scenes · ${engine.presets.all().length} presets · ` +
@@ -226,6 +259,7 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
         ? {translationProvider: args.translationProvider}
         : {}),
       ...(args.lufs !== undefined ? {lufs: args.lufs} : {}),
+      ...(args.codec !== undefined ? {codec: args.codec} : {}),
     });
     log(
       `\x1b[32m✓ rendered ${result.outPath}\x1b[0m  ${(result.durationMs / 1000).toFixed(1)}s`,

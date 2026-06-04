@@ -18,10 +18,14 @@ import {join, resolve} from 'node:path';
 import {LOUDNESS_PRESETS} from '@bjelser/kit';
 import {createEngine} from '../engine-factory';
 
-const log = (s: string): void => process.stdout.write(`${s}\n`);
+const log = (s: string): void => {
+  process.stdout.write(`${s}\n`);
+};
 // JSON mode keeps stdout pristine for the parsed blob; anything human-
 // readable goes to stderr so a `--json | jq` pipeline still works.
-const logErr = (s: string): void => process.stderr.write(`${s}\n`);
+const logErr = (s: string): void => {
+  process.stderr.write(`${s}\n`);
+};
 
 export interface LoudnessArgs {
   /** Film id (basename of out/<id>.mp4). */
