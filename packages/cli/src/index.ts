@@ -157,8 +157,17 @@ ASSERT FLAGS
                        current out/<film-id>.mp4. First run does this
                        implicitly when no goldens are present.
   --threshold <n>      Mean abs pixel diff threshold in [0, 1]. Default 0.05.
+                       Per-scene override via spec: scenes[i].assert.threshold.
   --compare-width <n>  Width (px) frames are decoded to for diffing. Default 480.
   --golden-dir <p>     Override the goldens root. Default <project>/golden.
+
+  Per-scene knobs (authored on each Scene in the spec, NOT a CLI flag):
+    assert.threshold     Override the CLI threshold for one scene. Tighter
+                         for text-heavy scenes (~0.02), looser for stochastic
+                         backgrounds (~0.10).
+    assert.maskRegions   Rectangles in compare-image px space (origin top-
+                         left). Zeroed in both golden and candidate before
+                         MAE — clean way to ignore a starfield patch.
 
 CI FLAGS
   --local <repo>       Path to a sibling docent repo. After "bun add", overlay

@@ -122,6 +122,8 @@ export type {
   Scene,
   SceneArchetype,
   SceneVariant,
+  SceneAssertConfig,
+  SceneAssertMaskRegion,
   Beat,
   BeatPace,
   BeatShot,
