@@ -1,0 +1,61 @@
+{
+  "prompt": "A cinematic orchestral instrumental score, 683 seconds long. Opens with a bold sustained string chord and a soft timpani hit. Low strings sustain beneath a held brass chord. [build] At 55.1 seconds, strings layer with gentle forward momentum. [build] At 129.5 seconds, french horns enter beneath the strings, voices layering one by one. [accent] At 210.6 seconds, a single rising string figure marks the measured claim. [turn] At 283.2 seconds, the orchestra pulls back briefly before the next motion. [build] At 406.2 seconds, strings layer with gentle forward momentum. [breath] At 511.3 seconds, a brief pull-back to quiet sustained strings for about four seconds. [peak] At 515.3 seconds, one massive thundering orchestral boom — a single enormous impact with deep bass and timpani, followed by a powerful sustained chord underneath. [resolve] At 549.1 seconds, the chord resolves with finality and slowly fades to silence by 683 seconds. Style: grand cinematic orchestra, no vocals, no electronic elements, powerful and emotional.",
+  "tags": [
+    "cinematic",
+    "orchestral",
+    "instrumental",
+    "no vocals",
+    "epic",
+    "full orchestra",
+    "brass",
+    "strings"
+  ],
+  "duration": 683,
+  "sections": [
+    {
+      "tag": "[intro]",
+      "atSeconds": 0,
+      "action": "low strings sustain beneath a held brass chord"
+    },
+    {
+      "tag": "[build]",
+      "atSeconds": 55.1,
+      "action": "strings layer with gentle forward momentum"
+    },
+    {
+      "tag": "[build]",
+      "atSeconds": 129.5,
+      "action": "french horns enter beneath the strings, voices layering one by one"
+    },
+    {
+      "tag": "[accent]",
+      "atSeconds": 210.6,
+      "action": "a single rising string figure marks the measured claim"
+    },
+    {
+      "tag": "[turn]",
+      "atSeconds": 283.2,
+      "action": "the orchestra pulls back briefly before the next motion"
+    },
+    {
+      "tag": "[build]",
+      "atSeconds": 406.2,
+      "action": "strings layer with gentle forward momentum"
+    },
+    {
+      "tag": "[breath]",
+      "atSeconds": 511.3,
+      "action": "a brief pull-back to quiet sustained strings"
+    },
+    {
+      "tag": "[peak]",
+      "atSeconds": 515.3,
+      "action": "one massive thundering orchestral boom — a single enormous impact with deep bass and timpani, followed by a powerful sustained chord underneath"
+    },
+    {
+      "tag": "[resolve]",
+      "atSeconds": 549.1,
+      "action": "the chord resolves with finality and slowly fades to silence"
+    }
+  ]
+}

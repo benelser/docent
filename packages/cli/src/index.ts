@@ -34,6 +34,7 @@ import {runRenderCheck} from './commands/render-check';
 import {runSceneFitList, runSceneFitRecommend} from './commands/scene-fit';
 import {runStyleList, runStyleRecommend} from './commands/style';
 import {runTreatment} from './commands/treatment';
+import {runScore} from './commands/score';
 import {runValidate} from './commands/validate';
 import {runWatch} from './commands/watch';
 
@@ -115,6 +116,18 @@ COMMANDS
                           every registered plugin against the protocol
                           contract; surfaces missing cues, empty signals,
                           bad clusters, registry conflicts. Exit 6 on error.
+  score <film-id>         Emit a timeline-annotated music-gen prompt for
+                          the film. Walks the schedule, tags rhetorical
+                          moves (open / develop / inflect / pull-back /
+                          boom / resolve), and renders the IR into the
+                          provider's dialect. --provider aiva|udio|suno|
+                          template (default template). --write persists
+                          to out/<id>-score-prompt.{txt,json}. --validate
+                          gates emit on the content-filter rules
+                          (ALL-CAPS, banned terms, adjective stacking).
+                          --json emits the full IR + body for tooling.
+                          Music-gen APIs are NEVER called — gate behind
+                          --execute (not implemented; deliberate safety).
   hermetic                Render the 4 gallery fixtures end to end.
   ci                      Hermetic /tmp smoke against the PUBLISHED package
                           (or worktree via --local). The dogfood gate — runs
@@ -602,6 +615,36 @@ const main = async (): Promise<number> => {
       ...(str(flags.versions) ? {versions: str(flags.versions)!} : {}),
       ...(flags['skip-portrait'] ? {skipPortrait: true} : {}),
       ...(flags.keep ? {keep: true} : {}),
+    });
+  }
+
+  if (command === 'score') {
+    const filmId = positional[0];
+    if (!filmId) {
+      process.stderr.write('docent score: missing <film-id>\n' + USAGE);
+      return 64;
+    }
+    const providerRaw = str(flags.provider);
+    const allowedProviders = ['template', 'aiva', 'udio', 'suno'] as const;
+    if (providerRaw !== undefined && !allowedProviders.includes(providerRaw as typeof allowedProviders[number])) {
+      process.stderr.write(
+        `docent score: --provider must be one of ${allowedProviders.join(', ')} (got "${providerRaw}")\n`,
+      );
+      return 64;
+    }
+    return runScore({
+      filmId,
+      ...(providerRaw !== undefined
+        ? {provider: providerRaw as typeof allowedProviders[number]}
+        : {}),
+      ...(flags.write ? {write: true} : {}),
+      ...(flags.validate ? {validate: true} : {}),
+      ...(flags.json ? {json: true} : {}),
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
     });
   }
 

@@ -1,0 +1,65 @@
+{
+  "genre": "cinematic",
+  "moods": [
+    "contemplative",
+    "gentle",
+    "warm"
+  ],
+  "key": "F major",
+  "tempo": 72,
+  "timeSignature": "4/4",
+  "duration": 415,
+  "instruments": [
+    "piano",
+    "warm strings",
+    "woodwinds"
+  ],
+  "forbid": [
+    "vocals",
+    "lyrics",
+    "electronic drums"
+  ],
+  "description": "A gentle orchestral score for warm strings and piano, 415 seconds long. Opens with a soft sustained string chord beneath a delicate piano figure. Low strings sustain beneath a held brass chord. At 26.3 seconds, french horns enter beneath the strings, voices layering one by one. At 74.3 seconds, a low string pulse establishes underneath the brass. At 142.7 seconds, a low string pulse establishes underneath the brass. At 196.4 seconds, french horns enter beneath the strings, voices layering one by one. At 281.7 seconds, the orchestra pulls back briefly before the next motion. At 384.6 seconds, a brief pull-back to quiet sustained strings for about four seconds. At 388.6 seconds, a single bright orchestral accent — a clear chord with timpani, followed by a sustained warm chord underneath. Style: gentle orchestral score for strings and piano, no vocals, no electronic elements, restrained and contemplative.",
+  "sections": [
+    {
+      "atSeconds": 0,
+      "label": "intro",
+      "action": "low strings sustain beneath a held brass chord"
+    },
+    {
+      "atSeconds": 26.3,
+      "label": "develop",
+      "action": "french horns enter beneath the strings, voices layering one by one"
+    },
+    {
+      "atSeconds": 74.3,
+      "label": "develop",
+      "action": "a low string pulse establishes underneath the brass"
+    },
+    {
+      "atSeconds": 142.7,
+      "label": "develop",
+      "action": "a low string pulse establishes underneath the brass"
+    },
+    {
+      "atSeconds": 196.4,
+      "label": "develop",
+      "action": "french horns enter beneath the strings, voices layering one by one"
+    },
+    {
+      "atSeconds": 281.7,
+      "label": "turn",
+      "action": "the orchestra pulls back briefly before the next motion"
+    },
+    {
+      "atSeconds": 384.6,
+      "label": "pull-back",
+      "action": "a brief pull-back to quiet sustained strings"
+    },
+    {
+      "atSeconds": 388.6,
+      "label": "peak",
+      "action": "a single bright orchestral accent — a clear chord with timpani, followed by a sustained warm chord underneath"
+    }
+  ]
+}

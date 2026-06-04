@@ -335,3 +335,21 @@ export {
   useBeatWordTimings,
   TtsAudioMapContext,
 } from './remotion/word-timings';
+
+// ---------- R9 — timeline-annotated music-gen score prompts ----------------
+//
+// The provider-agnostic IR (`ScorePrompt`) a docent film exports to a
+// music-generation API. The CLI's `docent score` builds the IR from the
+// schedule + the (optional) persisted TTS manifest; provider adapters in
+// `@bjelser/core` render the IR to AIVA / Udio / Suno / template dialect.
+// Third-party adapters depend only on these types.
+
+export type {
+  ScoreProvider,
+  ScoreCueKind,
+  ScoreCue,
+  ScoreTone,
+  ScorePrompt,
+  ScoreFinding,
+  RenderedScorePrompt,
+} from './types/score';

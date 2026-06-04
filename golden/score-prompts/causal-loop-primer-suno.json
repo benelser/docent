@@ -1,0 +1,15 @@
+{
+  "prompt": "A gentle orchestral score for warm strings and piano, 254 seconds long. Opens with a soft sustained string chord beneath a delicate piano figure. Low strings sustain beneath a held brass chord. At 123.8 seconds, the orchestra pulls back briefly before the next motion. At 189.2 seconds, a brief pull-back to quiet sustained strings for four seconds. At 193.2 seconds, a single bright orchestral accent — a clear chord with timpani, followed by a sustained warm chord underneath. At 205.5 seconds, the chord resolves with finality and slowly fades to silence by 254 seconds. Style: gentle orchestral score for strings and piano, no vocals, no electronic elements, restrained and contemplative.",
+  "tags": [
+    "cinematic",
+    "orchestral",
+    "instrumental",
+    "gentle",
+    "warm",
+    "piano",
+    "soft",
+    "peak-at-193s"
+  ],
+  "makeInstrumental": true,
+  "duration": 254
+}
