@@ -24,6 +24,14 @@ treatments/
 manim/
 *.log
 
+# Drip publication state (R4) — queue.json + audit.log are checked in (the
+# GitHub Actions cron commits them back), but the tick lockfile must not be.
+# Re-include the audit log against the `*.log` pattern above.
+!drip/audit.log
+drip/.tick.lock/
+drip/cron.log
+drip/audit.log.*
+
 # films/ and analysis/ are dual-purpose:
 #
 #   - The four gallery specs + the grammar-check test fixture are tracked.

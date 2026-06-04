@@ -18,3 +18,25 @@
 export {corePlugins} from './index.generated';
 export * from './index.generated';
 export {default} from './index.generated';
+
+// ---------- Distribution adapters (R4 drip) --------------------------------
+//
+// The platform adapters the CLI's `docent drip tick` calls into. Exported
+// from the package's main entry so a third-party tool can import the
+// dispatcher (`runPlatformAdapter`) or a single adapter directly.
+
+export {
+  runPlatformAdapter,
+  docentStudioAdapter,
+  youtubeAdapter,
+  vimeoAdapter,
+  mastodonAdapter,
+  blueskyAdapter,
+} from './distribution';
+
+export type {
+  AdapterContext,
+  AdapterResult,
+  PlatformAdapter,
+  NamedAdapter,
+} from './distribution';

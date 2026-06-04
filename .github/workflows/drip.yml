@@ -1,0 +1,81 @@
+# drip — scheduled, multi-platform film publication.
+#
+# Wakes the drip queue every 15 minutes, fires every entry whose schedule
+# has elapsed, and commits the updated `drip/queue.json` back to main so
+# subsequent ticks see the new state.
+#
+# IMPORTANT — this workflow is intentionally disabled by default. It will
+# NOT auto-trigger from a feature branch. To enable on main:
+#
+#   1. Merge this file to main.
+#   2. Add the `DRIP_ENABLED` repo variable (Settings → Variables → Actions)
+#      with value `"true"`. Until then, every scheduled run is a no-op.
+#   3. Wire the Firebase service-account secret (`FIREBASE_SA_KEY`) and any
+#      platform secrets (`OAUTH_CLIENT_ID`, etc.) — see docs/distribution.md.
+#
+# Why a kill-switch and not a feature-branch guard: the schedule trigger
+# fires from main only, so a branch can't accidentally publish. The
+# kill-switch lets a future operator pause publication without reverting a
+# commit (a real human reflex when something looks off mid-stream).
+
+name: drip
+
+on:
+  schedule:
+    # Every 15 minutes. The tick is idempotent — if nothing is due, it's a
+    # no-op (and writes the lastTick timestamp).
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      mock:
+        description: 'Skip external side effects (mock mode)'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: drip
+  cancel-in-progress: false  # ticks must serialise — don't drop a half-done one
+
+permissions:
+  contents: write   # the tick commits queue.json back
+
+jobs:
+  tick:
+    if: vars.DRIP_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Run drip tick
+        env:
+          DOCENT_DRIP_MOCK: ${{ inputs.mock && '1' || '0' }}
+          # Platform credentials — only wire the ones your queue uses.
+          OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: bunx docent drip tick
+
+      - name: Commit queue updates
+        run: |
+          if [[ -n "$(git status --porcelain drip/)" ]]; then
+            git config user.name "docent-drip[bot]"
+            git config user.email "drip@docent.studio"
+            git add drip/queue.json drip/audit.log
+            git commit -m "drip: tick at $(date -u +%FT%TZ)"
+            git push
+          else
+            echo "no queue changes this tick"
+          fi

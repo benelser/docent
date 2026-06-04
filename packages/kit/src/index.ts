@@ -264,3 +264,33 @@ export {
 } from './remotion/dimensions';
 
 export type {StageRect} from './remotion/dimensions';
+
+// ---------- Distribution / drip publication (R4) ----------------------------
+//
+// The queue schema, platform vocabulary, and audit-line shape every drip
+// adapter speaks. The CLI's `docent drip` surface and `@bjelser/core`'s
+// platform adapters both import these — keeping them in @bjelser/kit means
+// a third-party adapter never has to depend on the CLI shell.
+
+export type {
+  Platform,
+  Cadence,
+  ScheduleSpec,
+  ScheduleCron,
+  ScheduleDatetime,
+  ScheduleCadence,
+  DripStatus,
+  PlatformResult,
+  DripAuditLine,
+  DripEntry,
+  DripManifest,
+} from './types/distribution';
+
+export {
+  ALL_PLATFORMS,
+  isPlatform,
+  isCronSchedule,
+  isDatetimeSchedule,
+  isCadenceSchedule,
+  emptyManifest,
+} from './types/distribution';

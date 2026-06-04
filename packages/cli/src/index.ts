@@ -15,6 +15,14 @@ import {runBuild} from './commands/build';
 import {runCi} from './commands/ci';
 import {runDepthcheck} from './commands/depthcheck';
 import {runDoctor} from './commands/doctor';
+import {
+  parsePlatformList,
+  runDripAdd,
+  runDripCancel,
+  runDripList,
+  runDripStatus,
+  runDripTick,
+} from './commands/drip';
 import {runGrammarCheck} from './commands/grammar-check';
 import {runHelpScene} from './commands/help-scene';
 import {runHermetic} from './commands/hermetic';
@@ -103,6 +111,24 @@ COMMANDS
                           (webpack-bundling errors, missing published files,
                           peer-dep mismatches). Exit 2 on any failure;
                           tmpdir kept on red for inspection.
+  drip add <film-id>      Queue a built film for scheduled publication.
+                          --schedule "<cadence> HH:MM <tz>" (e.g.
+                          "MWF 15:00 America/Chicago"), or "@<ISO>" for
+                          a one-shot, or "cron: 0 15 * * 1" for cron.
+                          --platform docent-studio,youtube (csv).
+  drip list               Print the queue with status + next-fire-time
+                          per entry. --json for machine output.
+  drip status <film-id>   Show the full history of an entry (status,
+                          attempts, per-platform results).
+  drip cancel <film-id>   Mark an entry "skipped" so the tick stops
+                          considering it.
+  drip tick               Wake the queue. Find every pending entry whose
+                          scheduled time has elapsed, run its platform
+                          adapters, update status. --mock skips external
+                          side-effects (Firebase deploy, YouTube upload)
+                          but exercises the full code path. --force fires
+                          every non-published entry regardless of schedule
+                          (smoke-test only). Intended for cron.
   help                    Print this usage and exit.
   help <scene-type>       Surface the schema docs for a registered scene
                           plugin (description, required + optional fields,
@@ -510,6 +536,87 @@ const main = async (): Promise<number> => {
         ? {projectRoot: str(flags['project-root'])!}
         : {}),
     });
+  }
+
+  if (command === 'drip') {
+    const sub = positional[0];
+    if (!sub || sub === 'list') {
+      return runDripList({
+        json: Boolean(flags.json),
+        ...(str(flags['project-root'])
+          ? {projectRoot: str(flags['project-root'])!}
+          : {}),
+      });
+    }
+    if (sub === 'add') {
+      const filmId = positional[1];
+      const schedule = str(flags.schedule);
+      const platformRaw = str(flags.platform);
+      if (!filmId || !schedule || !platformRaw) {
+        process.stderr.write(
+          'docent drip add: missing arguments. ' +
+            'Usage: docent drip add <filmId> --schedule "MWF 15:00 America/Chicago" ' +
+            '--platform docent-studio,youtube\n',
+        );
+        return 64;
+      }
+      let platforms;
+      try {
+        platforms = parsePlatformList(platformRaw);
+      } catch (e) {
+        process.stderr.write(`docent drip add: ${(e as Error).message}\n`);
+        return 64;
+      }
+      return runDripAdd({
+        filmId,
+        schedule,
+        platforms,
+        ...(str(flags.note) ? {note: str(flags.note)!} : {}),
+        ...(str(flags['project-root'])
+          ? {projectRoot: str(flags['project-root'])!}
+          : {}),
+      });
+    }
+    if (sub === 'status') {
+      const filmId = positional[1];
+      if (!filmId) {
+        process.stderr.write('docent drip status: missing <filmId>\n');
+        return 64;
+      }
+      return runDripStatus({
+        filmId,
+        ...(str(flags['project-root'])
+          ? {projectRoot: str(flags['project-root'])!}
+          : {}),
+      });
+    }
+    if (sub === 'cancel') {
+      const filmId = positional[1];
+      if (!filmId) {
+        process.stderr.write('docent drip cancel: missing <filmId>\n');
+        return 64;
+      }
+      return runDripCancel({
+        filmId,
+        ...(str(flags['project-root'])
+          ? {projectRoot: str(flags['project-root'])!}
+          : {}),
+      });
+    }
+    if (sub === 'tick') {
+      return runDripTick({
+        ...(flags.mock ? {mock: true} : {}),
+        ...(flags.force ? {force: true} : {}),
+        ...(str(flags['project-root'])
+          ? {projectRoot: str(flags['project-root'])!}
+          : {}),
+      });
+    }
+    process.stderr.write(
+      `docent drip: unknown subcommand "${sub}" — expected one of: ` +
+        `add | list | status | cancel | tick\n`,
+    );
+    return 64;
   }
 
   process.stderr.write(`docent: unknown command "${command}"\n` + USAGE);
