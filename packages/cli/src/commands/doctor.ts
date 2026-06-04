@@ -19,6 +19,7 @@
 //   docent doctor --json   machine-readable for CI gates.
 
 import {createEngine} from '../engine-factory';
+import {describeSearchPath} from '../load-config';
 import {
   COGNITIVE_CLUSTERS,
   isCognitiveCluster,
@@ -293,6 +294,13 @@ export const runDoctor = async (args: DoctorArgs): Promise<number> => {
         (configPath ? ` (+${userPlugins.length} from ${configPath})` : ''),
     ),
   );
+  if (!configPath) {
+    // The user can't tell whether docent.config.ts was picked up unless we
+    // say so. Echo the search rules verbatim so a missing config or a
+    // misnamed file shows up at doctor time, not at first render.
+    log(dim(`  ${describeSearchPath(projectRoot)} — no config found`));
+    log(dim('  scaffold one with: docent init-config'));
+  }
   log('');
 
   // Cluster distribution — orientation aid
