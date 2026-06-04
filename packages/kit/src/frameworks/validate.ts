@@ -29,6 +29,30 @@
 import type {Engine} from '../engine';
 import type {FeaturePlugin, Issue, SceneIssue, ScenePlugin} from '../protocols';
 import type {FilmSpec, Scene} from '../types/spec';
+import {
+  STYLE_AUDIENCES,
+  STYLE_DENSITIES,
+  STYLE_EMPHASES,
+  STYLE_MEDIUMS,
+  STYLE_THEMES,
+  STYLE_TONES,
+} from '../types/style';
+
+/**
+ * The closed enums for every `style.intent` key. Pulled from the runtime
+ * vocabulary exports so a typo like `tone: 'execcutive'` is caught at
+ * validate time — the schema fragment alone doesn't help, because the
+ * kit's validator does not yet run AJV at runtime.
+ */
+const INTENT_ENUMS: Readonly<Record<string, readonly string[]>> = {
+  tone: STYLE_TONES,
+  audience: STYLE_AUDIENCES,
+  medium: STYLE_MEDIUMS,
+  density: STYLE_DENSITIES,
+  theme: STYLE_THEMES,
+  emphasis: STYLE_EMPHASES,
+};
+const INTENT_KEYS = Object.keys(INTENT_ENUMS);
 
 /**
  * Validate a candidate film spec against the active engine. The pure
@@ -174,6 +198,71 @@ export function validateSpec(
       }
     }
   });
+
+  // ---- film-level style cross-checks --------------------------------------
+  // The schema accepts any string for `style.preset` because the schema is
+  // pure (it can't reach into the engine's preset registry). Without this
+  // cross-check, a typo like `"preset": "engineerng"` validates clean and
+  // only blows up at render time inside `resolveStyle`. Surface it early so
+  // the author finds the typo at `docent validate` time, not on minute 3 of
+  // a render.
+  const style = (s as {style?: unknown}).style;
+  if (style && typeof style === 'object') {
+    const presetName = (style as {preset?: unknown}).preset;
+    if (typeof presetName === 'string' && presetName.length > 0) {
+      // The kit's `resolveStyle` honours 'neutral' as the implicit floor
+      // even when no preset is registered with that name. Mirror that
+      // behaviour here so the validator does not contradict the resolver.
+      if (presetName !== 'neutral' && !engine.presets.has(presetName)) {
+        const known = engine.presets
+          .all()
+          .map((p) => p.presetName)
+          .sort();
+        issues.push({
+          path: 'style.preset',
+          message:
+            `style.preset "${presetName}" is not registered. ` +
+            (known.length > 0
+              ? `Registered presets: ${known.join(', ')}.`
+              : '(no presets registered).'),
+          severity: 'error',
+          code: 'style/preset-not-registered',
+        });
+      }
+    }
+
+    // `style.intent` keys + values are CLOSED enums. The schema fragment
+    // pins them but the kit doesn't run AJV at validate time, so a typo
+    // ("tonne" or "execcutive") slips through into the resolver where it
+    // silently no-ops. Surface both classes of typo here.
+    const intent = (style as {intent?: unknown}).intent;
+    if (intent && typeof intent === 'object' && !Array.isArray(intent)) {
+      for (const [key, value] of Object.entries(intent as Record<string, unknown>)) {
+        const enumList = INTENT_ENUMS[key];
+        if (!enumList) {
+          issues.push({
+            path: `style.intent.${key}`,
+            message:
+              `style.intent.${key} is not a recognised intent key. ` +
+              `Allowed keys: ${INTENT_KEYS.join(', ')}.`,
+            severity: 'error',
+            code: 'style/intent-unknown-key',
+          });
+          continue;
+        }
+        if (typeof value !== 'string' || !enumList.includes(value)) {
+          issues.push({
+            path: `style.intent.${key}`,
+            message:
+              `style.intent.${key} = ${JSON.stringify(value)} is not valid. ` +
+              `Allowed values: ${enumList.join(', ')}.`,
+            severity: 'error',
+            code: 'style/intent-bad-value',
+          });
+        }
+      }
+    }
+  }
 
   // ---- feature-level film validation --------------------------------------
   // Every registered feature gets a chance to surface film-scope issues —

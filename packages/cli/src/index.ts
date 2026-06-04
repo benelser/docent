@@ -28,6 +28,7 @@ import {runGrammarCheck} from './commands/grammar-check';
 import {runHelpScene} from './commands/help-scene';
 import {runHermetic} from './commands/hermetic';
 import {runInit} from './commands/init';
+import {runInitConfig, type InitConfigKind} from './commands/init-config';
 import {runPreview} from './commands/preview';
 import {runRenderCheck} from './commands/render-check';
 import {runSceneFitList, runSceneFitRecommend} from './commands/scene-fit';
@@ -59,6 +60,13 @@ COMMANDS
                           drops a working 4-scene film (frame, structure,
                           tension, recap) that builds out of the box. Edit
                           the narration + nodes, then "docent build <id>".
+  init-config             Scaffold a starter docent.config.ts at the project
+                          root with worked examples for every plugin kind
+                          (preset, scene, feature, tts). The on-ramp for
+                          shipping a brand pack or third-party plugin
+                          without forking @bjelser/core. Pass
+                          --with preset|scene|feature|tts to scaffold one
+                          kind only.
   treatment <id>          Scaffold treatments/<id>.md from analysis/<id>.md —
                           a plain-language outline the human reads, edits,
                           and steers WITHOUT ever seeing JSON. The
@@ -181,6 +189,7 @@ ASSERT FLAGS
                        current out/<film-id>.mp4. First run does this
                        implicitly when no goldens are present.
   --threshold <n>      Mean abs pixel diff threshold in [0, 1]. Default 0.05.
+                       Per-scene override via spec: scenes[i].assert.threshold.
   --compare-width <n>  Width (px) frames are decoded to for diffing. Default 480.
   --golden-dir <p>     Override the goldens root. Default <project>/golden.
 
@@ -198,6 +207,14 @@ ASSERT --narrative FLAGS  (narrative-quality cascade)
                        @bjelser/tts-openai installed).
   --judge-beat-limit <n>
                        Cap on beats sampled per judge category. Default 20.
+
+  Per-scene knobs (authored on each Scene in the spec, NOT a CLI flag):
+    assert.threshold     Override the CLI threshold for one scene. Tighter
+                         for text-heavy scenes (~0.02), looser for stochastic
+                         backgrounds (~0.10).
+    assert.maskRegions   Rectangles in compare-image px space (origin top-
+                         left). Zeroed in both golden and candidate before
+                         MAE — clean way to ignore a starfield patch.
 
 CI FLAGS
   --local <repo>       Path to a sibling docent repo. After "bun add", overlay
@@ -288,6 +305,29 @@ const main = async (): Promise<number> => {
     return runInit({
       filmId,
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+      ...(flags.force ? {force: true} : {}),
+    });
+  }
+
+  if (command === 'init-config') {
+    const withRaw = str(flags.with);
+    const allowed: ReadonlyArray<InitConfigKind> = [
+      'preset',
+      'scene',
+      'feature',
+      'tts',
+    ];
+    if (withRaw !== undefined && !allowed.includes(withRaw as InitConfigKind)) {
+      process.stderr.write(
+        `docent init-config: --with must be one of: ${allowed.join(', ')} (got "${withRaw}")\n`,
+      );
+      return 64;
+    }
+    return runInitConfig({
+      ...(withRaw !== undefined ? {withKind: withRaw as InitConfigKind} : {}),
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
         : {}),

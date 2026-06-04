@@ -135,6 +135,52 @@ dev surface; ffmpeg and ffprobe ship on the runner image.
 gate as a `needs:` dependency of the `publish` job. The publish step **cannot
 run** if the gate is red.
 
+## Per-scene assert overrides
+
+The `--threshold` flag on `docent assert` is a film-wide default. Two
+scene archetypes typically need a different sensitivity than the rest of
+the film:
+
+- **Text-heavy scenes** (`recap`, `frame`) — every pixel matters. Tighten
+  to ~0.02 (`2%` MAE) so a sub-pixel typography shift fires.
+- **Stochastic backgrounds** (starfields, particle systems, blurs whose
+  seed isn't deterministic) — loosen to ~0.10, or mask out the
+  stochastic region.
+
+Both knobs are authored on the scene itself in the spec:
+
+```jsonc
+{
+  "type": "recap",
+  "heading": "The one sentence",
+  "assert": {"threshold": 0.02},
+  "points": [...]
+}
+```
+
+```jsonc
+{
+  "type": "frame",
+  "title": "Cassini",
+  "assert": {
+    "threshold": 0.08,
+    "maskRegions": [{"x": 0, "y": 0, "w": 480, "h": 60}]
+  }
+}
+```
+
+`maskRegions` coordinates are in **compare-image pixel space** (the
+`--compare-width` the differ decodes to, default 480 — NOT the rendered
+1920x1080). Each region is zeroed in **both** the golden and the
+candidate before MAE is computed, so the masked pixels contribute zero
+to the diff regardless of what was rendered there. Use it to ignore a
+starfield patch, a timestamp, or any region whose content isn't under
+regression control.
+
+The CLI verdict line surfaces both knobs: `t=2.0%` shows the threshold
+that scene was checked against; `mask×3` shows how many regions were
+applied.
+
 ## Friction notes (worth reading)
 
 - **macOS Actions runner ffmpeg.** `macos-14` ships ffmpeg out of the box;

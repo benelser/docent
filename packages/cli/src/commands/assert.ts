@@ -36,7 +36,12 @@ import {join, resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 
 import {createEngine} from '../engine-factory';
-import {buildFrameSchedule, type FilmSpec, type TtsAudioMap} from '@bjelser/kit';
+import {
+  buildFrameSchedule,
+  type FilmSpec,
+  type SceneAssertMaskRegion,
+  type TtsAudioMap,
+} from '@bjelser/kit';
 
 const log = (s: string) => process.stdout.write(`${s}\n`);
 const reset = '\x1b[0m';
@@ -65,6 +70,10 @@ interface SceneSample {
   readonly type: string;
   readonly heading?: string;
   readonly t50s: number;
+  /** Per-scene threshold override pulled from spec.scenes[i].assert.threshold. */
+  readonly threshold?: number;
+  /** Per-scene mask regions pulled from spec.scenes[i].assert.maskRegions. */
+  readonly maskRegions?: ReadonlyArray<SceneAssertMaskRegion>;
 }
 
 interface CheckJsonSample {
@@ -168,6 +177,32 @@ const meanAbsDiff = (a: Buffer, b: Buffer): number => {
   return sum / (n * 255);
 };
 
+/**
+ * Zero out a rectangular region of a raw rgb24 buffer in place. Used to
+ * cancel stochastic regions (starfields, particles) before MAE — applying
+ * the same mask to both golden + candidate makes the masked pixels
+ * pixel-identical and so they contribute 0 to the diff. Clamps the
+ * region to image bounds so an off-by-one in the spec doesn't write past
+ * the buffer.
+ */
+const applyMask = (
+  bytes: Buffer,
+  width: number,
+  height: number,
+  region: SceneAssertMaskRegion,
+): void => {
+  const x0 = Math.max(0, Math.floor(region.x));
+  const y0 = Math.max(0, Math.floor(region.y));
+  const x1 = Math.min(width, Math.floor(region.x + region.w));
+  const y1 = Math.min(height, Math.floor(region.y + region.h));
+  if (x1 <= x0 || y1 <= y0) return;
+  for (let y = y0; y < y1; y++) {
+    const rowStart = (y * width + x0) * 3;
+    const rowEnd = (y * width + x1) * 3;
+    bytes.fill(0, rowStart, rowEnd);
+  }
+};
+
 const loadCheckJson = (sampleDir: string): CheckJson | undefined => {
   const path = join(sampleDir, 'check.json');
   if (!existsSync(path)) return undefined;
@@ -265,6 +300,22 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
     return 4;
   }
 
+  // Per-scene assert overrides (threshold / maskRegions) live on the spec,
+  // not in the render-check sidecar. Load the spec once and key by scene
+  // index so both code paths below can attach overrides to samples.
+  const specJson: FilmSpec = JSON.parse(readFileSync(specPath, 'utf-8'));
+  const perSceneAssert: ReadonlyArray<{
+    readonly threshold?: number;
+    readonly maskRegions?: ReadonlyArray<SceneAssertMaskRegion>;
+  }> = specJson.scenes.map((sc) => {
+    const a = (sc as {assert?: {threshold?: number; maskRegions?: SceneAssertMaskRegion[]}}).assert;
+    if (!a) return {};
+    return {
+      ...(typeof a.threshold === 'number' ? {threshold: a.threshold} : {}),
+      ...(Array.isArray(a.maskRegions) ? {maskRegions: a.maskRegions} : {}),
+    };
+  });
+
   // Source of truth for scene midpoints: render-check sidecar if it
   // exists (fast path — already canonical and dimension-scaled);
   // otherwise rebuild the schedule from the spec (slower fallback).
@@ -278,18 +329,28 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
     const scaleRatio = checkDuration > 0 ? mp4DurationSeconds / checkDuration : 1;
     const maxSampleS = Math.max(0, mp4DurationSeconds - 0.1);
     samples = check.samples.map((s) => {
+      const override = perSceneAssert[s.sceneIndex] ?? {};
       const sample: SceneSample = {
         sceneIndex: s.sceneIndex,
         type: s.type,
         ...(s.heading !== undefined ? {heading: s.heading} : {}),
         t50s: Math.max(0, Math.min(maxSampleS, s.t50s * scaleRatio)),
+        ...(override.threshold !== undefined ? {threshold: override.threshold} : {}),
+        ...(override.maskRegions !== undefined ? {maskRegions: override.maskRegions} : {}),
       };
       return sample;
     });
     source = `check.json (${sampleDir})`;
   } else {
     const fresh = await samplesFromSpec(specPath, projectRoot, args.filmId, mp4DurationSeconds);
-    samples = fresh.samples;
+    samples = fresh.samples.map((s) => {
+      const override = perSceneAssert[s.sceneIndex] ?? {};
+      return {
+        ...s,
+        ...(override.threshold !== undefined ? {threshold: override.threshold} : {}),
+        ...(override.maskRegions !== undefined ? {maskRegions: override.maskRegions} : {}),
+      };
+    });
     source = 'fresh schedule from spec';
   }
 
@@ -334,6 +395,8 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
     readonly type: string;
     readonly heading?: string;
     readonly diff: number | undefined;
+    readonly threshold: number;
+    readonly maskCount: number;
     readonly status: 'pass' | 'fail' | 'missing-golden' | 'error';
     readonly note?: string;
   }
@@ -344,12 +407,18 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
     const golden = join(filmGoldenDir, name);
     const candidate = join(tmpRoot, name);
 
+    // Per-scene threshold override falls back to the CLI default.
+    const sceneThreshold = s.threshold ?? threshold;
+    const masks = s.maskRegions ?? [];
+
     if (!existsSync(golden)) {
       rows.push({
         sceneIndex: s.sceneIndex,
         type: s.type,
         ...(s.heading !== undefined ? {heading: s.heading} : {}),
         diff: undefined,
+        threshold: sceneThreshold,
+        maskCount: masks.length,
         status: 'missing-golden',
         note: `no golden at ${golden} — re-run with --update`,
       });
@@ -364,6 +433,8 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
         type: s.type,
         ...(s.heading !== undefined ? {heading: s.heading} : {}),
         diff: undefined,
+        threshold: sceneThreshold,
+        maskCount: masks.length,
         status: 'error',
         note: `extract failed: ${(err as Error).message}`,
       });
@@ -379,10 +450,20 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
           type: s.type,
           ...(s.heading !== undefined ? {heading: s.heading} : {}),
           diff: undefined,
+          threshold: sceneThreshold,
+          maskCount: masks.length,
           status: 'error',
           note: `dimension mismatch — golden ${g.width}×${g.height}, candidate ${c.width}×${c.height}`,
         });
         continue;
+      }
+      // Apply spec-declared mask regions identically to both images BEFORE
+      // computing MAE — zeroes match zeroes, so the masked area contributes
+      // exactly zero to the diff regardless of what the rendered pixels
+      // looked like. The mutation is on local buffers; no side effects.
+      for (const region of masks) {
+        applyMask(g.bytes, g.width, g.height, region);
+        applyMask(c.bytes, c.width, c.height, region);
       }
       const d = meanAbsDiff(g.bytes, c.bytes);
       rows.push({
@@ -390,7 +471,9 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
         type: s.type,
         ...(s.heading !== undefined ? {heading: s.heading} : {}),
         diff: d,
-        status: d <= threshold ? 'pass' : 'fail',
+        threshold: sceneThreshold,
+        maskCount: masks.length,
+        status: d <= sceneThreshold ? 'pass' : 'fail',
       });
     } catch (err) {
       rows.push({
@@ -398,6 +481,8 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
         type: s.type,
         ...(s.heading !== undefined ? {heading: s.heading} : {}),
         diff: undefined,
+        threshold: sceneThreshold,
+        maskCount: masks.length,
         status: 'error',
         note: (err as Error).message,
       });
@@ -410,6 +495,8 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
   for (const r of rows) {
     const diffStr =
       r.diff === undefined ? '   —  ' : `${(r.diff * 100).toFixed(2)}%`.padStart(6);
+    const thrStr = `t=${(r.threshold * 100).toFixed(1)}%`;
+    const maskStr = r.maskCount > 0 ? ` mask×${r.maskCount}` : '';
     const mark =
       r.status === 'pass'
         ? green('✓')
@@ -419,7 +506,7 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
             ? yellow('?')
             : red('!');
     log(
-      `  ${mark} scene[${String(r.sceneIndex).padStart(2)}] ${r.type.padEnd(13)} diff=${diffStr}  ${dim(r.heading?.slice(0, 50) ?? '')}`,
+      `  ${mark} scene[${String(r.sceneIndex).padStart(2)}] ${r.type.padEnd(13)} diff=${diffStr} ${dim(thrStr + maskStr)}  ${dim(r.heading?.slice(0, 50) ?? '')}`,
     );
     if (r.note) log(dim(`        ${r.note}`));
   }
@@ -460,11 +547,12 @@ export const runAssert = async (args: AssertArgs): Promise<number> => {
     return 4;
   }
   if (failed.length > 0) {
-    log(red(`✗ visual regression — ${failed.length} scene(s) exceed ${(threshold * 100).toFixed(1)}% threshold`));
+    log(red(`✗ visual regression — ${failed.length} scene(s) exceed their threshold`));
     for (const f of failed) {
       log(
         red(
-          `    scene[${f.sceneIndex}] ${f.type} diff=${((f.diff ?? 0) * 100).toFixed(2)}% — "${f.heading?.slice(0, 60) ?? '(no heading)'}"`,
+          `    scene[${f.sceneIndex}] ${f.type} diff=${((f.diff ?? 0) * 100).toFixed(2)}% ` +
+            `> ${(f.threshold * 100).toFixed(1)}% — "${f.heading?.slice(0, 60) ?? '(no heading)'}"`,
         ),
       );
     }

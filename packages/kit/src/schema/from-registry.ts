@@ -33,6 +33,14 @@ import type {JSONSchema7, JSONSchema7Definition} from 'json-schema';
 
 import type {Engine} from '../engine';
 import type {ScenePlugin} from '../protocols';
+import {
+  STYLE_AUDIENCES,
+  STYLE_DENSITIES,
+  STYLE_EMPHASES,
+  STYLE_MEDIUMS,
+  STYLE_THEMES,
+  STYLE_TONES,
+} from '../types/style';
 
 /**
  * Compute the union film schema from the registered scenes. The pure
@@ -189,18 +197,20 @@ function ttsConfigSchema(): JSONSchema7 {
 }
 
 /**
- * `style` sub-schema — the `RenderStyleInput` shape. Like meta + tts, kept
- * permissive: the style resolver does the deep check.
+ * `style` sub-schema — the `RenderStyleInput` shape. The outer object stays
+ * permissive (tokens / visualization are deep, so the resolver does the
+ * work). The `intent` block is the exception: its keys are a CLOSED enum
+ * (the `StyleIntent` interface) and its values are tiny closed enums each.
+ * Without this closure, a typo like `"tone": "execcutive"` validates clean
+ * and silently no-ops at the resolver — exactly the friction this schema
+ * exists to prevent.
  */
 function styleSchema(): JSONSchema7 {
   return {
     type: 'object',
     properties: {
       preset: {type: 'string'},
-      intent: {
-        type: 'object',
-        additionalProperties: true,
-      },
+      intent: styleIntentSchema(),
       tokens: {
         type: 'object',
         additionalProperties: true,
@@ -211,5 +221,28 @@ function styleSchema(): JSONSchema7 {
       },
     },
     additionalProperties: true,
+  };
+}
+
+/**
+ * The `style.intent` block — a CLOSED object whose keys and values are both
+ * enum-narrowed. `additionalProperties: false` makes typo'd keys ("tonne")
+ * fail validation; each value is also enum-narrowed against its runtime
+ * vocabulary export (`STYLE_TONES`, …). Pulling from the runtime lists
+ * means a new tone added to the type system automatically widens the
+ * schema in lockstep — no two places to update.
+ */
+function styleIntentSchema(): JSONSchema7 {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      tone: {type: 'string', enum: [...STYLE_TONES]},
+      audience: {type: 'string', enum: [...STYLE_AUDIENCES]},
+      medium: {type: 'string', enum: [...STYLE_MEDIUMS]},
+      density: {type: 'string', enum: [...STYLE_DENSITIES]},
+      theme: {type: 'string', enum: [...STYLE_THEMES]},
+      emphasis: {type: 'string', enum: [...STYLE_EMPHASES]},
+    },
   };
 }

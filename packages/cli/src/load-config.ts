@@ -26,12 +26,16 @@ export interface LoadedConfig {
   readonly plugins: ReadonlyArray<Plugin>;
 }
 
-const CONFIG_FILENAMES = [
+/** The filenames the loader will recognise as a docent config. */
+export const CONFIG_FILENAMES = [
   'docent.config.ts',
   'docent.config.tsx',
   'docent.config.js',
   'docent.config.mjs',
 ] as const;
+
+/** How many ancestor directories the loader walks upward from `startDir`. */
+export const CONFIG_SEARCH_ANCESTORS = 12;
 
 /**
  * Search a directory tree upward for the first `docent.config.*` file. Walks
@@ -41,7 +45,7 @@ const CONFIG_FILENAMES = [
  */
 export const findConfigFile = (startDir: string): string | null => {
   let dir = resolve(startDir);
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < CONFIG_SEARCH_ANCESTORS; i++) {
     for (const name of CONFIG_FILENAMES) {
       const p = resolve(dir, name);
       if (existsSync(p)) return p;
@@ -51,6 +55,17 @@ export const findConfigFile = (startDir: string): string | null => {
     dir = parent;
   }
   return null;
+};
+
+/**
+ * Describe the search path the loader will walk from `startDir`. Used by
+ * `docent doctor` to surface "I looked here and found nothing" to a user
+ * who can't tell whether their config was picked up. Pure — does no I/O.
+ */
+export const describeSearchPath = (startDir: string): string => {
+  const exts = CONFIG_FILENAMES.map((n) => n.replace(/^docent\.config\./, '')).join(',');
+  return `searched ${resolve(startDir)}/docent.config.{${exts}} `
+    + `up ${CONFIG_SEARCH_ANCESTORS} ancestors`;
 };
 
 /**

@@ -206,6 +206,23 @@ export interface Scene {
    */
   variant?: SceneVariant;
   /**
+   * Visual-regression overrides — read by `docent assert` to vary the
+   * diff sensitivity scene-by-scene. The CLI `--threshold` flag is a
+   * film-wide default; this knob narrows or widens it for the one scene
+   * that needs different treatment.
+   *
+   * - `threshold` overrides the CLI default for this scene only.
+   *   Recap-style text-heavy scenes are typically tightened to ~0.02;
+   *   stochastic backgrounds (starfields, particles) are loosened.
+   * - `maskRegions` zeroes out rectangles in BOTH the golden and the
+   *   candidate before MAE is computed — the way to assert "everything
+   *   but this random region" cleanly. Coordinates are in golden-image
+   *   pixel space (the same `--compare-width` the differ decodes at).
+   *
+   * @see {@link SceneAssertConfig}
+   */
+  assert?: SceneAssertConfig;
+  /**
    * Beat list. Required only when the scene type actually beats; chrome-only
    * scenes (e.g. `frame`, `recap`) may carry one synthetic beat or none.
    */
@@ -251,6 +268,49 @@ export type SceneArchetype =
  * - `minimal` — small title, soft accent, kicker hidden, fade entrance.
  */
 export type SceneVariant = 'standard' | 'bold' | 'stacked' | 'minimal';
+
+/**
+ * A rectangular region in compare-image pixel space — read by `docent
+ * assert` to zero-out a stochastic patch in both the golden and the
+ * candidate before MAE is computed. Coordinates are in the SAME pixel
+ * space the differ decodes to (the `--compare-width` flag, default 480),
+ * not the rendered 1920x1080.
+ *
+ * Origin is top-left. A region with `x: 0, y: 0, w: 100, h: 100` masks
+ * the top-left 100x100 patch of the compare image.
+ */
+export interface SceneAssertMaskRegion {
+  /** X coordinate, origin top-left. */
+  x: number;
+  /** Y coordinate, origin top-left. */
+  y: number;
+  /** Width in compare-image pixels. */
+  w: number;
+  /** Height in compare-image pixels. */
+  h: number;
+}
+
+/**
+ * Per-scene visual-regression overrides. Read by `docent assert` to vary
+ * sensitivity scene-by-scene.
+ *
+ * @see Scene.assert
+ */
+export interface SceneAssertConfig {
+  /**
+   * Mean abs pixel-diff threshold in [0, 1] for THIS scene. Overrides the
+   * CLI `--threshold` default. Tighter (e.g. 0.02) for text-heavy
+   * scenes; looser (e.g. 0.10) for stochastic backgrounds.
+   */
+  threshold?: number;
+  /**
+   * Rectangles in compare-image pixel space that are zeroed out in BOTH
+   * the golden and the candidate before MAE is computed. Use to mask
+   * regions whose stochastic content (starfields, particle systems,
+   * timestamps) is not under regression control.
+   */
+  maskRegions?: SceneAssertMaskRegion[];
+}
 
 // ----- beats ---------------------------------------------------------------
 
