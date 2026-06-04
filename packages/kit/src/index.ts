@@ -120,6 +120,8 @@ export type {
   FilmTtsConfig,
   FilmTranslationConfig,
   Scene,
+  SceneArchetype,
+  SceneVariant,
   Beat,
   BeatPace,
   BeatShot,
@@ -214,6 +216,21 @@ export {validateSpec} from './frameworks/validate';
 export {depthCheck} from './frameworks/depthcheck';
 export {collectJudgeDimensions} from './frameworks/judge';
 export {computeSchema} from './schema/from-registry';
+
+// ---------- Scene variants (R3 — archetype × visual variant) ---------------
+//
+// The resolver and its overlay token shape. A scene tagged with an
+// `archetype` and/or `variant` is rendered with a small overlay bag
+// carried on `CommonSceneProps.variantTokens`. A scene component reads
+// `variantTokens.titleScale` (etc.) and adjusts its render; a scene
+// that doesn't read them renders the standard treatment.
+
+export type {SceneVariantTokens} from './frameworks/scene-variants';
+export {
+  resolveSceneVariant,
+  STANDARD_VARIANT_TOKENS,
+  ARCHETYPE_NUDGE,
+} from './frameworks/scene-variants';
 
 // ---------- Frame schedule (for render-check and other introspection) --------
 //

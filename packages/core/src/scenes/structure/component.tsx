@@ -58,7 +58,17 @@ export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>>
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const {ts, sceneIndex, sceneCount, style} = common;
+  const {ts, sceneIndex, sceneCount, style, variantTokens} = common;
+  // R3 — variant overlay. Structure reads:
+  //   - `kickerVisible` — pass empty kicker through to SceneFrame when
+  //     the variant (e.g. `minimal`) hides chrome.
+  //   - `titleScale` — applied as a scaling transform on the diagram
+  //     layer so a `bold` variant grows the whole node graph; tags absent
+  //     resolve to scale 1 and the layer is byte-identical.
+  //   - `accentOpacity` — passed through to the connector ink (currently
+  //     baked into the accent at render time; left in the resolved bag
+  //     for future Connector/Card use).
+  const titleScale = variantTokens.titleScale;
   // Aspect-aware STAGE — passed through to nodeBox/cellCenter so the grid
   // scales with the canvas.
   const stage = useStage();
@@ -253,7 +263,7 @@ export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>>
     <SceneFrame
       style={style}
       accentHex={accentHex}
-      kicker={scene.kicker ?? ''}
+      kicker={variantTokens.kickerVisible ? (scene.kicker ?? '') : ''}
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
@@ -262,8 +272,12 @@ export const StructureSceneComponent: React.FC<SceneRenderProps<StructureScene>>
     >
       <AbsoluteFill
         style={{
+          // R3 — composes camera scale with variant titleScale (so a
+          // `bold` variant zooms the whole diagram by ×1.25 in addition
+          // to whatever the camera is doing). transformOrigin is the
+          // top-left so the camera translation arithmetic stays sound.
           transformOrigin: '0 0',
-          transform: `translate(${cam.tx}px, ${cam.ty}px) scale(${cam.scale})`,
+          transform: `translate(${cam.tx}px, ${cam.ty}px) scale(${cam.scale * titleScale})`,
         }}
       >
         {edges.map((e) => (

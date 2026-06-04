@@ -341,8 +341,13 @@ export const BigIdeaSceneComponent: React.FC<SceneRenderProps<BigIdeaSceneSpec>>
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const {ts, sceneIndex, sceneCount, style} = common;
+  const {ts, sceneIndex, sceneCount, style, variantTokens} = common;
   const accentHex = accentOf(style, undefined);
+  // R3 — variant overlay.
+  const titleScale = variantTokens.titleScale;
+  const entranceShape = variantTokens.entranceShape;
+  const entranceFrames = Math.max(1, Math.round((variantTokens.entranceMs / 1000) * fps));
+  const hasVariantTag = scene.variant !== undefined || scene.archetype !== undefined;
   // Aspect-aware width for the centred sentence — at 16:9 stays at 1480.
   const stage = useStage();
   const sentenceMaxW = stage.worldW === 1920 ? 1480 : stage.worldW - 120;
@@ -373,18 +378,35 @@ export const BigIdeaSceneComponent: React.FC<SceneRenderProps<BigIdeaSceneSpec>>
     (statement.length <= 60 ? 78 :
      statement.length <= 90 ? 66 :
      statement.length <= 120 ? 56 :
-     48) * fsScale
+     48) * fsScale * titleScale
   );
 
   // Enter springs — anchor first, sentence beneath. Two staggered springs so
   // the reader's eye lands on the anchor, then drops to the claim. Both ease
   // off well before the long held tail.
-  const anchorEnter = spring({frame: frame - 8, fps, config: {damping: 200, mass: 1.4}});
-  const sentenceEnter = spring({
-    frame: frame - 28,
-    fps,
-    config: {damping: 200, mass: 1.2},
-  });
+  //
+  // R3 — when a variant tag is set, the entrance honours the resolved
+  // shape (snap / fade / translate / spring) and ramp duration. Untagged
+  // scenes keep the v1 byte-equivalent springs above so existing films
+  // don't shift.
+  const variantEnter = (offset: number): number => {
+    const local = frame - offset;
+    if (local <= 0) return 0;
+    if (entranceShape === 'snap') return 1;
+    if (entranceShape === 'spring') {
+      return spring({frame: local, fps, config: {damping: 200, mass: 1.2}});
+    }
+    return interpolate(local, [0, entranceFrames], [0, 1], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    });
+  };
+  const anchorEnter = hasVariantTag
+    ? variantEnter(8)
+    : spring({frame: frame - 8, fps, config: {damping: 200, mass: 1.4}});
+  const sentenceEnter = hasVariantTag
+    ? variantEnter(28)
+    : spring({frame: frame - 28, fps, config: {damping: 200, mass: 1.2}});
 
   const body = (
     <AbsoluteFill
@@ -483,7 +505,7 @@ export const BigIdeaSceneComponent: React.FC<SceneRenderProps<BigIdeaSceneSpec>>
         <SceneFrame
           style={style}
           accentHex={accentHex}
-          kicker={scene.kicker ?? ''}
+          kicker={variantTokens.kickerVisible ? (scene.kicker ?? '') : ''}
           heading={scene.heading}
           sceneIndex={sceneIndex}
           sceneCount={sceneCount}
