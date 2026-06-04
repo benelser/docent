@@ -38,9 +38,19 @@ export interface AudioBedProps {
    * and ducks the bg-music volume for their windows.
    */
   readonly beats: ReadonlyArray<FilmFeatureBeatSlot>;
-  /** Base (un-ducked) volume. Defaults to 0.20. */
+  /**
+   * Base (un-ducked) volume during gaps between narration. Defaults to 0.70 —
+   * the level production-tuned by 250's Founders Trailer where the orchestra
+   * actually carries emotion through the silence between speakers. The old
+   * 0.20 default was too timid for a real cinematic bed.
+   */
   readonly baseVolume?: number;
-  /** Ducked volume while narration is playing. Defaults to 0.08. */
+  /**
+   * Ducked volume while narration is playing. Defaults to 0.06 — the "barely
+   * audible underscore" level that keeps the bed alive without competing
+   * with speech. The 0.08 default was close but the extra 2 points of duck
+   * make the speech sit forward instead of blurring with the music.
+   */
   readonly duckedVolume?: number;
   /**
    * Linear ramp width (in frames) on each side of a narration window.
@@ -86,13 +96,16 @@ export const AudioBed: React.FC<AudioBedProps> = ({
   fps,
   totalFrames,
   beats,
-  baseVolume = 0.2,
-  duckedVolume = 0.08,
+  baseVolume = 0.7,
+  duckedVolume = 0.06,
   rampFrames,
 }) => {
-  // Default ramp: ~200ms each side at the project fps. Bounded so a
-  // weirdly-low fps doesn't collapse the ramp to 0.
-  const ramp = Math.max(2, rampFrames ?? Math.round(fps * 0.2));
+  // Default ramp: ~500ms each side at the project fps (cinema-grade
+  // smooth-and-asymmetric, per 250's Founders Trailer mix engineering).
+  // 200ms ramps (the old default) registered as too snappy and lost the
+  // "music is breathing under speech" feel. Bounded so a weirdly-low fps
+  // doesn't collapse the ramp to 0.
+  const ramp = Math.max(2, rampFrames ?? Math.round(fps * 0.5));
 
   const windows = useMemo(() => narrationWindows(beats), [beats]);
 
