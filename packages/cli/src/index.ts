@@ -12,6 +12,7 @@
 
 import {runAssert} from './commands/assert';
 import {runBuild} from './commands/build';
+import {runCi} from './commands/ci';
 import {runDepthcheck} from './commands/depthcheck';
 import {runDoctor} from './commands/doctor';
 import {runGrammarCheck} from './commands/grammar-check';
@@ -93,6 +94,15 @@ COMMANDS
                           contract; surfaces missing cues, empty signals,
                           bad clusters, registry conflicts. Exit 6 on error.
   hermetic                Render the 4 gallery fixtures end to end.
+  ci                      Hermetic /tmp smoke against the PUBLISHED package
+                          (or worktree via --local). The dogfood gate — runs
+                          \`bun add @bjelser/*@latest\` into an empty project,
+                          then walks init → validate → depthcheck → build →
+                          assert → translate → portrait. Catches the bug
+                          classes that worktree smoke tests cannot see
+                          (webpack-bundling errors, missing published files,
+                          peer-dep mismatches). Exit 2 on any failure;
+                          tmpdir kept on red for inspection.
   help                    Print this usage and exit.
   help <scene-type>       Surface the schema docs for a registered scene
                           plugin (description, required + optional fields,
@@ -134,6 +144,17 @@ ASSERT FLAGS
   --threshold <n>      Mean abs pixel diff threshold in [0, 1]. Default 0.05.
   --compare-width <n>  Width (px) frames are decoded to for diffing. Default 480.
   --golden-dir <p>     Override the goldens root. Default <project>/golden.
+
+CI FLAGS
+  --local <repo>       Path to a sibling docent repo. After "bun add", overlay
+                       <repo>/packages/{cli,core,kit}/src + package.json onto
+                       node_modules/@bjelser/{cli,core,kit}/. The pre-push
+                       contributor smoke — tests your unpublished changes
+                       against a hermetic install.
+  --versions <pins>    Pin versions instead of @latest. Form:
+                       "cli=3.0.12,core=3.0.11,kit=3.0.4".
+  --skip-portrait      Skip the 9:16 portrait variant step.
+  --keep               Keep the tmpdir even on green (for inspection).
 
 EXAMPLES
   docent build linear-algebra --scale 0.5
@@ -457,6 +478,15 @@ const main = async (): Promise<number> => {
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
         : {}),
+    });
+  }
+
+  if (command === 'ci') {
+    return runCi({
+      ...(str(flags.local) ? {local: str(flags.local)!} : {}),
+      ...(str(flags.versions) ? {versions: str(flags.versions)!} : {}),
+      ...(flags['skip-portrait'] ? {skipPortrait: true} : {}),
+      ...(flags.keep ? {keep: true} : {}),
     });
   }
 
