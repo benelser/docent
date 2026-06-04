@@ -43,6 +43,8 @@ const AudioBedOverlay: React.FC<FilmFeatureProps> = ({
   totalFrames,
   fps,
   beats,
+  wordTimings,
+  sceneClusters,
 }) => {
   const musicUrl = typeof meta.music === 'string' ? meta.music.trim() : '';
   if (!musicUrl) return null;
@@ -52,6 +54,10 @@ const AudioBedOverlay: React.FC<FilmFeatureProps> = ({
       fps={fps}
       totalFrames={totalFrames}
       beats={beats}
+      // R8 opt-ins: pass through unconditionally. The component
+      // gracefully degrades when either is absent / empty.
+      {...(wordTimings ? {wordTimings} : {})}
+      {...(sceneClusters ? {sceneClusters} : {})}
     />
   );
 };

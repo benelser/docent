@@ -26,6 +26,8 @@ import type {
   BeatTimelineSlot,
   CommonSceneProps,
   FilmFeatureBeatSlot,
+  FilmFeatureSceneClusterSlot,
+  FilmFeatureWordTimingSlot,
   ScenePlugin,
   TimelineSlot,
 } from '../protocols';
@@ -194,7 +196,30 @@ export const DocentFilm: React.FC<DocentFilmInternalProps> = ({
   // features (the audio-bed plugin reads this to detect narration windows
   // for ducking).
   const filmBeats: FilmFeatureBeatSlot[] = [];
+  // R8: parallel flat list of per-beat word timings, surfaced from the
+  // inlined TtsAudioMap. Indexed by `(sceneIndex, beatIndex)`; the
+  // music-bed feature reads it to compose per-WORD ducks rather than
+  // per-beat windows. Absent or empty `words[]` ⇒ no entry pushed for
+  // that beat ⇒ the feature falls through to per-beat behaviour.
+  const filmWordTimings: FilmFeatureWordTimingSlot[] = [];
+  // R8: parallel per-scene cluster slot. Emits one entry per scene
+  // (regardless of whether a plugin is registered) so a downstream
+  // feature can rely on coverage; `cluster` is the plugin's tag when
+  // resolvable, `null` otherwise (chrome scenes OR unknown sceneType).
+  const filmSceneClusters: FilmFeatureSceneClusterSlot[] = [];
   for (const entry of schedule.scenes) {
+    const scenePlugin = engine.scenes.get(entry.scene.type);
+    filmSceneClusters.push({
+      sceneIndex: entry.sceneIndex,
+      sceneType: entry.scene.type,
+      startFrame: entry.startFrame,
+      endFrame: entry.endFrame,
+      // Plugin's CognitiveCluster tag (`null` for chrome scenes). When
+      // the scene type isn't registered, we still emit the slot but
+      // leave the cluster `null` — a feature that branches on cluster
+      // gracefully degrades to its flat path.
+      cluster: scenePlugin?.cluster ?? null,
+    });
     for (const b of entry.beats) {
       filmBeats.push({
         sceneIndex: entry.sceneIndex,
@@ -209,6 +234,25 @@ export const DocentFilm: React.FC<DocentFilmInternalProps> = ({
           ? {audio: b.audio}
           : {}),
       });
+      // Surface the per-beat word timings from the inlined TtsAudioMap
+      // when the provider populated them. The shape on the map is
+      // `{file, seconds?, words?}` — when `words` is missing or empty
+      // we skip the slot (R5's gracefully-degraded baseline).
+      const audioEntry = ttsAudio?.[`${entry.sceneIndex}-${b.beatIndex}`];
+      const words = audioEntry?.words;
+      if (words && words.length > 0) {
+        filmWordTimings.push({
+          sceneIndex: entry.sceneIndex,
+          beatIndex: b.beatIndex,
+          // Already frame-quantised + clip-relative — the same shape
+          // a karaoke consumer reads via useBeatWordTimings.
+          words: words.map((w) => ({
+            text: w.text,
+            startFrame: w.startFrame,
+            endFrame: w.endFrame,
+          })),
+        });
+      }
     }
   }
   const totalFrames = schedule.totalFrames;
@@ -227,6 +271,12 @@ export const DocentFilm: React.FC<DocentFilmInternalProps> = ({
             fps={fps}
             style={resolvedStyle}
             beats={filmBeats}
+            // R8: word timings + scene clusters are opt-in. Pass them
+            // unconditionally; a feature that doesn't read them simply
+            // ignores them. When `filmWordTimings` is empty the
+            // music-bed feature falls through to per-beat behaviour.
+            wordTimings={filmWordTimings}
+            sceneClusters={filmSceneClusters}
           />
         );
       })}

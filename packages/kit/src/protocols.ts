@@ -34,6 +34,7 @@ import type {
   TtsCapabilities,
   TtsProvider,
   TtsProviderPlugin,
+  WordTiming,
 } from './types/tts';
 import type {
   TranslationCapabilities,
@@ -1141,6 +1142,36 @@ export interface FilmFeatureProps {
    * caption windows, chapter markers) in one pass.
    */
   readonly beats: ReadonlyArray<FilmFeatureBeatSlot>;
+  /**
+   * R8: per-beat frame-quantised word timings, when the TTS provider
+   * populated them and the CLI inlined them into the render entry. A
+   * feature that needs per-word reactivity (music-bed ducking, captions
+   * highlight) reads this rather than the per-beat windows on
+   * {@link beats}. Absent (or no entry for a given beat) means "fall
+   * through to per-beat behaviour" — the gracefully-degraded baseline
+   * that keeps existing audio-bed users unaffected.
+   *
+   * `words[]` frame coordinates are CLIP-RELATIVE (0 == clip start) —
+   * the same shape the karaoke hook surfaces. A consumer wanting
+   * film-absolute frames adds the matching slot's
+   * {@link FilmFeatureBeatSlot.startFrame}.
+   */
+  readonly wordTimings?: ReadonlyArray<FilmFeatureWordTimingSlot>;
+  /**
+   * R8: per-scene window + cluster tag, projected to absolute film
+   * frames. A music-bed feature reads this to compose cluster-aware
+   * mix gestures (a `narrative` big-idea swell in the gap after a
+   * `categorization` tension scene; flat ducking for `comparison` or
+   * `flow` scenes). Carries the scene type AND the
+   * {@link CognitiveCluster} tag so a feature can branch on the
+   * native taxonomy or on the scene-type name.
+   *
+   * Derived from the engine's scene registry at composition time —
+   * the spec author never declares it. Absent when no scene plugin is
+   * registered for the spec's scene types (the schedule still renders
+   * but cluster-aware gestures gracefully degrade to flat behaviour).
+   */
+  readonly sceneClusters?: ReadonlyArray<FilmFeatureSceneClusterSlot>;
 }
 
 /**
@@ -1158,6 +1189,61 @@ export interface FilmFeatureBeatSlot {
   readonly frames: number;
   /** Path to a persisted per-beat audio clip (absent until TTS runs). */
   readonly audio?: string;
+}
+
+/**
+ * R8: one beat's frame-quantised word timings, addressed by
+ * `(sceneIndex, beatIndex)`. Lives on {@link FilmFeatureProps.wordTimings}
+ * — the music-bed feature reads it to duck per-word rather than
+ * per-beat (the duck onset aligns to the actual first-word start, not
+ * the beat window start).
+ *
+ * `words[].startFrame` / `endFrame` are CLIP-RELATIVE — to translate
+ * to film-absolute frames add the matching
+ * {@link FilmFeatureBeatSlot.startFrame}.
+ */
+export interface FilmFeatureWordTimingSlot {
+  /** 0-based scene index in the film. */
+  readonly sceneIndex: number;
+  /** 0-based beat index within the scene. */
+  readonly beatIndex: number;
+  /** Frame-quantised word timings (clip-relative). */
+  readonly words: ReadonlyArray<WordTiming>;
+}
+
+/**
+ * R8: one scene's window + cluster tag, in absolute film-frame
+ * coordinates. Lives on {@link FilmFeatureProps.sceneClusters} — a
+ * feature that mixes by cognitive cluster (the audio-bed's
+ * climax-swell logic) reads this to find boundaries between
+ * `categorization` / `flow` / `narrative` etc.
+ *
+ * `cluster` mirrors the {@link ScenePlugin.cluster} field of the
+ * scene's registered plugin. `null` is the chrome-only tag
+ * (`frame` / `recap`) — features should treat it as "no cluster".
+ *
+ * `sceneType` carries the scene's registered `sceneType` discriminator
+ * (`'tension'`, `'walkthrough'`, `'big-idea'`, …) so a feature can
+ * branch on the scene-type name AS WELL AS the cognitive cluster.
+ * Useful when one cluster spans multiple semantic moves (e.g.
+ * `narrative` covers both `big-idea` and `provocation`, but a
+ * music-bed wants the swell only on `big-idea`).
+ */
+export interface FilmFeatureSceneClusterSlot {
+  /** 0-based scene index in the film. */
+  readonly sceneIndex: number;
+  /** Scene's `sceneType` discriminator. */
+  readonly sceneType: string;
+  /** Absolute film frame the scene starts at. */
+  readonly startFrame: number;
+  /** Absolute film frame the scene ends at (exclusive). */
+  readonly endFrame: number;
+  /**
+   * Scene's {@link CognitiveCluster} tag — mirrors
+   * {@link ScenePlugin.cluster}. `null` is the chrome-only tag
+   * (`frame` / `recap`).
+   */
+  readonly cluster: CognitiveCluster | null;
 }
 
 /**
