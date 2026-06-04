@@ -106,6 +106,46 @@ export interface FilmMeta {
    * @see packages/core/src/features/audio-bed for the consumer.
    */
   music?: string;
+  /**
+   * **R10.4 — color space management.** The container-level color
+   * metadata stamped on the rendered MP4 after Remotion writes it. The
+   * kit does NOT change pixel colorimetry; the renderer still draws in
+   * sRGB primaries with sRGB transfer. What this knob controls is the
+   * tag inside the MP4's metadata block — what every downstream tool
+   * believes the file is. Pro workflows (Resolve, Baselight) refuse to
+   * trust an untagged file and ask the colorist to re-assign; streaming
+   * platforms transcode with the wrong primaries assumed if the tag
+   * disagrees with the stream. This field makes the tag explicit.
+   *
+   * Values:
+   *  - `'srgb'` (default) — full-range sRGB, transfer `iec61966-2-1`.
+   *    The consumer-tier ship — same as the current behavior.
+   *  - `'rec709'` — SDR HD broadcast / streaming. Same primaries as
+   *    sRGB but transfer `bt709`. The most common SDR standard.
+   *  - `'rec2020'` — wide-gamut for HDR / 4K UHD delivery. With
+   *    {@link hdr} false: transfer `bt2020-10`. With {@link hdr} true:
+   *    transfer `smpte2084` (PQ) and HDR10 mastering metadata.
+   *  - `'p3'` — DCI-P3 theatrical. Primaries `smpte432`, sRGB transfer.
+   *
+   * Honesty note: this is a **metadata-layer** tag only for v1. The
+   * actual gamut of the rendered pixels is still sRGB. Best for pro
+   * workflows where the colorist will re-conform anyway, and for
+   * streaming platforms that want the right tag to skip a wrong-primaries
+   * transcode.
+   *
+   * @see packages/kit/src/cascade/render-stage.ts for the ffmpeg tag pass.
+   */
+  colorSpace?: 'srgb' | 'rec709' | 'rec2020' | 'p3';
+  /**
+   * **R10.4 — HDR10 metadata.** When true AND {@link colorSpace} is
+   * `'rec2020'`, the render stage re-encodes the file with x265 + HDR10
+   * params: PQ transfer (`smpte2084`), limited range (`tv`), and a
+   * mastering-display block + max_cll. Ignored for any other color
+   * space (HDR10 is a Rec.2020 concept).
+   *
+   * Default `false`.
+   */
+  hdr?: boolean;
 }
 
 /**
