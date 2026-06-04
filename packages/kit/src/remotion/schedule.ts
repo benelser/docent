@@ -81,11 +81,22 @@ export interface BeatSchedule {
  * Shape of the per-beat audio map a caller can thread into the schedule.
  * Indexed by `<sceneIndex>-<beatIndex>` so a beat's clip is recoverable
  * even when `Beat.id` is absent.
+ *
+ * R5: each entry MAY carry a `words[]` array (frame-quantised word
+ * timings). Inlined into the entry script by the CLI's render-entry
+ * generator from the persisted TTS manifest. Consumers reach for this
+ * via {@link useBeatWordTimings}; absence is the gracefully-degraded
+ * baseline.
  */
 export interface TtsAudioMap {
   readonly [key: `${number}-${number}`]: {
     readonly file: string;
     readonly seconds?: number;
+    readonly words?: ReadonlyArray<{
+      readonly text: string;
+      readonly startFrame: number;
+      readonly endFrame: number;
+    }>;
   };
 }
 

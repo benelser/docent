@@ -45,6 +45,8 @@ import type {
   TtsSynthesisOptions,
   TtsSynthesisResult,
   TtsBeatMetrics,
+  WordAlignment,
+  WordTiming,
 } from '../types/tts';
 import {TtsProviderError} from '../types/tts';
 
@@ -235,7 +237,25 @@ export interface TtsPersistedManifest {
    * is the authoritative cache key; this is here for debuggability.
    */
   readonly provider?: TtsManifestProvider;
+  /**
+   * Manifest shape version. Bumped when an incompatible field is added
+   * or moved. R5 introduces `version: 2` to carry per-beat frame-quantised
+   * `words[]`. A manifest without `version` (or with `version < 2`) is
+   * treated as legacy by the render-side hook — it MAY be reused for
+   * audio playback but its absence of word timings forces karaoke
+   * consumers to fall through to their static path.
+   */
+  readonly version?: number;
+  /**
+   * Frame rate the per-beat `words[].startFrame/endFrame` are expressed
+   * in. Recorded so a future render at a different fps can detect the
+   * mismatch and re-quantise from ms (when surfaced by the provider).
+   */
+  readonly fps?: number;
 }
+
+/** Current manifest version. Bumped on incompatible additions. */
+export const TTS_MANIFEST_VERSION = 2;
 
 /**
  * Provider descriptor recorded on the manifest. Mirrors the inputs to
@@ -261,7 +281,38 @@ export interface TtsPersistedBeat {
    * missing hash as a miss and re-synthesizes.
    */
   readonly contentHash?: string;
+  /**
+   * R5: frame-quantised word timings. Persisted at TTS time so the render
+   * side never has to recompute ms → frames. Absent when the provider
+   * supplied no word-level alignment — downstream karaoke consumers fall
+   * through to their static path. The frames are clip-relative (0 == clip
+   * start), at the film's render fps recorded on the manifest.
+   */
+  readonly words?: ReadonlyArray<WordTiming>;
 }
+
+/**
+ * Convert a provider's ms-based word alignment into the frame-quantised
+ * shape persisted on the manifest. Pure — exposed for tests + the render-
+ * side migration path.
+ */
+export const wordsToFrames = (
+  words: ReadonlyArray<WordAlignment>,
+  fps: number,
+): WordTiming[] => {
+  if (!fps || fps <= 0) return [];
+  const out: WordTiming[] = [];
+  for (const w of words) {
+    if (!w || typeof w.text !== 'string' || w.text.length === 0) continue;
+    const startFrame = Math.max(0, Math.round((w.startMs / 1000) * fps));
+    const endFrame = Math.max(
+      startFrame + 1,
+      Math.round((w.endMs / 1000) * fps),
+    );
+    out.push({text: w.text, startFrame, endFrame});
+  }
+  return out;
+};
 
 /**
  * Run the TTS stage over a film spec. Returns the manifest; throws a
@@ -337,6 +388,17 @@ export const runTtsStage = async (
       `failed to initialize — ${e instanceof Error ? e.message : String(e)}`,
     );
   }
+
+  // R5: resolve the film's fps so we can quantise provider-reported ms-based
+  // word alignments into frame-based `WordTiming`s at persistence time.
+  // Render-side consumers (karaoke-text, R8 music choreography) read frames
+  // only — never ms — so the conversion lives at the boundary.
+  const metaAny = spec.meta as unknown as {
+    fps?: number;
+    resolution?: {fps?: number};
+  };
+  const fps =
+    metaAny.resolution?.fps ?? metaAny.fps ?? 30;
 
   // Persistence target — when both supplied, the stage writes per-beat
   // audio bytes + a per-film manifest. Done outside the loop so a single
@@ -442,6 +504,10 @@ export const runTtsStage = async (
                 alignmentSource: 'none',
               };
               const fileRel = priorBeat.file;
+              // R5: preserve persisted word timings on the cache-hit path.
+              // The audio bytes are byte-identical (same content hash) so
+              // the prior frame-quantised words are still correct.
+              const priorWords = priorBeat.words;
               const persistedRow: TtsPersistedBeat = {
                 sceneIndex,
                 beatIndex,
@@ -450,6 +516,9 @@ export const runTtsStage = async (
                 mediaType: priorBeat.mediaType,
                 contentHash: wantHash,
                 ...(beat.id !== undefined ? {beatId: beat.id} : {}),
+                ...(priorWords && priorWords.length > 0
+                  ? {words: priorWords}
+                  : {}),
               };
               persisted[slot] = persistedRow;
               const row: TtsBeatResult = {
@@ -498,6 +567,20 @@ export const runTtsStage = async (
         }
         const wpm = m?.wpm ?? null;
 
+        // R5: quantise the provider's ms-based word timing into frames.
+        // Prefer the canonical `words` slot, fall back to the legacy
+        // `alignment` slot (mirrored shape). Quantising at persist-time
+        // means render-side consumers never have to know about ms.
+        const providerWords: ReadonlyArray<WordAlignment> | undefined =
+          result.words && result.words.length > 0
+            ? result.words
+            : result.alignment.length > 0
+              ? result.alignment
+              : undefined;
+        const wordTimings: WordTiming[] = providerWords
+          ? wordsToFrames(providerWords, fps)
+          : [];
+
         // Persist the bytes if we have a destination. Filename uses
         // sceneIndex/beatIndex so it's stable even when `Beat.id` is absent.
         let fileRel: string | undefined;
@@ -515,6 +598,7 @@ export const runTtsStage = async (
             mediaType: result.mediaType,
             contentHash: wantHash,
             ...(beat.id !== undefined ? {beatId: beat.id} : {}),
+            ...(wordTimings.length > 0 ? {words: wordTimings} : {}),
           };
           persisted[slot] = persistedRow;
         }
@@ -562,6 +646,13 @@ export const runTtsStage = async (
       totalSeconds: Number(totalSeconds.toFixed(3)),
       beats: persisted,
       provider: providerDescriptor,
+      // R5: bump manifest version + record the fps the per-beat
+      // `words[].startFrame/endFrame` were quantised against. A render at a
+      // different fps re-runs the TTS stage (the orchestrator already
+      // re-hashes by content) and a legacy manifest without a version is
+      // recognized by the render-side hook.
+      version: TTS_MANIFEST_VERSION,
+      fps,
     };
     manifestPath = join(audioDirAbs, 'manifest.json');
     const tmp = `${manifestPath}.tmp`;

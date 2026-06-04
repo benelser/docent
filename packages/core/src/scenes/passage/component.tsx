@@ -26,9 +26,10 @@
 
 import React from 'react';
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import type {Beat, ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
+import type {Beat, ResolvedStyle, SceneRenderProps, WordTiming} from '@bjelser/kit';
+import {useBeatWordTimings} from '@bjelser/kit';
 
-import {FittedText, Narration, SceneFrame, activeBeatIndex, glow} from '../../_shared';
+import {FittedText, KaraokeText, Narration, SceneFrame, activeBeatIndex, glow} from '../../_shared';
 import type {PassageMark, PassageScene as PassageSceneSpec} from './validate';
 
 const accentOf = (style: ResolvedStyle, key?: string): string => {
@@ -124,6 +125,19 @@ export const PassageSceneComponent: React.FC<SceneRenderProps<PassageSceneSpec>>
 
   const active = activeBeatIndex(ts.beats, frame);
   const beat: Beat | undefined = ts.beats[active]?.beat;
+  // R5: word-level timing IR. When the TTS stage persisted per-word
+  // timings for the active beat, render the prose as karaoke-style words
+  // (per-word color/opacity sweep in lock-step with the speaker). When
+  // the active provider supplies no word timings, fall through to the
+  // existing static-text path — no regression for films whose providers
+  // declared `nativeAlignment: 'none'` (and whose users opted out of the
+  // estimator).
+  const activeBeatStartFrame = ts.beats[active]?.startFrame ?? 0;
+  const beatWords: ReadonlyArray<WordTiming> | null = useBeatWordTimings(
+    sceneIndex,
+    active >= 0 ? active : 0,
+  );
+  const karaokeOn = !!beatWords && beatWords.length > 0;
   // `focus` narrows attention to a subset of the live marks; the rest
   // dim.
   const focusIds = new Set(focusList(beat));
@@ -208,37 +222,81 @@ export const PassageSceneComponent: React.FC<SceneRenderProps<PassageSceneSpec>>
               whiteSpace: 'pre-wrap',
             }}
           >
-            {runs.map((run, i) => {
-              if (run.markId === null) {
-                return <span key={i}>{run.text}</span>;
-              }
-              const st = markState(run.markId);
-              // Hidden marks render as plain, un-highlighted text.
-              if (st === 'hidden') return <span key={i}>{run.text}</span>;
-              const lit = st === 'focus' || st === 'live';
-              return (
-                <span
-                  key={i}
-                  style={{
-                    background: lit
-                      ? glow(accentHex, st === 'focus' ? 0.26 : 0.16)
-                      : glow(accentHex, 0.06),
-                    color: lit ? ink.hi : ink.mid,
-                    borderBottom: `2.5px solid ${
-                      lit ? accentHex : glow(accentHex, 0.3)
-                    }`,
-                    borderRadius: 3,
-                    padding: '1px 3px',
-                    boxShadow:
-                      st === 'focus'
-                        ? `0 0 22px -6px ${glow(accentHex, 0.7)}`
-                        : 'none',
-                  }}
-                >
-                  {run.text}
-                </span>
-              );
-            })}
+            {karaokeOn ? (
+              // R5: karaoke render — every word in the active beat's
+              // narration gets a per-word color sweep on its
+              // [startFrame, endFrame). The prose body is replaced by
+              // an accent-glowed karaoke panel; past words hold the
+              // accent, future words sit at `ink.faint`. Browser-
+              // safe; no node imports. The accent wash + heavier
+              // panel chrome are what distinguishes this render from
+              // the static-marks render — visibly diff'd in the R5
+              // smoke (mean-abs-pixel-diff > 25% target).
+              <div
+                style={{
+                  background: glow(accentHex, 0.55),
+                  border: `4px solid ${accentHex}`,
+                  padding: '32px 36px',
+                  borderRadius: 14,
+                  boxShadow: `0 0 90px -8px ${glow(accentHex, 0.9)}, inset 0 0 60px ${glow(accentHex, 0.18)}`,
+                  minHeight: lineH * 5,
+                }}
+              >
+                <KaraokeText
+                  words={beatWords!}
+                  clipStartFrame={activeBeatStartFrame}
+                  dimColor={ink.faint}
+                  accentColor={accentHex}
+                  underlineActive
+                  style={{whiteSpace: 'pre-wrap', fontSize: fontSize * 1.15}}
+                  renderWord={(w, color, opacity) => (
+                    <span
+                      style={{
+                        color,
+                        opacity,
+                        transition: 'color 60ms linear',
+                        textShadow: `0 0 28px ${glow(accentHex, 0.85)}`,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {w.text}
+                    </span>
+                  )}
+                />
+              </div>
+            ) : (
+              runs.map((run, i) => {
+                if (run.markId === null) {
+                  return <span key={i}>{run.text}</span>;
+                }
+                const st = markState(run.markId);
+                // Hidden marks render as plain, un-highlighted text.
+                if (st === 'hidden') return <span key={i}>{run.text}</span>;
+                const lit = st === 'focus' || st === 'live';
+                return (
+                  <span
+                    key={i}
+                    style={{
+                      background: lit
+                        ? glow(accentHex, st === 'focus' ? 0.26 : 0.16)
+                        : glow(accentHex, 0.06),
+                      color: lit ? ink.hi : ink.mid,
+                      borderBottom: `2.5px solid ${
+                        lit ? accentHex : glow(accentHex, 0.3)
+                      }`,
+                      borderRadius: 3,
+                      padding: '1px 3px',
+                      boxShadow:
+                        st === 'focus'
+                          ? `0 0 22px -6px ${glow(accentHex, 0.7)}`
+                          : 'none',
+                    }}
+                  >
+                    {run.text}
+                  </span>
+                );
+              })
+            )}
           </div>
         </div>
 

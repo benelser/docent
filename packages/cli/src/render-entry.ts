@@ -143,9 +143,15 @@ export const generateRenderEntry = async (
 const userPlugins = Array.isArray(userConfig?.plugins) ? userConfig.plugins : [];`
     : `const userPlugins: any[] = [];`;
 
-  // Inline the per-film tts manifest's `{<sceneIdx>-<beatIdx>: {file, seconds}}`
-  // map. Read here at generation time so the entry is a fully static module
-  // (Remotion's webpack bundler doesn't need filesystem I/O at render time).
+  // Inline the per-film tts manifest's
+  // `{<sceneIdx>-<beatIdx>: {file, seconds, words}}` map. Read at
+  // generation time so the entry is a fully static module (Remotion's
+  // webpack bundler doesn't need filesystem I/O at render time).
+  //
+  // R5: `words` is the frame-quantised per-word IR (`{text, startFrame,
+  // endFrame}`). Only present when the active TTS provider supplied word
+  // timings — passage karaoke and R8 music choreography read this via
+  // `useBeatWordTimings`. Absence is the gracefully-degraded baseline.
   let ttsAudioLiteral = 'undefined';
   if (opts.publicDir) {
     const manifestPath = join(
@@ -159,17 +165,49 @@ const userPlugins = Array.isArray(userConfig?.plugins) ? userConfig.plugins : []
         const raw = JSON.parse(readFileSync(manifestPath, 'utf-8')) as {
           beats?: Record<
             string,
-            {file?: string; seconds?: number} | undefined
+            {
+              file?: string;
+              seconds?: number;
+              words?: Array<{text?: string; startFrame?: number; endFrame?: number}>;
+            } | undefined
           >;
         };
-        const audioMap: Record<string, {file: string; seconds: number}> = {};
+        type AudioEntry = {
+          file: string;
+          seconds: number;
+          words?: Array<{text: string; startFrame: number; endFrame: number}>;
+        };
+        const audioMap: Record<string, AudioEntry> = {};
         const beatsObj = raw.beats ?? {};
         for (const [key, val] of Object.entries(beatsObj)) {
           if (val && typeof val.file === 'string') {
-            audioMap[key] = {
+            const entry: AudioEntry = {
               file: val.file,
               seconds: typeof val.seconds === 'number' ? val.seconds : 0,
             };
+            if (Array.isArray(val.words) && val.words.length > 0) {
+              const cleanWords: Array<{
+                text: string;
+                startFrame: number;
+                endFrame: number;
+              }> = [];
+              for (const w of val.words) {
+                if (
+                  w &&
+                  typeof w.text === 'string' &&
+                  typeof w.startFrame === 'number' &&
+                  typeof w.endFrame === 'number'
+                ) {
+                  cleanWords.push({
+                    text: w.text,
+                    startFrame: w.startFrame,
+                    endFrame: w.endFrame,
+                  });
+                }
+              }
+              if (cleanWords.length > 0) entry.words = cleanWords;
+            }
+            audioMap[key] = entry;
           }
         }
         if (Object.keys(audioMap).length > 0) {

@@ -43,6 +43,7 @@ import type {
 } from '@bjelser/kit';
 import {TtsProviderError} from '@bjelser/kit';
 import {trimSilence, encodeWav} from './silence-trim';
+import {kokoroWordEstimator} from './word-estimator';
 
 export const KOKORO_CAPABILITIES: TtsCapabilities = {
   nativeAlignment: 'none',
@@ -149,12 +150,25 @@ class KokoroProvider implements TtsProvider {
     const wpm = clipSeconds > 0 ? (wordCount / clipSeconds) * 60.0 : 0;
 
     const audio = encodeWav(trimmed, actualSampleRate);
+    // R5: estimate word boundaries from the clip duration. Kokoro is
+    // local + native-alignment-free; the estimator splits the spoken
+    // text into syllable-weighted slots so the karaoke-style reveal has
+    // a deterministic IR to consume. The `DOCENT_TTS_NO_WORDS=1` escape
+    // hatch produces a `words: undefined` result so the smoke test can
+    // measure the no-karaoke baseline.
+    const wantWords = process.env.DOCENT_TTS_NO_WORDS !== '1';
+    const estimated = wantWords
+      ? kokoroWordEstimator(text, Math.round(clipSeconds * 1000), {
+          leadingSilenceMs: leadingMsPost,
+        })
+      : [];
     return {
       audio,
       mediaType: 'audio/wav',
       durationMs: Math.round(clipSeconds * 1000),
-      alignment: [],
-      alignmentSource: 'none',
+      alignment: estimated,
+      alignmentSource: estimated.length > 0 ? 'aligner' : 'none',
+      ...(estimated.length > 0 ? {words: estimated} : {}),
       raw,
       metrics: {
         clipSeconds: Number(clipSeconds.toFixed(3)),

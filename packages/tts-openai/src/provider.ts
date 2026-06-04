@@ -127,6 +127,14 @@ class OpenAIProvider implements TtsProvider {
 
     // OpenAI does not emit a duration header. We pass 0 — the cascade can
     // re-probe with ffprobe if it needs an exact value.
+    //
+    // R5: word-level timings. The base `tts-1` / `tts-1-hd` endpoints do
+    // NOT return alignment, and the cost of a per-word fallback synth
+    // is prohibitive (N+1 API calls, no shared model state). We leave
+    // `words` undefined — downstream features that consume R5 word IR
+    // (passage karaoke reveal) gracefully fall through to their static
+    // path. A future revision can flip on a `gpt-4o-mini-tts` capability
+    // path once OpenAI exposes native alignment on the public API.
     return {
       audio,
       mediaType,

@@ -90,6 +90,7 @@ export type {
   TtsBeatMetrics,
   TtsVoice,
   WordAlignment,
+  WordTiming,
 } from './types/tts';
 
 export {TtsProviderError} from './types/tts';
@@ -264,3 +265,15 @@ export {
 } from './remotion/dimensions';
 
 export type {StageRect} from './remotion/dimensions';
+
+// ---------- R5 — word-level timing IR (render-side hook) -------------------
+//
+// `useBeatWordTimings(sceneIndex, beatIndex)` surfaces the per-beat
+// frame-quantised word timings inlined by the CLI's render-entry generator
+// from the persisted TTS manifest. A scene component reads this to drive
+// karaoke-style reveal; absence is the gracefully-degraded baseline.
+
+export {
+  useBeatWordTimings,
+  TtsAudioMapContext,
+} from './remotion/word-timings';

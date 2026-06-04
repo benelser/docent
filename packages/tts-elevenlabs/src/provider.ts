@@ -167,6 +167,12 @@ class ElevenLabsProvider implements TtsProvider {
       mediaType: 'audio/mpeg',
       durationMs,
       alignment,
+      // R5: mirror the alignment array into the canonical `words` slot —
+      // ElevenLabs is the killer-app provider for word-level timing IR,
+      // surfaced natively via `convertWithTimestamps`. Downstream features
+      // (passage karaoke reveal, R8 music choreography, R9 prompt) read
+      // `words` first; `alignment` stays populated for backwards-compat.
+      ...(alignment.length > 0 ? {words: alignment} : {}),
       alignmentSource: alignment.length > 0 ? 'native' : 'none',
       raw: response,
     };
