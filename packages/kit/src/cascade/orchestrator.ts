@@ -273,6 +273,10 @@ export const runCascade = async (
     // picks the right voice for the target language without requiring
     // the author to edit `meta.voice`.
     if (opts.voice !== undefined) stageOpts.voice = opts.voice;
+    // R1: content-hash cache. Default ON; `--no-tts-cache` sets useTtsCache
+    // to false on RenderOptions, which propagates to the stage as
+    // `useCache: false` to force a full re-synth.
+    if (opts.useTtsCache !== undefined) stageOpts.useCache = opts.useTtsCache;
     ttsManifest = await runTtsStage(spec, engine, stageOpts);
     const seconds = (performance.now() - t0) / 1000;
     stages.push({

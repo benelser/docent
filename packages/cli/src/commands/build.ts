@@ -52,6 +52,13 @@ export interface BuildArgs {
   readonly still?: number;
   /** Skip the TTS stage; produce a silent mp4. */
   readonly skipTts?: boolean;
+  /**
+   * Disable the content-hash TTS cache for this build — force every beat
+   * to re-synthesize even when its (text + voice + model + providerOptions)
+   * matches the persisted manifest. The CLI surfaces this as
+   * `--no-tts-cache`. Default behaviour (when omitted) is caching ON.
+   */
+  readonly noTtsCache?: boolean;
   /** Override the project root for entry-file generation + config lookup. */
   readonly projectRoot?: string;
   /**
@@ -193,6 +200,7 @@ export const runBuild = async (args: BuildArgs): Promise<number> => {
       ...(args.concurrency !== undefined ? {concurrency: args.concurrency} : {}),
       ...(args.still !== undefined ? {still: args.still} : {}),
       ...(args.skipTts ? {skipTts: true} : {}),
+      ...(args.noTtsCache ? {useTtsCache: false} : {}),
       ...(args.lang ? {lang: args.lang} : {}),
       ...(resolvedVoice !== undefined ? {voice: resolvedVoice} : {}),
       ...(args.translationProvider !== undefined
