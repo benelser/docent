@@ -171,6 +171,12 @@ function metaSchema(): JSONSchema7 {
       tts: ttsConfigSchema(),
       mode: {type: 'string'},
       subsystem: {type: 'string'},
+      // R10.4 — color space metadata. Container tag only.
+      colorSpace: {
+        type: 'string',
+        enum: ['srgb', 'rec709', 'rec2020', 'p3'],
+      },
+      hdr: {type: 'boolean'},
     },
     // Open shape — kit explicitly does not freeze meta, so authoring tools
     // can scribble metadata without a kit version bump.
