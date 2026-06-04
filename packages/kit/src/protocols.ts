@@ -1214,6 +1214,12 @@ export interface FeaturePlugin extends PluginBase {
    */
   registerTranslationProviders?(reg: TranslationRegistry): void;
   /**
+   * Register narrative-quality judge providers (fires during
+   * `engine.use(this)`). Consumed by `docent assert --narrative
+   * --judges`. Additive — features that don't ship a judge omit it.
+   */
+  registerNarrativeJudges?(reg: NarrativeJudgeRegistry): void;
+  /**
    * **R3 forward-compat.** Populate the engine's {@link ModifierRegistry}.
    * The hook fires during `engine.use(this)` but the resolver currently
    * does not consult the registry — R3 lands by wiring it through.
@@ -1497,3 +1503,158 @@ export type Plugin =
   | TtsProviderPlugin
   | TranslationProviderPlugin
   | FeaturePlugin;
+
+// ---------------------------------------------------------------------------
+// Narrative-quality judges — the LLM half of `docent assert --narrative`.
+// ---------------------------------------------------------------------------
+//
+// The lint half (`@bjelser/core/narrative-quality/lint-rules.ts`) is a
+// deterministic regex pass. The judge half asks an LLM to check for the
+// things a regex cannot: does the voice drift? do the narration numbers
+// match the scene's structured data? is the prose redundant with the
+// diagram on screen?
+//
+// The judge interface is intentionally tiny: one method, typed input,
+// typed output. The kit ships *no* default implementation — providers
+// land in `@bjelser/core` (a noop) and `@bjelser/tts-openai` (a real
+// gpt-4o-mini judge). Consumers register them like any other plugin
+// and the CLI picks one via `--judge-provider <id>`.
+
+/**
+ * The kind of judgment requested. The same `judge()` call routes all
+ * three — the provider switches on `kind` and emits the right shape.
+ */
+export type JudgeKind = 'voice' | 'accuracy' | 'viz-placement';
+
+/**
+ * A beat's narration paired with its scene-level context. Every judge
+ * call carries the same envelope; the provider switches on `kind`.
+ */
+export interface JudgeInput {
+  /** Which dimension to grade. */
+  readonly kind: JudgeKind;
+  /** Film id for diagnostics. */
+  readonly filmId: string;
+  /** 0-based scene index. */
+  readonly sceneIndex: number;
+  /** 0-based beat index. */
+  readonly beatIndex: number;
+  /** Scene `type` (`structure`, `quantities`, `passage`, …). */
+  readonly sceneType: string;
+  /** Scene heading or kicker, when present. */
+  readonly sceneHeading?: string;
+  /** The beat's narration text. */
+  readonly narration: string;
+  /**
+   * Free-form scene cluster — sibling beats' narration text, useful for
+   * the voice judge to see the local register.
+   */
+  readonly sceneCluster?: ReadonlyArray<string>;
+  /**
+   * Structured scene data the accuracy judge cross-checks against (e.g.
+   * quantities metrics, timeline events). Free-shape; the provider
+   * stringifies it for the prompt.
+   */
+  readonly sceneData?: Readonly<Record<string, unknown>>;
+  /**
+   * Film domain — `meta.mode` (`ar`, `pr`, `ex`) + `meta.subject` when
+   * known. Helps a judge tell "this is a security PR review" from
+   * "this is a friendly explainer".
+   */
+  readonly domain?: {
+    readonly mode?: string;
+    readonly subject?: string;
+    readonly register?: string;
+  };
+}
+
+/** The shared shape every judge result carries. */
+export interface JudgeOutputBase {
+  /** Echo of the input kind — caller switches on this. */
+  readonly kind: JudgeKind;
+  /** `true` when no API key / provider available; caller treats as warn. */
+  readonly skipped?: boolean;
+  /** When `skipped` is set, why. */
+  readonly skippedReason?: string;
+  /** Free-form provider-side notes for diagnostics. */
+  readonly note?: string;
+}
+
+/**
+ * Voice judge: does this beat read as the surveyed voice? where does
+ * it drift? The drift axis is a closed enum so the verdict aggregator
+ * can tally drift types across the film.
+ */
+export interface JudgeVoiceOutput extends JudgeOutputBase {
+  readonly kind: 'voice';
+  readonly authentic: boolean;
+  readonly drift: 'casual' | 'academic' | 'breathless' | 'flat' | null;
+  /** Up to ~3 short quoted snippets from the narration that show the drift. */
+  readonly evidence: ReadonlyArray<string>;
+}
+
+/** One numeric (or factual) mismatch the accuracy judge surfaced. */
+export interface AccuracyMismatch {
+  /** The claim made in narration. */
+  readonly narrationClaim: string;
+  /** What the scene's structured data actually said. */
+  readonly sceneTruth: string;
+}
+
+/**
+ * Accuracy judge: do the numbers / facts in narration match the
+ * scene's structured data? Returns zero or more mismatches.
+ */
+export interface JudgeAccuracyOutput extends JudgeOutputBase {
+  readonly kind: 'accuracy';
+  readonly consistent: boolean;
+  readonly mismatches: ReadonlyArray<AccuracyMismatch>;
+}
+
+/**
+ * Viz-placement judge: is this prose better said by the diagram than
+ * by the narrator? Surfaces the redundancy + a suggested cut.
+ */
+export interface JudgeVizPlacementOutput extends JudgeOutputBase {
+  readonly kind: 'viz-placement';
+  readonly redundant: boolean;
+  /** The narration phrase that the diagram already shows. */
+  readonly redundantPhrase?: string;
+  /** What the narrator could say instead. */
+  readonly suggestion?: string;
+}
+
+export type JudgeOutput =
+  | JudgeVoiceOutput
+  | JudgeAccuracyOutput
+  | JudgeVizPlacementOutput;
+
+/**
+ * The judge-provider plugin contract. A provider lives behind a stable
+ * `providerId` and answers one judge call at a time. The provider chooses
+ * its own model + caching policy; the kit only owns the interface.
+ *
+ * Why not a `PluginKind`? Judges are an opt-in CI-only concern (`docent
+ * assert --narrative --judges`); folding them into `PluginKind` would
+ * widen the plugin discriminator for every consumer. Providers register
+ * via {@link FeaturePlugin.registerNarrativeJudges} instead.
+ */
+export interface NarrativeJudgeProvider {
+  /** Stable id surfaced in `--judge-provider <id>`. */
+  readonly providerId: string;
+  /** Free-form display name (`'noop'`, `'openai-gpt-4o-mini'`). */
+  readonly displayName: string;
+  /** Run one judgment. */
+  judge(input: JudgeInput): Promise<JudgeOutput>;
+}
+
+/**
+ * The judge-provider registry. Looks up providers by id; populated
+ * through {@link FeaturePlugin.registerNarrativeJudges}.
+ */
+export interface NarrativeJudgeRegistry {
+  register(provider: NarrativeJudgeProvider): void;
+  get(providerId: string): NarrativeJudgeProvider | undefined;
+  has(providerId: string): boolean;
+  all(): ReadonlyArray<NarrativeJudgeProvider>;
+}

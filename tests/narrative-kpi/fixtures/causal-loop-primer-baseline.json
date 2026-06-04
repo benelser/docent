@@ -1,0 +1,551 @@
+{
+  "meta": {
+    "id": "causal-loop-primer-baseline",
+    "title": "Causal loops — the dynamics primitive",
+    "subject": "Feedback loops — reinforcing (R) and balancing (B), the cognitive primitive of system dynamics",
+    "repo": "docent",
+    "prompt": "explainer",
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "voice": "af_heart"
+  },
+  "scenes": [
+    {
+      "id": "s-frame",
+      "type": "frame",
+      "kicker": "DOCENT // CAUSAL LOOPS",
+      "title": "The dynamics primitive",
+      "tagline": "Two kinds of feedback — and how to tell them apart",
+      "footnote": "polarity glyphs · cycle closure · reinforcing vs balancing",
+      "beats": [
+        {
+          "id": "cf-1",
+          "narration": "Some arguments are not lists of components. They are cycles -- variables that drive each other in a loop.",
+          "show": "title"
+        },
+        {
+          "id": "cf-2",
+          "narration": "A causal loop diagram shows that structure. Each edge carries a polarity. Each closed cycle is reinforcing or balancing. Today we walk both.",
+          "show": "tagline"
+        },
+        {
+          "id": "cf-3",
+          "narration": "Polarity glyphs do the assertion. Cycle closure makes it a loop. The R or B label says which dynamics this loop produces.",
+          "show": "footnote"
+        }
+      ]
+    },
+    {
+      "id": "s-flywheel",
+      "type": "causal-loop",
+      "kicker": "01 // REINFORCING",
+      "heading": "The docent flywheel — every step lifts the next",
+      "variables": [
+        {
+          "id": "survey",
+          "label": "Surveys",
+          "sub": "deeper notes"
+        },
+        {
+          "id": "films",
+          "label": "Films",
+          "sub": "shipped specs"
+        },
+        {
+          "id": "judge",
+          "label": "Judge runs",
+          "sub": "graded verdicts"
+        },
+        {
+          "id": "lessons",
+          "label": "Distilled lessons",
+          "sub": "recurring failures"
+        },
+        {
+          "id": "briefs",
+          "label": "Better briefs",
+          "sub": "the rubric tightens"
+        }
+      ],
+      "causalEdges": [
+        {
+          "id": "e-sf",
+          "from": "survey",
+          "to": "films",
+          "polarity": "+",
+          "label": "feed the spec"
+        },
+        {
+          "id": "e-fj",
+          "from": "films",
+          "to": "judge",
+          "polarity": "+",
+          "label": "more to grade"
+        },
+        {
+          "id": "e-jl",
+          "from": "judge",
+          "to": "lessons",
+          "polarity": "+",
+          "label": "what fails recurs"
+        },
+        {
+          "id": "e-lb",
+          "from": "lessons",
+          "to": "briefs",
+          "polarity": "+",
+          "label": "tighten the bar"
+        },
+        {
+          "id": "e-bs",
+          "from": "briefs",
+          "to": "survey",
+          "polarity": "+",
+          "label": "richer notes"
+        }
+      ],
+      "loops": [
+        {
+          "id": "l-fly",
+          "label": "the docent flywheel",
+          "path": [
+            "survey",
+            "films",
+            "judge",
+            "lessons",
+            "briefs"
+          ],
+          "kind": "reinforcing"
+        }
+      ],
+      "beats": [
+        {
+          "id": "cw-1",
+          "narration": "Start with what docent already does. Surveys feed films. Films feed judge runs. Judge runs distill into lessons. Lessons tighten the briefs. Better briefs make better surveys.",
+          "reveal": [
+            "survey",
+            "films",
+            "judge",
+            "lessons",
+            "briefs"
+          ],
+          "cadence": "cascade"
+        },
+        {
+          "id": "cw-2",
+          "narration": "Each step pushes the next one up. Every arrow is a plus -- an increase here drives an increase there.",
+          "reveal": [
+            "e-sf",
+            "e-fj",
+            "e-jl",
+            "e-lb",
+            "e-bs"
+          ],
+          "cadence": "cascade"
+        },
+        {
+          "id": "cw-3",
+          "narration": "Five plus edges. Zero minus edges. The polarity count is even, so the loop is reinforcing -- the R label. Each turn of this cycle compounds the previous one.",
+          "reveal": [
+            "l-fly"
+          ],
+          "focus": [
+            "l-fly"
+          ],
+          "pace": "settle"
+        }
+      ]
+    },
+    {
+      "id": "s-thermostat",
+      "type": "causal-loop",
+      "kicker": "02 // BALANCING",
+      "heading": "The thermostat — odd negative count, self-correcting",
+      "variables": [
+        {
+          "id": "temp",
+          "label": "Room temp",
+          "sub": "the controlled variable"
+        },
+        {
+          "id": "ac",
+          "label": "AC running",
+          "sub": "the actuator"
+        },
+        {
+          "id": "cool",
+          "label": "Heat removed",
+          "sub": "joules per second"
+        }
+      ],
+      "causalEdges": [
+        {
+          "id": "t-ta",
+          "from": "temp",
+          "to": "ac",
+          "polarity": "+",
+          "label": "hot turns it on"
+        },
+        {
+          "id": "t-ac",
+          "from": "ac",
+          "to": "cool",
+          "polarity": "+",
+          "label": "AC removes heat"
+        },
+        {
+          "id": "t-ct",
+          "from": "cool",
+          "to": "temp",
+          "polarity": "-",
+          "label": "removed heat cools the room"
+        }
+      ],
+      "loops": [
+        {
+          "id": "l-therm",
+          "label": "thermostat balance",
+          "path": [
+            "temp",
+            "ac",
+            "cool"
+          ],
+          "kind": "balancing"
+        }
+      ],
+      "beats": [
+        {
+          "id": "th-1",
+          "narration": "Now a different shape. A room gets hot. The thermostat turns on the AC. The AC removes heat. The room cools down -- which turns the AC off.",
+          "reveal": [
+            "temp",
+            "ac",
+            "cool"
+          ],
+          "cadence": "cascade"
+        },
+        {
+          "id": "th-2",
+          "narration": "Watch the polarity. Hot drives AC on -- plus. AC on drives heat removed up -- plus. But heat removed drives temperature DOWN -- a minus.",
+          "reveal": [
+            "t-ta",
+            "t-ac",
+            "t-ct"
+          ],
+          "cadence": "cascade",
+          "focus": [
+            "t-ct"
+          ]
+        },
+        {
+          "id": "th-3",
+          "narration": "One minus. Odd parity. That makes this a balancing loop -- a B. The cycle self-corrects: any push away from equilibrium produces a push back.",
+          "reveal": [
+            "l-therm"
+          ],
+          "focus": [
+            "l-therm"
+          ],
+          "pace": "settle"
+        }
+      ]
+    },
+    {
+      "id": "s-icealbedo",
+      "type": "causal-loop",
+      "kicker": "03 // REINFORCING, WITH MINUSES",
+      "heading": "Ice-albedo feedback — two minuses make a plus",
+      "variables": [
+        {
+          "id": "warm",
+          "label": "Temperature",
+          "sub": "global average"
+        },
+        {
+          "id": "ice",
+          "label": "Sea ice",
+          "sub": "polar coverage"
+        },
+        {
+          "id": "refl",
+          "label": "Reflected sun",
+          "sub": "albedo"
+        },
+        {
+          "id": "abs",
+          "label": "Absorbed sun",
+          "sub": "heating in"
+        }
+      ],
+      "causalEdges": [
+        {
+          "id": "i-wi",
+          "from": "warm",
+          "to": "ice",
+          "polarity": "-",
+          "label": "warmth melts ice"
+        },
+        {
+          "id": "i-ir",
+          "from": "ice",
+          "to": "refl",
+          "polarity": "+",
+          "label": "ice reflects light"
+        },
+        {
+          "id": "i-ra",
+          "from": "refl",
+          "to": "abs",
+          "polarity": "-",
+          "label": "reflection means less absorbed"
+        },
+        {
+          "id": "i-aw",
+          "from": "abs",
+          "to": "warm",
+          "polarity": "+",
+          "label": "absorbed sun warms"
+        }
+      ],
+      "loops": [
+        {
+          "id": "l-ice",
+          "label": "ice-albedo runaway",
+          "path": [
+            "warm",
+            "ice",
+            "refl",
+            "abs"
+          ],
+          "kind": "reinforcing"
+        }
+      ],
+      "beats": [
+        {
+          "id": "ia-1",
+          "narration": "A causal loop can be reinforcing even when most of its edges are negative. Here is climate's most-studied example.",
+          "reveal": [
+            "warm",
+            "ice",
+            "refl",
+            "abs"
+          ],
+          "cadence": "cascade"
+        },
+        {
+          "id": "ia-2",
+          "narration": "Warming melts ice -- minus. Ice reflects sunlight -- plus. Reflection reduces what gets absorbed -- minus. Absorbed sunlight warms the planet -- plus.",
+          "reveal": [
+            "i-wi",
+            "i-ir",
+            "i-ra",
+            "i-aw"
+          ],
+          "cadence": "cascade"
+        },
+        {
+          "id": "ia-3",
+          "narration": "Two minuses, two plusses. The two negative edges multiply to a positive -- warming begets warming. Even parity, reinforcing R. Climate models attribute roughly 25 percent of polar amplification to this single loop. This is why a planet can run away from itself.",
+          "reveal": [
+            "l-ice"
+          ],
+          "focus": [
+            "l-ice"
+          ],
+          "pace": "settle"
+        }
+      ]
+    },
+    {
+      "id": "s-tension",
+      "type": "tension",
+      "kicker": "04 // WHEN LOOPS BREAK",
+      "heading": "Where the abstraction fails",
+      "grid": {
+        "cols": 3,
+        "rows": 2
+      },
+      "nodes": [
+        {
+          "id": "t-linear",
+          "label": "Linearity assumption",
+          "sub": "edges treated as proportional",
+          "col": 0,
+          "row": 0,
+          "kind": "risk"
+        },
+        {
+          "id": "t-delays",
+          "label": "No time delays",
+          "sub": "a real loop has lag",
+          "col": 1,
+          "row": 0,
+          "kind": "risk"
+        },
+        {
+          "id": "t-saturation",
+          "label": "No saturation",
+          "sub": "real systems hit limits",
+          "col": 2,
+          "row": 0,
+          "kind": "risk"
+        },
+        {
+          "id": "t-tradeoff",
+          "label": "Chose readability",
+          "sub": "over differential rigor",
+          "col": 1,
+          "row": 1,
+          "weight": "hero"
+        }
+      ],
+      "edges": [
+        {
+          "id": "te-1",
+          "from": "t-tradeoff",
+          "to": "t-linear",
+          "kind": "causes",
+          "strength": "contributing"
+        },
+        {
+          "id": "te-2",
+          "from": "t-tradeoff",
+          "to": "t-delays",
+          "kind": "causes",
+          "strength": "contributing"
+        },
+        {
+          "id": "te-3",
+          "from": "t-tradeoff",
+          "to": "t-saturation",
+          "kind": "causes",
+          "strength": "contributing"
+        }
+      ],
+      "beats": [
+        {
+          "id": "te-b1",
+          "narration": "Before the takeaway, name what the abstraction costs. A causal loop is a sketch, not an equation.",
+          "reveal": [
+            "t-tradeoff"
+          ],
+          "focus": [
+            "t-tradeoff"
+          ]
+        },
+        {
+          "id": "te-b2",
+          "narration": "It assumes edges are linear. The polarity glyph cannot capture that ice melts ten times faster above zero than below it. At scale, the linearity breaks.",
+          "reveal": [
+            "t-linear",
+            "te-1"
+          ],
+          "focus": [
+            "t-linear"
+          ]
+        },
+        {
+          "id": "te-b3",
+          "narration": "It assumes no delays. A real thermostat overshoots because the room's heat capacity lags the controller by something like sixty seconds. The loop label still reads B -- but the dynamics oscillate. At-scale failure: a control loop that hunts forever.",
+          "reveal": [
+            "t-delays",
+            "te-2"
+          ],
+          "focus": [
+            "t-delays"
+          ]
+        },
+        {
+          "id": "te-b4",
+          "narration": "It assumes no saturation. Real predators do not breed past the prey supply -- the negative edge eventually clips. A reinforcing runaway crashes when it hits the wall. Failure mode: the loop diagram predicts runaway, the system breaks.",
+          "reveal": [
+            "t-saturation",
+            "te-3"
+          ],
+          "focus": [
+            "t-saturation"
+          ],
+          "pace": "settle"
+        },
+        {
+          "id": "te-b5",
+          "narration": "We chose readability over differential rigor. A differential equation captures all three. A causal loop trades that fidelity for one thing nothing else gives: an argument the viewer can see at a glance. The cost is that every loop is approximate -- and every reader should hold both.",
+          "focus": [
+            "t-tradeoff"
+          ],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "s-bigidea",
+      "type": "big-idea",
+      "kicker": "BIG IDEA // 04",
+      "heading": "The takeaway",
+      "statement": "Count the minuses along the loop — even parity compounds, odd parity self-corrects.",
+      "anchor": {
+        "kind": "glyph",
+        "value": "R / B"
+      },
+      "beats": [
+        {
+          "id": "bi-1",
+          "narration": "If you remember one thing about a feedback diagram, remember the parity rule. Even number of minus edges, the loop is reinforcing -- it compounds. Odd, balancing -- it self-corrects.",
+          "show": "title",
+          "reveal": [
+            "statement"
+          ],
+          "pace": "hold"
+        }
+      ]
+    },
+    {
+      "id": "s-recap",
+      "type": "recap",
+      "kicker": "RECAP // 04",
+      "heading": "What the loop tells you",
+      "points": [
+        "The polarity glyph asserts direction — plus drives up, minus drives down.",
+        "A loop is reinforcing if its negative count is even; balancing if odd. Count the minuses.",
+        "Reinforcing loops compound — flywheels and runaways. Balancing loops self-correct — thermostats and predator-prey.",
+        "Two minuses make a plus — the structure, not any single arrow, names the dynamics.",
+        "Causal loops are sketches, not equations. They cannot model delay, saturation, or non-linear edges — use them to argue, then reach for differential equations to compute."
+      ],
+      "beats": [
+        {
+          "id": "rc-1",
+          "narration": "Polarity glyphs do the asserting. Plus means same direction; minus means opposite.",
+          "reveal": 1
+        },
+        {
+          "id": "rc-2",
+          "narration": "Count the minuses along the loop. Even count, reinforcing R. Odd count, balancing B.",
+          "reveal": 2
+        },
+        {
+          "id": "rc-3",
+          "narration": "Reinforcing loops are flywheels and runaways. Balancing loops are thermostats and predator-prey ecosystems.",
+          "reveal": 3
+        },
+        {
+          "id": "rc-4",
+          "narration": "And two minuses make a plus -- the parity, not the sign of any single arrow, is what tells you which dynamics the cycle produces.",
+          "reveal": 4
+        },
+        {
+          "id": "rc-5",
+          "narration": "Verdict: causal loops are sound for arguing structure, overstated for predicting behaviour. Their fragility is the linearity assumption; their cost is precision. The diagram cannot tell you the system will oscillate at point seven hertz -- only that something will. Use them to think; reach for the differential equation to compute.",
+          "reveal": 5,
+          "pace": "hold"
+        }
+      ]
+    }
+  ],
+  "style": {
+    "preset": "analytical",
+    "intent": {
+      "tone": "technical"
+    }
+  }
+}

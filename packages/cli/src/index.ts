@@ -11,6 +11,7 @@
 // default, plus any `docent.config.ts` the project ships.
 
 import {runAssert} from './commands/assert';
+import {runAssertNarrative} from './commands/assert-narrative';
 import {runBuild} from './commands/build';
 import {runCi} from './commands/ci';
 import {runDepthcheck} from './commands/depthcheck';
@@ -86,6 +87,11 @@ COMMANDS
                           golden in golden/<film-id>/. First run (or --update)
                           captures the goldens; subsequent runs exit 2 if any
                           scene exceeds --threshold mean abs pixel diff.
+  assert <film-id> --narrative
+                          Narrative-quality cascade: lint every beat for
+                          filler / hedge / tic / opener / anaphora; pass
+                          --judges to add the LLM voice / accuracy / viz
+                          checks. Exit 0 PASS, 2 REJECT, 3 HUMAN_REVIEW.
   grammar-check           Run the cover-set of demo films and assert three
                           invariants across the registered scene library:
                           coverage (every plugin exercised), taxonomy
@@ -178,6 +184,21 @@ ASSERT FLAGS
   --compare-width <n>  Width (px) frames are decoded to for diffing. Default 480.
   --golden-dir <p>     Override the goldens root. Default <project>/golden.
 
+ASSERT --narrative FLAGS  (narrative-quality cascade)
+  --narrative          Run the narration linter + verdict instead of
+                       pixel-diff. Walks every beat, applies the
+                       regex/structural rule set, and prints a per-scene
+                       findings table. Exit 0 PASS, 2 REJECT, 3 HUMAN.
+  --judges             Also run the LLM judges (voice / accuracy / viz).
+                       Defaults to the noop provider — pass
+                       --judge-provider openai for real grading.
+  --judge-provider <id>
+                       Pick a registered judge provider. Built in: noop
+                       (always), openai (requires OPENAI_API_KEY and
+                       @bjelser/tts-openai installed).
+  --judge-beat-limit <n>
+                       Cap on beats sampled per judge category. Default 20.
+
 CI FLAGS
   --local <repo>       Path to a sibling docent repo. After "bun add", overlay
                        <repo>/packages/{cli,core,kit}/src + package.json onto
@@ -197,6 +218,9 @@ EXAMPLES
   docent assert docent-self --update           # capture goldens
   docent assert docent-self                    # diff against goldens
   docent assert docent-self --threshold 0.02   # tighter regression bar
+  docent assert thermostat --narrative                       # lint only
+  docent assert thermostat --narrative --judges              # + LLM judges (noop)
+  docent assert thermostat --narrative --judges --judge-provider openai
 `;
 
 interface ParsedArgs {
@@ -414,6 +438,23 @@ const main = async (): Promise<number> => {
     if (!filmId) {
       process.stderr.write('docent assert: missing <film-id>\n' + USAGE);
       return 64;
+    }
+    // --narrative routes to the narrative-quality cascade (R2 deliverable).
+    // The pixel-diff assert remains the default — narrative is opt-in.
+    if (flags.narrative) {
+      return runAssertNarrative({
+        filmId,
+        ...(flags.judges ? {judges: true} : {}),
+        ...(str(flags['judge-provider']) ? {judgeProvider: str(flags['judge-provider'])!} : {}),
+        ...(num(flags['judge-beat-limit']) !== undefined
+          ? {judgeBeatLimit: num(flags['judge-beat-limit'])!}
+          : {}),
+        ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+        ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+        ...(str(flags['project-root'])
+          ? {projectRoot: str(flags['project-root'])!}
+          : {}),
+      });
     }
     return runAssert({
       filmId,

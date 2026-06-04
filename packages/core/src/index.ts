@@ -40,3 +40,36 @@ export type {
   PlatformAdapter,
   NamedAdapter,
 } from './distribution';
+
+// ---------- Narrative-quality cascade (R2 assert --narrative) --------------
+//
+// Deterministic regex linter + LLM judges behind `docent assert --narrative`.
+// Surfaced from the package main so a third-party tool can import the lint
+// runner or wire its own judge provider via `@bjelser/core`.
+export {
+  // lint rules
+  BEAT_LINT_RULES,
+  SCENE_LINT_RULES,
+  lintFilmNarration,
+  stripQuotes,
+  fillerTransitionsRule,
+  hedgeWordsRule,
+  bannedIntensifiersRule,
+  fillerOpenersRule,
+  exclamationMarksRule,
+  anaphoraOverloadRule,
+  structuralTicsRule,
+  // judge
+  noopJudgeProvider,
+} from './narrative-quality';
+
+export type {
+  Severity as NarrativeLintSeverity,
+  BeatLintFinding,
+  BeatLintInput,
+  SceneLintInput,
+  BeatRule,
+  SceneRule,
+  LintFilmInput,
+  LintFilmResult,
+} from './narrative-quality/lint-rules';
