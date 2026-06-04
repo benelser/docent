@@ -33,6 +33,7 @@ import type {FilmSpec, Scene, SceneArchetype, SceneVariant} from '../types/spec'
 import type {ResolvedStyle} from '../types/style';
 import {resolveSceneVariant} from '../frameworks/scene-variants';
 import {buildFrameSchedule, type SceneSchedule} from './schedule';
+import {TtsAudioMapContext} from './word-timings';
 
 /**
  * Props of the kit's composition. `spec` is the validated film, `engine` is
@@ -214,7 +215,8 @@ export const DocentFilm: React.FC<DocentFilmInternalProps> = ({
   const fps = spec.meta.resolution?.fps ?? 30;
 
   return (
-    <AbsoluteFill>
+    <TtsAudioMapContext.Provider value={ttsAudio}>
+      <AbsoluteFill>
       {filmFeatures.map((feature) => {
         const FilmComponent = feature.wrapsFilm!;
         return (
@@ -278,6 +280,7 @@ export const DocentFilm: React.FC<DocentFilmInternalProps> = ({
           </Sequence>
         );
       })}
-    </AbsoluteFill>
+      </AbsoluteFill>
+    </TtsAudioMapContext.Provider>
   );
 };

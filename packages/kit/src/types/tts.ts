@@ -158,6 +158,25 @@ export interface WordAlignment {
 }
 
 /**
+ * Frame-based word timing — the render-side IR consumed by karaoke-style
+ * components. Produced from {@link WordAlignment} at TTS-persistence time
+ * by quantising ms → frames against the film's `fps`. Persisted on the
+ * per-beat manifest so the render side never recomputes (R5).
+ *
+ * The shape mirrors `/ventures/250/shorts/src/types.ts`'s `WordTiming` (the
+ * source pattern for this IR) minus the redundant `*Seconds` fields — the
+ * render side only ever reads frames.
+ */
+export interface WordTiming {
+  /** The word as it appears in the source narration. */
+  readonly text: string;
+  /** Inclusive start frame (0 == clip start). */
+  readonly startFrame: number;
+  /** Exclusive end frame. */
+  readonly endFrame: number;
+}
+
+/**
  * The result of a single {@link TtsProvider.synth} call.
  */
 export interface TtsSynthesisResult {
@@ -171,6 +190,17 @@ export interface TtsSynthesisResult {
   alignment: WordAlignment[];
   /** Origin of the alignment data — provider native vs. external aligner. */
   alignmentSource: 'native' | 'aligner' | 'none';
+  /**
+   * R5: word-level timing IR. The canonical opt-in field every consumer
+   * downstream of TTS reads — karaoke-style passage reveal, music
+   * choreography (R8), the prospective captions feature. Empty or
+   * undefined means "this provider can't supply word timings"; the
+   * feature gracefully degrades. Providers SHOULD populate this whenever
+   * they also populate {@link TtsSynthesisResult.alignment} — `words`
+   * is the public R5 name; `alignment` is the legacy slot kept for
+   * compatibility (both carry the same data shape today).
+   */
+  words?: ReadonlyArray<WordAlignment>;
   /** Provider-native blob — echoes Rig's `Response: T`. */
   raw?: unknown;
   /**

@@ -26,6 +26,7 @@ export {
 export {Narration} from './narration';
 export {SceneFrame, type CameraState} from './scene-frame';
 export {BoundValue, formatValue} from './bound-value';
+export {KaraokeText, type KaraokeTextProps} from './karaoke-text';
 export {
   ACCENTS,
   CASCADE_STEP,
