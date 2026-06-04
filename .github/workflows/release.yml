@@ -1,0 +1,112 @@
+# release — publish a docent package to npm, gated on a hermetic /tmp smoke.
+#
+# THE INVARIANT (named verbatim):
+#
+#   "No `npm publish` ever runs without a green `docent ci --local` first."
+#
+# The pre-publish gate is the entire point of this workflow — the publish
+# step is the last 5 lines. The job order is:
+#
+#   1. Hermetic smoke against THIS REF (worktree overlay onto @latest install).
+#      Catches webpack-bundling errors, missing files in package.files,
+#      wrong peer-deps. If this fails, NO publish — full stop.
+#   2. npm publish (only after the gate goes green).
+#
+# Trigger is manual (workflow_dispatch). Pick the package + the version bump.
+# The actual semver bump happens locally (we don't trust CI to mutate the
+# repo). This workflow just verifies + publishes the already-bumped tag.
+
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package to publish (kit | core | cli | tts-openai | tts-elevenlabs | tts-compatible | agent).'
+        required: true
+        type: choice
+        options:
+          - kit
+          - core
+          - cli
+          - tts-openai
+          - tts-elevenlabs
+          - tts-compatible
+          - agent
+      dry_run:
+        description: 'If true, run the gate but `npm publish --dry-run`.'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: release-${{ inputs.package }}
+  cancel-in-progress: false
+
+jobs:
+  pre-publish-hermetic-gate:
+    name: pre-publish hermetic gate
+    runs-on: macos-14
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install root deps
+        run: bun install --frozen-lockfile
+
+      - name: ffmpeg present
+        run: |
+          ffmpeg -version
+          ffprobe -version
+
+      # Load-bearing step. If this fails, the publish job below never runs.
+      - name: docent ci --local (overlay)
+        run: bun packages/cli/src/index.ts ci --local "$(pwd)"
+
+      # Pure registry smoke too — catches "the *last* publish was broken;
+      # don't compound the problem".
+      - name: docent ci (registry)
+        run: bun packages/cli/src/index.ts ci
+
+  publish:
+    name: npm publish @bjelser/${{ inputs.package }}
+    needs: pre-publish-hermetic-gate
+    runs-on: macos-14
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write  # for npm provenance
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install root deps
+        run: bun install --frozen-lockfile
+
+      - name: Setup node (for npm publish)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd packages/${{ inputs.package }}
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            npm publish --access public --provenance --dry-run
+          else
+            npm publish --access public --provenance
+          fi

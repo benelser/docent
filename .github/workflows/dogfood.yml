@@ -1,0 +1,85 @@
+# dogfood — the hermetic /tmp smoke gate.
+#
+# Two flavors, in one workflow:
+#   1. overlay — `docent ci --local <repo>` (THIS worktree's source on top of
+#      the latest-published install). Catches regressions BEFORE they ship.
+#   2. registry — `docent ci` (pure @bjelser/*@latest cold install). Catches
+#      regressions that ALREADY shipped (a bad publish, a yanked transitive
+#      dep, an OS update breaking chrome-headless).
+#
+# macos-14 is Apple Silicon — matches the local dev surface. Linux runners
+# would require either Rosetta or a separate trace through libonnxruntime,
+# and the canonical contributor surface is macOS.
+
+name: dogfood
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      versions:
+        description: 'Pin versions for registry run (e.g. cli=3.0.12,core=3.0.11,kit=3.0.4). Empty = @latest.'
+        required: false
+        type: string
+
+concurrency:
+  group: dogfood-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  overlay:
+    name: ci --local (worktree overlay)
+    runs-on: macos-14
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ffmpeg (smoke)
+        run: |
+          # ffmpeg ships preinstalled on the macos-14 image; this is a
+          # belt-and-suspenders check so the smoke step has a real signal
+          # if Apple ever drops it.
+          ffmpeg -version
+          ffprobe -version
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install root deps (for the CLI runner)
+        run: bun install --frozen-lockfile
+
+      - name: docent ci --local (overlay)
+        run: bun packages/cli/src/index.ts ci --local "$(pwd)"
+
+  registry:
+    name: ci (pure @latest registry)
+    runs-on: macos-14
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ffmpeg (smoke)
+        run: |
+          ffmpeg -version
+          ffprobe -version
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install root deps (for the CLI runner)
+        run: bun install --frozen-lockfile
+
+      - name: docent ci (registry)
+        run: |
+          if [ -n "${{ inputs.versions }}" ]; then
+            bun packages/cli/src/index.ts ci --versions "${{ inputs.versions }}"
+          else
+            bun packages/cli/src/index.ts ci
+          fi
