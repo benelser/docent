@@ -1423,8 +1423,45 @@ export interface RenderOptions {
   scale?: number;
   /** Render only a still frame at the given second offset. Skips video encode. */
   still?: number;
-  /** Override the codec; defaults to h264. */
-  codec?: 'h264' | 'h265' | 'vp8' | 'vp9' | 'prores';
+  /**
+   * Delivery codec. Defaults to `'h264'` (Remotion native, yuv420p, 8-bit).
+   *
+   * Three families:
+   *   - **Remotion-native** — `h264` (default), `h265`, `vp8`, `vp9`, plus
+   *     `prores` (Remotion's generic prores knob, profile defaults to HQ).
+   *     Single ffmpeg pass via Remotion. Fastest.
+   *   - **ProRes profiles** — `prores_hq` (preset 3, 10-bit 4:2:2),
+   *     `prores_4444` (preset 4, 10-bit 4:4:4:4 with alpha). Rendered
+   *     natively by Remotion using `--codec=prores --prores-profile=<id>`.
+   *     Output is `.mov`; the post pipeline lingua franca.
+   *   - **ffmpeg post-transcode** — `dnxhr_hqx` (Avid DNxHR HQX, 10-bit
+   *     4:2:2 in .mov), `dnxhr_444` (DNxHR 444, 10-bit 4:4:4 in .mov),
+   *     `dpx` (10-bit DPX image sequence — directory), `exr` (16-bit
+   *     half-float OpenEXR sequence — directory). The render stage renders
+   *     an h264 intermediate via Remotion, then shells to `ffmpeg` to
+   *     transcode. The intermediate is unlinked on success.
+   *
+   * Sequence outputs (`dpx`, `exr`) emit `<outputDir>/<id>/frame_%06d.<ext>`
+   * with a sibling `sequence.json` manifest (fps + frame count + colorspace
+   * notes) so the user's NLE can conform the sequence.
+   *
+   * Audio: ProRes/DNxHR .mov containers receive AAC audio passed through
+   * from the h264 intermediate. DPX/EXR sequences have no audio (the
+   * sequence.json manifest points the user at the standalone narration
+   * mix under `<publicDir>/audio/<filmId>/`).
+   */
+  codec?:
+    | 'h264'
+    | 'h265'
+    | 'vp8'
+    | 'vp9'
+    | 'prores'
+    | 'prores_hq'
+    | 'prores_4444'
+    | 'dnxhr_hqx'
+    | 'dnxhr_444'
+    | 'dpx'
+    | 'exr';
   /** Pass through to Remotion's `renderMedia`. */
   concurrency?: number;
   /** Path to the cache directory the cascade may write to. */
