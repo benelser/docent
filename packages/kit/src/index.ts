@@ -425,3 +425,18 @@ export type {
 
 export {LOUDNESS_PRESETS, resolveLoudnessTarget} from './types/loudness';
 export type {LoudnessMeasurement} from './types/loudness';
+
+// ---------- R11.1 — FCPXML editorial export ---------------------------------
+//
+// `buildFcpxml(spec, schedule, opts)` returns the FCPXML 1.11 body as a
+// string — the CLI's `docent fcpxml` writes it to disk so a human can
+// drop it into DaVinci Resolve / Final Cut Pro / Premiere and see our
+// structure on their timeline. The function is pure (no file I/O) so a
+// third-party tool can weave it into a custom pipeline.
+//
+// `deriveMarkers` is the inline marker enumerator R11.1 uses. R11.3's
+// `enumerateMarkers` will subsume it in a future refactor — both emit the
+// same set (scene chapter + beat + big-idea for tension/recap/closeup).
+
+export {buildFcpxml, deriveMarkers, framesToRational, pathToFileUrl} from './cascade/fcpxml';
+export type {BuildFcpxmlOptions} from './cascade/fcpxml';
