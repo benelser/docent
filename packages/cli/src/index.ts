@@ -35,6 +35,8 @@ import {runSceneFitList, runSceneFitRecommend} from './commands/scene-fit';
 import {runStyleList, runStyleRecommend} from './commands/style';
 import {runTreatment} from './commands/treatment';
 import {runScore} from './commands/score';
+// R11.2 — AAF editorial export for Avid Media Composer ingest.
+import {runAaf} from './commands/aaf';
 import {runValidate} from './commands/validate';
 import {runWatch} from './commands/watch';
 
@@ -116,6 +118,19 @@ COMMANDS
                           every registered plugin against the protocol
                           contract; surfaces missing cues, empty signals,
                           bad clusters, registry conflicts. Exit 6 on error.
+  aaf <film-id>           Emit an AAF (Advanced Authoring Format) binary
+                          for Avid Media Composer ingest. Walks the
+                          schedule, builds one CompositionMob with one
+                          Sequence segment per docent scene (AMA-linked
+                          to out/<id>.mp4 by file URL). The editor drops
+                          the .aaf into Media Composer's import dialog
+                          and sees the docent structure as a sequence
+                          ready to refine. Requires out/<id>.mp4 (run
+                          \`docent build <id>\` first) and \`uv\` on PATH
+                          (the writer ephemeral-installs pyaaf2 via uvx).
+                          --out <path> overrides; default
+                          out/<id>.aaf. --json emits the segment list to
+                          stdout alongside the file.
   score <film-id>         Emit a timeline-annotated music-gen prompt for
                           the film. Walks the schedule, tags rhetorical
                           moves (open / develop / inflect / pull-back /
@@ -642,6 +657,27 @@ const main = async (): Promise<number> => {
       ...(flags.json ? {json: true} : {}),
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+    });
+  }
+
+  // R11.2 — AAF editorial export. Self-contained dispatch block so
+  // R11.1 (fcpxml) / R11.3 (markers) / R11.4 (ingest) can land in
+  // parallel without touching this region.
+  if (command === 'aaf') {
+    const filmId = positional[0];
+    if (!filmId) {
+      process.stderr.write('docent aaf: missing <film-id>\n' + USAGE);
+      return 64;
+    }
+    return runAaf({
+      filmId,
+      ...(str(flags.out) ? {out: str(flags.out)!} : {}),
+      ...(flags.json ? {json: true} : {}),
+      ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
         : {}),

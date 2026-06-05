@@ -338,6 +338,26 @@ export {
   TtsAudioMapContext,
 } from './remotion/word-timings';
 
+// ---------- R11.2 — AAF editorial export (Avid Media Composer ingest) -----
+//
+// `buildAafPlan(spec, schedule, mediaPath, probe)` is the pure planner —
+// derive the editorial segment list + AMA media reference from a film and
+// its frame schedule. `writeAafFile(plan, outPath)` shells to a pyaaf2
+// sidecar via `uvx` and writes the binary AAF. Third-party tools (a
+// custom editorial bridge, a CI gate that lints the segment list) consume
+// only `buildAafPlan` — the writer is opt-in.
+
+export {
+  buildAafPlan,
+  writeAafFile,
+  AafWriterError,
+} from './cascade/aaf';
+export type {
+  AafPlan,
+  AafSegment,
+  AafWriteResult,
+} from './cascade/aaf';
+
 // ---------- R9 — timeline-annotated music-gen score prompts ----------------
 //
 // The provider-agnostic IR (`ScorePrompt`) a docent film exports to a
