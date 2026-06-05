@@ -278,6 +278,25 @@ export type {
   TtsAudioMap,
 } from './remotion/schedule';
 
+// ---------- R11 — editorial marker vocabulary (NLE exporter contract) -------
+//
+// `enumerateMarkers(spec, schedule)` is the shared engine the FCPXML (R11.1)
+// and AAF (R11.2) exporters consume. Pure, browser-safe, deterministic — one
+// marker per structural moment (scene/beat boundary, big-idea, tension peak,
+// narration start). Exporters serialize the output into their respective
+// dialects. The types live in `./types/editorial.ts`; the enumerator in
+// `./frameworks/editorial.ts`.
+
+export type {
+  EditorialMarker,
+  EditorialMarkerKind,
+  EditorialMarkerColor,
+} from './types/editorial';
+
+export {DEFAULT_MARKER_COLORS} from './types/editorial';
+
+export {enumerateMarkers} from './frameworks/editorial';
+
 // ---------- Aspect-aware canvas dimensions + STAGE -------------------------
 //
 // `meta.aspect` → canvas dims (`resolveDimensions`) → `useStage()` hook each
