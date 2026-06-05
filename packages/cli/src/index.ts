@@ -16,6 +16,7 @@ import {runBuild} from './commands/build';
 import {runCi} from './commands/ci';
 import {runDepthcheck} from './commands/depthcheck';
 import {runDoctor} from './commands/doctor';
+import {runFcpxml} from './commands/fcpxml';
 import {
   parsePlatformList,
   runDripAdd,
@@ -128,6 +129,19 @@ COMMANDS
                           --json emits the full IR + body for tooling.
                           Music-gen APIs are NEVER called — gate behind
                           --execute (not implemented; deliberate safety).
+  fcpxml <film-id>        Emit an FCPXML 1.11 editorial sidecar for the
+                          rendered film at out/<film-id>.fcpxml — drop it
+                          into DaVinci Resolve / Final Cut Pro / Premiere
+                          to see the docent structure on a real timeline.
+                          One asset-clip per scene on V1 (so the editor
+                          sees cuts at scene boundaries) + per-beat audio
+                          asset-clips on A1 (each TTS line is its own
+                          mutable clip) + chapter markers at scenes, gray
+                          markers at beats, orange "to-do" markers at
+                          big-idea scenes (tension / recap / closeup).
+                          Reads the persisted TTS manifest if present so
+                          beat lengths reflect real synth time. --out
+                          overrides the output path.
   hermetic                Render the 4 gallery fixtures end to end.
   ci                      Hermetic /tmp smoke against the PUBLISHED package
                           (or worktree via --local). The dogfood gate — runs
@@ -640,6 +654,23 @@ const main = async (): Promise<number> => {
       ...(flags.write ? {write: true} : {}),
       ...(flags.validate ? {validate: true} : {}),
       ...(flags.json ? {json: true} : {}),
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
+      ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+    });
+  }
+
+  if (command === 'fcpxml') {
+    const filmId = positional[0];
+    if (!filmId) {
+      process.stderr.write('docent fcpxml: missing <film-id>\n' + USAGE);
+      return 64;
+    }
+    return runFcpxml({
+      filmId,
+      ...(str(flags.out) ? {out: str(flags.out)!} : {}),
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
       ...(str(flags['project-root'])

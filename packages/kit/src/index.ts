@@ -355,3 +355,18 @@ export type {
   ScoreFinding,
   RenderedScorePrompt,
 } from './types/score';
+
+// ---------- R11 — editorial interop (FCPXML, AAF, ingest) ------------------
+//
+// `buildFcpxml(spec, schedule, opts)` returns the FCPXML 1.11 body as a
+// string — the CLI's `docent fcpxml` writes it to disk so a human can
+// drop it into DaVinci Resolve / Final Cut Pro / Premiere and see our
+// structure on their timeline. The function is pure (no file I/O) so a
+// third-party tool can weave it into a custom pipeline.
+//
+// `deriveMarkers` is the inline marker enumerator R11.1 uses. R11.3 (in
+// flight) will introduce a shared `EditorialMarker` + `enumerateMarkers`
+// pair that both this file and the AAF emitter (R11.2) consume.
+
+export {buildFcpxml, deriveMarkers, framesToRational, pathToFileUrl} from './cascade/fcpxml';
+export type {BuildFcpxmlOptions} from './cascade/fcpxml';
