@@ -338,6 +338,27 @@ export {
   TtsAudioMapContext,
 } from './remotion/word-timings';
 
+// ---------- R11.4 — FCPXML ingest (round-trip from editor's cut) -----------
+//
+// Read an FCPXML the editor produced, parse it to a clip list, diff against
+// the original docent spec, and (optionally) apply the diff back to the
+// spec. The three pure functions surface the round-trip closure: the
+// docent emits FCPXML (R11.1), the editor recuts, R11.4 reads it back and
+// either prints what changed or rewrites the spec to match.
+
+export {parseFcpxml} from './cascade/fcpxml-parse';
+export type {
+  ParsedFcpxml,
+  ParsedFcpxmlClip,
+  ParsedFcpxmlMarker,
+} from './cascade/fcpxml-parse';
+
+export {diffIngest} from './frameworks/ingest-diff';
+export type {IngestDiff} from './frameworks/ingest-diff';
+
+export {applyIngest} from './frameworks/apply-ingest';
+export type {AppliedIngest} from './frameworks/apply-ingest';
+
 // ---------- R9 — timeline-annotated music-gen score prompts ----------------
 //
 // The provider-agnostic IR (`ScorePrompt`) a docent film exports to a

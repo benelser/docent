@@ -27,6 +27,7 @@ import {
 import {runGrammarCheck} from './commands/grammar-check';
 import {runHelpScene} from './commands/help-scene';
 import {runHermetic} from './commands/hermetic';
+import {runIngest} from './commands/ingest';
 import {runInit} from './commands/init';
 import {runInitConfig, type InitConfigKind} from './commands/init-config';
 import {runPreview} from './commands/preview';
@@ -129,6 +130,15 @@ COMMANDS
                           Music-gen APIs are NEVER called — gate behind
                           --execute (not implemented; deliberate safety).
   hermetic                Render the 4 gallery fixtures end to end.
+  ingest <fcpxml> --film <id>
+                          Round-trip: read an FCPXML the editor recut, diff
+                          against films/<id>.json, surface what changed
+                          (reorders, removed scenes, duration shifts,
+                          foreign b-roll). Pass --apply to write
+                          films/<id>.edited.json honouring the diff; pass
+                          --out <path> to override. Pass --json to emit the
+                          raw IngestDiff for tooling. The closing half of
+                          the editor round trip (R11.1 emits, R11.4 reads).
   ci                      Hermetic /tmp smoke against the PUBLISHED package
                           (or worktree via --local). The dogfood gate — runs
                           \`bun add @bjelser/*@latest\` into an empty project,
@@ -642,6 +652,30 @@ const main = async (): Promise<number> => {
       ...(flags.json ? {json: true} : {}),
       ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['output-dir']) ? {outputDir: str(flags['output-dir'])!} : {}),
+      ...(str(flags['project-root'])
+        ? {projectRoot: str(flags['project-root'])!}
+        : {}),
+    });
+  }
+
+  if (command === 'ingest') {
+    const fcpxmlPath = positional[0];
+    const filmId = str(flags.film);
+    if (!fcpxmlPath) {
+      process.stderr.write('docent ingest: missing <fcpxml-path>\n' + USAGE);
+      return 64;
+    }
+    if (!filmId) {
+      process.stderr.write('docent ingest: missing --film <id>\n' + USAGE);
+      return 64;
+    }
+    return runIngest({
+      fcpxmlPath,
+      filmId,
+      ...(flags.apply ? {apply: true} : {}),
+      ...(str(flags.out) ? {out: str(flags.out)!} : {}),
+      ...(flags.json ? {json: true} : {}),
+      ...(str(flags['films-dir']) ? {filmsDir: str(flags['films-dir'])!} : {}),
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
         : {}),
