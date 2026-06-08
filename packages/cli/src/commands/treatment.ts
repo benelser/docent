@@ -597,6 +597,25 @@ const readPassageSource = (projectRoot: string, source: string): string | null =
   }
 };
 
+/**
+ * Infers the closeup scene's `lang` from a filename extension. Returns
+ * undefined when the extension is unknown so the caller can fall back to
+ * the default ('ts'). Covers the languages a closeup scene reasonably
+ * highlights — TypeScript/JS, Python, Go, Rust, shell, SQL, YAML, etc.
+ */
+const inferCodeLang = (filename: string): string | undefined => {
+  const ext = filename.toLowerCase().split('.').pop() ?? '';
+  const map: Record<string, string> = {
+    ts: 'ts', tsx: 'tsx', js: 'js', jsx: 'jsx',
+    py: 'python', go: 'go', rs: 'rust', java: 'java',
+    rb: 'ruby', sh: 'bash', zsh: 'bash', bash: 'bash',
+    sql: 'sql', yaml: 'yaml', yml: 'yaml', json: 'json',
+    toml: 'toml', tf: 'hcl', hcl: 'hcl', md: 'markdown',
+    css: 'css', html: 'html', xml: 'xml', c: 'c', cpp: 'cpp', h: 'c',
+  };
+  return map[ext];
+};
+
 const placeholderScene = (
   i: number,
   pick: ScenePick,
@@ -714,14 +733,26 @@ const placeholderScene = (
       }
       break;
     case 'closeup':
-      base.code = '// paste the code artifact here\n';
-      base.lang = 'ts';
-      // For closeup the asset path is the *file label* the macOS window
-      // chrome draws — the listing source itself still has to be pasted
-      // into `code` by the spec author (or by the R12 asset indexer).
+      base.lang = pick.asset
+        ? inferCodeLang(pick.asset.filename) ?? 'ts'
+        : 'ts';
       if (pick.asset) {
         base.file = pick.asset.normalizedPath;
-        base._todo = `paste the source of ${pick.asset.filename} into \`code\`.`;
+        // Symmetric with passage: when the file exists under the project's
+        // public/ tree, read it and inline. Otherwise leave the placeholder
+        // + _todo so a treatment referencing not-yet-authored code still
+        // compiles cleanly.
+        const inlined = projectRoot
+          ? readPassageSource(projectRoot, pick.asset.normalizedPath)
+          : null;
+        if (inlined !== null) {
+          base.code = inlined;
+        } else {
+          base.code = '// paste the code artifact here\n';
+          base._todo = `paste the source of ${pick.asset.filename} into \`code\`.`;
+        }
+      } else {
+        base.code = '// paste the code artifact here\n';
       }
       break;
     case 'demonstrate':
