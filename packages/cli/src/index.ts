@@ -30,6 +30,7 @@ import {
 import {runGrammarCheck} from './commands/grammar-check';
 import {runHelpScene} from './commands/help-scene';
 import {runHermetic} from './commands/hermetic';
+import {runIndexAssets} from './commands/index-assets';
 import {runIngest} from './commands/ingest';
 import {runInit} from './commands/init';
 import {runInitConfig, type InitConfigKind} from './commands/init-config';
@@ -182,6 +183,15 @@ COMMANDS
                           Reads the persisted TTS manifest if present so
                           beat lengths reflect real synth time. --out
                           overrides the output path.
+  index <dir>             Walk a directory of mixed engineering artifacts
+                          (wiki pages, architecture diagrams, screen
+                          recordings, runbook configs, code snippets) and
+                          print a typed manifest grouped by kind. The
+                          input the FDE/SRE survey agent consumes when
+                          authoring a lunch-and-learn film in docent's
+                          explainer mode. --json emits the full
+                          AssetIndex as JSON. --no-probe skips the
+                          ffprobe shell-out for media metadata.
   hermetic                Render the 4 gallery fixtures end to end.
   ingest <fcpxml> --film <id>
                           Round-trip: read an FCPXML the editor recut, diff
@@ -880,6 +890,20 @@ const main = async (): Promise<number> => {
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
         : {}),
+    });
+  }
+
+  // R12.2 — asset indexer for FDE/SRE knowledge-base directories.
+  if (command === 'index') {
+    const dir = positional[0];
+    if (!dir) {
+      process.stderr.write('docent index: missing <dir>\n' + USAGE);
+      return 64;
+    }
+    return runIndexAssets({
+      dir,
+      ...(flags.json ? {json: true} : {}),
+      ...(flags['no-probe'] ? {noProbe: true} : {}),
     });
   }
 

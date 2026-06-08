@@ -440,3 +440,15 @@ export type {LoudnessMeasurement} from './types/loudness';
 
 export {buildFcpxml, deriveMarkers, framesToRational, pathToFileUrl} from './cascade/fcpxml';
 export type {BuildFcpxmlOptions} from './cascade/fcpxml';
+
+// ---------- R12 — asset indexing (FDE / SRE / lunch-and-learn) -------------
+//
+// `indexDirectory(dir)` walks a curated knowledge-base directory and
+// classifies every file by kind (wiki / diagram / screen-recording /
+// runbook-config / code / unknown). The input the FDE/SRE survey agent
+// consumes when authoring a lunch-and-learn film against an existing
+// engineering team's wiki + diagrams + screen-recordings + runbook.
+// Pairs with the survey-explainer.md §10 FDE/SRE context.
+
+export {indexDirectory} from './frameworks/asset-index';
+export type {AssetKind, AssetEntry, MediaProbe, AssetIndex} from './frameworks/asset-index';
