@@ -372,6 +372,159 @@ like "early 2024," "around that time," or "during the war," the scene fails —
 the time axis exists because the gaps are real and the explainer must commit
 to the dates.
 
+## 10. FDE / SRE / engineering-team knowledge-base context
+
+A curated engineering directory — a runbook, an on-call handbook, a
+post-incident playbook, an internal wiki cluster — is a *different input
+shape* from a book chapter or an essay. It is multi-asset (prose, diagrams,
+screen-recordings, config snippets) and its author intent is **a teaching
+film for a team**, not a publication for the public. The depth bar does
+not move. The discipline below keeps a runbook film from collapsing into a
+narrated Loom recording.
+
+### (a) When this section applies
+
+Trip into this section when *all* of the following hold:
+
+- the subject is a **directory** (or a wiki-shaped URL) with an index page
+  (`README.md`, a TOC, a landing wiki article) and multiple linked subpages;
+- it contains **embedded media** — at least one diagram (`.png`, `.svg`) or
+  one screen-recording (`.mp4`, `.mov`);
+- it mixes **prose with config / code references** — alert payloads, YAML,
+  CLI snippets, dashboard URLs;
+- the author intent is **a film for an engineering team** (lunch-and-learn,
+  on-call onboarding, post-incident teaching), not a film for the public.
+
+When the subject is a single document, this section is inert and the rest
+of the template stands as-is. When the subject is a knowledge-base
+directory, this section is **mandatory** and composes with §§ 0-9: you
+still pick one load-bearing idea, you still earn the claim, you still rule
+in the recap.
+
+### (b) Mixed-asset triage — what binds to what scene type
+
+A directory is a pile of assets. Bind each asset to the scene type whose
+**native shape** the asset already has — never force-fit. The grammar is
+closed; everything below resolves to scene types defined in
+`schema/film.schema.json`.
+
+| Asset                                  | Scene type      | Why                                                                                  |
+|----------------------------------------|-----------------|--------------------------------------------------------------------------------------|
+| Wiki / runbook page (prose `.md`)      | `passage`       | annotate the runbook text by phrase — the words of the page are what the film argues |
+| Architecture / flow diagram (`.png`)   | `figure`        | annotate the still image by region — the diagram's spatial layout carries the claim  |
+| Screen-recording demo (`.mp4`)         | `demonstrate`   | play the phenomenon itself — the recording IS the thing, not a description of it     |
+| Step-by-step runbook procedure         | `walkthrough`   | one instance, step by step — the procedure as a single ordered run through the steps |
+| Alert payload / config snippet (JSON, YAML) | `closeup`  | annotate one structured artifact — the syntax of the payload IS the surface          |
+| "When this runbook does NOT apply"     | `tension`       | the trade-off, where it breaks — the edge case the procedure makes worse             |
+| Before/after metrics, SLO numbers      | `quantities`    | the numbers — a measured before vs after, an error budget, a p99                     |
+| The one operational takeaway           | `recap`         | the takeaway — what the engineer does next time the alert fires                      |
+
+Two reading rules for the table:
+
+- The binding is one-way: an asset of the kind on the left **must** render
+  as the scene type on the right. A `.mp4` cannot become a `figure`; a
+  diagram cannot become a `demonstrate`. If the binding feels wrong, the
+  asset is being asked to carry a move it does not have — pick a different
+  asset.
+- Most assets in the directory are **named neighbours** of one of these
+  scenes, not their own scene. A directory with eight diagrams does not
+  make an eight-`figure` film; it makes one `figure` on the hero diagram
+  and seven named-and-set-aside.
+
+### (c) Genre conventions — what makes an engineering teaching film *land*
+
+These are the rules that distinguish a runbook *film* from a runbook
+*tour*. They are not stylistic preferences; the depth-review judge applies
+them.
+
+1. **The actionable-ending rule.** A lunch-and-learn film is not done when
+   the topic is explained — it is done when the engineer can act on it
+   next time the alert fires. The final `recap` takeaway must be
+   **operational**, naming the trigger and the action: *"When you see
+   high p99 on the auth path AND error rate flat, do not roll back — page
+   the database on-call. The reason is connection pool exhaustion, not a
+   bad deploy."* A philosophical takeaway ("incident response is about
+   communication") fails this rule.
+2. **The misconception the film must kill.** Every engineering team
+   carries shared folklore that is often wrong: "always page the on-call
+   when latency spikes," "rollbacks fix bad deploys," "the dashboard tells
+   you what broke." The survey must identify the **specific** wrong model
+   this runbook exists to correct, and the film must visibly displace it
+   — not state the right answer beside it. If the survey cannot name a
+   misconception, the runbook is a **knowledge relay**, not a teaching
+   film; stop and reconsider whether a film is the right artifact.
+3. **The hero asset.** A directory has many artifacts. ONE diagram is the
+   hero (almost always the request-flow or alert-decision-tree). ONE
+   demo is the hero (the recording that shows the phenomenon, not the
+   one that tours the dashboard UI). ONE wiki page carries the
+   load-bearing claim. Name them in the survey; everything else is a
+   named neighbour or out of scope. This is the same "pick one
+   load-bearing idea" discipline from § 0, applied to assets — and it is
+   the most common place a runbook film loses focus.
+4. **The "when this doesn't apply" rule.** Every runbook has at least
+   one edge case where following the standard procedure makes the
+   incident worse — rolling back during a schema migration, restarting
+   the leader during a quorum loss, scaling out under a thundering-herd
+   retry storm. The film **must** include a `tension` scene that names
+   at least one such case and the correct alternative action. A runbook
+   film without a `tension` is a tutorial; a tutorial is the floor.
+5. **The voice register.** Engineering teaching films lean `neutral` to
+   `urgent` — a runbook describes an actual or potential incident, not a
+   debate. `playful` reads as flippant when the film teaches an incident
+   response; `grave` reads as performative for a routine runbook. Pin
+   `meta.register: neutral` (procedural calm — the default) or
+   `meta.register: urgent` (active incident, on-call onboarding) in the
+   spec, and tie the choice to a specific survey finding.
+
+### (d) Mandatory questions — the knowledge-base case
+
+In addition to §§ 0-9, answer every question below. "The directory does
+not reveal this" is a legitimate answer; silent omission is not.
+
+- **The hero diagram.** Of every diagram in the directory, which ONE is
+  load-bearing? Name it by path. State why — what claim it carries that
+  no other diagram does. (If two diagrams tie, you have not done the
+  triage; pick one or merge them in the spec.)
+- **The hero demo.** Of every screen-recording, which ONE shows the
+  *phenomenon* the film must `demonstrate` — the alert firing, the
+  metric spiking, the failed deploy rolling back? Name it by path. State
+  why. (A walkthrough of a static dashboard is NOT a phenomenon; it is a
+  UI tour, and it goes in the named-neighbour list, not the spec.)
+- **The misconception.** What does the team currently believe that this
+  runbook exists to correct? State the wrong model in one sentence, and
+  the right model in one sentence. If no misconception exists, this is a
+  knowledge-relay, not a teaching film — **flag this and stop**; produce
+  the survey only after the author has named one.
+- **The "when this doesn't apply" case.** Name one concrete situation
+  where following this runbook makes the incident worse, and state the
+  correct alternative action. This is the seed of the `tension` scene; a
+  vague "edge cases exist" is rejected.
+- **The actionable close.** When the film ends, what does the engineer
+  know to *do* next time? State it as an action verb plus its trigger:
+  *page the database on-call when X*, *redirect traffic to the standby
+  when Y*, *do not roll back when Z*. The verb is the seed of the
+  `recap`; an abstract takeaway ("understand the system better") is
+  rejected.
+
+### (e) What this section does NOT change
+
+- The **scene grammar is unchanged.** Use the same closed 15-type set
+  defined in `schema/film.schema.json`. This section adds *binding rules*
+  for a new input shape; it does not add a new scene type. If you find
+  yourself wanting a "log excerpt" or "dashboard screenshot" type, render
+  the log as a `passage` and the dashboard as a `figure` — those are the
+  primitives that carry the move.
+- The **depth bar is unchanged.** A runbook film still interrogates: the
+  failure modes, the boundary case, the misconception, the verdict in
+  the `recap`. Relay is rejected here too.
+- The **treatment → spec → build flow is unchanged.** The survey still
+  goes to `analysis/<id>.md`; the treatment (if used) still goes to
+  `treatments/<id>.md`; the spec still goes to `films/<id>.json` and is
+  still validated by `docent depthcheck`.
+- This section adds **discipline for a new INPUT shape**, not a new
+  mode. The mode remains `ex`; the recommenders in § 2.5 and § 2.6 still
+  run; the appendix-scene-type cues below still apply.
+
 ---
 
 ## Appendix — scene-type cues
