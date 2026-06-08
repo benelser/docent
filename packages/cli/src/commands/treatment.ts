@@ -356,9 +356,115 @@ const renderTreatment = (id: string, survey: ParsedSurvey, scenes: ReadonlyArray
 
 // ----- treatment → spec -----------------------------------------------------
 
+/**
+ * An asset-reference line a human can drop into the treatment to bind a
+ * concrete file to the scene the line lives under. The R12 author surface.
+ *
+ * Today the compiler emits placeholder paths like `figures/edit-me.png`.
+ * With an asset reference, the compiler emits the real path and the human
+ * never has to open the JSON to wire it up.
+ *
+ * Syntax — a line anywhere inside a scene's prose (the head of the
+ * numbered item or any continuation line) of the form:
+ *
+ *     - figure: arch-diagram.png — annotate the request flow
+ *     - demo: rollback.mp4 — play the actual sequence
+ *     - passage: runbook.md — the canonical runbook prose
+ *     - walkthrough: dashboard.mp4 — step through the four panels
+ *     - closeup: handler.ts — the load-bearing request handler
+ *
+ * The leading `- ` bullet marker is optional (the head line of a numbered
+ * item rarely starts with one). Both `demo:` and `demonstrate:` are
+ * accepted; both map to scene kind `demonstrate`. The em-dash is
+ * preferred but a plain `-` is also accepted as the description
+ * separator.
+ *
+ * The asset reference *overrides* the heuristic scene-type guess and the
+ * `<!-- scene-type: X -->` hint: the prefix is explicit intent. When
+ * absent, the existing path through `guessSceneType` is unchanged.
+ */
+interface AssetReference {
+  readonly kind: 'figure' | 'demonstrate' | 'walkthrough' | 'passage' | 'closeup';
+  /** The bare filename as written in the treatment (e.g. `arch-diagram.png`). */
+  readonly filename: string;
+  /**
+   * The path the compiler should write into the spec. Relative to the
+   * project `public/` root — Remotion's `staticFile()` resolves it. So a
+   * value of `figures/arch-diagram.png` reaches the file at
+   * `public/figures/arch-diagram.png`. The treatment compiler does NOT
+   * prepend `public/` — the scene components do not expect it.
+   */
+  readonly normalizedPath: string;
+  /** Text after the em-dash, if present — surfaced as the scene heading. */
+  readonly description?: string;
+}
+
+/**
+ * The asset-reference syntax pattern. The leading `- ` bullet is optional
+ * so the line can appear as a bullet OR as the head of a numbered item.
+ * Both `demo` and `demonstrate` are accepted. Description separator is
+ * either an em-dash `—` (the docent house style) or a hyphen `-`.
+ */
+const ASSET_REFERENCE_RE =
+  /^\s*-?\s*(figure|demo|demonstrate|walkthrough|passage|closeup):\s+(\S+)(?:\s+[—-]\s+(.+))?$/;
+
+/**
+ * Map a kind keyword to the `public/` subdirectory the asset lives under.
+ * The convention matches the existing scene components:
+ *   - figure       → public/figures/   (Remotion `staticFile('figures/<f>')`)
+ *   - demonstrate  → public/clips/     (the demonstrate component already
+ *                                       prepends the film id at render
+ *                                       time; we store the bare filename)
+ *   - walkthrough  → public/clips/     (mirrors demonstrate)
+ *   - passage      → public/wiki/      (prose source the agent inlines)
+ *   - closeup      → public/code/      (source listing the agent inlines)
+ */
+const conventionalDirFor = (kind: AssetReference['kind']): string => {
+  switch (kind) {
+    case 'figure':
+      return 'figures';
+    case 'demonstrate':
+      return 'clips';
+    case 'walkthrough':
+      return 'clips';
+    case 'passage':
+      return 'wiki';
+    case 'closeup':
+      return 'code';
+  }
+};
+
+const parseAssetReference = (line: string): AssetReference | undefined => {
+  const m = line.match(ASSET_REFERENCE_RE);
+  if (!m) return undefined;
+  const rawKind = m[1]!;
+  const filename = m[2]!;
+  const description = m[3]?.trim();
+  const kind: AssetReference['kind'] =
+    rawKind === 'demo' ? 'demonstrate' : (rawKind as AssetReference['kind']);
+
+  // Already an explicit path under `public/<subdir>/` — accept verbatim
+  // (strip the `public/` prefix so we store the Remotion-relative form).
+  // Already an explicit path with a slash — accept verbatim.
+  // Otherwise resolve under the conventional dir for this kind.
+  let normalizedPath: string;
+  if (filename.startsWith('public/')) {
+    normalizedPath = filename.slice('public/'.length);
+  } else if (filename.includes('/')) {
+    normalizedPath = filename;
+  } else {
+    normalizedPath = `${conventionalDirFor(kind)}/${filename}`;
+  }
+
+  return description
+    ? {kind, filename, normalizedPath, description}
+    : {kind, filename, normalizedPath};
+};
+
 interface ScenePick {
   readonly sceneType: string;
   readonly summary: string;
+  readonly asset?: AssetReference;
 }
 
 const parseTreatmentScenes = (source: string): ScenePick[] => {
@@ -367,12 +473,19 @@ const parseTreatmentScenes = (source: string): ScenePick[] => {
 
   // The "## Proposed scenes" section, until the next ## heading.
   let inScenes = false;
-  let pending: {sceneType: string; lines: string[]} | null = null;
+  let pending: {
+    sceneType: string;
+    lines: string[];
+    asset?: AssetReference;
+  } | null = null;
 
   const flush = (): void => {
     if (!pending) return;
     const summary = pending.lines.join(' ').trim() || '(no summary)';
-    out.push({sceneType: pending.sceneType, summary});
+    const pick: ScenePick = pending.asset
+      ? {sceneType: pending.sceneType, summary, asset: pending.asset}
+      : {sceneType: pending.sceneType, summary};
+    out.push(pick);
     pending = null;
   };
 
@@ -398,11 +511,22 @@ const parseTreatmentScenes = (source: string): ScenePick[] => {
       const sceneType = hint?.[1] ?? '';
       // Strip the comment from the summary text on this line, if any.
       const head = rest.replace(/<!--\s*scene-type:\s*[a-z-]+\s*-->/, '').trim();
-      pending = {sceneType, lines: head ? [head] : []};
+      // The head itself may BE an asset reference (e.g. when the human
+      // dropped the prefix on the same line as the list number).
+      const headAsset = head ? parseAssetReference(head) : undefined;
+      if (headAsset) {
+        pending = {
+          sceneType: headAsset.kind,
+          lines: headAsset.description ? [headAsset.description] : [],
+          asset: headAsset,
+        };
+      } else {
+        pending = {sceneType, lines: head ? [head] : []};
+      }
       continue;
     }
 
-    // Continuation line — either prose or a stray comment.
+    // Continuation line — either prose, a stray comment, or an asset ref.
     if (pending) {
       const trimmed = ln.trim();
       if (trimmed === '') continue;
@@ -410,6 +534,18 @@ const parseTreatmentScenes = (source: string): ScenePick[] => {
       const hint = trimmed.match(/^<!--\s*scene-type:\s*([a-z-]+)\s*-->$/);
       if (hint) {
         if (!pending.sceneType) pending.sceneType = hint[1]!;
+        continue;
+      }
+      // Pick up an asset-reference line — the R12 author surface. The
+      // first asset reference under a scene wins; later ones are folded
+      // into the prose so they survive into the spec as breadcrumbs.
+      const asset = parseAssetReference(trimmed);
+      if (asset && !pending.asset) {
+        pending.asset = asset;
+        // The asset reference *overrides* the heuristic / hint kind — the
+        // explicit prefix is the strongest signal of authorial intent.
+        pending.sceneType = asset.kind;
+        if (asset.description) pending.lines.push(asset.description);
         continue;
       }
       pending.lines.push(trimmed);
@@ -423,7 +559,10 @@ const parseTreatmentScenes = (source: string): ScenePick[] => {
     let fallback = 'structure';
     if (i === 0) fallback = 'frame';
     else if (i === out.length - 1) fallback = 'recap';
-    out[i] = {sceneType: fallback, summary: out[i]!.summary};
+    const existing = out[i]!;
+    out[i] = existing.asset
+      ? {sceneType: fallback, summary: existing.summary, asset: existing.asset}
+      : {sceneType: fallback, summary: existing.summary};
   }
   return out;
 };
@@ -434,6 +573,12 @@ const parseTreatmentScenes = (source: string): ScenePick[] => {
  * spec author. We pick the fields most commonly required across the
  * core scene grammar; the spec will still need `docent validate` to
  * clear depthcheck.
+ *
+ * When `pick.asset` is present (an R12 asset-reference line lived under
+ * this scene in the treatment) the corresponding field is bound to the
+ * normalized path and the description, if any, is surfaced as the
+ * scene's `heading`. The asset reference *overrides* the per-scene-type
+ * placeholder field — the human gave explicit intent and we honour it.
  */
 const placeholderScene = (i: number, pick: ScenePick): Record<string, unknown> => {
   const idStem = `s${i + 1}`;
@@ -441,7 +586,7 @@ const placeholderScene = (i: number, pick: ScenePick): Record<string, unknown> =
     id: idStem,
     type: pick.sceneType,
     kicker: `${String(i + 1).padStart(2, '0')} // EDIT ME`,
-    heading: pick.summary,
+    heading: pick.asset?.description ?? pick.summary,
     beats: [
       {
         id: `${idStem}-1`,
@@ -535,20 +680,55 @@ const placeholderScene = (i: number, pick: ScenePick): Record<string, unknown> =
         {id: 'caller', label: 'Caller', sub: 'edit me'},
         {id: 'callee', label: 'Callee', sub: 'edit me'},
       ];
+      // A walkthrough scene's native shape is a sequence diagram, not a
+      // video — but the asset-reference syntax (e.g.
+      // `walkthrough: dashboard.mp4`) is a human-readable shorthand the
+      // R12 surface accepts. We stash the bound path on a `clip` field
+      // and leave a TODO so the human knows the wiring needs a second
+      // pass at render time (an actor-cast still needs to be authored).
+      if (pick.asset) {
+        base.clip = pick.asset.normalizedPath;
+        base._todo =
+          'walkthrough is a sequence diagram — the bound clip path is a hint, not the rendered media. Replace `actors` with the real cast or convert the scene to `demonstrate` if you really want a clip.';
+      }
       break;
     case 'closeup':
       base.code = '// paste the code artifact here\n';
       base.lang = 'ts';
+      // For closeup the asset path is the *file label* the macOS window
+      // chrome draws — the listing source itself still has to be pasted
+      // into `code` by the spec author (or by the R12 asset indexer).
+      if (pick.asset) {
+        base.file = pick.asset.normalizedPath;
+        base._todo = `paste the source of ${pick.asset.filename} into \`code\`.`;
+      }
       break;
     case 'demonstrate':
-      base.clip = 'public/clips/edit-me.mp4';
+      // `clip` is resolved at render time under `public/clips/<filmId>/`;
+      // for a bare filename we store just the filename so the existing
+      // resolver works. For an explicit path we store it verbatim.
+      if (pick.asset) {
+        base.clip = pick.asset.filename.includes('/')
+          ? pick.asset.normalizedPath
+          : pick.asset.filename;
+      } else {
+        base.clip = 'public/clips/edit-me.mp4';
+      }
       break;
     case 'passage':
       base.text = 'Paste the source text here, line by line.';
       base.marks = [];
+      // A passage scene carries the text *inline* (not by reference) —
+      // the asset reference is a breadcrumb for the human (or for the
+      // R12 asset indexer) to fetch + paste the actual prose. We stash
+      // the path on `_source` and TODO it.
+      if (pick.asset) {
+        base._source = pick.asset.normalizedPath;
+        base._todo = `inline the prose of ${pick.asset.filename} into \`text\`.`;
+      }
       break;
     case 'figure':
-      base.image = 'public/figures/edit-me.png';
+      base.image = pick.asset?.normalizedPath ?? 'public/figures/edit-me.png';
       base.callouts = [];
       break;
     case 'diff':
