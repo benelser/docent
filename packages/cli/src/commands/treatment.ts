@@ -580,7 +580,28 @@ const parseTreatmentScenes = (source: string): ScenePick[] => {
  * scene's `heading`. The asset reference *overrides* the per-scene-type
  * placeholder field — the human gave explicit intent and we honour it.
  */
-const placeholderScene = (i: number, pick: ScenePick): Record<string, unknown> => {
+/**
+ * Reads a `.md` passage source from `<projectRoot>/public/<source>` and
+ * returns its contents. Returns null when the file is missing or
+ * unreadable; the caller falls back to the placeholder + _todo path so
+ * a treatment that references a file the FDE plans to author later
+ * still compiles cleanly.
+ */
+const readPassageSource = (projectRoot: string, source: string): string | null => {
+  try {
+    const candidate = resolve(projectRoot, 'public', source);
+    if (!existsSync(candidate)) return null;
+    return readFileSync(candidate, 'utf-8');
+  } catch {
+    return null;
+  }
+};
+
+const placeholderScene = (
+  i: number,
+  pick: ScenePick,
+  projectRoot?: string,
+): Record<string, unknown> => {
   const idStem = `s${i + 1}`;
   const base: Record<string, unknown> = {
     id: idStem,
@@ -716,15 +737,25 @@ const placeholderScene = (i: number, pick: ScenePick): Record<string, unknown> =
       }
       break;
     case 'passage':
-      base.text = 'Paste the source text here, line by line.';
       base.marks = [];
-      // A passage scene carries the text *inline* (not by reference) —
-      // the asset reference is a breadcrumb for the human (or for the
-      // R12 asset indexer) to fetch + paste the actual prose. We stash
-      // the path on `_source` and TODO it.
+      // A passage scene carries the text inline. When a `.md` asset is
+      // bound at compile time AND the file exists on disk under the
+      // project's public/ tree, we read its content and inline it
+      // directly — the FDE/SRE workflow has the runbook source on disk
+      // already, no reason to defer to a human paste step.
       if (pick.asset) {
         base._source = pick.asset.normalizedPath;
-        base._todo = `inline the prose of ${pick.asset.filename} into \`text\`.`;
+        const inlined = projectRoot
+          ? readPassageSource(projectRoot, pick.asset.normalizedPath)
+          : null;
+        if (inlined !== null) {
+          base.text = inlined;
+        } else {
+          base.text = 'Paste the source text here, line by line.';
+          base._todo = `inline the prose of ${pick.asset.filename} into \`text\`.`;
+        }
+      } else {
+        base.text = 'Paste the source text here, line by line.';
       }
       break;
     case 'figure':
@@ -741,7 +772,12 @@ const placeholderScene = (i: number, pick: ScenePick): Record<string, unknown> =
   return base;
 };
 
-const buildSpec = (id: string, title: string, picks: ReadonlyArray<ScenePick>): unknown => ({
+const buildSpec = (
+  id: string,
+  title: string,
+  picks: ReadonlyArray<ScenePick>,
+  projectRoot?: string,
+): unknown => ({
   meta: {
     id,
     title,
@@ -749,7 +785,7 @@ const buildSpec = (id: string, title: string, picks: ReadonlyArray<ScenePick>): 
     fps: 30,
     voice: 'af_heart',
   },
-  scenes: picks.map((p, i) => placeholderScene(i, p)),
+  scenes: picks.map((p, i) => placeholderScene(i, p, projectRoot)),
 });
 
 // ----- the CLI surface ------------------------------------------------------
@@ -767,6 +803,7 @@ export const runTreatment = async (args: TreatmentArgs): Promise<number> => {
       treatmentsDir,
       filmsDir,
       force: args.force ?? false,
+      projectRoot,
     });
   }
   return runTreatmentScaffold({
@@ -828,6 +865,7 @@ interface ToSpecArgs {
   readonly treatmentsDir: string;
   readonly filmsDir: string;
   readonly force: boolean;
+  readonly projectRoot?: string;
 }
 
 const runTreatmentToSpec = async (args: ToSpecArgs): Promise<number> => {
@@ -868,7 +906,7 @@ const runTreatmentToSpec = async (args: ToSpecArgs): Promise<number> => {
     return 1;
   }
 
-  const spec = buildSpec(args.id, title, picks);
+  const spec = buildSpec(args.id, title, picks, args.projectRoot);
 
   mkdirSync(dirname(specPath), {recursive: true});
   writeFileSync(specPath, JSON.stringify(spec, null, 2), 'utf-8');
