@@ -27,6 +27,7 @@ import {
 import {runGrammarCheck} from './commands/grammar-check';
 import {runHelpScene} from './commands/help-scene';
 import {runHermetic} from './commands/hermetic';
+import {runIndexAssets} from './commands/index-assets';
 import {runInit} from './commands/init';
 import {runInitConfig, type InitConfigKind} from './commands/init-config';
 import {runPreview} from './commands/preview';
@@ -128,6 +129,15 @@ COMMANDS
                           --json emits the full IR + body for tooling.
                           Music-gen APIs are NEVER called — gate behind
                           --execute (not implemented; deliberate safety).
+  index <dir>             Walk a directory of mixed engineering artifacts
+                          (wiki pages, architecture diagrams, screen
+                          recordings, runbook configs, code snippets) and
+                          print a typed manifest grouped by kind. The
+                          input the FDE/SRE survey agent consumes when
+                          authoring a lunch-and-learn film in docent's
+                          explainer mode. --json emits the full
+                          AssetIndex as JSON. --no-probe skips the
+                          ffprobe shell-out for media metadata.
   hermetic                Render the 4 gallery fixtures end to end.
   ci                      Hermetic /tmp smoke against the PUBLISHED package
                           (or worktree via --local). The dogfood gate — runs
@@ -645,6 +655,19 @@ const main = async (): Promise<number> => {
       ...(str(flags['project-root'])
         ? {projectRoot: str(flags['project-root'])!}
         : {}),
+    });
+  }
+
+  if (command === 'index') {
+    const dir = positional[0];
+    if (!dir) {
+      process.stderr.write('docent index: missing <dir>\n' + USAGE);
+      return 64;
+    }
+    return runIndexAssets({
+      dir,
+      ...(flags.json ? {json: true} : {}),
+      ...(flags['no-probe'] ? {noProbe: true} : {}),
     });
   }
 

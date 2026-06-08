@@ -355,3 +355,7 @@ export type {
   ScoreFinding,
   RenderedScorePrompt,
 } from './types/score';
+
+// ---------- R12 — asset indexing (FDE / SRE / lunch-and-learn) -------------
+export {indexDirectory} from './frameworks/asset-index';
+export type {AssetKind, AssetEntry, MediaProbe, AssetIndex} from './frameworks/asset-index';
