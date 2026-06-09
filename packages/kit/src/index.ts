@@ -201,6 +201,7 @@ export type {
   SpacingTokens,
   RadiusTokens,
   StrokeTokens,
+  ChromeTokens,
 } from './types/design-tokens';
 
 // ---------- Visualization style --------------------------------------------

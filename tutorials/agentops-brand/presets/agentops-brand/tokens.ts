@@ -99,6 +99,20 @@ export const tokens: DesignTokens = {
   // Slightly heavier strokes than neutral — diagram lines need to read on
   // the deeper navy ground.
   stroke: {hairline: 0.75, thin: 1.25, regular: 2, bold: 3.5},
+  // STRUCTURAL CHROME — the whole point of this preset's R5 refresh.
+  // Replaces docent's default starfield+motes shell with an engineering /
+  // observability skin: a hex dot lattice (reads as "control plane / fleet
+  // view" rather than "outer space"), calmer ambient motion, a tighter
+  // vignette, and span-name kickers ("PLAN_STEP →") that match the
+  // runbook's vocabulary. The wordmark swaps `docent` for `agentops` so
+  // an agentops viewer never sees the tool's branding leak through.
+  chrome: {
+    background: 'hex',
+    motes: 0.5,
+    vignette: 0.7,
+    kickerStyle: 'agentops',
+    wordmark: 'agentops',
+  },
 };
 
 export default tokens;

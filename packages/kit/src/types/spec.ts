@@ -267,6 +267,17 @@ export interface Scene {
    * scenes (e.g. `frame`, `recap`) may carry one synthetic beat or none.
    */
   beats?: Beat[];
+  /**
+   * Free-text override consumed by the `agentops` chrome kicker style. When
+   * the resolved `ChromeTokens.kickerStyle` is `'agentops'`, the renderer
+   * formats the kicker as `<hint or scene.type uppercased> →`. A spec author
+   * sets this on a scene whose `type` is too generic to read as a span name
+   * (e.g. set `chromeKickerHint: 'FLOW_DISCOVERY'` on a `figure` scene).
+   *
+   * Ignored under every other `kickerStyle` — and absent everywhere by
+   * default, so existing films keep their current kicker treatment.
+   */
+  chromeKickerHint?: string;
   /** Plugin-owned fields. The kit treats these as opaque. */
   [key: string]: unknown;
 }

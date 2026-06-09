@@ -24,7 +24,7 @@ export {
   type FittedTextProps,
 } from './fitted-text';
 export {Narration} from './narration';
-export {SceneFrame, type CameraState} from './scene-frame';
+export {SceneFrame, DEFAULT_CHROME, formatKicker, type CameraState} from './scene-frame';
 export {BoundValue, formatValue} from './bound-value';
 export {KaraokeText, type KaraokeTextProps} from './karaoke-text';
 export {
