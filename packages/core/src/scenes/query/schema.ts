@@ -109,6 +109,37 @@ export const schema: JSONSchema7 = {
       type: 'string',
       description: 'the scene heading drawn beneath the kicker.',
     },
+    dataSource: {
+      type: 'object',
+      description:
+        "R16.2 — OPTIONAL live data source. When present, the cascade's data-fetch stage evaluates this against the named endpoint at build time and replaces `result.value` with the live scalar / vector. Falls back to the AUTHORED value when the endpoint is unreachable or returns no data — the film always renders, fresh or stale. The authored `result.value` is the canonical fallback; the live fetch is an enhancement, never a precondition.",
+      required: ['kind', 'url'],
+      additionalProperties: false,
+      properties: {
+        kind: {
+          type: 'string',
+          enum: ['prometheus', 'loki'],
+          description:
+            'the endpoint dialect. `prometheus` hits POST /api/v1/query (and /api/v1/query_range when the result kind is `timeseries`). `loki` hits GET /loki/api/v1/query and is most useful for `table` result kinds (recent log entries).',
+        },
+        url: {
+          type: 'string',
+          minLength: 1,
+          description:
+            "endpoint base URL (no trailing slash; the stage appends the dialect's path). e.g. `http://localhost:9090` for Prometheus, `http://localhost:3100` for Loki.",
+        },
+        expr: {
+          type: 'string',
+          description:
+            "the query expression. PromQL for `prometheus`; LogQL for `loki`. When absent the stage joins `scene.query[].text` with newlines — useful when the displayed query IS the executed query (the lunch-and-learn flow).",
+        },
+        range: {
+          type: 'string',
+          description:
+            "time window for range queries (default `5m`). For Prometheus this becomes the `[range]` selector when the stage chooses query_range over instant query. Format: `30s`, `5m`, `1h`, `1d`.",
+        },
+      },
+    },
   },
 };
 

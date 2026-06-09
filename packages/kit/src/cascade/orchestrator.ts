@@ -40,6 +40,7 @@ import {runTtsStage, type TtsStageManifest} from './tts-stage';
 import {runTranslateStage} from './translate-stage';
 import {runLiveCaptureStage} from './live-capture-stage';
 import {runRenderStage} from './render-stage';
+import {runDataFetchStage} from './data-fetch-stage';
 
 /** A summarized record of what each stage did — surfaced for diagnostics. */
 export interface CascadeStageRecord {
@@ -47,6 +48,7 @@ export interface CascadeStageRecord {
     | 'preprocessSpec'
     | 'applyModifiers'
     | 'validate'
+    | 'dataFetch'
     | 'resolveStyle'
     | 'translate'
     | 'tts'
@@ -182,6 +184,39 @@ export const runCascade = async (
         summary: 'skipped — validate not yet implemented (A.4 pending)',
       });
     }
+  }
+
+  // ─── 1b. dataFetch — R16.2 live observability fetch ───────────────────
+  // Walk the spec for `dataSource` fields on query / waterfall scenes and
+  // replace authored fixtures with the live value. ALWAYS returns — every
+  // network failure logs + falls back to the authored value, so the
+  // render contract is unchanged. Identity when no scene declares a
+  // dataSource (the vast majority of films).
+  {
+    const t0 = performance.now();
+    const dfOpts: {publicDir?: string; filmId?: string} = {};
+    if (opts.publicDir !== undefined) dfOpts.publicDir = opts.publicDir;
+    if (spec.meta?.id) dfOpts.filmId = spec.meta.id;
+    const df = await runDataFetchStage(spec, dfOpts);
+    spec = df.spec;
+    const seconds = (performance.now() - t0) / 1000;
+    const ok = df.entries.filter((e) => e.ok).length;
+    const fallback = df.entries.length - ok;
+    // Surface logs at info+warn level on the console for now — the
+    // engine's stage record only carries a summary string. A future
+    // refactor could route these through a structured logger.
+    for (const log of df.logs) {
+      if (log.level === 'warn') console.warn(log.message);
+      else console.log(log.message);
+    }
+    stages.push({
+      name: 'dataFetch',
+      seconds,
+      summary:
+        df.entries.length === 0
+          ? 'no live data sources in spec'
+          : `${ok}/${df.entries.length} live (${fallback} fallback)`,
+    });
   }
 
   // ─── 2. resolveStyle ─────────────────────────────────────────────────

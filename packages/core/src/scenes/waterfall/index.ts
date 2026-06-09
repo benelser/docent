@@ -59,5 +59,10 @@ export const waterfallPlugin: ScenePlugin<WaterfallScene> = {
   ],
 };
 
-export type {WaterfallScene, WaterfallSpan, WaterfallSpanKind} from './validate';
+export type {
+  WaterfallScene,
+  WaterfallSpan,
+  WaterfallSpanKind,
+  WaterfallDataSource,
+} from './validate';
 export default waterfallPlugin;

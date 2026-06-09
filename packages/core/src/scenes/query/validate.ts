@@ -36,6 +36,21 @@ export interface QueryResult {
   format?: 'int' | 'float1' | 'percent';
 }
 
+/**
+ * R16.2 — live observability data source. When present, the cascade's
+ * data-fetch stage hits this endpoint at build time and replaces
+ * `result.value` with the live evaluation. The authored value is the
+ * fallback when the endpoint is unreachable or returns no data.
+ */
+export interface QueryDataSource {
+  kind: 'prometheus' | 'loki';
+  url: string;
+  /** When absent, the stage joins `scene.query[].text` with newlines. */
+  expr?: string;
+  /** Range selector for range queries. Default `5m`. */
+  range?: string;
+}
+
 export interface QueryScene extends Scene {
   type: 'query';
   dialect: 'promql' | 'logql' | 'sql' | 'jql' | 'kql';
@@ -43,6 +58,7 @@ export interface QueryScene extends Scene {
   result: QueryResult;
   kicker?: string;
   heading?: string;
+  dataSource?: QueryDataSource;
 }
 
 const isNumber = (v: unknown): v is number =>
@@ -128,6 +144,40 @@ export const validate = (
       lineRevealIds.add(rid);
     }
   });
+
+  // --- 2b. dataSource shape (R16.2) ---------------------------------------
+  // The JSON Schema enforces kind/url presence; here we cross-validate that
+  // the dialect matches the dataSource kind. A query authored as `sql` with
+  // a `prometheus` dataSource is almost certainly a typo — the executor
+  // wouldn't know what to do with the SQL string.
+  const ds = scene.dataSource;
+  if (ds && typeof ds === 'object') {
+    const dialect = scene.dialect;
+    if (ds.kind === 'prometheus' && dialect !== 'promql') {
+      issues.push({
+        path: 'dataSource.kind',
+        message: `dataSource.kind="prometheus" but scene.dialect="${dialect}"; PromQL is the dialect Prometheus accepts. Did you mean dialect: "promql"?`,
+        severity: 'warning',
+        code: 'query/datasource-dialect-mismatch',
+      });
+    }
+    if (ds.kind === 'loki' && dialect !== 'logql') {
+      issues.push({
+        path: 'dataSource.kind',
+        message: `dataSource.kind="loki" but scene.dialect="${dialect}"; LogQL is the dialect Loki accepts. Did you mean dialect: "logql"?`,
+        severity: 'warning',
+        code: 'query/datasource-dialect-mismatch',
+      });
+    }
+    if (typeof ds.url === 'string' && !/^https?:\/\//i.test(ds.url)) {
+      issues.push({
+        path: 'dataSource.url',
+        message: `dataSource.url "${ds.url}" must be an absolute http(s):// URL`,
+        severity: 'error',
+        code: 'query/datasource-url-shape',
+      });
+    }
+  }
 
   // --- 3. beat reveal ids resolve to a line -------------------------------
   // A stale reveal id silently no-ops in the renderer — warn so the author

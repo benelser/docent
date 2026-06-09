@@ -453,3 +453,19 @@ export type {BuildFcpxmlOptions} from './cascade/fcpxml';
 
 export {indexDirectory} from './frameworks/asset-index';
 export type {AssetKind, AssetEntry, MediaProbe, AssetIndex} from './frameworks/asset-index';
+
+// ---------- R16.2 — live observability data fetch --------------------------
+//
+// Type-only exports for the data-fetch stage. The stage itself is a Node-only
+// internal of the cascade (it imports `node:fs`, `node:crypto` — never
+// browser-safe), so the runner is NOT re-exported here — only the public
+// interfaces a third-party tool (a hermetic CI gate, a manifest inspector)
+// needs to read what was fetched.
+
+export type {
+  DataFetchStageOptions,
+  DataFetchStageResult,
+  DataFetchManifestEntry,
+  DataFetchPersistedManifest,
+  DataFetchLog,
+} from './cascade/data-fetch-stage';
