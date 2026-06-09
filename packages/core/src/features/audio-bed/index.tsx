@@ -58,6 +58,11 @@ const AudioBedOverlay: React.FC<FilmFeatureProps> = ({
       // gracefully degrades when either is absent / empty.
       {...(wordTimings ? {wordTimings} : {})}
       {...(sceneClusters ? {sceneClusters} : {})}
+      // R16.4: thread the spec meta through so the bed can read namespaced
+      // featureOptions (e.g. the agentopsContextHud stability curve) and
+      // modulate its own volume in response. Absent → byte-identical
+      // legacy behaviour, which the gracefully-degraded default handles.
+      meta={meta}
     />
   );
 };

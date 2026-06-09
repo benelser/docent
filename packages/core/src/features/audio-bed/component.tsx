@@ -57,6 +57,7 @@ import type {
   FilmFeatureBeatSlot,
   FilmFeatureSceneClusterSlot,
   FilmFeatureWordTimingSlot,
+  FilmMeta,
 } from '@bjelser/kit';
 
 export interface AudioBedProps {
@@ -152,6 +153,19 @@ export interface AudioBedProps {
    * if `baseVolume * swellGain` would exceed 1.0.
    */
   readonly swellGain?: number;
+  /**
+   * R16.4 — the film's meta block, so the bed can read namespaced
+   * `featureOptions` and modulate its own volume in response. Today's
+   * one consumer is the `agentopsContextHud` plugin's stability curve:
+   * when a per-scene stability value crosses the alert/concern thresholds
+   * the bed ducks harder than its natural narration-duck would.
+   *
+   * Absent → byte-identical legacy behaviour. The Path-A coupling is one
+   * key (`featureOptions.agentopsContextHud.stability`) and will move to
+   * a generalised `meta.audioMix.duckCurve` channel when a SECOND feature
+   * wants the same plumbing (the Path-B follow-up the survey notes).
+   */
+  readonly meta?: FilmMeta;
 }
 
 /** One narration WINDOW projected to absolute film frames. */
@@ -346,6 +360,108 @@ const swellWindows = (
   return out;
 };
 
+// ── R16.4 — emotional throughline: per-scene stability-driven duck ─────────
+//
+// One feature plugin (the `agentopsContextHud`) authors a per-scene stability
+// curve on `meta.featureOptions.agentopsContextHud.stability`. The audio bed
+// reads the SAME curve so the music bed ducks harder in low-stability scenes,
+// in lockstep with the visual stain layer.
+//
+// This is a TACTICAL v1 coupling — the audio bed knows ONE feature's
+// namespace key. The strategic move (R-spec follow-up, "Path B" in the
+// survey) is to generalize: have the kit thread a per-scene gain curve on
+// FilmFeatureProps (`meta.audioMix.duckCurve`), let any feature populate it
+// via `preprocessSpec`, and the bed reads only that. We'll know we need that
+// the moment a SECOND feature wants the same plumbing; until then the cost
+// of a single namespaced read here is lower than the cost of building the
+// generalised side channel.
+
+/**
+ * The namespace key shared between the audio-bed and the
+ * `agentopsContextHud` feature plugin. The key string lives here so the
+ * audio-bed has no compile-time dependency on the tutorial plugin's code.
+ */
+const AGENTOPS_HUD_KEY = 'agentopsContextHud' as const;
+const STABILITY_CONCERN_THRESHOLD = 0.92;
+const STABILITY_ALERT_THRESHOLD = 0.85;
+
+/**
+ * Mirror of the HUD plugin's `stabilityToMusicDuckGain` — kept in sync by
+ * convention. Both files document the anchors so a drift between them is
+ * obvious at code review.
+ */
+const stabilityToMusicDuckGain = (s: number): number => {
+  if (s >= STABILITY_CONCERN_THRESHOLD) return 1.0;
+  if (s <= 0.80) return 0.5;
+  if (s >= STABILITY_ALERT_THRESHOLD) {
+    return 0.71 + ((s - STABILITY_ALERT_THRESHOLD) / (STABILITY_CONCERN_THRESHOLD - STABILITY_ALERT_THRESHOLD)) * (1.0 - 0.71);
+  }
+  return 0.5 + ((s - 0.80) / (STABILITY_ALERT_THRESHOLD - 0.80)) * (0.71 - 0.5);
+};
+
+/**
+ * Read the per-scene stability array off the HUD plugin's namespace bag.
+ * Defensive — returns `null` when absent or malformed, in which case the
+ * bed renders byte-identically to its R15 behaviour.
+ */
+const readStabilityCurve = (meta: FilmMeta | undefined): ReadonlyArray<number> | null => {
+  if (!meta) return null;
+  const bag = (meta as unknown as {
+    featureOptions?: Record<string, unknown>;
+  }).featureOptions?.[AGENTOPS_HUD_KEY];
+  if (!bag || typeof bag !== 'object') return null;
+  const arr = (bag as {stability?: unknown}).stability;
+  if (!Array.isArray(arr)) return null;
+  if (!arr.every((v) => typeof v === 'number')) return null;
+  return arr as ReadonlyArray<number>;
+};
+
+/**
+ * Project the per-scene stability curve onto absolute frame windows. Same
+ * derivation as the rumble track uses — we walk the `beats` list to find
+ * each scene's frame span. Returns one entry per scene with the per-scene
+ * duck-gain already resolved; an empty list means "no curve, ungated".
+ */
+interface StabilityWindow {
+  readonly start: number;
+  readonly end: number;
+  readonly gain: number; // multiplier on the bed's volume
+}
+
+const stabilityWindows = (
+  beats: ReadonlyArray<FilmFeatureBeatSlot>,
+  curve: ReadonlyArray<number> | null,
+  totalFrames: number,
+): ReadonlyArray<StabilityWindow> => {
+  if (!curve) return [];
+  const byScene = new Map<number, {start: number; end: number}>();
+  for (const b of beats) {
+    const end = b.startFrame + b.frames;
+    const prev = byScene.get(b.sceneIndex);
+    if (!prev) {
+      byScene.set(b.sceneIndex, {start: b.startFrame, end});
+      continue;
+    }
+    byScene.set(b.sceneIndex, {
+      start: Math.min(prev.start, b.startFrame),
+      end: Math.max(prev.end, end),
+    });
+  }
+  const out: StabilityWindow[] = [];
+  for (const [sceneIndex, win] of byScene) {
+    const s = curve[sceneIndex] ?? curve[curve.length - 1] ?? 0.95;
+    const gain = stabilityToMusicDuckGain(s);
+    if (gain >= 1.0 - 1e-6) continue; // healthy scenes contribute nothing
+    out.push({
+      start: win.start,
+      end: Math.min(win.end, totalFrames),
+      gain,
+    });
+  }
+  out.sort((a, b) => a.start - b.start);
+  return out;
+};
+
 /**
  * Resolve a music asset to the URL Remotion will fetch. URLs pass
  * through; relative paths go through `staticFile()` so the Remotion
@@ -376,6 +492,7 @@ export const AudioBed: React.FC<AudioBedProps> = ({
   swellMinGapFrames = 24,
   swellRampFrames = 12,
   swellGain = 1.4,
+  meta,
 }) => {
   // Default ramp: ~500ms each side at the project fps (cinema-grade
   // smooth-and-asymmetric, per 250's Founders Trailer mix engineering).
@@ -421,6 +538,19 @@ export const AudioBed: React.FC<AudioBedProps> = ({
       swellMinGapFrames,
     ],
   );
+  // R16.4: per-scene stability-driven duck windows. Empty when no curve
+  // is authored on meta — the bed renders byte-identically. Computed once
+  // per render (the curve and the beat list are stable).
+  const stabilityWins = useMemo(
+    () => stabilityWindows(beats, readStabilityCurve(meta), totalFrames),
+    [beats, meta, totalFrames],
+  );
+  // Width of the per-scene boundary ramp the stability duck fades over.
+  // 24 frames ≈ 800ms at 30fps — slow enough that the boundary doesn't
+  // pop as a fader move, fast enough to land inside a typical
+  // 5-15 second scene without eating its whole duration.
+  const stabilityRamp = Math.max(2, Math.round(fps * 0.8));
+
   // Whether ANY beat has word timings — if YES, the asymmetric ramps
   // are the right shape; if NO, every window is a per-beat window and
   // the symmetric `symRamp` keeps the legacy duck profile.
@@ -485,11 +615,33 @@ export const AudioBed: React.FC<AudioBedProps> = ({
         // ducked).
         if (swellMax > v) v = swellMax;
       }
+      // R16.4: per-scene stability-driven duck. The gain is a multiplier
+      // applied AFTER the narration-duck and swell composition — so the
+      // bed's natural duck still works inside an alert scene; the
+      // stability multiplier just pulls the floor lower so the music sits
+      // farther back. The boundary fade uses a piecewise-linear ramp from
+      // 1.0 (no extra duck) to the scene's resolved gain.
+      if (stabilityWins.length > 0) {
+        let stabGain = 1.0;
+        for (const {start, end, gain} of stabilityWins) {
+          if (frame < start - stabilityRamp || frame > end + stabilityRamp) continue;
+          const g = interpolate(
+            frame,
+            [start - stabilityRamp, start, end, end + stabilityRamp],
+            [1.0, gain, gain, 1.0],
+            {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'},
+          );
+          if (g < stabGain) stabGain = g;
+        }
+        v *= stabGain;
+      }
       return v;
     },
     [
       windows,
       swells,
+      stabilityWins,
+      stabilityRamp,
       baseVolume,
       duckedVolume,
       symRamp,
