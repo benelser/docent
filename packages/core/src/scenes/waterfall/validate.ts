@@ -39,11 +39,32 @@ export interface WaterfallSpan {
   attributes?: Record<string, string | number>;
 }
 
+/**
+ * R16.2 — live Jaeger data source. When present, the cascade's data-fetch
+ * stage hits the Jaeger query API at build time and replaces `scene.spans`
+ * with the live trace's spans. The authored `spans` are the fallback when
+ * the endpoint is unreachable or no recent trace exists for the service.
+ */
+export interface WaterfallDataSource {
+  kind: 'jaeger';
+  url: string;
+  service: string;
+  /** Specific trace id (overrides `recent`). */
+  traceId?: string;
+  /** Pick the most-recent trace from the service. Default true when traceId absent. */
+  recent?: boolean;
+  /** Operation filter (Jaeger /api/traces `operation=` parameter). */
+  operation?: string;
+  /** Max spans to display (waterfall renders best at <=12). Default 12. */
+  maxSpans?: number;
+}
+
 export interface WaterfallScene extends Scene {
   type: 'waterfall';
   spans: WaterfallSpan[];
   kicker?: string;
   heading?: string;
+  dataSource?: WaterfallDataSource;
 }
 
 const KNOWN_KINDS = new Set<WaterfallSpanKind>([
@@ -221,6 +242,19 @@ export const validate = (
       severity: 'error',
       code: 'waterfall/no-root',
     });
+  }
+
+  // R16.2 — dataSource shape (schema enforces required fields; cross-check the URL form here).
+  const ds = (scene as WaterfallScene).dataSource;
+  if (ds && typeof ds === 'object') {
+    if (typeof ds.url === 'string' && !/^https?:\/\//i.test(ds.url)) {
+      issues.push({
+        path: `${at}.dataSource.url`,
+        message: `dataSource.url "${ds.url}" must be an absolute http(s):// URL`,
+        severity: 'error',
+        code: 'waterfall/datasource-url-shape',
+      });
+    }
   }
 
   return issues;

@@ -109,6 +109,54 @@ export const schema: JSONSchema7 = {
       type: 'string',
       description: 'the scene heading drawn beneath the kicker.',
     },
+    dataSource: {
+      type: 'object',
+      description:
+        "R16.2 — OPTIONAL live trace source. When present, the cascade's data-fetch stage hits a Jaeger-compatible endpoint at build time and REPLACES `scene.spans` with the trace's spans (sorted, parent-linked, optionally capped). Falls back to the AUTHORED spans when the endpoint is unreachable or when the named service has no recent traces.",
+      required: ['kind', 'url', 'service'],
+      additionalProperties: false,
+      properties: {
+        kind: {
+          type: 'string',
+          enum: ['jaeger'],
+          description:
+            'the trace backend dialect. Only `jaeger` for now — Tempo / Zipkin can be added when their query API shapes are needed.',
+        },
+        url: {
+          type: 'string',
+          minLength: 1,
+          description:
+            "Jaeger query base URL (no trailing slash). e.g. `http://localhost:16686`. The stage appends `/api/traces?...`.",
+        },
+        service: {
+          type: 'string',
+          minLength: 1,
+          description:
+            'the service the root span belongs to — passed as the Jaeger `service=` parameter (e.g. `orchestrator`, `researcher`).',
+        },
+        traceId: {
+          type: 'string',
+          description:
+            'a specific trace id to fetch (overrides `recent`). Use this when the film should always reference the same canonical trace.',
+        },
+        recent: {
+          type: 'boolean',
+          description:
+            'fetch the most-recent trace from the service (sorted by start time, take data[0]). Default `true` when traceId is absent. The killer case — every render shows the freshest agent run.',
+        },
+        operation: {
+          type: 'string',
+          description:
+            "optional operation filter (passed as the Jaeger `operation=` parameter). Narrows to a specific span name (e.g. `plan_step`).",
+        },
+        maxSpans: {
+          type: 'integer',
+          minimum: 1,
+          description:
+            "max spans to display. The waterfall renders best at <=12 rows; deeper traces are visually noisy. The stage trims to the FIRST `maxSpans` spans in start-time order — keeps the trace's prefix coherent. Default 12.",
+        },
+      },
+    },
   },
 };
 

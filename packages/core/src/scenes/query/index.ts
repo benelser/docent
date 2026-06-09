@@ -60,5 +60,5 @@ export const queryPlugin: ScenePlugin<QueryScene> = {
   // like quantities / waterfall.
 };
 
-export type {QueryScene, QueryLine, QueryResult} from './validate';
+export type {QueryScene, QueryLine, QueryResult, QueryDataSource} from './validate';
 export default queryPlugin;
