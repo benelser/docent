@@ -202,6 +202,79 @@ const runFfmpeg = (
 };
 
 /**
+ * Verify a rendered MP4 is structurally sound. Runs `ffprobe` against the
+ * file and inspects stderr for the canonical corruption signatures we've
+ * observed escaping from Remotion's stitch step:
+ *
+ *   - "Found duplicated MOOV Atom" — the faststart pass left two moovs
+ *     in the file, almost certain to ship a corrupt stream.
+ *   - "Invalid NAL unit size" — the H.264 stream offsets don't match the
+ *     moov atom's expectations; frames are unreadable.
+ *
+ * Returns `{ok: false, reason}` when either signature appears, `{ok: true}`
+ * otherwise. A missing file or zero bytes is also a fail.
+ */
+const verifyRenderOutput = async (
+  outPath: string,
+  ffmpegBin: string,
+): Promise<{ok: true} | {ok: false; reason: string}> => {
+  // The binary path arrives as ffmpeg by convention; ffprobe sits next
+  // to it (same package) in every standard packaging.
+  const ffprobeBin = ffmpegBin.replace(/ffmpeg(\.exe)?$/i, 'ffprobe$1');
+
+  if (!existsSync(outPath)) {
+    return {ok: false, reason: `file does not exist at ${outPath}`};
+  }
+  const stats = await new Promise<{size: number} | null>((res) => {
+    try {
+      const child = spawn('wc', ['-c', outPath], {stdio: ['ignore', 'pipe', 'ignore']});
+      let out = '';
+      child.stdout?.on('data', (c: Buffer) => {
+        out += c.toString();
+      });
+      child.on('exit', () => {
+        const n = parseInt(out.trim().split(/\s+/)[0] ?? '0', 10);
+        res({size: isFinite(n) ? n : 0});
+      });
+      child.on('error', () => res(null));
+    } catch {
+      res(null);
+    }
+  });
+  if (stats && stats.size < 1024) {
+    return {ok: false, reason: `file is suspiciously small (${stats.size} bytes)`};
+  }
+
+  // Capture ffprobe stderr — that's where corruption signatures land.
+  // `-show_format` is enough to exercise the demuxer + first-frame
+  // decode path without dumping the whole stream.
+  const stderr = await new Promise<string>((res) => {
+    const child = spawn(
+      ffprobeBin,
+      ['-v', 'error', '-show_format', '-show_streams', outPath],
+      {stdio: ['ignore', 'ignore', 'pipe']},
+    );
+    let buf = '';
+    child.stderr?.on('data', (c: Buffer) => {
+      buf += c.toString();
+    });
+    child.on('exit', () => res(buf));
+    child.on('error', () => res(''));
+  });
+
+  if (/duplicated MOOV/i.test(stderr)) {
+    return {ok: false, reason: 'duplicated MOOV atom (faststart race)'};
+  }
+  if (/Invalid NAL unit/i.test(stderr)) {
+    return {ok: false, reason: 'invalid NAL units (H.264 stream corrupt)'};
+  }
+  if (/Error splitting the input/i.test(stderr)) {
+    return {ok: false, reason: 'ffprobe cannot split stream into NAL units'};
+  }
+  return {ok: true};
+};
+
+/**
  * Stamp color metadata onto the rendered MP4 in-place. For SDR this is a
  * pure remux (`-c copy`); for HDR10 it's a real re-encode with libx265.
  *
@@ -677,6 +750,30 @@ export const runRenderStage = async (
   // post-processing — colorspace metadata lives in `sequence.json.notes`
   // and audio doesn't exist for a frame sequence, so LUFS is undefined.
   const isSequence = plan?.delivery.kind === 'sequence';
+
+  // ─── Post-render integrity verify ────────────────────────────────────
+  // Remotion's ffmpeg stitch step has an intermittent race during the
+  // `-movflags +faststart` second pass: the moov atom gets relocated to
+  // the file head but the stream-data offsets occasionally don't get
+  // updated cleanly, producing a duplicated-MOOV file with scrambled
+  // NAL units. The render claims success and the user gets a silent-
+  // broken MP4 that fails the moment they try to play it.
+  //
+  // Catch it here so the cascade fails loudly with an actionable error
+  // ("re-run docent build") instead of shipping a corrupt artifact.
+  // Skip stills (PNG has no MOOV) and sequences (no single file).
+  if (!isStill && !isSequence) {
+    const verifyResult = await verifyRenderOutput(finalOutPath, defaultFfmpegBin());
+    if (!verifyResult.ok) {
+      throw new Error(
+        `[@bjelser/kit] post-render verify failed: ${verifyResult.reason}\n` +
+          `  The rendered file at ${finalOutPath} is corrupted.\n` +
+          `  Most likely cause: Remotion's ffmpeg faststart race during the\n` +
+          `  second-pass moov atom shuffle. Re-running \`docent build\`\n` +
+          `  typically produces a clean file on the next attempt.`,
+      );
+    }
+  }
 
   // ─── R10.4 — color space tagging ───────────────────────────────────────
   // Tag the final delivered file in place first (default no-op when
