@@ -139,6 +139,13 @@ export const FigureSceneComponent: React.FC<SceneRenderProps<FigureSceneSpec>> =
     const lit = st === 'focus' || st === 'live';
     const dim = st === 'dim';
     const flipLeft = nx > 0.66;
+    // R14 — per-callout accent: when the callout names an accent key
+    // (e.g. 'violet' for plan_step, 'green' for llm_call, 'rose' for
+    // hallucination), resolve it against the style's accent palette.
+    // Falls back to the scene default when absent or when the key isn't
+    // in the palette. This lets a single figure carry span-typed
+    // callouts that match the brand-pack-defined accents.
+    const calloutAccentHex = accentOf(style, c.accent);
 
     return (
       <div
@@ -159,11 +166,11 @@ export const FigureSceneComponent: React.FC<SceneRenderProps<FigureSceneSpec>> =
             width: 26,
             height: 26,
             borderRadius: '50%',
-            border: `2.5px solid ${accentHex}`,
-            background: glow(accentHex, st === 'focus' ? 0.42 : 0.22),
+            border: `2.5px solid ${calloutAccentHex}`,
+            background: glow(calloutAccentHex, st === 'focus' ? 0.42 : 0.22),
             boxShadow: dim
               ? 'none'
-              : `0 0 ${st === 'focus' ? 26 : 16}px -2px ${glow(accentHex, 0.85)}`,
+              : `0 0 ${st === 'focus' ? 26 : 16}px -2px ${glow(calloutAccentHex, 0.85)}`,
             transform: `scale(${interpolate(a, [0, 1], [0.4, 1])})`,
           }}
         />
@@ -175,7 +182,7 @@ export const FigureSceneComponent: React.FC<SceneRenderProps<FigureSceneSpec>> =
             width: 10,
             height: 10,
             borderRadius: '50%',
-            background: accentHex,
+            background: calloutAccentHex,
           }}
         />
         {/* the label card, flipped away from the stage edge.
@@ -199,7 +206,7 @@ export const FigureSceneComponent: React.FC<SceneRenderProps<FigureSceneSpec>> =
             padding: '9px 15px',
             borderRadius: 10,
             background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
-            border: `1.5px solid ${lit ? accentHex : bg.line}`,
+            border: `1.5px solid ${lit ? calloutAccentHex : bg.line}`,
             boxShadow: `0 18px 40px -16px #000000ee`,
           }}
         >

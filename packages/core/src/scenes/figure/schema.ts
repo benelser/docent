@@ -65,6 +65,12 @@ export const schema: JSONSchema7 = {
             minLength: 1,
             description: 'an optional longer note under the label.',
           },
+          accent: {
+            type: 'string',
+            minLength: 1,
+            description:
+              "optional accent key from the resolved style's accent palette (e.g. 'violet', 'green', 'rose'). When set, this callout renders its marker, ring glow, and label-card border in this color instead of the scene's default accent. Lets a single figure carry span-typed callouts (purple plan_step, green llm_call, brown tool_call, red hallucination) without splitting into multiple scenes. Falls back to the scene default when absent or when the key isn't in the resolved accent palette.",
+          },
         },
       },
     },

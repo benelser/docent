@@ -69,6 +69,17 @@ export interface FigureCallout {
   at: [number, number];
   label: string;
   note?: string;
+  /**
+   * Optional accent key from the resolved style's accent palette
+   * (e.g. 'violet', 'green', 'rose'). When set, this callout renders
+   * its marker dot, label-card border, and ring glow in this color
+   * instead of the scene's default accent. Lets a single figure carry
+   * multiple span-typed callouts (purple plan_step, green llm_call,
+   * brown tool_call, red hallucination) without invoking multiple
+   * figure scenes. Falls back to the scene default when absent or
+   * when the key isn't in the resolved accent palette.
+   */
+  accent?: string;
 }
 
 export interface FigureScene extends Scene {
