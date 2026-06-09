@@ -38,6 +38,7 @@ import type {Beat, Scene} from '../types/spec';
 import type {ResolvedStyle} from '../types/style';
 import {runTtsStage, type TtsStageManifest} from './tts-stage';
 import {runTranslateStage} from './translate-stage';
+import {runLiveCaptureStage} from './live-capture-stage';
 import {runRenderStage} from './render-stage';
 
 /** A summarized record of what each stage did — surfaced for diagnostics. */
@@ -49,6 +50,7 @@ export interface CascadeStageRecord {
     | 'resolveStyle'
     | 'translate'
     | 'tts'
+    | 'liveCapture'
     | 'render';
   readonly seconds: number;
   /** Stage-specific summary line (e.g. "12 beats · 3.4s narration"). */
@@ -283,6 +285,40 @@ export const runCascade = async (
       name: 'tts',
       seconds,
       summary: `${ttsManifest.beats.length} beats · ${ttsManifest.totalSeconds.toFixed(1)}s narration · ${ttsManifest.providerId}`,
+    });
+  }
+
+  // ─── 3b. liveCapture — R16.1 ──────────────────────────────────────────
+  // For every scene whose `type === 'live-browser'`, drive a headless
+  // Playwright session against its declared URL+actions and write the
+  // captured MP4 under `<publicDir>/clips/<filmId>/live-<sceneId>.mp4`.
+  // The render-side `live-browser` scene component reads that exact path.
+  //
+  // Quiet no-op when the spec has no live-browser scenes (the common case).
+  // Soft-fails when Playwright is missing — the render keeps going against
+  // the placeholder or any prior on-disk clip.
+  {
+    const t0 = performance.now();
+    const captureOpts: Parameters<typeof runLiveCaptureStage>[1] = {};
+    if (opts.publicDir !== undefined) captureOpts.publicDir = opts.publicDir;
+    if (spec.meta?.id) captureOpts.filmId = spec.meta.id;
+    // The live-capture stage shares the same per-build cache policy as
+    // TTS: `--no-tts-cache` propagates as `noCache` so a fresh capture is
+    // forced when the operator wants it. This is the conservative choice
+    // — a more granular `--no-live-cache` is a future CLI flag.
+    if (opts.useTtsCache === false) captureOpts.noCache = true;
+    const captureManifest = await runLiveCaptureStage(spec, captureOpts);
+    const seconds = (performance.now() - t0) / 1000;
+    const total = captureManifest.clips.length;
+    const cached = captureManifest.clips.filter((c) => c.cached).length;
+    const fresh = total - cached;
+    stages.push({
+      name: 'liveCapture',
+      seconds,
+      summary:
+        total === 0
+          ? 'no live-browser scenes'
+          : `${total} clip(s) · ${cached} cached · ${fresh} captured`,
     });
   }
 

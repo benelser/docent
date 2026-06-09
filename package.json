@@ -22,5 +22,8 @@
   "scripts": {
     "docent": "bun packages/cli/src/index.ts"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
 }

@@ -41,6 +41,7 @@ import {figurePlugin} from './scenes/figure';
 import {framePlugin} from './scenes/frame';
 import {journeyMapPlugin} from './scenes/journey-map';
 import {landscapePlugin} from './scenes/landscape';
+import {liveBrowserPlugin} from './scenes/live-browser';
 import {mapPlugin} from './scenes/map';
 import {mechanismPlugin} from './scenes/mechanism';
 import {objectionPlugin} from './scenes/objection';
@@ -86,6 +87,7 @@ export const corePluginsBrowser: ReadonlyArray<Plugin> = [
   framePlugin,
   journeyMapPlugin,
   landscapePlugin,
+  liveBrowserPlugin,
   mapPlugin,
   mechanismPlugin,
   objectionPlugin,
