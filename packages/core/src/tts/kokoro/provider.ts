@@ -51,6 +51,11 @@ export const KOKORO_CAPABILITIES: TtsCapabilities = {
   ssml: false,
   voiceCloning: false,
   local: true,
+  // Kokoro 82M takes voice id + text only — no `instructions:` field, no
+  // SSML emotion tags. `voiceDirection` is silently ignored when this
+  // provider is active. Authors who want tone steering should pick
+  // openai gpt-4o-mini-tts (which declares toneSteering: true).
+  toneSteering: false,
 };
 
 // Default model id — matches the canonical Kokoro 82M ONNX export on HF.

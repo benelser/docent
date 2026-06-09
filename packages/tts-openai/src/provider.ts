@@ -37,6 +37,14 @@ export const OPENAI_CAPABILITIES: TtsCapabilities = {
   ssml: false,
   voiceCloning: false,
   local: false,
+  // `gpt-4o-mini-tts` accepts `instructions:` for free-text tone
+  // steering ("speak this with a pause", "ask rhetorically", "warm,
+  // conversational, lunch-and-learn tone"). The cascade routes the
+  // beat-level `voiceDirection` field directly to this. Older
+  // `tts-1` / `tts-1-hd` ignore the field but don't error — declaring
+  // `true` here is correct for the modern recommended model and
+  // safely no-ops on legacy.
+  toneSteering: true,
 };
 
 // The closed voice set OpenAI exposes for the `tts-1` family.

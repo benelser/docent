@@ -46,6 +46,17 @@ export interface TtsCapabilities {
   readonly voiceCloning: boolean;
   /** Whether the provider runs locally (no network call). */
   readonly local: boolean;
+  /**
+   * Whether the provider accepts free-text performance direction at
+   * synth-time (e.g. OpenAI `gpt-4o-mini-tts.instructions`, ElevenLabs
+   * `voice_settings.style`, future SSML emotion tags). Surfaces the
+   * beat-level `voiceDirection` field — when this is `true`, the
+   * cascade routes the field through; when `false`, it's silently
+   * ignored. The CLI's `docent voices` and `docent doctor` report
+   * this so authors know whether their voiceDirection writing will
+   * actually be honored.
+   */
+  readonly toneSteering: boolean;
 }
 
 /* ───────── construction context ───────── */
