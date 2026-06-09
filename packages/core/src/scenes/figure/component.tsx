@@ -178,19 +178,24 @@ export const FigureSceneComponent: React.FC<SceneRenderProps<FigureSceneSpec>> =
             background: accentHex,
           }}
         />
-        {/* the label card, flipped away from the stage edge */}
+        {/* the label card, flipped away from the stage edge.
+            The horizontal offset has to clear the marker dot AND any
+            image content adjacent to the dot — 22px placed labels
+            directly over the right half of a diagram box. 44px gives
+            the label its own gutter so it never overlaps the region
+            it annotates. */}
         <div
           style={{
             position: 'absolute',
-            left: flipLeft ? undefined : 22,
-            right: flipLeft ? 22 : undefined,
+            left: flipLeft ? undefined : 44,
+            right: flipLeft ? 44 : undefined,
             top: -18,
             transform: `translateX(${interpolate(
               a,
               [0, 1],
               [flipLeft ? 14 : -14, 0],
             )}px)`,
-            maxWidth: 320,
+            maxWidth: 380,
             padding: '9px 15px',
             borderRadius: 10,
             background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
@@ -198,12 +203,13 @@ export const FigureSceneComponent: React.FC<SceneRenderProps<FigureSceneSpec>> =
             boxShadow: `0 18px 40px -16px #000000ee`,
           }}
         >
-          {/* callout label / note — the card is maxWidth 320 with 15px
-              horizontal padding (~290px content). Wrap to 2 lines for
-              labels, 3 for notes. */}
+          {/* callout label / note — the card is maxWidth 380 with 15px
+              horizontal padding (~350px content). Wrap to 2 lines for
+              labels, 4 lines for notes so the dense AgentOps-style
+              annotations don't truncate to "...". */}
           <FittedText
             text={c.label}
-            maxWidth={290}
+            maxWidth={350}
             basePx={21}
             floorPx={13}
             charAdvance={0.58}
@@ -220,12 +226,12 @@ export const FigureSceneComponent: React.FC<SceneRenderProps<FigureSceneSpec>> =
           {c.note ? (
             <FittedText
               text={c.note}
-              maxWidth={290}
+              maxWidth={350}
               basePx={16}
               floorPx={11}
               charAdvance={0.58}
               mode="shrink-wrap"
-              maxLines={3}
+              maxLines={4}
               lineHeight={1.4}
               style={{
                 fontFamily: sansFamily,

@@ -95,10 +95,15 @@ export const KaraokeText: React.FC<KaraokeTextProps> = ({
       {words.map((w, i) => {
         const start = w.startFrame + clipStartFrame;
         const end = w.endFrame + clipStartFrame;
+        // The pre-active opacity is the floor a viewer SEES for unspoken
+        // text. 0.55 was too dim against a near-black background — the
+        // upcoming words become unreadable and the viewer can't read
+        // AHEAD of the narration. 0.78 keeps them clearly legible while
+        // still distinct from the active word's full opacity.
         const opacity = interpolate(
           frame,
           [start - 2, start, end, end + 2],
-          [0.55, 1, 1, 1],
+          [0.78, 1, 1, 1],
           {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'},
         );
         const isActive = frame >= start && frame < end;

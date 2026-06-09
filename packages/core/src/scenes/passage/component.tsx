@@ -245,7 +245,14 @@ export const PassageSceneComponent: React.FC<SceneRenderProps<PassageSceneSpec>>
                 <KaraokeText
                   words={beatWords!}
                   clipStartFrame={activeBeatStartFrame}
-                  dimColor={ink.faint}
+                  // ink.mid (not ink.faint) — the passage scene is text
+                  // the viewer is meant to READ along with, not just
+                  // glance at. `ink.faint` rendered the upcoming words
+                  // as near-invisible gray on near-black; viewers had no
+                  // way to read ahead of the narrator. `ink.mid` keeps
+                  // upcoming words clearly legible while the active word
+                  // still pops with the accent color.
+                  dimColor={ink.mid}
                   accentColor={accentHex}
                   underlineActive
                   style={{whiteSpace: 'pre-wrap', fontSize: fontSize * 1.15}}
