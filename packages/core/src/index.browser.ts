@@ -27,7 +27,7 @@ import {narrationFeature} from './features/narration';
 import {audioRhythmFeature} from './features/audio-rhythm';
 import {audioBedFeature} from './features/audio-bed';
 
-// Scenes — same 29 as index.generated
+// Scenes — same set as index.generated
 import {bigIdeaPlugin} from './scenes/big-idea';
 import {causalLoopPlugin} from './scenes/causal-loop';
 import {chartPlugin} from './scenes/chart';
@@ -50,6 +50,7 @@ import {probePlugin} from './scenes/probe';
 import {progressionPlugin} from './scenes/progression';
 import {provocationPlugin} from './scenes/provocation';
 import {quantitiesPlugin} from './scenes/quantities';
+import {queryPlugin} from './scenes/query';
 import {recapPlugin} from './scenes/recap';
 import {structurePlugin} from './scenes/structure';
 import {tensionPlugin} from './scenes/tension';
@@ -94,6 +95,7 @@ export const corePluginsBrowser: ReadonlyArray<Plugin> = [
   progressionPlugin,
   provocationPlugin,
   quantitiesPlugin,
+  queryPlugin,
   recapPlugin,
   structurePlugin,
   tensionPlugin,

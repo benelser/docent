@@ -9,7 +9,7 @@
 // canonical plugin-load order — see CATEGORIES in the generator for the
 // per-category ordering rules.
 //
-// Total plugins: 41
+// Total plugins: 42
 
 import type {Plugin} from '@bjelser/kit';
 
@@ -33,7 +33,7 @@ import {kokoroTtsPlugin} from './tts/kokoro';
 // Translation providers (1)
 import {noopTranslationPlugin} from './translation/noop';
 
-// Scenes (30)
+// Scenes (31)
 import {bigIdeaPlugin} from './scenes/big-idea';
 import {causalLoopPlugin} from './scenes/causal-loop';
 import {chartPlugin} from './scenes/chart';
@@ -56,6 +56,7 @@ import {probePlugin} from './scenes/probe';
 import {progressionPlugin} from './scenes/progression';
 import {provocationPlugin} from './scenes/provocation';
 import {quantitiesPlugin} from './scenes/quantities';
+import {queryPlugin} from './scenes/query';
 import {recapPlugin} from './scenes/recap';
 import {structurePlugin} from './scenes/structure';
 import {tensionPlugin} from './scenes/tension';
@@ -79,7 +80,7 @@ export {kokoroTtsPlugin};
 export {noopTranslationPlugin};
 
 // Scenes
-export {bigIdeaPlugin, causalLoopPlugin, chartPlugin, closeupPlugin, comparePlugin, concessionPlugin, demonstratePlugin, diffPlugin, epigraphPlugin, figurePlugin, framePlugin, journeyMapPlugin, landscapePlugin, mapPlugin, mechanismPlugin, objectionPlugin, passagePlugin, priorArtPlugin, probePlugin, progressionPlugin, provocationPlugin, quantitiesPlugin, recapPlugin, structurePlugin, tensionPlugin, timelinePlugin, treePlugin, vennPlugin, walkthroughPlugin, waterfallPlugin};
+export {bigIdeaPlugin, causalLoopPlugin, chartPlugin, closeupPlugin, comparePlugin, concessionPlugin, demonstratePlugin, diffPlugin, epigraphPlugin, figurePlugin, framePlugin, journeyMapPlugin, landscapePlugin, mapPlugin, mechanismPlugin, objectionPlugin, passagePlugin, priorArtPlugin, probePlugin, progressionPlugin, provocationPlugin, quantitiesPlugin, queryPlugin, recapPlugin, structurePlugin, tensionPlugin, timelinePlugin, treePlugin, vennPlugin, walkthroughPlugin, waterfallPlugin};
 
 /**
  * The set of plugins shipped with `@bjelser/core` — the opinionated default
@@ -104,7 +105,7 @@ export const corePlugins: readonly Plugin[] = [
   kokoroTtsPlugin,
   // Translation providers (1)
   noopTranslationPlugin,
-  // Scenes (30)
+  // Scenes (31)
   bigIdeaPlugin,
   causalLoopPlugin,
   chartPlugin,
@@ -127,6 +128,7 @@ export const corePlugins: readonly Plugin[] = [
   progressionPlugin,
   provocationPlugin,
   quantitiesPlugin,
+  queryPlugin,
   recapPlugin,
   structurePlugin,
   tensionPlugin,
