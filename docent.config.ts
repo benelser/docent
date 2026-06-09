@@ -15,8 +15,14 @@
 
 import {tutorialBrandPreset} from './tutorials/brand-pack/presets/tutorial-brand';
 import {agentopsBrand} from './tutorials/agentops-brand/presets/agentops-brand';
+import {agentopsContextHud} from './tutorials/agentops-brand/features/agentops-context-hud';
 import {openaiTtsPlugin} from '@bjelser/tts-openai';
 
 export default {
-  plugins: [tutorialBrandPreset, openaiTtsPlugin, agentopsBrand],
+  plugins: [
+    tutorialBrandPreset,
+    openaiTtsPlugin,
+    agentopsBrand,
+    agentopsContextHud,
+  ],
 };
