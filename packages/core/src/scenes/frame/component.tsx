@@ -143,6 +143,16 @@ export const FrameSceneComponent: React.FC<SceneRenderProps<FrameSceneSpec>> = (
   // kicker pill; the heading slot stays untouched.
   const renderedKicker = variantTokens.kickerVisible ? (scene.kicker ?? '') : '';
 
+  // Thread the scene type + optional chrome-kicker hint through to SceneFrame
+  // so the `agentops` chrome `kickerStyle` can render "<HINT or TYPE> →"
+  // instead of falling back to the spec-author's kicker text. The hint is a
+  // free-text override the author may set on the scene; absent everywhere by
+  // default, so existing films keep their treatment.
+  const chromeKickerHint =
+    typeof (scene as {chromeKickerHint?: unknown}).chromeKickerHint === 'string'
+      ? ((scene as {chromeKickerHint?: string}).chromeKickerHint as string)
+      : undefined;
+
   return (
     <SceneFrame
       style={style}
@@ -150,6 +160,8 @@ export const FrameSceneComponent: React.FC<SceneRenderProps<FrameSceneSpec>> = (
       kicker={renderedKicker}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
+      sceneType="frame"
+      {...(chromeKickerHint !== undefined ? {chromeKickerHint} : {})}
     >
       <AbsoluteFill
         style={{

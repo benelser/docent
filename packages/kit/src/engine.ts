@@ -624,6 +624,30 @@ export class Engine {
       return acc;
     };
 
+    // We assemble `tokens` field-by-field; the `chrome` block is the one
+    // optional category, so its assembly is hoisted out and conditionally
+    // spread back in to satisfy `exactOptionalPropertyTypes`.
+    const chromeResolved = ((): import('./types/design-tokens').ChromeTokens | undefined => {
+      let acc: Partial<import('./types/design-tokens').ChromeTokens> | undefined;
+      for (const p of chain) {
+        const layer = p.tokens?.chrome;
+        if (layer) acc = {...(acc ?? {}), ...layer};
+      }
+      if (styleInput.tokens?.chrome) {
+        acc = {...(acc ?? {}), ...styleInput.tokens.chrome};
+      }
+      if (!acc) return undefined;
+      // Once any layer set chrome, fill any holes with the legacy defaults
+      // so the renderer can read it as a complete shape.
+      return {
+        background: acc.background ?? 'starfield',
+        motes: acc.motes ?? 1,
+        vignette: acc.vignette ?? 1,
+        kickerStyle: acc.kickerStyle ?? 'numeric',
+        wordmark: acc.wordmark === undefined ? 'docent' : acc.wordmark,
+      };
+    })();
+
     const tokens: DesignTokens = {
       bg: composeGroup('bg', (p) => p.tokens?.bg, NEUTRAL_TOKENS.bg, styleInput.tokens?.bg),
       ink: composeGroup('ink', (p) => p.tokens?.ink, NEUTRAL_TOKENS.ink, styleInput.tokens?.ink),
@@ -707,6 +731,12 @@ export class Engine {
         NEUTRAL_TOKENS.stroke,
         styleInput.tokens?.stroke,
       ),
+      // Chrome is the ONE optional token category. We attach the field only
+      // when at least one preset in the chain (or `styleInput.tokens`) set
+      // it — so a film that resolves against the pure NEUTRAL floor keeps
+      // `tokens.chrome === undefined`, and `SceneFrame` falls back to its
+      // hardcoded `DEFAULT_CHROME` (byte-identical to pre-chrome behaviour).
+      ...(chromeResolved !== undefined ? {chrome: chromeResolved} : {}),
     };
 
     // Compose the visualization knobs. Same last-wins precedence as the

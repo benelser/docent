@@ -112,6 +112,47 @@ export interface StrokeTokens {
 }
 
 /**
+ * Structural chrome — the SHELL every scene sits in, not its colours.
+ *
+ * Until R5, the chrome (starfield, dotted grid, drifting motes, vignette,
+ * kicker prefix, wordmark) was hardcoded in `SceneFrame` — two films using
+ * different presets shared the same structural treatment. ChromeTokens turn
+ * that chrome into a token block: a brand pack can REPLACE the structural
+ * treatments, not just recolour them.
+ *
+ * Renderer wiring lives in `@bjelser/core`'s SceneFrame: a preset that
+ * omits this block gets the legacy chrome verbatim (see `DEFAULT_CHROME`
+ * in `@bjelser/core/src/_shared/scene-frame`).
+ */
+export interface ChromeTokens {
+  /**
+   * Background pattern under the scene.
+   * - `starfield` — STARS + dotted grid + drifting motes (current default)
+   * - `grid`      — dotted grid only, no stars
+   * - `hex`       — dot-based hex pattern via CSS gradient (engineering vibe)
+   * - `flat`      — solid `bg.base`, no pattern
+   * - `gradient`  — radial-gradient from `bg.base` to `bg.panel`
+   */
+  background: 'starfield' | 'grid' | 'hex' | 'flat' | 'gradient';
+  /** Density of drifting motes. 0 disables; 1 = current default; 2 = doubled. */
+  motes: number;
+  /** Strength of the corner vignette. 0 disables; 1 = current default. */
+  vignette: number;
+  /**
+   * Kicker treatment — how the scene's kicker line is shaped.
+   * - `numeric`  — render the kicker text verbatim ("01 // THE CLAIM")
+   * - `bullet`   — strip the leading "NN //" prefix and prepend "■ "
+   * - `agentops` — emit "<chromeKickerHint or sceneType uppercased> →"
+   *                e.g. "PLAN_STEP →", "WATERFALL →", "FLOW_DISCOVERY →"
+   * - `bracket`  — convert "01 // THE CLAIM" to "[01] THE CLAIM"
+   * - `none`     — heading only, no kicker rendered
+   */
+  kickerStyle: 'numeric' | 'bullet' | 'agentops' | 'bracket' | 'none';
+  /** Wordmark text in the bottom-right. Set to `null` to hide. */
+  wordmark: string | null;
+}
+
+/**
  * The complete design-token bundle a preset contributes. Every per-component
  * pixel knob hangs off here. Renderers consume ONLY this interface (plus
  * `VisualizationStyle` for the family-level knobs).
@@ -124,6 +165,12 @@ export interface DesignTokens {
   spacing: SpacingTokens;
   radius: RadiusTokens;
   stroke: StrokeTokens;
+  /**
+   * Structural chrome — the SHELL the scene sits in. Optional everywhere:
+   * a preset that omits it gets the legacy chrome verbatim (the renderer
+   * substitutes its `DEFAULT_CHROME` constant).
+   */
+  chrome?: ChromeTokens;
 }
 
 /**
@@ -145,4 +192,5 @@ export interface DesignTokenOverrides {
   spacing?: Partial<SpacingTokens>;
   radius?: Partial<RadiusTokens>;
   stroke?: Partial<StrokeTokens>;
+  chrome?: Partial<ChromeTokens>;
 }
