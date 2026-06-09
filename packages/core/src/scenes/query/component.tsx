@@ -39,7 +39,6 @@ import {
   Narration,
   SceneFrame,
   activeBeatIndex,
-  formatValue,
   glow,
   interFamily,
   monoFamily,
@@ -533,6 +532,14 @@ export const QuerySceneComponent: React.FC<SceneRenderProps<QueryScene>> = ({
     return null;
   })();
 
+  // R15.1 chrome-kicker hint — the agentops kicker style (set on the
+  // preset) renders the scene's chromeKickerHint or scene.type when set;
+  // falls back gracefully to legacy kicker text everywhere else.
+  const chromeKickerHint =
+    typeof (scene as {chromeKickerHint?: unknown}).chromeKickerHint === 'string'
+      ? ((scene as {chromeKickerHint?: string}).chromeKickerHint as string)
+      : undefined;
+
   return (
     <SceneFrame
       style={style}
@@ -541,6 +548,8 @@ export const QuerySceneComponent: React.FC<SceneRenderProps<QueryScene>> = ({
       {...(scene.heading !== undefined ? {heading: scene.heading} : {})}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
+      sceneType="query"
+      {...(chromeKickerHint !== undefined ? {chromeKickerHint} : {})}
     >
       <AbsoluteFill>
         {/* ─── editor pane ─────────────────────────────────────────── */}
@@ -836,7 +845,7 @@ const ResultBody: React.FC<ResultBodyProps> = ({
   }
 
   if (result.kind === 'gauge') {
-    const fmt = result.format ?? 'float1';
+    const fmt = result.format;
     const target = typeof result.value === 'number' ? result.value : 0;
     const threshold = result.threshold ?? 0.5;
 
@@ -847,6 +856,19 @@ const ResultBody: React.FC<ResultBodyProps> = ({
     const clamped = Math.max(0, Math.min(1, v));
     const over = v >= threshold;
     const arcColor = over ? '#5fe8a4' : '#ff7d97'; // accent-green / accent-rose
+
+    // Gauge-specific formatter: when the author leaves `format` unset, we
+    // render at 2-decimal resolution so a 0.94 SLI reads as `0.94`, not the
+    // rounded-to-tenths `0.9` `BoundValue`'s shared `MetricFormat` enum
+    // would produce. An explicit `format` (int / float1 / percent) still
+    // wins — that's the override knob for a gauge author who *wants* the
+    // coarser shape (e.g. a 0–100% gauge with the `percent` format).
+    const gaugeText = (val: number): string => {
+      if (fmt === 'int') return String(Math.round(val));
+      if (fmt === 'float1') return val.toFixed(1);
+      if (fmt === 'percent') return `${Math.round(val * 100)}%`;
+      return val.toFixed(2);
+    };
 
     // Geometry — a 270deg arc swept from -135° to +135°, sized to the pane.
     const size = 240;
@@ -910,10 +932,7 @@ const ResultBody: React.FC<ResultBodyProps> = ({
               gap: 4,
             }}
           >
-            <BoundValue
-              beats={beats}
-              bind={resultBind}
-              format={fmt}
+            <span
               style={{
                 fontFamily: monoFamily,
                 fontSize: 56,
@@ -922,7 +941,9 @@ const ResultBody: React.FC<ResultBodyProps> = ({
                 lineHeight: 1,
                 letterSpacing: -0.5,
               }}
-            />
+            >
+              {gaugeText(v)}
+            </span>
             {result.unit ? (
               <div
                 style={{
@@ -946,7 +967,7 @@ const ResultBody: React.FC<ResultBodyProps> = ({
             letterSpacing: 0.4,
           }}
         >
-          threshold {formatValue(threshold, fmt)}
+          threshold {gaugeText(threshold)}
         </div>
       </div>
     );

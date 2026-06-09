@@ -83,6 +83,14 @@ export const RecapSceneComponent: React.FC<SceneRenderProps<RecapSceneSpec>> = (
   const active = activeBeatIndex(ts.beats, frame);
   const closing = frame > (ts.beats[active]?.startFrame ?? 0) + 30;
 
+  // R15.1 chrome-kicker hint — the agentops kicker style (set on the
+  // preset) renders the scene's chromeKickerHint or scene.type when set;
+  // falls back gracefully to legacy kicker text everywhere else.
+  const chromeKickerHint =
+    typeof (scene as {chromeKickerHint?: unknown}).chromeKickerHint === 'string'
+      ? ((scene as {chromeKickerHint?: string}).chromeKickerHint as string)
+      : undefined;
+
   return (
     <SceneFrame
       style={style}
@@ -91,6 +99,8 @@ export const RecapSceneComponent: React.FC<SceneRenderProps<RecapSceneSpec>> = (
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
+      sceneType="recap"
+      {...(chromeKickerHint !== undefined ? {chromeKickerHint} : {})}
     >
       {/* Explicitly positioned column — the SceneFrame heading sits at top:86
           with a 54px line, so points must start safely below it. Using an

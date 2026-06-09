@@ -559,6 +559,14 @@ export const WaterfallSceneComponent: React.FC<SceneRenderProps<WaterfallSceneSp
     );
   };
 
+  // R15.1 chrome-kicker hint — the agentops kicker style (set on the
+  // preset) renders the scene's chromeKickerHint or scene.type when set;
+  // falls back gracefully to legacy kicker text everywhere else.
+  const chromeKickerHint =
+    typeof (scene as {chromeKickerHint?: unknown}).chromeKickerHint === 'string'
+      ? ((scene as {chromeKickerHint?: string}).chromeKickerHint as string)
+      : undefined;
+
   return (
     <SceneFrame
       style={style}
@@ -567,6 +575,8 @@ export const WaterfallSceneComponent: React.FC<SceneRenderProps<WaterfallSceneSp
       heading={scene.heading}
       sceneIndex={sceneIndex}
       sceneCount={sceneCount}
+      sceneType="waterfall"
+      {...(chromeKickerHint !== undefined ? {chromeKickerHint} : {})}
     >
       <div
         style={{
