@@ -264,6 +264,42 @@ export function validateSpec(
     }
   }
 
+  // ---- R16.3 — morph-transition warnings ----------------------------------
+  // When a scene declares `transition.kind: 'morph'` but no ids match the
+  // PREVIOUS scene's `morphIds`, the composition falls back to a dissolve.
+  // Surface that as a warning so the author knows the morph didn't bind.
+  if (Array.isArray(s.scenes)) {
+    for (let i = 1; i < s.scenes.length; i++) {
+      const sceneB = s.scenes[i] as Record<string, unknown> | null;
+      if (!sceneB || typeof sceneB !== 'object') continue;
+      const transition = sceneB.transition as
+        | {kind?: string; frames?: number}
+        | undefined;
+      if (!transition || transition.kind !== 'morph') continue;
+      const sceneA = s.scenes[i - 1] as Record<string, unknown> | null;
+      const aMorph = (sceneA as {morphIds?: Record<string, unknown>} | null)
+        ?.morphIds;
+      const bMorph = (sceneB as {morphIds?: Record<string, unknown>}).morphIds;
+      const matched: string[] = [];
+      if (aMorph && bMorph && typeof aMorph === 'object' && typeof bMorph === 'object') {
+        for (const k of Object.keys(aMorph)) {
+          if (Object.prototype.hasOwnProperty.call(bMorph, k)) matched.push(k);
+        }
+      }
+      if (matched.length === 0) {
+        issues.push({
+          path: `scenes[${i}].transition`,
+          message:
+            `Scene declares transition.kind: 'morph' but no morphIds matched the ` +
+            `previous scene (${i - 1}). The composition will fall back to a dissolve. ` +
+            `Set matching morphIds on both scenes to enable the cross-scene element morph.`,
+          severity: 'warning',
+          code: 'transition.morph.no-match',
+        });
+      }
+    }
+  }
+
   // ---- feature-level film validation --------------------------------------
   // Every registered feature gets a chance to surface film-scope issues —
   // the audio-bed feature uses this to verify `meta.music` resolves to a

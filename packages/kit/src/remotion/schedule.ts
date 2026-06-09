@@ -111,6 +111,13 @@ export interface SceneSchedule {
   readonly frames: number;
   /** Transition frames the engine reserves for the cross-fade INTO the next scene. */
   readonly transitionOutFrames: number;
+  /**
+   * R16.3 — frames the NEXT scene's incoming transition layer occupies at
+   * the tail of this scene. Zero when no transition was declared. Read by
+   * the composition to know where to mount the morph/dissolve/wipe layer
+   * above this scene's content.
+   */
+  readonly incomingTransitionFrames: number;
   readonly beats: ReadonlyArray<BeatSchedule>;
 }
 
@@ -140,14 +147,65 @@ const estimateBeatSeconds = (beat: Beat): number => {
   return Math.max(MIN_BEAT_SECONDS, words / WORDS_PER_SECOND);
 };
 
-/** Frames-per-scene transition. Reads optional `cut` knob if the spec carries one. */
-const transitionFrames = (scene: Scene): number => {
-  // The kit's `Scene` type allows index-signature plugin fields; an authored
-  // film may pin `cut` per scene (v2 grammar). We respect it when present.
+/**
+ * The default morph-transition frame window when an author sets
+ * `transition.kind: 'morph' | 'dissolve' | 'wipe'` without an explicit
+ * `frames`. 18 frames at 30 fps ≈ 0.6 s — wider than the legacy
+ * `DEFAULT_TRANSITION_FRAMES` floor (16) so a morph has room to settle.
+ */
+export const DEFAULT_MORPH_FRAMES = 18;
+
+/**
+ * Resolve the OUTGOING legacy crossfade window for a scene — the count of
+ * frames the NEXT scene overlaps this one in the legacy schedule model.
+ *
+ * **R16.3 NOTE:** when the *upcoming* scene declares a `transition` field
+ * (`'morph' | 'dissolve' | 'wipe' | 'cut'`), we **do not** overlap scenes
+ * in the schedule. Instead the schedule extends scene A's `endFrame` by
+ * `transition.frames` (see {@link extendForIncomingTransition}) so scene
+ * A keeps rendering through the transition window WHILE scene B mounts
+ * cleanly at the END of that window. The composition then mounts a
+ * dedicated transition `<Sequence>` above scene A in the morph window —
+ * scene B is NOT visible underneath the morph. This matches the R16.3
+ * spec exactly: "starts `transition.frames` before scene B's start, ends
+ * at scene B's start", with no double-mounting of B.
+ *
+ * Every existing film (no `transition` field on any scene) falls through
+ * to the legacy `cut` knob branch and renders byte-identically.
+ */
+const transitionFrames = (scene: Scene, nextScene: Scene | undefined): number => {
+  // R16.3 — when the upcoming scene declares an explicit transition, the
+  // schedule does NOT overlap scenes. The transition window is carved
+  // out of scene A's tail (via `extendForIncomingTransition` below), not
+  // by shifting scene B's start backward.
+  const next = (nextScene as (Scene & {transition?: {kind?: string}}) | undefined)
+    ?.transition;
+  if (next && typeof next.kind === 'string') return 0;
+  // Legacy `cut` knob on the OUTGOING scene (v2 grammar).
   const cut = (scene as Scene & {cut?: string}).cut;
   if (cut === 'hold') return 28;
   if (cut === 'continue') return 8;
   return DEFAULT_TRANSITION_FRAMES;
+};
+
+/**
+ * R16.3 — when the upcoming scene declares an explicit `transition`, return
+ * the number of frames the CURRENT scene should be extended by so scene A
+ * keeps rendering through the transition window. The composition mounts
+ * the transition layer in those extended frames, above scene A.
+ *
+ * `kind: 'cut'` returns 0 — an explicit hard cut, no window. Every other
+ * kind returns `transition.frames ?? DEFAULT_MORPH_FRAMES`.
+ */
+const extendForIncomingTransition = (nextScene: Scene | undefined): number => {
+  const next = (nextScene as (Scene & {transition?: {kind?: string; frames?: number}}) | undefined)
+    ?.transition;
+  if (!next || typeof next.kind !== 'string') return 0;
+  if (next.kind === 'cut') return 0;
+  if (next.kind === 'morph' || next.kind === 'dissolve' || next.kind === 'wipe') {
+    return Math.max(0, Math.round(next.frames ?? DEFAULT_MORPH_FRAMES));
+  }
+  return 0;
 };
 
 /** A scene's beat list — empty when the scene is chrome-only (e.g. `frame`/`recap`). */
@@ -233,9 +291,26 @@ export const buildFrameSchedule = (
       beatCursor = sceneStart + Math.max(leadFrames, Math.round(fps));
     }
 
-    const sceneEnd = beatCursor;
+    const nextScene =
+      sceneIndex < spec.scenes.length - 1
+        ? spec.scenes[sceneIndex + 1]
+        : undefined;
+    // R16.3 — when scene B declares an incoming `transition`, extend
+    // scene A's end by `transition.frames` so scene A keeps rendering
+    // through the transition window. The composition mounts the
+    // transition layer in those extended frames; scene B mounts cleanly
+    // at the end of the window (no double-mount). Legacy films (no
+    // transition field anywhere) get 0 extension and the existing
+    // overlap math via `transitionOut` below.
+    const incomingExtension =
+      sceneIndex < spec.scenes.length - 1
+        ? extendForIncomingTransition(nextScene)
+        : 0;
+    const sceneEnd = beatCursor + incomingExtension;
     const transitionOut =
-      sceneIndex < spec.scenes.length - 1 ? transitionFrames(scene) : 0;
+      sceneIndex < spec.scenes.length - 1
+        ? transitionFrames(scene, nextScene)
+        : 0;
 
     scenes.push({
       sceneIndex,
@@ -244,6 +319,7 @@ export const buildFrameSchedule = (
       endFrame: sceneEnd,
       frames: sceneEnd - sceneStart,
       transitionOutFrames: transitionOut,
+      incomingTransitionFrames: incomingExtension,
       beats: beatSlots,
     });
 

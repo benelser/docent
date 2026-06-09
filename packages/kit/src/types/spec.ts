@@ -278,8 +278,120 @@ export interface Scene {
    * default, so existing films keep their current kicker treatment.
    */
   chromeKickerHint?: string;
+  /**
+   * **R16.3 — cross-scene element morphing.** Named anchor positions inside
+   * this scene that may be matched against the same id on the previous /
+   * next scene. When the *subsequent* scene declares `transition.kind ===
+   * 'morph'` and shares one or more ids, the kit renders a transition layer
+   * between the two scenes that tweens each shared element's
+   * position/size/style from this scene's value to the next scene's value
+   * over the configured frame window.
+   *
+   * Authoring contract:
+   *   - Coordinates are in CANVAS-PIXEL space (the same coordinate system
+   *     `useStage()` returns world dimensions in — `1920x1080` for `16:9`,
+   *     `1080x1920` for `9:16`, etc). The morph layer fills the canvas at
+   *     1:1 so an author can read x/y/w/h directly off any scene mockup.
+   *   - Both scenes participating in a morph must declare the same id with
+   *     a {@link MorphElement} shape. Unmatched ids on either side are
+   *     dropped silently (with a warning when the spec validator is run).
+   *
+   * @see {@link SceneTransition}
+   * @see packages/kit/src/remotion/morph-layer.tsx
+   */
+  morphIds?: SceneMorphIds;
+  /**
+   * **R16.3 — explicit transition INTO this scene.** The cascade computes a
+   * transition layer in the overlap window that starts `transition.frames`
+   * before this scene mounts and ends at this scene's start frame.
+   *
+   * - `kind: 'morph'` — the matched ids in `morphIds` tween from the
+   *   previous scene's shape to this scene's shape. Falls back to
+   *   `'dissolve'` (with a warning) when no ids match.
+   * - `kind: 'dissolve'` — a baseline opacity crossfade of the upcoming
+   *   scene over the previous one.
+   * - `kind: 'wipe'` — a left-to-right wipe revealing the upcoming scene.
+   * - `kind: 'cut'` — explicit hard cut; equivalent to omitting the field
+   *   (the existing schedule behaviour stands).
+   *
+   * `frames` defaults to 18 when absent — wider than the existing schedule
+   * `transitionOutFrames` floor so the morph has room to breathe.
+   *
+   * @see {@link Scene.morphIds}
+   */
+  transition?: SceneTransition;
   /** Plugin-owned fields. The kit treats these as opaque. */
   [key: string]: unknown;
+}
+
+// ----- R16.3 cross-scene morphing -----------------------------------------
+
+/**
+ * One named anchor in a scene's `morphIds` bag. Read by the R16.3 morph
+ * transition layer to tween a matching id across the scene boundary.
+ *
+ * Coordinates are in CANVAS-PIXEL space — the same coordinate system the
+ * world `viewBox` uses. So a `morphIds` entry at `{x: 300, y: 400, w: 200,
+ * h: 100}` sits in the top-left quadrant of a 1920x1080 canvas. The author
+ * UX is "read these off the scene mockup at 1:1"; the helper command
+ * `docent morph-preview <film-id> <scene-index>` (R16.3.1) prints a grid
+ * overlay over a still so the author can dial in the rect by eye.
+ *
+ * Style hints are optional. When both scenes set the same field the layer
+ * interpolates between them; when only one side sets it the layer holds
+ * the set value and crossfades opacity instead. Color interpolation uses
+ * HSL (see `interpolateColor` in `morph-layer.tsx`).
+ */
+export interface MorphElement {
+  /** Top-left X in canvas-pixel space. */
+  x: number;
+  /** Top-left Y in canvas-pixel space. */
+  y: number;
+  /** Width in canvas pixels. */
+  w: number;
+  /** Height in canvas pixels. */
+  h: number;
+  /**
+   * Solid background color. Hex (`'#ff0033'`) or named CSS color. Interpolated
+   * through HSL when both sides set a color. Optional.
+   */
+  color?: string;
+  /** Border radius in canvas pixels. Optional. */
+  borderRadius?: number;
+  /** Opacity in [0, 1]. Optional; defaults to 1 when omitted. */
+  opacity?: number;
+  /**
+   * Optional content label rendered inside the morphing element. Crossfades
+   * between the two scenes' labels when they differ.
+   */
+  label?: string;
+}
+
+/**
+ * A scene's morph anchors — element id → {@link MorphElement} shape on
+ * THIS scene. The element id must match across adjacent scenes for a
+ * morph to fire. Unmatched ids are dropped.
+ */
+export interface SceneMorphIds {
+  readonly [elementId: string]: MorphElement;
+}
+
+/**
+ * The transition INTO a scene. Read by the R16.3 transition layer.
+ *
+ * `kind: 'cut'` (or the absence of this field) preserves the legacy
+ * schedule behaviour. The other three kinds activate a transition layer
+ * that overlaps the two scenes for `frames` frames.
+ */
+export interface SceneTransition {
+  /**
+   * The shape of the transition. `'morph'` reads `morphIds` from both
+   * scenes; `'dissolve'` and `'wipe'` are content-agnostic crossfades;
+   * `'cut'` is the explicit baseline.
+   */
+  kind: 'morph' | 'dissolve' | 'wipe' | 'cut';
+  /** Frames the overlap window spans. Defaults to 18 when absent. */
+  frames?: number;
 }
 
 /**

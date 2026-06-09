@@ -153,6 +153,10 @@ export type {
   SceneVariant,
   SceneAssertConfig,
   SceneAssertMaskRegion,
+  // R16.3 — cross-scene morph transitions.
+  SceneMorphIds,
+  SceneTransition,
+  MorphElement,
   Beat,
   BeatPace,
   BeatShot,
@@ -271,13 +275,23 @@ export {
 // render-check command, a third-party visualizer, a doctor pass) can ask
 // "what frame does scene N occupy?" without re-implementing the timing math.
 
-export {buildFrameSchedule} from './remotion/schedule';
+export {buildFrameSchedule, DEFAULT_MORPH_FRAMES} from './remotion/schedule';
 export type {
   FrameSchedule,
   SceneSchedule,
   BeatSchedule,
   TtsAudioMap,
 } from './remotion/schedule';
+
+// ---------- R16.3 — cross-scene morph transitions (helpers) ----------------
+//
+// The `MorphLayer` component is mounted by the composition itself; the
+// utilities are exported so a test suite, a validator surface, or a future
+// `docent morph-preview` command can call them without going through
+// Remotion's render path.
+
+export {findMatchedIds, interpolateColor, MorphLayer} from './remotion/morph-layer';
+export type {MorphLayerProps} from './remotion/morph-layer';
 
 // ---------- R11 — editorial marker vocabulary (NLE exporter contract) -------
 //
