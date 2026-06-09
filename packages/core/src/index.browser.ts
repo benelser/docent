@@ -57,6 +57,7 @@ import {timelinePlugin} from './scenes/timeline';
 import {treePlugin} from './scenes/tree';
 import {vennPlugin} from './scenes/venn';
 import {walkthroughPlugin} from './scenes/walkthrough';
+import {waterfallPlugin} from './scenes/waterfall';
 
 export const corePluginsBrowser: ReadonlyArray<Plugin> = [
   // Presets
@@ -100,6 +101,7 @@ export const corePluginsBrowser: ReadonlyArray<Plugin> = [
   treePlugin,
   vennPlugin,
   walkthroughPlugin,
+  waterfallPlugin,
 ];
 
 export default corePluginsBrowser;

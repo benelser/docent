@@ -9,7 +9,7 @@
 // canonical plugin-load order — see CATEGORIES in the generator for the
 // per-category ordering rules.
 //
-// Total plugins: 39
+// Total plugins: 41
 
 import type {Plugin} from '@bjelser/kit';
 
@@ -33,7 +33,7 @@ import {kokoroTtsPlugin} from './tts/kokoro';
 // Translation providers (1)
 import {noopTranslationPlugin} from './translation/noop';
 
-// Scenes (29)
+// Scenes (30)
 import {bigIdeaPlugin} from './scenes/big-idea';
 import {causalLoopPlugin} from './scenes/causal-loop';
 import {chartPlugin} from './scenes/chart';
@@ -63,6 +63,7 @@ import {timelinePlugin} from './scenes/timeline';
 import {treePlugin} from './scenes/tree';
 import {vennPlugin} from './scenes/venn';
 import {walkthroughPlugin} from './scenes/walkthrough';
+import {waterfallPlugin} from './scenes/waterfall';
 
 // Named re-exports for callers that want them directly.
 // Presets
@@ -78,7 +79,7 @@ export {kokoroTtsPlugin};
 export {noopTranslationPlugin};
 
 // Scenes
-export {bigIdeaPlugin, causalLoopPlugin, chartPlugin, closeupPlugin, comparePlugin, concessionPlugin, demonstratePlugin, diffPlugin, epigraphPlugin, figurePlugin, framePlugin, journeyMapPlugin, landscapePlugin, mapPlugin, mechanismPlugin, objectionPlugin, passagePlugin, priorArtPlugin, probePlugin, progressionPlugin, provocationPlugin, quantitiesPlugin, recapPlugin, structurePlugin, tensionPlugin, timelinePlugin, treePlugin, vennPlugin, walkthroughPlugin};
+export {bigIdeaPlugin, causalLoopPlugin, chartPlugin, closeupPlugin, comparePlugin, concessionPlugin, demonstratePlugin, diffPlugin, epigraphPlugin, figurePlugin, framePlugin, journeyMapPlugin, landscapePlugin, mapPlugin, mechanismPlugin, objectionPlugin, passagePlugin, priorArtPlugin, probePlugin, progressionPlugin, provocationPlugin, quantitiesPlugin, recapPlugin, structurePlugin, tensionPlugin, timelinePlugin, treePlugin, vennPlugin, walkthroughPlugin, waterfallPlugin};
 
 /**
  * The set of plugins shipped with `@bjelser/core` — the opinionated default
@@ -103,7 +104,7 @@ export const corePlugins: readonly Plugin[] = [
   kokoroTtsPlugin,
   // Translation providers (1)
   noopTranslationPlugin,
-  // Scenes (29)
+  // Scenes (30)
   bigIdeaPlugin,
   causalLoopPlugin,
   chartPlugin,
@@ -133,6 +134,7 @@ export const corePlugins: readonly Plugin[] = [
   treePlugin,
   vennPlugin,
   walkthroughPlugin,
+  waterfallPlugin,
 ];
 
 export default corePlugins;
