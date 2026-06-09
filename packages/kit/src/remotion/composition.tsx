@@ -19,7 +19,7 @@
 // timing, style, and meta. A scene plugin can rely on this exactly.
 
 import React from 'react';
-import {AbsoluteFill, Sequence} from 'remotion';
+import {AbsoluteFill, Sequence, interpolate, useCurrentFrame} from 'remotion';
 
 import type {Engine} from '../engine';
 import type {
@@ -31,10 +31,18 @@ import type {
   ScenePlugin,
   TimelineSlot,
 } from '../protocols';
-import type {FilmSpec, Scene, SceneArchetype, SceneVariant} from '../types/spec';
+import type {
+  FilmSpec,
+  Scene,
+  SceneArchetype,
+  SceneMorphIds,
+  SceneTransition,
+  SceneVariant,
+} from '../types/spec';
 import type {ResolvedStyle} from '../types/style';
 import {resolveSceneVariant} from '../frameworks/scene-variants';
 import {buildFrameSchedule, type SceneSchedule} from './schedule';
+import {findMatchedIds, MorphLayer} from './morph-layer';
 import {TtsAudioMapContext} from './word-timings';
 
 /**
@@ -330,7 +338,138 @@ export const DocentFilm: React.FC<DocentFilmInternalProps> = ({
           </Sequence>
         );
       })}
+      {/*
+        R16.3 — cross-scene transition layers.
+        Layering decision (documented at the wrap-Film helpers too):
+          1. film-feature plugins (wrapsFilm) — bottom (mounted first).
+          2. scene Sequences (above) — render scene content.
+          3. transition Sequences (above the scenes) — the morphing
+             element occludes the underlying scene chrome the eye is
+             meant to follow.
+          4. (Anything an editor wraps externally rides above all of these.)
+
+        For each scene boundary where the SUBSEQUENT scene declares an
+        explicit `transition` (`morph`, `dissolve`, `wipe`), mount a
+        `<Sequence>` covering the carved-out tail of scene A. The
+        schedule extended scene A's `endFrame` by
+        `incomingTransitionFrames` so scene A keeps rendering through
+        the window; scene B mounts cleanly at the END of the window
+        (no double-render under the transition layer).
+      */}
+      {schedule.scenes.map((entry, idx) => {
+        const next = schedule.scenes[idx + 1];
+        if (!next) return null;
+        const overlap = entry.incomingTransitionFrames ?? 0;
+        if (overlap <= 0) return null;
+        const incoming = (next.scene as Scene & {transition?: SceneTransition})
+          .transition;
+        if (!incoming || incoming.kind === 'cut') return null;
+        const transitionStart = entry.endFrame - overlap;
+        const fromMorph =
+          incoming.kind === 'morph'
+            ? ((entry.scene as Scene & {morphIds?: SceneMorphIds}).morphIds)
+            : undefined;
+        const toMorph =
+          incoming.kind === 'morph'
+            ? ((next.scene as Scene & {morphIds?: SceneMorphIds}).morphIds)
+            : undefined;
+        const matched =
+          incoming.kind === 'morph' ? findMatchedIds(fromMorph, toMorph) : [];
+        // R16.3 smart default: when an author asked for morph but no ids
+        // bound between the two scenes, fall back to a dissolve so the
+        // cut still feels intentional. The author can see this in the
+        // build logs (validator warning).
+        const effectiveKind =
+          incoming.kind === 'morph' && matched.length === 0
+            ? 'dissolve'
+            : incoming.kind;
+        return (
+          <Sequence
+            key={`transition-${entry.sceneIndex}-${next.sceneIndex}`}
+            from={transitionStart}
+            durationInFrames={overlap}
+            name={`transition:${effectiveKind}#${entry.sceneIndex}->${next.sceneIndex}`}
+          >
+            <TransitionWindow
+              kind={effectiveKind}
+              fromMorph={fromMorph}
+              toMorph={toMorph}
+              totalFrames={overlap}
+              resolvedStyle={resolvedStyle}
+            />
+          </Sequence>
+        );
+      })}
       </AbsoluteFill>
     </TtsAudioMapContext.Provider>
   );
+};
+
+/**
+ * R16.3 — the in-Sequence component that reads `useCurrentFrame()` to
+ * sample the transition's progress and dispatches to the right visual
+ * (morph layer, dissolve, or wipe). Pulled out as a stateless component
+ * so the composition stays readable.
+ *
+ * Dissolve / wipe are minimal-effort baselines (a full-canvas overlay
+ * tweens its opacity / clip-path). The morph case delegates to
+ * `<MorphLayer>` which carries the real R16.3 logic.
+ */
+const TransitionWindow: React.FC<{
+  readonly kind: 'morph' | 'dissolve' | 'wipe';
+  readonly fromMorph: SceneMorphIds | undefined;
+  readonly toMorph: SceneMorphIds | undefined;
+  readonly totalFrames: number;
+  readonly resolvedStyle: ResolvedStyle;
+}> = ({kind, fromMorph, toMorph, totalFrames, resolvedStyle}) => {
+  const frame = useCurrentFrame();
+  if (kind === 'morph' && fromMorph && toMorph) {
+    return (
+      <MorphLayer
+        fromIds={fromMorph}
+        toIds={toMorph}
+        frameInWindow={frame}
+        totalFrames={totalFrames}
+      />
+    );
+  }
+  if (kind === 'dissolve') {
+    // A simple dissolve: a full-canvas panel of the resolved background
+    // fades up to opacity 1 over the window. The next scene mounts
+    // immediately after this Sequence ends, so the dissolve reads as
+    // "scene A fades to a neutral plate, scene B pops in". Cheap, but
+    // intentional — matches the R16.3 "fall back to dissolve" smart
+    // default for unmatched morphs.
+    const opacity = interpolate(frame, [0, totalFrames], [0, 1], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    });
+    return (
+      <AbsoluteFill
+        style={{
+          backgroundColor: resolvedStyle.tokens?.bg?.base ?? '#0a0a0a',
+          opacity,
+          pointerEvents: 'none',
+        }}
+      />
+    );
+  }
+  if (kind === 'wipe') {
+    // Left-to-right wipe — a black panel slides across the canvas.
+    const t = interpolate(frame, [0, totalFrames], [0, 1], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    });
+    const clip = `inset(0 0 0 ${t * 100}%)`;
+    return (
+      <AbsoluteFill
+        style={{
+          backgroundColor: resolvedStyle.tokens?.bg?.base ?? '#0a0a0a',
+          clipPath: clip,
+          pointerEvents: 'none',
+        }}
+      />
+    );
+  }
+  return null;
 };
