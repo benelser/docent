@@ -63,13 +63,71 @@ export const CloseupSceneComponent: React.FC<SceneRenderProps<CloseupSceneSpec>>
   const hl = activeBeat?.highlight;
   const note = activeBeat?.note;
 
-  const fontSize = 21;
-  const lineH = 33;
+  // ── Auto-fit layout ──────────────────────────────────────────────────
+  // The closeup MUST fit inside the canvas — content that spills off the
+  // right edge or below the wordmark band is a hard regression. Three
+  // levers, applied in order: widen the window, shrink the font, and
+  // (only as a last resort, when even the floor font doesn't fit) crop
+  // the visible code to a window around the active highlight.
   const headerH = 52;
   const padY = 22;
-  const winW = 1300;
-  const winH = headerH + lineCount * lineH + padY * 2;
-  const top = 214 + Math.max(0, (806 - winH) / 2);
+  const winW = 1640;
+  // The vertical safe band: top of the code window down to the bottom
+  // of the canvas, minus room for the per-beat note + wordmark below.
+  // STAGE assumed 1920×1080 (the closeup scene only ships 16:9 today).
+  const codeTopY = 214;
+  const safeBandH = 1080 - codeTopY - 120;
+  const linesH = Math.max(0, safeBandH - headerH - padY * 2);
+
+  // The longest line in the listing dictates the horizontal fit. Tabs
+  // are treated as 4 chars for advance estimation.
+  const codeLines = code.split('\n');
+  const longestLineLen = codeLines.reduce(
+    (a, l) => Math.max(a, l.replace(/\t/g, '    ').length),
+    0,
+  );
+  // Available horizontal pixels inside the code column.
+  const lineNumCol = 66;
+  const codeWAvail = winW - lineNumCol - 24;
+
+  // Font candidates from each constraint, then pick the binding one.
+  const BASE_FONT = 21;
+  const FLOOR_FONT = 12;
+  const charAdvance = 0.62;
+  const lineHRatio = 33 / 21; // preserve the original ratio
+  const fitFontFromHeight = (linesH / Math.max(1, lineCount)) / lineHRatio;
+  const fitFontFromWidth = codeWAvail / Math.max(1, longestLineLen * charAdvance);
+  const fitFont = Math.min(BASE_FONT, fitFontFromHeight, fitFontFromWidth);
+  const fontSize = Math.max(FLOOR_FONT, Math.floor(fitFont));
+  const lineH = Math.round(fontSize * lineHRatio);
+
+  // If even the floor font + widened window cannot show all lines,
+  // crop to a window around the active highlight (or the top of the
+  // file if no beat is highlighting). The cap is whatever the floor
+  // font allows in the safe band — *always* fits, never bleeds.
+  const maxVisibleLines = Math.max(8, Math.floor(linesH / lineH));
+  const needsCrop = lineCount > maxVisibleLines;
+  let visibleStartLine = 1; // 1-indexed
+  let visibleEndLine = lineCount;
+  if (needsCrop) {
+    if (hl) {
+      // Center the highlight range with padding.
+      const center = Math.round((hl[0] + hl[1]) / 2);
+      const half = Math.floor(maxVisibleLines / 2);
+      visibleStartLine = Math.max(1, center - half);
+      visibleEndLine = Math.min(lineCount, visibleStartLine + maxVisibleLines - 1);
+      // Snap back if we ran off the end.
+      if (visibleEndLine === lineCount) {
+        visibleStartLine = Math.max(1, lineCount - maxVisibleLines + 1);
+      }
+    } else {
+      visibleEndLine = maxVisibleLines;
+    }
+  }
+  const visibleLineCount = visibleEndLine - visibleStartLine + 1;
+
+  const winH = headerH + visibleLineCount * lineH + padY * 2;
+  const top = codeTopY + Math.max(0, (safeBandH - winH) / 2);
 
   // The window reaches full opacity fast — code must be legible immediately.
   // A gentle scale spring adds life without ever dimming the text.
@@ -122,11 +180,19 @@ export const CloseupSceneComponent: React.FC<SceneRenderProps<CloseupSceneSpec>>
           </div>
           {/* file path — window-chrome label. The chrome reserves room
               for the traffic-light dots on the left (~60px). The window
-              is 1300px wide; budget the rest for the path with a clean
-              shrink-then-ellipsis. */}
+              width is `winW`; budget the rest for the path with a clean
+              shrink-then-ellipsis. When the visible range is cropped
+              (file too long for one slide), append `(L<start>–L<end>)`
+              so the viewer knows they're seeing a window, not the file
+              from the top. */}
           <FittedText
-            text={scene.file ?? ''}
-            maxWidth={1300 - 60 - 60}
+            text={
+              (scene.file ?? '') +
+              (needsCrop
+                ? `  ·  L${visibleStartLine}–L${visibleEndLine} of ${lineCount}`
+                : '')
+            }
+            maxWidth={winW - 60 - 60}
             basePx={16}
             floorPx={11}
             charAdvance={0.62}
@@ -144,8 +210,15 @@ export const CloseupSceneComponent: React.FC<SceneRenderProps<CloseupSceneSpec>>
           <Highlight theme={codeTheme} code={code} language={(scene.lang ?? 'rust') as never}>
             {({tokens, getTokenProps}) => (
               <div style={{fontFamily: monoFamily, fontSize, lineHeight: `${lineH}px`}}>
-                {tokens.map((line, i) => {
-                  const lineNo = i + 1;
+                {tokens
+                  .filter((_, i) => {
+                    const lineNo = i + 1;
+                    return (
+                      lineNo >= visibleStartLine && lineNo <= visibleEndLine
+                    );
+                  })
+                  .map((line, i) => {
+                  const lineNo = visibleStartLine + i;
                   const lit = hl ? lineNo >= hl[0] && lineNo <= hl[1] : true;
                   // Non-highlighted lines are de-emphasized, never illegible.
                   return (
@@ -183,11 +256,9 @@ export const CloseupSceneComponent: React.FC<SceneRenderProps<CloseupSceneSpec>>
         </div>
       </div>
 
-      {/* per-beat annotation — sits below the code window, centred. The
-          window is 1300px wide; let the note breathe up to 2 wrapped
-          lines so a fully-formed sentence ("This is the keystone — the
-          pin every later cycle depends on") fits without spilling past
-          the safe band or wrapping into the wordmark below. */}
+      {/* per-beat annotation — sits below the code window, centred to
+          the window's width (winW), with maxLines=2 so a sentence-
+          length note never wraps into the wordmark below. */}
       {note ? (
         <div
           style={{
@@ -195,7 +266,7 @@ export const CloseupSceneComponent: React.FC<SceneRenderProps<CloseupSceneSpec>>
             left: '50%',
             top: top + winH + 26,
             transform: 'translateX(-50%)',
-            width: 1300,
+            width: winW,
             textAlign: 'center',
             display: 'flex',
             justifyContent: 'center',
@@ -203,7 +274,7 @@ export const CloseupSceneComponent: React.FC<SceneRenderProps<CloseupSceneSpec>>
         >
           <FittedText
             text={note}
-            maxWidth={1260}
+            maxWidth={winW - 40}
             basePx={19}
             floorPx={13}
             charAdvance={0.6}
