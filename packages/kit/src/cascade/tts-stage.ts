@@ -502,7 +502,21 @@ export const runTtsStage = async (
         // a hit when (1) caching is on, (2) prior manifest exists, (3) slot
         // has the same hash, AND (4) the persisted audio file is still on
         // disk. Any miss falls through to synth.
-        const wantHash = computeBeatHash(text, voice, model, providerOptions);
+        // Roll voiceDirection into the hash so changing the direction
+        // (e.g. "ask this rhetorically" → "land this with weight")
+        // invalidates the cached audio and re-synthesizes.
+        const hashProviderOpts = {
+          ...(providerOptions ?? {}),
+          ...(typeof beat.voiceDirection === 'string' && beat.voiceDirection.trim()
+            ? {voiceDirection: beat.voiceDirection}
+            : {}),
+        };
+        const wantHash = computeBeatHash(
+          text,
+          voice,
+          model,
+          Object.keys(hashProviderOpts).length > 0 ? hashProviderOpts : undefined,
+        );
         if (useCache && persistEnabled && priorManifest) {
           const priorBeat = priorManifest.beats[slot];
           if (
@@ -568,8 +582,23 @@ export const runTtsStage = async (
         }
         // ─── end cache lookup ────────────────────────────────────────────
 
+        // Performance-grammar: a beat can carry `voiceDirection` (free-text
+        // tone steering passed verbatim to providers that support it —
+        // OpenAI's gpt-4o-mini-tts maps it to its `instructions:` field).
+        // Merge the per-beat instruction on top of the film-level
+        // providerOptions; per-beat wins. Providers that don't support
+        // `instructions` silently ignore it — nothing breaks.
+        const perBeatProviderOpts: Record<string, unknown> = {
+          ...(providerOptions ?? {}),
+          ...(typeof beat.voiceDirection === 'string' && beat.voiceDirection.trim()
+            ? {instructions: beat.voiceDirection}
+            : {}),
+        };
         const synthOpts: TtsSynthesisOptions = {voice};
         if (beat.pace !== undefined) synthOpts.pace = beat.pace;
+        if (Object.keys(perBeatProviderOpts).length > 0) {
+          synthOpts.providerOptions = perBeatProviderOpts;
+        }
         let result: TtsSynthesisResult;
         try {
           result = await provider.synth(text, synthOpts);

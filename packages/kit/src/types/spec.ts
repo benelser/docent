@@ -386,6 +386,30 @@ export interface Beat {
    */
   set?: ReadonlyArray<BeatSetDirective>;
   transform?: ReadonlyArray<BeatTransformDirective>;
+  /**
+   * Free-text performance direction for the TTS provider. Passed verbatim
+   * to providers that support tone steering (OpenAI `gpt-4o-mini-tts`
+   * accepts this via its `instructions:` field). Examples:
+   *   "speak this with a pause after 'fan-out'"
+   *   "ask this rhetorically — rising inflection"
+   *   "land this with weight — slow, lower register"
+   * Providers that don't support steering ignore the field; nothing breaks.
+   * This is the *performance grammar* (how a beat is delivered) — distinct
+   * from `pace` (which is timing) and `shot` (which is camera).
+   */
+  voiceDirection?: string;
+  /**
+   * Frames of silence to insert BEFORE this beat's narration audio.
+   * Default 0. Use sparingly — pauses change the conversational rhythm
+   * but cost wall-clock time. Typical values: 6-18 frames (0.2-0.6s
+   * at 30 fps) for a breath between thoughts.
+   */
+  pauseBefore?: number;
+  /**
+   * Frames of silence to insert AFTER this beat's narration audio.
+   * Same units + caveats as `pauseBefore`.
+   */
+  pauseAfter?: number;
   /** Plugin-owned fields. The kit treats these as opaque. */
   [key: string]: unknown;
 }
