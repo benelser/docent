@@ -4,8 +4,9 @@
 //
 // Migrated from packages/engine/src/scenes/DemonstrateScene.tsx as part
 // of the v3.0 plugin-architecture rip-and-replace. Behavior is
-// UNCHANGED from the v2.5.x renderer; only import paths and the prop
-// shape were updated:
+// UNCHANGED from the v2.5.x renderer for any spec that does NOT supply
+// the optional `cursor` or `pins` overlay fields; only import paths and
+// the prop shape were updated:
 //   - props receive `SceneRenderProps<DemonstrateSceneSpec>` from
 //     @bjelser/kit (the kit-owned `{scene, common}` envelope) rather
 //     than the legacy `SceneProps` (the engine-owned `ts: TimedScene`
@@ -20,6 +21,19 @@
 // panel — it must never crash on a missing file. The placeholder
 // re-uses the scene heading as its caption and surfaces a
 // "clip unavailable" annotation in mono ink-low.
+//
+// Two OPT-IN overlay primitives turn a passive playback into a guided
+// demo when the spec supplies them:
+//   - `cursor` — an ordered list of (at, x, y, action?) waypoints; the
+//     renderer draws a pointer SVG over the video, tweening between
+//     waypoints with an ease-in-out spring. A `click` waypoint fires a
+//     ~250ms concentric ripple in the accent color.
+//   - `pins` — floating callout cards anchored at a point in the clip
+//     with a leader line. Each pin fades in at its `at`, holds for
+//     `durationFrames`, then fades out.
+// Both render ABOVE the video; coordinates are in clip-native pixels
+// and mapped into the active video rect, so `objectFit: 'contain'`
+// letterboxing is handled. See ./overlays.tsx for the implementation.
 
 import React from 'react';
 import {
@@ -34,6 +48,15 @@ import {
 import type {ResolvedStyle, SceneRenderProps} from '@bjelser/kit';
 
 import {FittedText, Narration, SceneFrame, glow} from '../../_shared';
+import {
+  MacPointer,
+  Ripple,
+  WindowsPointer,
+  computeActiveVideoRect,
+  interpolateCursor,
+  mapToPanel,
+  resolveAt,
+} from './overlays';
 import type {DemonstrateScene as DemonstrateSceneSpec} from './validate';
 
 const accentOf = (style: ResolvedStyle, key?: string): string => {
@@ -45,7 +68,7 @@ export const DemonstrateSceneComponent: React.FC<
   SceneRenderProps<DemonstrateSceneSpec>
 > = ({scene, common}) => {
   const frame = useCurrentFrame();
-  const {fps} = useVideoConfig();
+  const {fps, width: canvasW, height: canvasH} = useVideoConfig();
   const {ts, sceneIndex, sceneCount, meta, style} = common;
   const accentHex = accentOf(style, undefined);
   const ink = style.tokens.ink;
@@ -72,6 +95,35 @@ export const DemonstrateSceneComponent: React.FC<
   // The framed stage the clip (or placeholder) sits inside.
   const panelW = 1340;
   const panelH = 632;
+  // The title bar is 46px tall; the inner video region is the panel
+  // minus that bar. Cursor/pin coordinates resolve into THIS rect.
+  const titleBarH = 46;
+  const videoPanelW = panelW;
+  const videoPanelH = panelH - titleBarH;
+
+  // The active video rect — where the clip actually paints inside the
+  // video panel after `objectFit: 'contain'`. We assume the clip's
+  // native resolution matches the film's canvas size (the common case
+  // for screen captures authored against the film aspect). If the
+  // overlay coordinates were authored against a different clip
+  // resolution this still self-corrects as long as the author's
+  // coordinate system has the same aspect.
+  const activeRect = computeActiveVideoRect(
+    videoPanelW,
+    videoPanelH,
+    canvasW,
+    canvasH,
+  );
+  // The display scale: how many panel-pixels per clip-pixel. Used to
+  // keep the cursor SVG and ripple sized "in viewport" rather than
+  // "on canvas".
+  const displayScale = activeRect.width / activeRect.clipW;
+
+  // Today the video starts at scene-frame 0 — the same frame the
+  // panel intro spring fires. We expose `videoStartFrame` as a single
+  // named binding so a future kicker-into-clip transition that pushes
+  // the video start has ONE place to change.
+  const videoStartFrame = 0;
 
   const panelStyle: React.CSSProperties = {
     width: panelW,
@@ -91,7 +143,7 @@ export const DemonstrateSceneComponent: React.FC<
   const titleBar = (
     <div
       style={{
-        height: 46,
+        height: titleBarH,
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
@@ -124,6 +176,194 @@ export const DemonstrateSceneComponent: React.FC<
     </div>
   );
 
+  // Cursor — the pointer SVG that tweens between waypoints. The
+  // interpolation lives in `interpolateCursor` so the rendering here is
+  // pure layout: position the SVG at the resolved (clip-pixel) point,
+  // mapped into panel-pixels.
+  const cursorWaypoints = scene.cursor ?? [];
+  const cursorState =
+    cursorWaypoints.length > 0
+      ? interpolateCursor(cursorWaypoints, frame, fps, videoStartFrame)
+      : null;
+
+  // Click ripples — the renderer scans every `click` waypoint and emits
+  // a Ripple at it for ~250ms. Computed lazily: an empty cursor array is
+  // free.
+  const ripples = cursorWaypoints
+    .map((w, i) => ({
+      i,
+      at: resolveAt(w.at, videoStartFrame),
+      x: w.x,
+      y: w.y,
+      action: w.action ?? 'move',
+    }))
+    .filter((w) => w.action === 'click')
+    .map((w) => ({...w, local: frame - w.at}));
+
+  const cursorStyle: 'mac' | 'windows' = scene.cursorStyle ?? 'mac';
+
+  // Pins — floating callout cards. Each pin fades in at `at`, holds
+  // for `durationFrames`, then fades out over ~6 frames.
+  const PIN_FADE = 6;
+  const pinElements = (scene.pins ?? []).map((pin, i) => {
+    const pinAt = resolveAt(pin.at, videoStartFrame);
+    const local = frame - pinAt;
+    const dur = pin.durationFrames;
+    if (local < -PIN_FADE || local > dur + PIN_FADE) return null;
+    // Triangular fade: ramp in over PIN_FADE, hold, ramp out over PIN_FADE.
+    let alpha = 1;
+    if (local < 0) alpha = Math.max(0, 1 + local / PIN_FADE);
+    else if (local > dur)
+      alpha = Math.max(0, 1 - (local - dur) / PIN_FADE);
+    const enter =
+      local <= 0
+        ? 0
+        : spring({frame: local, fps, config: {damping: 200, mass: 0.6}});
+    const slide = interpolate(enter, [0, 1], [8, 0]);
+
+    const {x: panelX, y: panelY} = mapToPanel(activeRect, pin.x, pin.y);
+    const anchor = pin.anchor ?? 'br';
+    const leader = pin.leader !== false;
+
+    // Card position: anchor corner relative to the anchor point. The
+    // card is ~360px wide; the leader line draws from the anchor point
+    // to the card's near corner. We keep the card a comfortable
+    // ~36px from the anchor so the leader has room to read.
+    const CARD_W = 360;
+    const CARD_H_MAX = 120; // estimated; the card grows with text
+    const GAP = 36;
+    let cardLeft: number;
+    let cardTop: number;
+    let leaderEndX: number;
+    let leaderEndY: number;
+    if (anchor === 'tl') {
+      cardLeft = panelX - GAP - CARD_W;
+      cardTop = panelY - GAP - CARD_H_MAX;
+      leaderEndX = panelX - GAP;
+      leaderEndY = panelY - GAP;
+    } else if (anchor === 'tr') {
+      cardLeft = panelX + GAP;
+      cardTop = panelY - GAP - CARD_H_MAX;
+      leaderEndX = panelX + GAP;
+      leaderEndY = panelY - GAP;
+    } else if (anchor === 'bl') {
+      cardLeft = panelX - GAP - CARD_W;
+      cardTop = panelY + GAP;
+      leaderEndX = panelX - GAP;
+      leaderEndY = panelY + GAP;
+    } else {
+      // br (default)
+      cardLeft = panelX + GAP;
+      cardTop = panelY + GAP;
+      leaderEndX = panelX + GAP;
+      leaderEndY = panelY + GAP;
+    }
+
+    // Clamp the card to stay inside the video panel (so a pin near a
+    // panel edge doesn't paint off the panel and get clipped).
+    cardLeft = Math.max(
+      8,
+      Math.min(videoPanelW - CARD_W - 8, cardLeft),
+    );
+    cardTop = Math.max(8, Math.min(videoPanelH - 32 - 8, cardTop));
+
+    return (
+      <div
+        key={`pin-${i}`}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          opacity: alpha,
+          pointerEvents: 'none',
+        }}
+      >
+        {/* the anchor dot — a small accent pip at the (x, y) so the eye
+            knows where the pin actually points. */}
+        <div
+          style={{
+            position: 'absolute',
+            left: panelX - 7,
+            top: panelY - 7,
+            width: 14,
+            height: 14,
+            borderRadius: '50%',
+            border: `2px solid ${accentHex}`,
+            background: glow(accentHex, 0.35),
+            boxShadow: `0 0 14px -2px ${glow(accentHex, 0.85)}`,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            left: panelX - 3,
+            top: panelY - 3,
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            background: accentHex,
+          }}
+        />
+        {/* the leader line, anchor point -> card corner */}
+        {leader ? (
+          <svg
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: '100%',
+              height: '100%',
+              overflow: 'visible',
+              pointerEvents: 'none',
+            }}
+          >
+            <line
+              x1={panelX}
+              y1={panelY}
+              x2={leaderEndX}
+              y2={leaderEndY}
+              stroke={accentHex}
+              strokeWidth={1.5}
+              strokeDasharray="4 4"
+              opacity={0.85}
+            />
+          </svg>
+        ) : null}
+        {/* the card */}
+        <div
+          style={{
+            position: 'absolute',
+            left: cardLeft,
+            top: cardTop,
+            transform: `translateY(${slide}px)`,
+            width: CARD_W,
+            padding: '12px 16px',
+            borderRadius: 10,
+            background: `linear-gradient(158deg, ${bg.panelHi}, ${bg.panel})`,
+            border: `1.5px solid ${accentHex}`,
+            boxShadow: `0 0 0 1px ${glow(accentHex, 0.25)}, 0 18px 40px -16px #000000ee`,
+          }}
+        >
+          <FittedText
+            text={pin.text}
+            maxWidth={CARD_W - 32}
+            basePx={20}
+            floorPx={13}
+            charAdvance={0.58}
+            mode="shrink-wrap"
+            maxLines={3}
+            lineHeight={1.25}
+            style={{
+              fontFamily: sansFamily,
+              fontWeight: 600,
+              color: ink.hi,
+              letterSpacing: -0.2,
+            }}
+          />
+        </div>
+      </div>
+    );
+  });
+
   return (
     <SceneFrame
       style={style}
@@ -134,13 +374,111 @@ export const DemonstrateSceneComponent: React.FC<
       sceneCount={sceneCount}
     >
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
-        <div style={{...panelStyle, marginTop: 36}}>
+        <div style={{...panelStyle, marginTop: 36, position: 'relative'}}>
           {titleBar}
           {scene.clip ? (
-            <OffthreadVideo
-              src={staticFile(`clips/${meta.id}/${scene.clip}`)}
-              style={{width: '100%', height: '100%', objectFit: 'contain', background: bg.void}}
-            />
+            <div
+              style={{
+                position: 'relative',
+                width: videoPanelW,
+                height: videoPanelH,
+              }}
+            >
+              <OffthreadVideo
+                src={staticFile(`clips/${meta.id}/${scene.clip}`)}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  background: bg.void,
+                  zIndex: 1,
+                }}
+              />
+
+              {/* cursor overlay — z-index 2 */}
+              {cursorState && cursorState.visible ? (
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 2,
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {/* the click ripples — emitted at every click waypoint
+                      that is within its ~250ms lifetime. */}
+                  {ripples.map((r) => {
+                    const {x, y} = mapToPanel(activeRect, r.x, r.y);
+                    return (
+                      <Ripple
+                        key={`ripple-${r.i}`}
+                        panelX={x}
+                        panelY={y}
+                        frame={r.local}
+                        fps={fps}
+                        accentHex={accentHex}
+                        scale={displayScale}
+                      />
+                    );
+                  })}
+                  {(() => {
+                    const {x, y} = mapToPanel(
+                      activeRect,
+                      cursorState.x,
+                      cursorState.y,
+                    );
+                    // The cursor SVG natural size is 28x32 px. We scale
+                    // it proportionally to the active rect so it reads
+                    // "in the viewport" rather than always 28px on the
+                    // canvas. Floor at 0.85 so it never disappears, cap
+                    // at 1.4 so it never gets absurd on a giant panel.
+                    const cursorScale = Math.max(
+                      0.85,
+                      Math.min(1.4, displayScale * 1.2),
+                    );
+                    return (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          // The pointer's "tip" (its drawn point) is at
+                          // (3, 2) in the SVG viewBox; offset so (x, y)
+                          // is the click point, not the SVG's top-left.
+                          left: x - 3 * cursorScale,
+                          top: y - 2 * cursorScale,
+                          transform: `scale(${cursorScale})`,
+                          transformOrigin: 'top left',
+                          pointerEvents: 'none',
+                        }}
+                      >
+                        {cursorStyle === 'windows' ? (
+                          <WindowsPointer accentHex={accentHex} />
+                        ) : (
+                          <MacPointer accentHex={accentHex} />
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : null}
+
+              {/* pins overlay — z-index 3 (sits above cursor when they
+                  overlap, matching "annotation is the most important
+                  thing on screen"). */}
+              {pinElements.length > 0 ? (
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 3,
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {pinElements}
+                </div>
+              ) : null}
+            </div>
           ) : (
             // graceful placeholder — no clip, no crash
             <div
