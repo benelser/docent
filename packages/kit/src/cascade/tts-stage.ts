@@ -36,6 +36,7 @@
 import {createHash} from 'node:crypto';
 import {existsSync, mkdirSync, readFileSync, writeFileSync, renameSync} from 'node:fs';
 import {join} from 'node:path';
+import {spawnSync} from 'node:child_process';
 
 import type {Engine} from '../engine';
 import type {FilmSpec, Beat, Scene} from '../types/spec';
@@ -125,6 +126,31 @@ const computeBeatHash = (
   h.update('|');
   h.update(stableJsonStringify(providerOptions ?? {}));
   return h.digest('hex');
+};
+
+/** Shell to ffprobe for the duration of any audio file on disk. Returns
+ * `null` when ffprobe is missing, the file is unreadable, or ffprobe
+ * couldn't determine a duration. Used as the last-resort fallback for
+ * providers (OpenAI TTS, in particular) that return `durationMs: 0`
+ * and aren't WAV. */
+const probeDurationSeconds = (path: string): number | null => {
+  try {
+    const out = spawnSync(
+      'ffprobe',
+      [
+        '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        path,
+      ],
+      {encoding: 'utf-8', timeout: 5000},
+    );
+    if (out.status !== 0) return null;
+    const n = parseFloat(out.stdout.trim());
+    return Number.isFinite(n) && n > 0 ? n : null;
+  } catch {
+    return null;
+  }
 };
 
 /** Best-effort duration sniff for a `audio/wav` blob — the legacy kokoro
@@ -590,6 +616,20 @@ export const runTtsStage = async (
           const fullPath = join(audioDirAbs, fname);
           writeFileSync(fullPath, result.audio);
           fileRel = `${audioDirRel}/${fname}`;
+
+          // Last-resort duration probe: providers like OpenAI return
+          // `durationMs: 0` because the API doesn't expose the duration
+          // header on its TTS endpoints. The WAV-header sniff above
+          // covers raw WAV; for MP3/PCM/OGG we shell to ffprobe against
+          // the just-written file. Without this the schedule collapses
+          // — every beat reads as zero-length and the film renders at
+          // estimator timing (the agentops lunch-and-learn film rendered
+          // at 22s instead of 7:45 because of this exact gap).
+          if (clipSeconds === 0) {
+            const probed = probeDurationSeconds(fullPath);
+            if (probed !== null) clipSeconds = probed;
+          }
+
           const persistedRow: TtsPersistedBeat = {
             sceneIndex,
             beatIndex,
